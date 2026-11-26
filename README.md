@@ -66,6 +66,8 @@ Detalle en [`docs/`](docs/).
 | [`docs/12-alineacion-rubrica.md`](docs/12-alineacion-rubrica.md) | Cada criterio de la rúbrica: qué tenemos, qué falta, qué resaltar; cinco lecciones y referentes |
 | [`docs/13-openjev.md`](docs/13-openjev.md) | OpenJev por API: servicio, implementación, resultados y privacidad |
 | [`docs/14-desvio-barrio-abajo.md`](docs/14-desvio-barrio-abajo.md) | Desvío de multitudes a Barrio Abajo: reglas, beneficio y riesgo de desplazamiento (borrador) |
+| [`docs/15-recursos-y-alianzas.md`](docs/15-recursos-y-alianzas.md) | Aliados, aportes, capacitación y sostenibilidad después de 2034 |
+| [`docs/16-costos-estimados.md`](docs/16-costos-estimados.md) | Tabla de costos estimados por rubro con rangos y supuestos visibles |
 | [`docs/feedback.md`](docs/feedback.md) | Registro de retroalimentación por sprint y validación con personas ajenas |
 
 ## Equipo
