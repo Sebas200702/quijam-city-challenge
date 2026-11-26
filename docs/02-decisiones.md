@@ -46,6 +46,35 @@ Un mapa tipo red social con geolocalización que muestra en tiempo real eventos,
 - **Frontera entre agentes:** Guía entiende y responde; Recomendador decide qué hacer; Decisor decide cómo y cuándo llegar, y a dónde desviar gente.
 - **Decisor híbrido:** reglas duras descartan rutas con arroyo activo o no accesibles; OpenJev elige entre las que quedan.
 
+## Alineación con el deck del organizador (26 nov 2026)
+
+Ver [12-alineacion-rubrica.md](12-alineacion-rubrica.md).
+
+- **Sostenibilidad:** se agregan residuos (puntos de reciclaje en el mapa) además del agua. Energía queda fuera.
+- **Economía:** se agrega formalización progresiva y capacitación, con el sello de negocio verificado como primer paso.
+- **Lo cotidiano:** el selector de modo de ciudad entra a la demo; el modo cotidiano muestra el uso diario del residente.
+- **Feedback:** se registra en [feedback.md](feedback.md).
+
+## Metodología y convenciones (26 nov 2026)
+
+Ver [08-metodologia.md](08-metodologia.md) y [09-convenciones.md](09-convenciones.md).
+
+- Marco: los tres sprints del bootcamp. Dentro de cada sprint, cada cambio sigue DEFINE → PLAN → BUILD → VERIFY → REVIEW → SHIP.
+- Tareas en GitHub Issues + GitHub Project.
+- PR de ~400 líneas con 1 aprobación.
+- Código y commits en inglés; PR, issues y docs en español.
+
+## Stack técnico (26 nov 2026)
+
+Ver [10-stack.md](10-stack.md).
+
+- Astro + React 19 + Tailwind CSS v4 + TypeScript strict.
+- Mapa con Leaflet.
+- Supabase Cloud (plan gratis) para datos, Auth y Realtime.
+- Guía con Gemini Live API: voz en tiempo real y texto como respaldo.
+- Bun + Biome + Vitest.
+- Despliegue en Dokploy (VPS propio).
+
 ## Bitácora de evolución (criterio de 10 puntos)
 
 - Se pasó de "app" a "programa con tres componentes".
@@ -56,3 +85,27 @@ Un mapa tipo red social con geolocalización que muestra en tiempo real eventos,
 - Los tótems solares se cambiaron por QR en infraestructura existente, por costo.
 - La gamificación se limitó a eventos ambientales.
 - El Decisor se describió primero como motor de reglas; se corrigió al identificar OpenJev.
+
+## Decisor y reparto de esfuerzo (26 nov 2026)
+
+- **Plan B del Decisor:** una función propia (estado + opciones → opción + confianza). OpenJev detrás si corre; si no, puntaje ponderado en código.
+- **Reparto de esfuerzo:** Guía real, Decisor simple, Recomendador con reglas, tablero básico. El tiempo liberado va al programa, el PowerPoint y la bitácora.
+
+## Roles y asignación (26 nov 2026)
+
+Base: la asignación hecha por Sebastián en el tablero. Se completaron los issues sin responsable y se dejó un solo responsable por issue.
+
+- Sebastián: coordinación y líder técnico (#13 roles, #15 scaffold, #20 OpenJev, #25 despliegue).
+- Santiago: diseño UI/UX y frontend (#17 mapa del corredor, #19 caso 1 de punta a punta, #22 PowerPoint).
+- Esteban: investigación y programa (#7 objetivo, #8 causas y actores, #11 recursos y alianzas, #14 nombre).
+- Angel David: datos y backend (#16 modelo de datos y semilla, #24 tablero de ciudad), #9 matriz caso × dimensión y #12 tabla de costos.
+- Mateo: agentes IA (#18 Decisor, #21 Guía con Gemini Live) y #10 desvío a Barrio Abajo, que es una salida del Decisor.
+- Redistribución: Esteban tenía 7 issues; #19, #10 y #12 pasan a Santiago, Mateo y Angel. Carga final: 3 a 4 issues por persona.
+- Comunicación: Santiago.
+- Se agregan los issues #24 (tablero de ciudad básico) y #25 (despliegue en Dokploy).
+
+## OpenJev por API (26 nov 2026)
+
+- Se descarta correr OpenJev local en CPU: lento, requiere servicio Python y el modelo de 0,6B eligió mal el desvío de multitudes.
+- El Decisor usa OpenJev por API en Codiv (`openjev-latest`, gratis mientras dure el experimento). Ver [13-openjev.md](13-openjev.md).
+- El puntaje ponderado sigue siendo el plan B obligatorio.

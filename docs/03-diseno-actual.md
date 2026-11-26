@@ -26,10 +26,10 @@ En 2034 Barranquilla recibe más visitantes de los que su información y sus ser
 | Dimensión | Cómo la cubrimos |
 |---|---|
 | Ciudad y territorio | Rutas accesibles en el corredor Estadio – Malecón; QR en infraestructura que ya existe. |
-| Sostenibilidad | Alerta de arroyos como resiliencia climática; rutas verdes; recompensas por eventos ambientales; sombra e hidratación en el mapa. |
+| Sostenibilidad | Alerta de arroyos como resiliencia climática; rutas verdes; recompensas por eventos ambientales; sombra, hidratación y puntos de reciclaje en el mapa. |
 | Ciudad inteligente | Datos abiertos, tres agentes, tablero. |
 | Ciudadanía | Anfitriones intergeneracionales, comités de barrio, reporte de cobros abusivos. |
-| Economía y oportunidades | Negocios populares verificados; el vendedor se marca abierto con un QR; sellos por visita. |
+| Economía y oportunidades | Negocios populares verificados; el vendedor se marca abierto con un QR; sellos por visita. El sello de negocio verificado es el primer paso de una formalización progresiva, con capacitación (alcance y aliados por definir). |
 
 ## Corredor piloto
 

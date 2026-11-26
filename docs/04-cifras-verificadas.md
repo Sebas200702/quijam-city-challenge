@@ -15,6 +15,18 @@ Usar estas cifras, siempre con su fuente.
 | El sur de la ciudad registra hasta 5 °C más de temperatura superficial que el norte. | Universidad del Norte, Urban Climate, 2024. |
 | El estadio está en el extremo sur; la zona turística, en el norte. | — |
 
+## Cifras oficiales del deck del organizador (diap. 12)
+
+El deck aclara: "Son un punto de partida: cada equipo deberá precisar fuentes, fechas y alcance de sus cifras."
+
+| Dato | Fuente |
+|---|---|
+| 1.334.509 habitantes. | Proyección DANE 2024. |
+| 154 km² de extensión distrital. | Informe de viabilidad fiscal territorial. |
+| $40,7 billones de PIB distrital en 2023. | Cifras citadas por MinHacienda. |
+| 79 % del PIB 2023 en actividades terciarias. | Deck del organizador. |
+| Los megaeventos cuestan en promedio 172 % más de lo presupuestado. | Flyvbjerg, Budzier y Lunn (2021), citado en el deck. |
+
 ## Cifras que NO deben usarse
 
 Estaban mal en el borrador de propuestas:
