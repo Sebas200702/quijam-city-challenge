@@ -5,6 +5,7 @@ interface ImportMetaEnv {
 	readonly TYPESAFE_API_KEY?: string;
 	readonly TYPESAFE_BASE_URL?: string;
 	readonly OPENJEV_MODEL?: string;
+	readonly GEMINI_LIVE_MODEL?: string;
 }
 
 interface ImportMeta {
