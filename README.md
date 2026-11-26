@@ -1,77 +1,98 @@
 # QUIJAM · City Challenge Barranquilla 2034
 
-> Working repository for the team's entry to the QUIJAM City Challenge.
-> Product name: **to be defined** (no name is confirmed yet).
+> Repositorio de trabajo del equipo para el QUIJAM City Challenge.
+> Nombre del producto: **por definir** (ningún nombre está confirmado).
+>
+> *English summary at the end.*
 
-## The challenge
+## El reto
 
-Fictional scenario: Barranquilla hosts the 2034 World Cup. Teams must design a
-**strategic program** (not an isolated app) that connects the five dimensions,
-with a demonstrable prototype and a legacy that lasts beyond 2034.
+Escenario ficticio: Barranquilla es sede del Mundial 2034. Hay que diseñar un
+**programa estratégico** (no una app aislada) que conecte las cinco dimensiones,
+con un prototipo demostrable y un legado para después de 2034.
 
-## Our direction (draft)
+## Nuestra dirección (borrador)
 
-An open-data city platform inside a three-component program, focused on the
-World Cup visitor, with a mandatory legacy for residents:
+Una plataforma de datos abiertos de ciudad dentro de un programa de tres
+componentes. El foco es el visitante del Mundial; el legado para residentes es
+obligatorio:
 
-1. **Open city data**: transport and fares, cultural agenda, World Cup
-   calendar, urban flash floods (arroyos) and weather.
-2. **Network of verified hosts and businesses**: intergenerational host pairs,
-   neighborhood committees, popular businesses.
-3. **Platform**: visitor web app, QR codes on existing stops and stations,
-   city dashboard.
+1. **Datos abiertos de ciudad:** transporte y tarifas, agenda cultural,
+   calendario del Mundial, arroyos y clima.
+2. **Red de anfitriones y negocios verificados:** duplas intergeneracionales,
+   comités de barrio, negocios populares.
+3. **Plataforma:** aplicación web para el visitante, QR en paraderos y
+   estaciones existentes, tablero para la ciudad.
 
-Pilot corridor: Estadio Metropolitano – Troncal Murillo – Centro – Barrio Abajo – Gran Malecón.
+Corredor piloto: Estadio Metropolitano – Troncal Murillo – Centro – Barrio Abajo – Gran Malecón.
 
-Details in [`docs/`](docs/).
+Detalle en [`docs/`](docs/).
 
-## Deliverables
+## Entregables
 
-- Strategic program
-- Prototype (MVP as a web app with simulated 2034 scenarios and data)
-- PowerPoint presentation (pitch order: problem, proposal, program, prototype, impact)
-- Video, 5 minutes max
+- Programa estratégico
+- Prototipo (MVP web con escenarios y datos simulados de 2034)
+- Presentación en PowerPoint (orden del pitch: problema, propuesta, programa, prototipo, impacto)
+- Video de máximo 5 minutos
 
-## Rubric
+## Rúbrica
 
-| Criterion | Points |
+| Criterio | Puntos |
 |---|---|
-| Strategic vision and integrality | 20 |
-| Integration of the five lines | 15 |
-| Prototype development and maturity | 15 |
-| Problem understanding and relevance | 10 |
-| Innovation and differentiation | 10 |
-| Feasibility, sustainability and impact | 10 |
-| Evolution, collaboration and sprint performance | 10 |
-| Communication, presentation and video | 10 |
+| Visión estratégica e integralidad | 20 |
+| Integración de las cinco líneas | 15 |
+| Desarrollo y madurez del prototipo | 15 |
+| Comprensión del problema y pertinencia | 10 |
+| Innovación y diferenciación | 10 |
+| Viabilidad, sostenibilidad e impacto | 10 |
+| Evolución, colaboración y desempeño en sprints | 10 |
+| Comunicación, presentación y video | 10 |
 
-## Documentation
+## Documentación
 
-| File | Content |
+| Archivo | Contenido |
 |---|---|
-| [`docs/01-reto-y-rubrica.md`](docs/01-reto-y-rubrica.md) | Challenge, rubric and key slides from the organizer deck |
-| [`docs/02-decisiones.md`](docs/02-decisiones.md) | Decisions already made and evolution log |
-| [`docs/03-diseno-actual.md`](docs/03-diseno-actual.md) | Current design: problem, program, architecture, dimensions, use cases, indicators, roadmap |
-| [`docs/04-cifras-verificadas.md`](docs/04-cifras-verificadas.md) | Verified figures with sources, and figures that must not be used |
-| [`docs/05-riesgos.md`](docs/05-riesgos.md) | Open risks |
-| [`docs/06-pendientes.md`](docs/06-pendientes.md) | Pending team decisions and next step |
+| [`docs/01-reto-y-rubrica.md`](docs/01-reto-y-rubrica.md) | Reto, rúbrica y diapositivas clave del deck del organizador |
+| [`docs/02-decisiones.md`](docs/02-decisiones.md) | Decisiones tomadas y bitácora de evolución |
+| [`docs/03-diseno-actual.md`](docs/03-diseno-actual.md) | Diseño actual: problema, programa, arquitectura, dimensiones, casos de uso, indicadores, hoja de ruta |
+| [`docs/04-cifras-verificadas.md`](docs/04-cifras-verificadas.md) | Cifras verificadas con fuente y cifras que no deben usarse |
+| [`docs/05-riesgos.md`](docs/05-riesgos.md) | Riesgos abiertos |
+| [`docs/06-pendientes.md`](docs/06-pendientes.md) | Decisiones pendientes y siguiente paso |
 
-## Team
+## Equipo
 
-| Member | Role |
+| Integrante | Rol |
 |---|---|
-| Sebastián Torregroza | To be defined |
-| Santiago Torregroza | To be defined |
-| Esteban Meléndez | To be defined |
-| Angel David Castro | To be defined |
-| Mateo Cantillo | To be defined |
+| Sebastián Torregroza | Por definir |
+| Santiago Torregroza | Por definir |
+| Esteban Meléndez | Por definir |
+| Angel David Castro | Por definir |
+| Mateo Cantillo | Por definir |
 
-## Tech stack
+## Stack técnico
 
-To be defined by the team.
+Por definir en equipo.
 
-## Working rules
+## Reglas de trabajo
 
-- `main` is protected: every change goes through a pull request.
-- Branches: `feat/*`, `fix/*`, `docs/*`, `chore/*`.
+- `main` está protegida para todos, incluido el admin: todo cambio entra por pull request con 1 aprobación.
+- Ramas: `feat/*`, `fix/*`, `docs/*`, `chore/*`.
 - Commits: [Conventional Commits](https://www.conventionalcommits.org/).
+
+---
+
+## English summary
+
+Working repository for our team's entry to the **QUIJAM City Challenge**.
+Fictional scenario: Barranquilla hosts the 2034 FIFA World Cup. The challenge asks
+for a **strategic program** (not an isolated app) that connects five dimensions
+(territory, sustainability, smart city, citizenship, economy), with a working
+prototype and a legacy beyond 2034.
+
+Our draft direction is an open-data city platform inside a three-component
+program: open city data, a network of verified hosts and local businesses, and a
+visitor web app plus a city dashboard. The pilot corridor runs from Estadio
+Metropolitano to the Gran Malecón. Product name and tech stack are still to be
+decided. Detailed documentation lives in [`docs/`](docs/) (in Spanish).
+
+`main` is protected for everyone: changes go through a pull request with one approval.
