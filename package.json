@@ -20,6 +20,7 @@
 	"dependencies": {
 		"@astrojs/node": "^11.1.14",
 		"@astrojs/react": "^7.1.9",
+		"@google/genai": "^3.6.1",
 		"@supabase/supabase-js": "^2.119.2",
 		"@tailwindcss/vite": "^4.3.5",
 		"@types/react": "^19.3.3",
