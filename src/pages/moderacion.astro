@@ -1,0 +1,11 @@
+---
+import ModerationPage from "../components/community/moderation-page";
+import BaseLayout from "../layouts/base-layout.astro";
+import { homeContent } from "../lib/home-content";
+
+const { aiHref } = homeContent;
+---
+
+<BaseLayout title="Moderación de la comunidad">
+	<ModerationPage client:only="react" aiHref={aiHref} />
+</BaseLayout>
