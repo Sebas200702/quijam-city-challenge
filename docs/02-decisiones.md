@@ -124,4 +124,12 @@ Base: la asignación hecha por Sebastián en el tablero. Se completaron los issu
 - La tarjeta de ruta siempre sale del planificador y el Decisor, nunca del texto del modelo.
 - Ruta verde primero; el taxi verificado aparece como alternativa con su rango de tarifa justa.
 - El reporte de cobro abusivo se guarda desde el servidor con la llave pública (aplica RLS) y no pide nombre, teléfono ni ubicación. Sin conexión queda guardado en el teléfono.
-- Guion de ensayo en [16-caso-1.md](16-caso-1.md).
+- Guion de ensayo en [19-caso-1.md](19-caso-1.md).
+
+## Consolidación de rutas y alertas (26 nov 2026)
+
+- **Una sola fuente de tramos:** `segments` en los datos del corredor (de #64). `/api/decidir` los lee de ahí.
+- **Un solo canal `city-events`:** el de #66 (`src/lib/city-events/`). El de #63 no se trae.
+- **Rutas del visitante en el mapa:** `planRoute` + `/api/decidir` (itinerarios de varios tramos, reglas duras, OpenJev, puntaje ponderado).
+- **Guía del caso 1:** `trip-planner` de #64 se mantiene para las respuestas multilingües; usa el mismo núcleo del Decisor (reglas duras y puntaje). Mapa y Guía coinciden en el caso 1.
+- **Alerta de arroyos:** cuenta regresiva de #62 y banner de #63 sobre el mapa. Los planificadores duplicados de #62 (`route-options`, `route-recalc`, semilla propia) no se traen.

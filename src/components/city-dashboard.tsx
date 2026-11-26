@@ -29,6 +29,8 @@ import {
 	ZONE_LABELS,
 } from "../lib/city-dashboard-utils";
 import { CityAuthGate } from "./city-auth-gate";
+import { CrowdSimPanel } from "./crowd-sim-panel";
+import { ImpactReportPanel } from "./impact-report-panel";
 
 const STATUS_OPTIONS: ReportStatus[] = [
 	"open",
@@ -374,6 +376,8 @@ export function CityDashboard() {
 					</article>
 				</section>
 
+				{zones.length > 0 && <CrowdSimPanel zones={zones} canWrite />}
+
 				{/* Active flood alert card */}
 				<section
 					aria-label="Alertas de arroyos"
@@ -625,6 +629,8 @@ export function CityDashboard() {
 						</div>
 					</div>
 				</section>
+
+				<ImpactReportPanel />
 			</main>
 		</>
 	);

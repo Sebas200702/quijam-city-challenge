@@ -6,6 +6,7 @@ interface ImportMetaEnv {
 	readonly TYPESAFE_BASE_URL?: string;
 	readonly OPENJEV_MODEL?: string;
 	readonly GEMINI_LIVE_MODEL?: string;
+	readonly GEMINI_REPORT_MODEL?: string;
 }
 
 interface ImportMeta {
