@@ -123,6 +123,8 @@ Reglas: nunca blanco sobre oro; como texto, rojo y verde usan su variante
 | Header | `.q-header` | Logo, modo (Turista / Centro de Mando), tema, idioma |
 | Card | `.q-card` + `--raised` `--frame` `--active` `--dismissed` | Cabecera, cuerpo y pie con `__head` `__body` `__foot` |
 | Pin de mapa | `.q-pin` + `--fluid` `--event` `--alert`, `.is-selected` | Glifo propio: flechas, estrella, signo de exclamación |
+| Controles de mapa | `.q-mapctl`, `.q-fab`, `.q-zoom` | Capas y centrar en botones redondos; zoom +/− agrupado. Botones de 48px con `aria-label` |
+| Hoja de trayecto | `.q-sheet`, `.q-sheet__handle`, `.q-trip`, `.q-trip__fill`, `.q-trip__bus`, `.q-trip__ends` | Hoja inferior en móvil: vehículo, estado con palabra, línea origen → vehículo → destino como `role="progressbar"` |
 | Chat | `.q-msg--ai` `.q-msg--user`, `.q-bubble`, `.q-thinking`, `.q-chip`, `.q-prompt` | Sugerencias rápidas y barra de prompt |
 | KPI | `.q-kpi`, `.q-delta--good` `--bad` | El color sigue al sentido bueno, no a la flecha |
 | Ilustración | `.q-illus` | Panel crema fijo en ambos temas |

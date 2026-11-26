@@ -240,6 +240,28 @@ svg.q-star-svg polygon { fill: currentColor; }
 .q-search:focus-within { outline: 2px solid var(--focus); outline-offset: 2px; }
 .q-search input::placeholder { color: var(--ink-subtle); }
 
+/* ── Map controls: locate button and grouped zoom ── */
+.q-mapctl { display: flex; flex-direction: column; gap: 10px; align-items: center; }
+.q-zoom { display: flex; flex-direction: column; border-radius: var(--radius-pill); background: var(--surface-raised); box-shadow: var(--shadow-card); overflow: hidden; }
+.q-zoom button { width: 48px; height: 48px; display: grid; place-items: center; background: transparent; color: var(--ink); border: 0; padding: 0; cursor: pointer; }
+.q-zoom button + button { border-top: 1px solid var(--line); }
+.q-zoom button:hover:not(:disabled) { background: var(--line); }
+.q-zoom button:disabled { color: var(--ink-subtle); opacity: .5; cursor: not-allowed; }
+
+/* ── Trip sheet: bottom sheet that follows a journey ── */
+.q-sheet { background: var(--surface-raised); color: var(--ink); border-radius: var(--radius-xl) var(--radius-xl) 0 0; box-shadow: var(--shadow-modal); padding: 10px 20px 20px; display: flex; flex-direction: column; gap: 14px; }
+.q-sheet__handle { width: 40px; height: 5px; border-radius: var(--radius-pill); background: var(--line-control); align-self: center; flex: none; }
+.q-trip { position: relative; height: 6px; border-radius: var(--radius-pill); background: var(--line); margin: 18px 6px; }
+.q-trip::before, .q-trip::after { content: ''; position: absolute; top: 50%; width: 14px; height: 14px; border-radius: 50%; transform: translateY(-50%); border: 3px solid var(--surface-raised); }
+.q-trip::before { left: -6px; background: var(--ink); }
+.q-trip::after { right: -6px; background: var(--green); }
+.q-trip__fill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: var(--radius-pill); background: var(--gold); transition: width .3s; }
+[data-theme="light"] .q-trip__fill { box-shadow: inset 0 0 0 1px var(--gold-text); }
+.q-trip__bus { position: absolute; top: 50%; transform: translate(-50%, -50%); width: 38px; height: 38px; border-radius: 50%; background: var(--gold); color: var(--on-gold); display: grid; place-items: center; border: 3px solid var(--surface-raised); box-shadow: 0 4px 12px #0b131e33; z-index: 1; }
+.q-trip__ends { display: flex; justify-content: space-between; gap: 16px; }
+.q-trip__ends > div { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.q-trip__ends > div:last-child { align-items: flex-end; text-align: right; }
+
 @media (prefers-reduced-motion: reduce) {
   .q-star--think, .q-star--pulse, .q-dot, .q-user__pulse, .q-thinking__dots i { animation: none; }
   .q-btn, .q-pin__head, .q-meter__fill { transition: none; }
