@@ -311,7 +311,7 @@ export function createDeviceCommunityStore(): CommunityStore {
 			const data = load();
 			const account = requireAccount(data);
 			const event = data.events.find((item) => item.id === eventId);
-			if (!event || event.moderationStatus !== "published")
+			if (event?.moderationStatus !== "published")
 				throw new Error("Este evento no está disponible para inscripciones.");
 			if (
 				data.registrations.some(
