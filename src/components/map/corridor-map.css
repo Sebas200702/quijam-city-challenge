@@ -86,7 +86,7 @@
 		left: auto;
 		right: 16px;
 		bottom: 32px;
-		width: 360px;
+		width: 400px;
 	}
 	.corridor-detail--empty:not(.route-card) {
 		display: none;
@@ -383,6 +383,16 @@
 	font-weight: 600;
 }
 
+/* ── Guide entry: in the empty card on phones, in the left column on wide screens ── */
+.corridor-guide-button {
+	display: none;
+}
+@media (min-width: 640px) {
+	.corridor-guide-button {
+		display: inline-flex;
+	}
+}
+
 /* ── Planned route and live alerts (decider integration) ── */
 .corridor-plan {
 	fill: none;
@@ -474,4 +484,9 @@
 	margin-top: 4px;
 	font-size: 0.875rem;
 	color: var(--ink);
+}
+@media (min-width: 640px) {
+	.route-card__guide {
+		display: none;
+	}
 }

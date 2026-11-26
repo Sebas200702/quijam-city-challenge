@@ -118,6 +118,14 @@ Base: la asignación hecha por Sebastián en el tablero. Se completaron los issu
 - Si Supabase no está configurado o no responde, el mapa usa una copia local de `supabase/seed.sql` y lo dice en pantalla.
 - La interfaz del mapa usa los componentes `q-*` de QUILLART e iconos de `lucide-react`. Una tarjeta con el detalle del punto reemplaza los popups de Leaflet.
 
+## Caso 1: Guía y reporte (26 nov 2026)
+
+- El Guía responde por texto en el idioma del visitante. Con `GEMINI_API_KEY` redacta Gemini usando solo nuestros datos; sin llave o si falla, responde un Guía local en español, inglés, portugués, francés y alemán.
+- La tarjeta de ruta siempre sale del planificador y el Decisor, nunca del texto del modelo.
+- Ruta verde primero; el taxi verificado aparece como alternativa con su rango de tarifa justa.
+- El reporte de cobro abusivo se guarda desde el servidor con la llave pública (aplica RLS) y no pide nombre, teléfono ni ubicación. Sin conexión queda guardado en el teléfono.
+- Guion de ensayo en [19-caso-1.md](19-caso-1.md).
+
 ## Consolidación de rutas y alertas (26 nov 2026)
 
 - **Una sola fuente de tramos:** `segments` en los datos del corredor (de #64). `/api/decidir` los lee de ahí.

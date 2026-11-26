@@ -1,4 +1,4 @@
-import { Accessibility, Leaf } from "lucide-react";
+import { Accessibility, Leaf, MessageCircle } from "lucide-react";
 import type { ReactNode } from "react";
 import type { CorridorStop } from "../../lib/corridor/corridor-types";
 import type { PlanResponse } from "../../lib/routing/plan-route";
@@ -24,6 +24,8 @@ interface RouteCardProps {
 	error: string | null;
 	/** The one interrupting alert (flood), shown on top of the card. */
 	alert?: ReactNode;
+	/** Opens the Guide. On wide screens the panel has its own button, so this one hides there. */
+	onOpenGuide: () => void;
 }
 
 /** "Tu siguiente paso": one card, one decision. Details stay folded. */
@@ -35,6 +37,7 @@ export function RouteCard({
 	loading,
 	error,
 	alert,
+	onOpenGuide,
 }: RouteCardProps) {
 	const route = plan?.route ?? null;
 	return (
@@ -154,6 +157,16 @@ export function RouteCard({
 						</details>
 					</>
 				) : null}
+			</div>
+			<div className="q-card__foot route-card__guide">
+				<button
+					type="button"
+					className="q-btn q-btn--primary q-btn--block"
+					onClick={onOpenGuide}
+				>
+					<MessageCircle size={20} strokeWidth={1.75} aria-hidden="true" />
+					Pregúntale al Guía · Ask the Guide
+				</button>
 			</div>
 		</section>
 	);

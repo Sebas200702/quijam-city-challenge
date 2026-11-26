@@ -1,6 +1,6 @@
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { LocateFixed, Minus, Plus } from "lucide-react";
+import { LocateFixed, MessageCircle, Minus, Plus } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { crowdByZoneFrom } from "../../lib/city-events/city-state";
 import { useCityState } from "../../lib/city-events/use-city-state";
@@ -18,6 +18,8 @@ import type {
 	CorridorData,
 	CorridorDataSource,
 } from "../../lib/corridor/corridor-types";
+import { DESTINATIONS, type DestinationKey } from "../../lib/trip/trip-planner";
+import { GuidePanel } from "../guide/guide-panel";
 import "./corridor-map.css";
 import { DetailCard } from "./detail-card";
 import { FloodAlertBanner } from "./flood-alert-banner";
@@ -83,6 +85,7 @@ export default function CorridorMap({ data, source }: CorridorMapProps) {
 	const mapRef = useRef<L.Map | null>(null);
 	const layersRef = useRef<CorridorLayers | null>(null);
 	const [selected, setSelected] = useState<Selection | null>(null);
+	const [guideOpen, setGuideOpen] = useState(false);
 	const [theme, setTheme] = useState<Theme>(() =>
 		document.documentElement.dataset.theme === "dark" ? "dark" : "light",
 	);
@@ -215,6 +218,12 @@ export default function CorridorMap({ data, source }: CorridorMapProps) {
 		return match !== null;
 	};
 
+	/** From the Guide's trip card: hide the Guide (it keeps its conversation) and show the destination. */
+	const showDestination = (destination: DestinationKey) => {
+		setGuideOpen(false);
+		focusPoint({ kind: "stop", code: DESTINATIONS[destination].stopCode });
+	};
+
 	const toggleTheme = () => {
 		const next: Theme = theme === "light" ? "dark" : "light";
 		document.documentElement.dataset.theme = next;
@@ -248,6 +257,15 @@ export default function CorridorMap({ data, source }: CorridorMapProps) {
 					}}
 					onToggle={toggleLayer}
 				/>
+				<button
+					type="button"
+					className="q-btn q-btn--primary corridor-guide-button"
+					aria-expanded={guideOpen}
+					onClick={() => setGuideOpen(true)}
+				>
+					<MessageCircle size={20} strokeWidth={1.75} aria-hidden="true" />
+					Pregúntale al Guía · Ask the Guide
+				</button>
 				<div className="corridor-panel__stops">
 					<StopList
 						stops={stops}
@@ -285,23 +303,33 @@ export default function CorridorMap({ data, source }: CorridorMapProps) {
 			</div>
 
 			<div className="corridor-app__detail">
-				{detail ? (
-					<DetailCard
-						detail={detail}
-						source={source}
-						onClose={() => setSelected(null)}
+				{/* Hidden, not unmounted, so the conversation survives "Ver en el mapa". */}
+				<div hidden={!guideOpen}>
+					<GuidePanel
+						onShowOnMap={showDestination}
+						onClose={() => setGuideOpen(false)}
 					/>
-				) : (
-					<RouteCard
-						stops={stops}
-						query={query}
-						onQueryChange={setQuery}
-						plan={plan}
-						loading={loading}
-						error={error}
-						alert={<FloodAlertBanner alert={flood.alert} />}
-					/>
-				)}
+				</div>
+				{!guideOpen &&
+					(detail ? (
+						<DetailCard
+							detail={detail}
+							source={source}
+							onClose={() => setSelected(null)}
+							onOpenGuide={() => setGuideOpen(true)}
+						/>
+					) : (
+						<RouteCard
+							stops={stops}
+							query={query}
+							onQueryChange={setQuery}
+							plan={plan}
+							loading={loading}
+							error={error}
+							alert={<FloodAlertBanner alert={flood.alert} />}
+							onOpenGuide={() => setGuideOpen(true)}
+						/>
+					))}
 			</div>
 		</div>
 	);

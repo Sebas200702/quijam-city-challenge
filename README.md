@@ -70,6 +70,7 @@ Detalle en [`docs/`](docs/).
 | [`docs/16-costos-estimados.md`](docs/16-costos-estimados.md) | Tabla de costos estimados por rubro con rangos y supuestos visibles |
 | [`docs/17-informe-impacto.md`](docs/17-informe-impacto.md) | Informe de impacto con IA: cifras agregadas, verificación de números y respaldo sin IA |
 | [`docs/18-simulador-multitudes.md`](docs/18-simulador-multitudes.md) | Simulador de multitudes: eventos, reglas del desvío, conteos y rendimiento |
+| [`docs/19-caso-1.md`](docs/19-caso-1.md) | Caso 1 de punta a punta: requisitos, guion de ensayo de 2 minutos, plan B y registro de ensayos |
 | [`docs/feedback.md`](docs/feedback.md) | Registro de retroalimentación por sprint y validación con personas ajenas |
 
 ## Equipo
