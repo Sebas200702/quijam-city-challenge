@@ -29,6 +29,7 @@ import {
 	ZONE_LABELS,
 } from "../lib/city-dashboard-utils";
 import { CityAuthGate } from "./city-auth-gate";
+import { ImpactReportPanel } from "./impact-report-panel";
 
 const STATUS_OPTIONS: ReportStatus[] = [
 	"open",
@@ -625,6 +626,8 @@ export function CityDashboard() {
 						</div>
 					</div>
 				</section>
+
+				<ImpactReportPanel />
 			</main>
 		</>
 	);
