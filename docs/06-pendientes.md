@@ -15,7 +15,7 @@ Cada una trae la recomendación que salió de la sesión de validación. Ninguna
 | 9 | Privacidad | La ubicación se queda en el dispositivo; la ciudad recibe conteos anónimos; citar la Ley 1581 de 2012. | Abierto |
 | 10 | Capa física | QR y pantallas en estaciones existentes más un render; sin red de tótems solares. | Abierto |
 | 11 | Semáforos y tráfico vehicular | Cortarlos y dejarlos como conexión futura. | Abierto |
-| 12 | Selector de modo de ciudad | Agregar a la demo (Mundial, Carnaval, cotidiano). | Abierto |
+| 12 | Selector de modo de ciudad | Agregar a la demo (Mundial, Carnaval, cotidiano). | Decidido (26 nov): entra a la demo; el modo cotidiano responde a la lección "prioricen lo cotidiano" |
 | 13 | Canal del vendedor (WhatsApp o QR) | Pantalla simulada dentro del caso 3. | Abierto |
 | 14 | Arroyos dentro de Sostenibilidad | Sí. | Abierto |
 | 15 | Validación externa | Cinco personas ajenas al equipo antes del Demo Day, para llegar al nivel "validado". | Abierto |

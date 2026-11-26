@@ -58,6 +58,8 @@ Detalle en [`docs/`](docs/).
 | [`docs/04-cifras-verificadas.md`](docs/04-cifras-verificadas.md) | Cifras verificadas con fuente y cifras que no deben usarse |
 | [`docs/05-riesgos.md`](docs/05-riesgos.md) | Riesgos abiertos |
 | [`docs/06-pendientes.md`](docs/06-pendientes.md) | Decisiones pendientes y siguiente paso |
+| [`docs/07-alineacion-rubrica.md`](docs/07-alineacion-rubrica.md) | Cada criterio de la rúbrica: qué tenemos, qué falta, qué resaltar; cinco lecciones y referentes |
+| [`docs/feedback.md`](docs/feedback.md) | Registro de retroalimentación por sprint y validación con personas ajenas |
 
 ## Equipo
 

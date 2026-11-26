@@ -46,6 +46,15 @@ Un mapa tipo red social con geolocalización que muestra en tiempo real eventos,
 - **Frontera entre agentes:** Guía entiende y responde; Recomendador decide qué hacer; Decisor decide cómo y cuándo llegar, y a dónde desviar gente.
 - **Decisor híbrido:** reglas duras descartan rutas con arroyo activo o no accesibles; OpenJev elige entre las que quedan.
 
+## Alineación con el deck del organizador (26 nov 2026)
+
+Ver [07-alineacion-rubrica.md](07-alineacion-rubrica.md).
+
+- **Sostenibilidad:** se agregan residuos (puntos de reciclaje en el mapa) además del agua. Energía queda fuera.
+- **Economía:** se agrega formalización progresiva y capacitación, con el sello de negocio verificado como primer paso.
+- **Lo cotidiano:** el selector de modo de ciudad entra a la demo; el modo cotidiano muestra el uso diario del residente.
+- **Feedback:** se registra en [feedback.md](feedback.md).
+
 ## Bitácora de evolución (criterio de 10 puntos)
 
 - Se pasó de "app" a "programa con tres componentes".
