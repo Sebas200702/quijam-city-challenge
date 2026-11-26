@@ -41,7 +41,7 @@ Una persona del equipo toma nota durante toda la revisión.
 | DEFINE | Se crea un issue con el problema, el alcance y los criterios de aceptación. | Issue en el tablero |
 | PLAN | Se divide en tareas pequeñas y se asigna responsable. | Tareas del issue, responsable asignado |
 | BUILD | Se trabaja en una rama propia, con commits pequeños. | Rama con commits |
-| VERIFY | Se comprueba que cumple los criterios de aceptación. En código: verificaciones del stack (por definir). | Evidencia en el PR (capturas, salida de pruebas) |
+| VERIFY | Se comprueba que cumple los criterios de aceptación. En código: `astro check → lint → test → build`. | Evidencia en el PR (capturas, salida de pruebas) |
 | REVIEW | Otra persona revisa y aprueba el PR. | 1 aprobación |
 | SHIP | Se fusiona a `main` y se cierra el issue. | Cambio en `main`, issue cerrado |
 

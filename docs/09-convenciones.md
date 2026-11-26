@@ -72,12 +72,12 @@ Se aprueba o se piden cambios concretos. Comentarios en español.
 
 ## Código
 
-Aplican cuando se defina el stack:
-
 - Un archivo = una responsabilidad.
 - Nombres de archivo en kebab-case.
 - Tipos compartidos en archivos `-types.ts`.
-- Formateador, linter y comandos de verificación: por definir con el stack.
+- TypeScript en modo `strict`.
+- Formato y lint con Biome.
+- Antes de abrir un PR: `astro check → lint → test → build` (ver [10-stack.md](10-stack.md)).
 
 ## Datos
 

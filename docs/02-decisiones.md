@@ -64,6 +64,17 @@ Ver [08-metodologia.md](08-metodologia.md) y [09-convenciones.md](09-convencione
 - PR de ~400 líneas con 1 aprobación.
 - Código y commits en inglés; PR, issues y docs en español.
 
+## Stack técnico (26 nov 2026)
+
+Ver [10-stack.md](10-stack.md).
+
+- Astro + React 19 + Tailwind CSS v4 + TypeScript strict.
+- Mapa con Leaflet.
+- Supabase Cloud (plan gratis) para datos, Auth y Realtime.
+- Guía con Gemini Live API: voz en tiempo real y texto como respaldo.
+- Bun + Biome + Vitest.
+- Despliegue en Dokploy (VPS propio).
+
 ## Bitácora de evolución (criterio de 10 puntos)
 
 - Se pasó de "app" a "programa con tres componentes".

@@ -62,6 +62,7 @@ Detalle en [`docs/`](docs/).
 | [`docs/feedback.md`](docs/feedback.md) | Registro de retroalimentación por sprint y validación con personas ajenas |
 | [`docs/08-metodologia.md`](docs/08-metodologia.md) | Sprints del bootcamp, flujo por cambio, gestión de tareas, roles y acuerdos |
 | [`docs/09-convenciones.md`](docs/09-convenciones.md) | Idioma, ramas, commits, PR, revisión, código, datos y documentos |
+| [`docs/10-stack.md`](docs/10-stack.md) | Stack técnico, verificación y arquitectura de despliegue |
 
 ## Equipo
 
@@ -75,7 +76,9 @@ Detalle en [`docs/`](docs/).
 
 ## Stack técnico
 
-Por definir en equipo.
+Astro + React 19 + Tailwind CSS v4 + TypeScript strict, Leaflet, Supabase Cloud (datos, Auth, Realtime), Gemini Live API para el Guía, Bun + Biome + Vitest. Despliegue en Dokploy.
+
+Detalle en [`docs/10-stack.md`](docs/10-stack.md).
 
 ## Reglas de trabajo
 
@@ -99,7 +102,8 @@ prototype and a legacy beyond 2034.
 Our draft direction is an open-data city platform inside a three-component
 program: open city data, a network of verified hosts and local businesses, and a
 visitor web app plus a city dashboard. The pilot corridor runs from Estadio
-Metropolitano to the Gran Malecón. Product name and tech stack are still to be
-decided. Detailed documentation lives in [`docs/`](docs/) (in Spanish).
+Metropolitano to the Gran Malecón. The product name is still to be decided.
+Stack: Astro, React 19, Tailwind CSS v4, TypeScript, Leaflet, Supabase, Gemini
+Live API, Bun, Biome, Vitest; deployed on Dokploy. Detailed documentation lives in [`docs/`](docs/) (in Spanish).
 
 `main` is protected for everyone: changes go through a pull request with one approval.
