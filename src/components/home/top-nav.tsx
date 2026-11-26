@@ -1,4 +1,5 @@
-import type { NavSection } from "./bottom-nav";
+import { UserRound } from "lucide-react";
+import { type NavSection, navLinks } from "./nav-sections";
 
 interface TopNavProps {
 	current: NavSection;
@@ -6,7 +7,7 @@ interface TopNavProps {
 }
 
 const linkClass = (active: boolean) =>
-	`inline-flex min-h-11 items-center rounded-full px-4 text-[15px] font-semibold no-underline ${
+	`inline-flex min-h-11 items-center gap-2 rounded-full px-4 text-[15px] font-semibold no-underline ${
 		active
 			? "bg-[var(--line)] text-[var(--ink)]"
 			: "bg-transparent text-[var(--ink-muted)] hover:text-[var(--ink)]"
@@ -16,30 +17,24 @@ const linkClass = (active: boolean) =>
 export function TopNav({ current, aiHref }: TopNavProps) {
 	return (
 		<nav aria-label="Secciones" className="hidden items-center gap-1 lg:flex">
+			{navLinks(aiHref).map((link) => (
+				<a
+					key={link.section}
+					className={linkClass(current === link.section)}
+					href={link.href}
+					aria-current={current === link.section ? "page" : undefined}
+				>
+					{link.label}
+				</a>
+			))}
 			<a
-				className={linkClass(current === "home")}
-				href="/"
-				aria-current={current === "home" ? "page" : undefined}
+				className={linkClass(current === "profile")}
+				href="/perfil"
+				aria-current={current === "profile" ? "page" : undefined}
 			>
-				Inicio
+				<UserRound size={18} strokeWidth={1.75} aria-hidden="true" />
+				Perfil
 			</a>
-			<a
-				className={linkClass(current === "explore")}
-				href="/mapa"
-				aria-current={current === "explore" ? "page" : undefined}
-			>
-				Explorar
-			</a>
-			<a
-				className={linkClass(current === "ai")}
-				href={aiHref}
-				aria-current={current === "ai" ? "page" : undefined}
-			>
-				Quillart AI
-			</a>
-			<button type="button" className={linkClass(current === "tickets")}>
-				Entradas
-			</button>
 		</nav>
 	);
 }
