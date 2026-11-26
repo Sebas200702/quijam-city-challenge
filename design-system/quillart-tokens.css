@@ -1,0 +1,123 @@
+/* QUILLART Design System — design tokens as CSS variables.
+   Dark is the default theme (maps, Centro de Mando).
+   Light is the high-contrast theme for tourist use in direct sun: set data-theme="light". */
+:root,
+[data-theme="dark"] {
+  color-scheme: dark;
+  /* Surfaces */
+  --bg: #0B131E;
+  --surface: #131E2E;
+  --surface-raised: #1C2B40;
+  --line: #2A3B55;
+  --line-control: #5E7594;
+  /* Text */
+  --ink: #FFFFFF;
+  --ink-muted: #A9B6C8;
+  --ink-subtle: #8494AA;
+  /* Rojo Barranquilla */
+  --red: #E6192E;
+  --on-red: #FFFFFF;
+  --red-text: #FF6B76;
+  --red-soft: #351D2E;
+  /* Amarillo Oro */
+  --gold: #FFD100;
+  --on-gold: #0B131E;
+  --gold-text: #FFD100;
+  --gold-soft: #393B27;
+  /* Verde Esmeralda */
+  --green: #009B3A;
+  --on-green: #0B131E;
+  --green-text: #2BD46A;
+  --green-soft: #103230;
+  /* Blanco Estrella */
+  --star: #FFFFFF;
+  --emblem: #FFFFFF;
+  --frame: #FFD10059;
+  --focus: #FFD100;
+  /* Map */
+  --map-land: #0F1926;
+  --map-water: #0E2B36;
+  --map-road: #1C2B40;
+  --map-road-major: #2E4463;
+  --map-park: #11291F;
+  /* Elevation and glows */
+  --shadow-card: 0 12px 32px #00000047;
+  --shadow-modal: 0 28px 60px #00000080;
+  --glow-red: 0 0 0 6px #e6192e40, 0 8px 24px #e6192e59;
+  --glow-gold: 0 0 0 6px #ffd10033, 0 8px 24px #ffd10047;
+  --glow-green: 0 0 0 6px #009b3a40, 0 8px 24px #009b3a52;
+  /* Action: the primary control fill */
+  --action: #FFD100;
+  --on-action: #0B131E;
+  --action-glow: 0 8px 20px #ffd10033;
+  --illus: #FFF6CC;
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+  --bg: #F8F9FA;
+  --surface: #FFFFFF;
+  --surface-raised: #FFFFFF;
+  --line: #E9ECEF;
+  --line-control: #7D8A9A;
+  --ink: #0B131E;
+  --ink-muted: #46566B;
+  --ink-subtle: #5B6A7D;
+  --red: #CE1126;
+  --on-red: #FFFFFF;
+  --red-text: #B30F21;
+  --red-soft: #FBE3E6;
+  --gold: #FCD116;
+  --on-gold: #0B131E;
+  --gold-text: #7A5C00;
+  --gold-soft: #FFF6CC;
+  --green: #007A33;
+  --on-green: #FFFFFF;
+  --green-text: #006B2D;
+  --green-soft: #E2F0E7;
+  --star: #FFFFFF;
+  --emblem: #0B131E;
+  --frame: #C9A400;
+  --focus: #0B131E;
+  --map-land: #EEF1F4;
+  --map-water: #CFE4EA;
+  --map-road: #FFFFFF;
+  --map-road-major: #D3DAE3;
+  --map-park: #DDEFD9;
+  --shadow-card: 0 1px 2px #0b131e0a, 0 12px 32px #0b131e12;
+  --shadow-modal: 0 24px 56px #0b131e24;
+  --glow-red: 0 0 0 6px #ce112626, 0 8px 20px #ce11262e;
+  --glow-gold: 0 0 0 6px #fcd11659, 0 8px 20px #fcd11640;
+  --glow-green: 0 0 0 6px #007a3326, 0 8px 20px #007a332e;
+  --action: #0B131E;
+  --on-action: #FFFFFF;
+  --action-glow: 0 8px 20px #0b131e2e;
+  --illus: #FFF6CC;
+}
+
+:root {
+  --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: Inter, ui-sans-serif, system-ui, sans-serif;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 24px;
+  --radius-xl: 32px;
+  --radius-pill: 999px;
+
+  --border-hair: 1px;
+  --border-gap: 4px;
+  --border-band: 4px;
+}
+
+body { margin: 0; background: var(--bg); }

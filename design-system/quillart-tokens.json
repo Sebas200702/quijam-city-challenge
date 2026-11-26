@@ -1,0 +1,71 @@
+{
+  "name": "QUILLART",
+  "version": "1.0.0",
+  "themes": { "default": "dark", "alternate": "light" },
+  "color": {
+    "bg": { "dark": "#0B131E", "light": "#F8F9FA", "usage": "App background and map canvas." },
+    "surface": { "dark": "#131E2E", "light": "#FFFFFF", "usage": "Cards and panels." },
+    "surface-raised": { "dark": "#1C2B40", "light": "#FFFFFF", "usage": "Modals and floating cards over the map." },
+    "line": { "dark": "#2A3B55", "light": "#E9ECEF", "usage": "Subtle borders and dividers." },
+    "line-control": { "dark": "#5E7594", "light": "#7D8A9A", "usage": "Borders of inputs and controls (3:1 or more)." },
+    "ink": { "dark": "#FFFFFF", "light": "#0B131E", "usage": "Primary text." },
+    "ink-muted": { "dark": "#A9B6C8", "light": "#46566B", "usage": "Secondary text and metadata." },
+    "ink-subtle": { "dark": "#8494AA", "light": "#5B6A7D", "usage": "Tertiary text and placeholders." },
+    "red": { "dark": "#E6192E", "light": "#CE1126", "usage": "Rojo Barranquilla: critical alerts, heavy congestion, live events." },
+    "on-red": { "dark": "#FFFFFF", "light": "#FFFFFF", "usage": "Text on red fills." },
+    "red-text": { "dark": "#FF6B76", "light": "#B30F21", "usage": "Alert text on surfaces." },
+    "red-soft": { "dark": "#351D2E", "light": "#FBE3E6", "usage": "Soft alert background." },
+    "gold": { "dark": "#FFD100", "light": "#FCD116", "usage": "Amarillo Oro: primary action, featured tourism, Fan Fests, recommended routes." },
+    "on-gold": { "dark": "#0B131E", "light": "#0B131E", "usage": "Text on gold fills. Never white on gold." },
+    "gold-text": { "dark": "#FFD100", "light": "#7A5C00", "usage": "Gold text on surfaces." },
+    "gold-soft": { "dark": "#393B27", "light": "#FFF6CC", "usage": "Soft tourism and event background." },
+    "green": { "dark": "#009B3A", "light": "#007A33", "usage": "Verde Esmeralda: optimal flow, clear roads, available transit, safe zones." },
+    "on-green": { "dark": "#0B131E", "light": "#FFFFFF", "usage": "Text on green fills." },
+    "green-text": { "dark": "#2BD46A", "light": "#006B2D", "usage": "Optimal-state text on surfaces." },
+    "green-soft": { "dark": "#103230", "light": "#E2F0E7", "usage": "Soft optimal-state background." },
+    "star": { "dark": "#FFFFFF", "light": "#FFFFFF", "usage": "Blanco Estrella: the 8-point star on green or red." },
+    "emblem": { "dark": "#FFFFFF", "light": "#0B131E", "usage": "The star on its own over bg or surface." },
+    "frame": { "dark": "#FFD10059", "light": "#C9A400", "usage": "Inner hairline of the concentric card frame." },
+    "focus": { "dark": "#FFD100", "light": "#0B131E", "usage": "Focus ring, 2px solid with 2px offset." },
+    "map-land": { "dark": "#0F1926", "light": "#EEF1F4", "usage": "Base map land." },
+    "map-water": { "dark": "#0E2B36", "light": "#CFE4EA", "usage": "Río Magdalena and water." },
+    "map-road": { "dark": "#1C2B40", "light": "#FFFFFF", "usage": "Streets." },
+    "map-road-major": { "dark": "#2E4463", "light": "#D3DAE3", "usage": "Arterial roads without traffic data." },
+    "map-park": { "dark": "#11291F", "light": "#DDEFD9", "usage": "Parks." }
+  },
+  "font": {
+    "display": "\"Space Grotesk\", ui-sans-serif, system-ui, sans-serif",
+    "sans": "Inter, ui-sans-serif, system-ui, sans-serif"
+  },
+  "type": {
+    "display-xl": { "family": "display", "size": "56px", "lineHeight": "60px", "weight": 700, "letterSpacing": "-0.02em" },
+    "display": { "family": "display", "size": "40px", "lineHeight": "44px", "weight": 700, "letterSpacing": "-0.015em" },
+    "heading-1": { "family": "display", "size": "28px", "lineHeight": "34px", "weight": 600, "letterSpacing": "-0.01em" },
+    "heading-2": { "family": "display", "size": "20px", "lineHeight": "26px", "weight": 600 },
+    "kpi-xl": { "family": "display", "size": "48px", "lineHeight": "52px", "weight": 700, "letterSpacing": "-0.02em" },
+    "kpi": { "family": "display", "size": "28px", "lineHeight": "32px", "weight": 600, "letterSpacing": "-0.01em" },
+    "body-lg": { "family": "sans", "size": "17px", "lineHeight": "26px", "weight": 400 },
+    "body": { "family": "sans", "size": "15px", "lineHeight": "22px", "weight": 400 },
+    "body-strong": { "family": "sans", "size": "15px", "lineHeight": "22px", "weight": 600 },
+    "body-sm": { "family": "sans", "size": "13px", "lineHeight": "18px", "weight": 400 },
+    "label": { "family": "sans", "size": "12px", "lineHeight": "16px", "weight": 600, "letterSpacing": "0.08em", "textTransform": "uppercase" },
+    "map-label": { "family": "sans", "size": "11px", "lineHeight": "14px", "weight": 600, "letterSpacing": "0.02em" }
+  },
+  "space": { "1": "4px", "2": "8px", "3": "12px", "4": "16px", "5": "20px", "6": "24px", "8": "32px", "12": "48px" },
+  "radius": { "xs": "4px", "sm": "8px", "md": "14px", "lg": "24px", "xl": "32px", "pill": "999px" },
+  "border": { "hair": "1px", "gap": "4px", "band": "4px" },
+  "action": {
+    "fill": { "dark": "#FFD100", "light": "#0B131E", "usage": "Primary control fill: gold on dark, ink on light." },
+    "on": { "dark": "#0B131E", "light": "#FFFFFF", "usage": "Text on the action fill." },
+    "glow": { "dark": "0 8px 20px #ffd10033", "light": "0 8px 20px #0b131e2e" }
+  },
+  "shadow": {
+    "card": { "dark": "0 12px 32px #00000047", "light": "0 1px 2px #0b131e0a, 0 12px 32px #0b131e12" },
+    "modal": { "dark": "0 28px 60px #00000080", "light": "0 24px 56px #0b131e24" },
+    "glow-red": { "dark": "0 0 0 6px #e6192e40, 0 8px 24px #e6192e59", "light": "0 0 0 6px #ce112626, 0 8px 20px #ce11262e" },
+    "glow-gold": { "dark": "0 0 0 6px #ffd10033, 0 8px 24px #ffd10047", "light": "0 0 0 6px #fcd11659, 0 8px 20px #fcd11640" },
+    "glow-green": { "dark": "0 0 0 6px #009b3a40, 0 8px 24px #009b3a52", "light": "0 0 0 6px #007a3326, 0 8px 20px #007a332e" }
+  },
+  "icons": { "library": "lucide-react", "size": 20, "strokeWidth": 1.75 },
+  "illustration": { "library": "unDraw", "accent": "#FCD116", "panel": "#F8F9FA" }
+}
