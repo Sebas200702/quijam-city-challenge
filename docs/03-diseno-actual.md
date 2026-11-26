@@ -41,6 +41,16 @@ Estadio Metropolitano – Troncal Murillo – Centro – Barrio Abajo – Gran M
 2. **Visitante con movilidad reducida cuando cae un aguacero:** se activa la alerta de arroyo, la ruta se recalcula en modo accesible y lo recibe un anfitrión.
 3. **Vendedora de fritos en Barrio Abajo:** se marca abierta, aparece en recomendaciones y recibe visitantes cuando la ciudad desvía gente desde el Malecón saturado.
 
+### Matriz caso de uso × dimensión
+
+Cada caso de uso articula las cinco dimensiones del reto en una misma interacción:
+
+| Caso de uso | Ciudad y territorio | Sostenibilidad | Ciudad inteligente | Ciudadanía | Economía y oportunidades |
+|---|---|---|---|---|---|
+| **1. Visitante extranjero en día de partido** | Conecta el Gran Malecón con el Estadio Metropolitano sobre el corredor piloto usando QR en paraderos existentes. | Prioriza ruta verde (transporte público, a pie o en bici) con puntos de sombra, hidratación y reciclaje en el trayecto. | El Guía responde en su idioma y traduce jerga local; el Decisor calcula la ruta y muestra la tarifa oficial de referencia. | Permite reportar cobros abusivos en tiempo real y ofrece orientación de anfitriones verificados en el corredor. | Protege el gasto del visitante con tarifa justa y conductores verificados, y visibiliza negocios populares en la ruta. |
+| **2. Visitante con movilidad reducida en aguacero** | Garantiza continuidad de viaje en modo accesible en el corredor sin construir infraestructura nueva. | Activa la alerta temprana de arroyos como resiliencia climática y evita zonas de riesgo hídrico. | Reglas duras descartan tramos inundados o no accesibles; el Decisor recalcula la ruta segura y la refleja en el tablero de ciudad. | Coordina a una dupla de anfitriones intergeneracionales (adulto mayor y joven bilingüe) para recibir y asistir al visitante. | Mantiene el acceso seguro a comercios y servicios verificados del corredor incluso durante lluvias fuertes. |
+| **3. Vendedora de fritos en Barrio Abajo** | Descongestiona el Gran Malecón redistribuyendo flujos hacia Barrio Abajo dentro del mismo corredor piloto. | Promueve recorridos cortos a pie por el barrio y visibiliza eventos ambientales y puntos limpios cercanos. | El Decisor propone el desvío al tablero de ciudad; el Recomendador muestra el puesto abierto en tiempo real al visitante. | Involucra a comités de barrio y anfitriones locales para ordenar la llegada de visitantes y cuidar la convivencia. | Permite a la vendedora marcarse abierta con QR sin comisión, ganar visibilidad con sellos por visita y avanzar en formalización progresiva. |
+
 ## Indicadores (uno por dimensión)
 
 | Dimensión | Indicador |
