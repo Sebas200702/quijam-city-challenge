@@ -1,4 +1,5 @@
 // The app sections, shared by the mobile tab bar and the desktop navigation.
+// Quillart AI is the home: the conversation at /inicio is the entry point.
 
 export type NavSection =
 	| "home"
@@ -6,6 +7,7 @@ export type NavSection =
 	| "forum"
 	| "places"
 	| "map"
+	/** Kept for compatibility; Quillart AI now lives in "home". */
 	| "ai"
 	| "profile";
 
@@ -17,14 +19,13 @@ export interface NavLink {
 	href: string;
 }
 
-/** Desktop order. The mobile tab bar shows a subset (see bottom-nav). */
-export function navLinks(aiHref: string): NavLink[] {
+/** Desktop order (TopNav adds Perfil). The mobile tab bar is in bottom-nav. */
+export function navLinks(_aiHref?: string): NavLink[] {
 	return [
-		{ section: "home", label: "Inicio", href: APP_HOME_HREF },
+		{ section: "home", label: "Quillart", href: APP_HOME_HREF },
 		{ section: "agenda", label: "Agenda", href: "/agenda" },
 		{ section: "forum", label: "Comunidad", href: "/foro" },
 		{ section: "places", label: "Lugares", href: "/lugares" },
 		{ section: "map", label: "Mapa", href: "/mapa" },
-		{ section: "ai", label: "Quillart AI", href: aiHref },
 	];
 }

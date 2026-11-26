@@ -5,7 +5,8 @@ import { TopNav } from "./top-nav";
 import { WeatherBadge } from "./weather-badge";
 
 interface HomeHeaderProps {
-	weatherLabel: string;
+	/** Only shown when it comes from a real weather source; never hard-coded. */
+	weatherLabel?: string | null;
 	current: NavSection;
 	aiHref: string;
 }
@@ -15,7 +16,7 @@ export function HomeHeader({ weatherLabel, current, aiHref }: HomeHeaderProps) {
 		<header className="flex items-center gap-3 lg:gap-6">
 			<QuillartLogo />
 			<TopNav current={current} aiHref={aiHref} />
-			<WeatherBadge label={weatherLabel} />
+			{weatherLabel && <WeatherBadge label={weatherLabel} />}
 			<ThemeToggle />
 		</header>
 	);

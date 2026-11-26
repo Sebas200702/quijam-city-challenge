@@ -3,7 +3,8 @@ import { type NavSection, navLinks } from "./nav-sections";
 
 interface TopNavProps {
 	current: NavSection;
-	aiHref: string;
+	/** Unused: Quillart AI is the home link now. Kept so callers keep compiling. */
+	aiHref?: string;
 }
 
 const linkClass = (active: boolean) =>
@@ -14,16 +15,23 @@ const linkClass = (active: boolean) =>
 	}`;
 
 /** Desktop navigation (hidden on small screens, where BottomNav takes over). */
-export function TopNav({ current, aiHref }: TopNavProps) {
+export function TopNav({ current }: TopNavProps) {
 	return (
 		<nav aria-label="Secciones" className="hidden items-center gap-1 lg:flex">
-			{navLinks(aiHref).map((link) => (
+			{navLinks().map((link) => (
 				<a
 					key={link.section}
 					className={linkClass(current === link.section)}
 					href={link.href}
 					aria-current={current === link.section ? "page" : undefined}
 				>
+					{link.section === "home" && (
+						<span
+							className="q-star text-[var(--gold)]"
+							style={{ width: 16, height: 16 }}
+							aria-hidden="true"
+						/>
+					)}
 					{link.label}
 				</a>
 			))}
