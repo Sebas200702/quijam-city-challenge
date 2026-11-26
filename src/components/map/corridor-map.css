@@ -86,7 +86,7 @@
 		left: auto;
 		right: 16px;
 		bottom: 32px;
-		width: 360px;
+		width: 400px;
 	}
 	.corridor-detail--empty {
 		display: none;
@@ -381,4 +381,14 @@
 	color: var(--ink);
 	font-size: 12px;
 	font-weight: 600;
+}
+
+/* ── Guide entry: in the empty card on phones, in the left column on wide screens ── */
+.corridor-guide-button {
+	display: none;
+}
+@media (min-width: 640px) {
+	.corridor-guide-button {
+		display: inline-flex;
+	}
 }
