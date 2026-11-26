@@ -7,7 +7,7 @@ const { data, source } = await loadCorridorData();
 ---
 
 <BaseLayout title="Mapa del corredor piloto">
-	<main class="h-dvh w-full">
+	<main class="h-[calc(100dvh-3px)] w-full">
 		<CorridorMap client:only="react" data={data} source={source} />
 	</main>
 </BaseLayout>

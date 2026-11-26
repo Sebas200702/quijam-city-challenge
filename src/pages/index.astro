@@ -2,10 +2,32 @@
 import BaseLayout from "../layouts/base-layout.astro";
 ---
 
-<BaseLayout title="QUIJAM City Challenge 2034">
+<BaseLayout title="QUILLART · City Challenge 2034">
 	<main class="mx-auto max-w-2xl px-4 py-16">
-		<h1 class="text-3xl font-bold">QUIJAM City Challenge 2034</h1>
-		<p class="mt-4 text-ink-muted">Prototype scaffold. Product name to be defined.</p>
-		<a class="q-btn q-btn--primary mt-8" href="/mapa">Ver mapa del corredor</a>
+		<div class="q-card">
+			<div class="q-flag" aria-hidden="true">
+				<i></i><i></i><i></i>
+			</div>
+			<div class="q-card__head">
+				<div>
+					<p class="q-eyebrow">Barranquilla 2034</p>
+					<h1 class="q-h1 mt-1">QUILLART</h1>
+				</div>
+				<span class="q-badge q-badge--high">Simulado 2034</span>
+			</div>
+			<div class="q-card__body">
+				<p class="q-p q-muted">
+					Prototipo del corredor Estadio Metropolitano – Gran Malecón.
+				</p>
+			</div>
+			<div class="q-card__foot">
+				<a href="/ciudad" class="q-btn q-btn--primary">
+					Abrir Centro de Mando
+				</a>
+				<a href="/mapa" class="q-btn q-btn--secondary">
+					Ver mapa del corredor
+				</a>
+			</div>
+		</div>
 	</main>
 </BaseLayout>
