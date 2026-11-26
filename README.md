@@ -63,6 +63,7 @@ Detalle en [`docs/`](docs/).
 | [`docs/08-metodologia.md`](docs/08-metodologia.md) | Sprints del bootcamp, flujo por cambio, gestión de tareas, roles y acuerdos |
 | [`docs/09-convenciones.md`](docs/09-convenciones.md) | Idioma, ramas, commits, PR, revisión, código, datos y documentos |
 | [`docs/10-stack.md`](docs/10-stack.md) | Stack técnico, verificación y arquitectura de despliegue |
+| [`docs/11-prueba-openjev.md`](docs/11-prueba-openjev.md) | Prueba de OpenJev en CPU: repos evaluados, resultados y recomendación |
 
 ## Equipo
 
