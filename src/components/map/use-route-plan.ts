@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
-import type { CityState } from "../../lib/city-events/city-events-types";
-import { crowdByZoneFrom } from "../../lib/city-events/city-state";
 import type { PlanResponse } from "../../lib/routing/plan-route";
+import type { CrowdByZone } from "../../lib/routing/routing-types";
 
 export interface RouteQuery {
 	origin: string;
@@ -10,13 +9,17 @@ export interface RouteQuery {
 }
 
 /** Asks POST /api/decidir for a route and re-plans when the query, floods or crowding change. */
-export function useRoutePlan(query: RouteQuery, city: CityState) {
+export function useRoutePlan(
+	query: RouteQuery,
+	blockedFloodZoneIds: string[],
+	crowdByZone: CrowdByZone,
+) {
 	const [plan, setPlan] = useState<PlanResponse | null>(null);
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const { origin, destination, accessibleMode } = query;
-	const floods = city.activeFloodZoneIds.join(",");
-	const crowd = JSON.stringify(crowdByZoneFrom(city));
+	const floods = blockedFloodZoneIds.join(",");
+	const crowd = JSON.stringify(crowdByZone);
 
 	useEffect(() => {
 		if (origin === destination) {
