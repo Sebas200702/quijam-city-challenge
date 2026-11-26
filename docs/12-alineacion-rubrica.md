@@ -30,7 +30,7 @@ Qué pide el deck: las dimensiones no son compartimentos; las soluciones integra
 | Cada caso de uso toca varias dimensiones | Parcial | Falta una matriz caso de uso × dimensión |
 | Sostenibilidad más allá del agua | Cubierto | Se agregan residuos (26 nov) |
 | Economía con formalización progresiva y capacitación | Cubierto | Se agrega (26 nov) |
-| "No desplazar a quienes viven o trabajan allí: integrarlos" | Parcial | El desvío de multitudes a Barrio Abajo debe beneficiar al barrio, no desplazarlo; falta escribir cómo |
+| "No desplazar a quienes viven o trabajan allí: integrarlos" | Borrador | [14-desvio-barrio-abajo.md](14-desvio-barrio-abajo.md); falta validarlo con el barrio |
 
 Qué resaltar: una sola acción (desviar gente del Malecón saturado a Barrio Abajo) toca territorio, ciudad inteligente, ciudadanía y economía al mismo tiempo.
 
