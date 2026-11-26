@@ -59,26 +59,57 @@ Detalle en [`docs/`](docs/).
 | [`docs/05-riesgos.md`](docs/05-riesgos.md) | Riesgos abiertos |
 | [`docs/06-pendientes.md`](docs/06-pendientes.md) | Decisiones pendientes y siguiente paso |
 | [`docs/07-sistema-de-diseno.md`](docs/07-sistema-de-diseno.md) | Sistema de diseño (propuesta): tokens, temas, componentes, iconos e ilustraciones. Código en [`design-system/`](design-system/) |
+| [`docs/08-metodologia.md`](docs/08-metodologia.md) | Sprints del bootcamp, flujo por cambio, gestión de tareas, roles y acuerdos |
+| [`docs/09-convenciones.md`](docs/09-convenciones.md) | Idioma, ramas, commits, PR, revisión, código, datos y documentos |
+| [`docs/10-stack.md`](docs/10-stack.md) | Stack técnico, verificación y arquitectura de despliegue |
+| [`docs/11-modelo-datos.md`](docs/11-modelo-datos.md) | Modelo de datos del corredor en Supabase: esquema, RLS y semilla |
+| [`docs/12-alineacion-rubrica.md`](docs/12-alineacion-rubrica.md) | Cada criterio de la rúbrica: qué tenemos, qué falta, qué resaltar; cinco lecciones y referentes |
+| [`docs/13-openjev.md`](docs/13-openjev.md) | OpenJev por API: servicio, implementación, resultados y privacidad |
+| [`docs/feedback.md`](docs/feedback.md) | Registro de retroalimentación por sprint y validación con personas ajenas |
 
 ## Equipo
 
-| Integrante | Rol |
-|---|---|
-| Sebastián Torregroza | Por definir |
-| Santiago Torregroza | Por definir |
-| Esteban Meléndez | Por definir |
-| Angel David Castro | Por definir |
-| Mateo Cantillo | Por definir |
+| Integrante | GitHub | Rol |
+|---|---|---|
+| Sebastián Torregroza | `Sebas200702` | Coordinación y líder técnico: arquitectura, OpenJev, despliegue |
+| Santiago Torregroza | `S-kun-2007` | Diseño UI/UX y frontend: mapa del corredor, caso 1 de punta a punta, presentación |
+| Esteban Meléndez | `estebann123107` | Investigación y programa estratégico; nombre del producto |
+| Angel David Castro | `AngelitoCastro` | Datos y backend: modelo de datos y semilla en Supabase, tablero de ciudad; matriz caso × dimensión; tabla de costos |
+| Mateo Cantillo | `mtccjesus` | Agentes IA: Decisor con reglas duras, Guía con Gemini Live; desvío de multitudes a Barrio Abajo |
 
 ## Stack técnico
 
-Por definir en equipo.
+Astro + React 19 + Tailwind CSS v4 + TypeScript strict, Leaflet, Supabase Cloud (datos, Auth, Realtime), Gemini Live API para el Guía, OpenJev por API (Codiv) para el Decisor, Bun + Biome + Vitest. Despliegue en Dokploy.
+
+Detalle en [`docs/10-stack.md`](docs/10-stack.md).
+
+## Desarrollo
+
+Requisitos: [Bun](https://bun.sh) y Node.js 22.
+
+```bash
+bun install
+cp .env.example .env   # llenar las variables de Supabase y Gemini
+bun run dev            # http://localhost:4321
+```
+
+| Comando | Qué hace |
+|---|---|
+| `bun run check` | Revisión de tipos con `astro check` |
+| `bun run lint` | Lint y formato con Biome (solo verifica) |
+| `bun run format` | Aplica el formato de Biome |
+| `bun run test` | Pruebas con Vitest |
+| `bun run build` | Build de producción (servidor Node standalone) |
+| `bun run verify` | Las cuatro verificaciones en orden; correr antes de cada PR |
 
 ## Reglas de trabajo
 
 - `main` está protegida para todos, incluido el admin: todo cambio entra por pull request con 1 aprobación.
 - Ramas: `feat/*`, `fix/*`, `docs/*`, `chore/*`.
-- Commits: [Conventional Commits](https://www.conventionalcommits.org/).
+- Commits: [Conventional Commits](https://www.conventionalcommits.org/) en inglés; PR en español; ~400 líneas por PR.
+- Tareas en GitHub Issues + Project.
+
+Detalle en [`docs/08-metodologia.md`](docs/08-metodologia.md) y [`docs/09-convenciones.md`](docs/09-convenciones.md).
 
 ---
 
@@ -93,7 +124,8 @@ prototype and a legacy beyond 2034.
 Our draft direction is an open-data city platform inside a three-component
 program: open city data, a network of verified hosts and local businesses, and a
 visitor web app plus a city dashboard. The pilot corridor runs from Estadio
-Metropolitano to the Gran Malecón. Product name and tech stack are still to be
-decided. Detailed documentation lives in [`docs/`](docs/) (in Spanish).
+Metropolitano to the Gran Malecón. The product name is still to be decided.
+Stack: Astro, React 19, Tailwind CSS v4, TypeScript, Leaflet, Supabase, Gemini
+Live API, Bun, Biome, Vitest; deployed on Dokploy. Detailed documentation lives in [`docs/`](docs/) (in Spanish).
 
 `main` is protected for everyone: changes go through a pull request with one approval.
