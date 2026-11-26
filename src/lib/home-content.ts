@@ -17,24 +17,28 @@ export const homeContent = {
 	features: [
 		{
 			id: "live-map",
+			href: "/mapa",
 			title: "Mapa en vivo",
 			subtitle: "Ocupación al instante",
 			illustration: "/illustrations/live-map.svg",
 		},
 		{
 			id: "transport",
+			href: "/mapa",
 			title: "Transporte",
 			subtitle: "Tarifa justa",
 			illustration: "/illustrations/transport.svg",
 		},
 		{
 			id: "walking",
+			href: "/mapa",
 			title: "Planes a pie",
 			subtitle: "Malecón, sin trancón",
 			illustration: "/illustrations/walking.svg",
 		},
 		{
 			id: "food",
+			href: "/mapa",
 			title: "Comer cerca",
 			subtitle: "Sabores del Caribe",
 			illustration: "/illustrations/food.svg",

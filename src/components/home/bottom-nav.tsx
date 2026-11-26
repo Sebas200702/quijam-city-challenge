@@ -25,10 +25,10 @@ export function BottomNav({ current, aiHref }: BottomNavProps) {
 					/>
 					Inicio
 				</a>
-				<button type="button" className={tabClass("explore")}>
+				<a className={tabClass("explore")} href="/mapa">
 					<Compass size={22} strokeWidth={1.75} aria-hidden="true" />
 					Explorar
-				</button>
+				</a>
 				<a className={tabClass("ai")} href={aiHref} aria-current={aria("ai")}>
 					<span
 						className="q-star"

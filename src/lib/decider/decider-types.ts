@@ -59,3 +59,19 @@ export interface Decision {
 	confidence: number;
 	discarded: DiscardedOption[];
 }
+
+/**
+ * A chooser that answers asynchronously, like OpenJev over HTTP. Returns null
+ * when it cannot answer, so the weighted score decides instead.
+ */
+export type AsyncChooser = (
+	state: DecisionState,
+	options: RouteOption[],
+) => Promise<ChooserResult | null>;
+
+/** Who picked the option: OpenJev, the weighted score, or nobody (no safe option). */
+export type DecisionSource = "openjev" | "weighted" | "none";
+
+export interface DecisionWithSource extends Decision {
+	chosenBy: DecisionSource;
+}

@@ -109,3 +109,11 @@ Base: la asignación hecha por Sebastián en el tablero. Se completaron los issu
 - Se descarta correr OpenJev local en CPU: lento, requiere servicio Python y el modelo de 0,6B eligió mal el desvío de multitudes.
 - El Decisor usa OpenJev por API en Codiv (`openjev-latest`, gratis mientras dure el experimento). Ver [13-openjev.md](13-openjev.md).
 - El puntaje ponderado sigue siendo el plan B obligatorio.
+
+## Mapa del corredor (26 nov 2026)
+
+- El tema claro es el predeterminado de la app (turista bajo el sol, como dice QUILLART); el Centro de Mando sigue arrancando en oscuro. La elección se guarda en el navegador.
+- Mapa base: teselas estándar de OpenStreetMap, sin llave. CARTO pasó a exigir API key.
+- La línea del corredor sigue las calles: se generó una vez con OSRM (perfil a pie) y se guarda en el repositorio como polyline, para que funcione sin internet.
+- Si Supabase no está configurado o no responde, el mapa usa una copia local de `supabase/seed.sql` y lo dice en pantalla.
+- La interfaz del mapa usa los componentes `q-*` de QUILLART e iconos de `lucide-react`. Una tarjeta con el detalle del punto reemplaza los popups de Leaflet.

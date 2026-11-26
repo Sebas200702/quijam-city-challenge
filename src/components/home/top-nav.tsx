@@ -23,9 +23,9 @@ export function TopNav({ current, aiHref }: TopNavProps) {
 			>
 				Inicio
 			</a>
-			<button type="button" className={linkClass(current === "explore")}>
+			<a className={linkClass(current === "explore")} href="/mapa">
 				Explorar
-			</button>
+			</a>
 			<a
 				className={linkClass(current === "ai")}
 				href={aiHref}
