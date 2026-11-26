@@ -35,6 +35,10 @@ export function buildLiveTokenConfig(
 			config: {
 				responseModalities: [mode === "audio" ? Modality.AUDIO : Modality.TEXT],
 				systemInstruction: GUIDE_SYSTEM_INSTRUCTION,
+				// Text of what the visitor said and what the Guide answered by voice.
+				...(mode === "audio"
+					? { inputAudioTranscription: {}, outputAudioTranscription: {} }
+					: {}),
 			},
 		},
 		lockAdditionalFields: [],

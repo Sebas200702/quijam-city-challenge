@@ -38,6 +38,16 @@ export default function GuideLiveTest() {
 
 	const append = (line: string) => setLog((lines) => [...lines, line]);
 
+	/** Transcripts arrive in chunks: keep extending the speaker's current line. */
+	const appendChunk = (prefix: string, chunk: string) =>
+		setLog((lines) => {
+			const last = lines.at(-1);
+			if (last?.startsWith(prefix)) {
+				return [...lines.slice(0, -1), last + chunk];
+			}
+			return [...lines, prefix + chunk];
+		});
+
 	function playChunk(base64: string) {
 		if (!playbackRef.current) {
 			playbackRef.current = {
@@ -101,6 +111,11 @@ export default function GuideLiveTest() {
 			const session = await openLiveSession(mode, {
 				onText: (text) => append(`Guía: ${text}`),
 				onAudio: playChunk,
+				onTranscript: (speaker, text) =>
+					appendChunk(
+						speaker === "guide" ? "Guía (voz): " : "Tú (voz): ",
+						text,
+					),
 				onInterrupted: () => {
 					if (playbackRef.current) playbackRef.current.nextStart = 0;
 				},
@@ -171,7 +186,7 @@ export default function GuideLiveTest() {
 					</button>
 				</div>
 			)}
-			<ul className="flex flex-col gap-1 text-sm">
+			<ul className="flex flex-col gap-1 text-sm" data-testid="guide-log">
 				{log.map((line, index) => (
 					// biome-ignore lint/suspicious/noArrayIndexKey: append-only log
 					<li key={index}>{line}</li>

@@ -25,4 +25,18 @@ describe("buildLiveTokenConfig", () => {
 		]);
 		expect(audio.lockAdditionalFields).toEqual([]);
 	});
+
+	it("asks for transcriptions only in audio mode", () => {
+		const audio = buildLiveTokenConfig("audio", "some-model", now);
+		const text = buildLiveTokenConfig("text", "some-model", now);
+		expect(
+			audio.liveConnectConstraints?.config?.outputAudioTranscription,
+		).toEqual({});
+		expect(
+			audio.liveConnectConstraints?.config?.inputAudioTranscription,
+		).toEqual({});
+		expect(
+			text.liveConnectConstraints?.config?.outputAudioTranscription,
+		).toBeUndefined();
+	});
 });

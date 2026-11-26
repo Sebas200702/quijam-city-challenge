@@ -9,6 +9,8 @@ export interface LiveSessionHandlers {
 	onText: (text: string) => void;
 	/** Base64 PCM16 audio chunk from the model (24 kHz). */
 	onAudio: (base64Pcm: string) => void;
+	/** Transcription chunks of the audio, from the visitor or from the Guide. */
+	onTranscript: (speaker: "visitor" | "guide", text: string) => void;
 	onInterrupted: () => void;
 	onClose: (reason: string) => void;
 }
@@ -30,6 +32,12 @@ function handleMessage(
 	const content = message.serverContent;
 	if (!content) {
 		return;
+	}
+	if (content.inputTranscription?.text) {
+		handlers.onTranscript("visitor", content.inputTranscription.text);
+	}
+	if (content.outputTranscription?.text) {
+		handlers.onTranscript("guide", content.outputTranscription.text);
 	}
 	if (content.interrupted) {
 		handlers.onInterrupted();

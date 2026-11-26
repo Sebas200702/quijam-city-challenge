@@ -32,6 +32,7 @@ Restricciones según el SDK:
 | `src/lib/guide/live-session.ts` | Cliente del navegador: pide el token y abre la sesión Live. |
 | `src/lib/guide/pcm-audio.ts` | Conversión de audio: entra PCM16 a 16 kHz, sale PCM16 a 24 kHz. |
 | `src/components/guide-live-test.tsx` y `src/pages/prueba-guia.astro` | Página de prueba en `/prueba-guia`. |
+| `scripts/test-guide-live.mjs` | Prueba de punta a punta con micrófono falso. |
 
 ## Variables de entorno
 
@@ -53,6 +54,24 @@ bun run dev
 ```
 
 El micrófono necesita `localhost` o HTTPS.
+
+### Prueba automática (sin micrófono real)
+
+`scripts/test-guide-live.mjs` abre `/prueba-guia` en Chromium con un micrófono falso que reproduce una pregunta en inglés generada con `espeak-ng`. Comprueba cuatro cosas:
+
+1. El endpoint emite el token y la respuesta no contiene la API key.
+2. El modo texto responde.
+3. Gemini transcribe la pregunta de voz.
+4. El Guía responde con audio.
+
+Necesita la app corriendo con `GEMINI_API_KEY`, Playwright con Chromium, `espeak-ng` y `ffmpeg`.
+
+```bash
+bun run build && node dist/server/entry.mjs &   # o bun run dev
+bun run test:guide-live                         # opcional: URL base como argumento
+```
+
+En modo voz, el token pide también la transcripción de entrada y de salida. La página la muestra como subtítulos ("Tú (voz)", "Guía (voz)").
 
 ## Fuentes
 

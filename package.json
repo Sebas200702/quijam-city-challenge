@@ -15,7 +15,8 @@
 		"lint": "biome check .",
 		"format": "biome check --write .",
 		"test": "vitest run",
-		"verify": "bun run check && bun run lint && bun run test && bun run build"
+		"verify": "bun run check && bun run lint && bun run test && bun run build",
+		"test:guide-live": "node scripts/test-guide-live.mjs"
 	},
 	"dependencies": {
 		"@astrojs/node": "^11.1.14",
