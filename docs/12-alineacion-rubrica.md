@@ -79,7 +79,7 @@ Qué pide el deck: cómo funcionará, se sostendrá y generará impacto (diap. 1
 | Operador y mantenimiento | Cubierto | Alcaldía, Área Metropolitana, universidades |
 | Cinco indicadores | Cubierto | [03-diseno-actual.md](03-diseno-actual.md) |
 | Recursos y alianzas (Sprint 2) | Parcial | Falta lista de aliados y qué aporta cada uno |
-| Costo estimado con rangos y supuestos | Vacío | Pendiente #16 |
+| Costo estimado con rangos y supuestos | Cubierto | [16-costos-estimados.md](16-costos-estimados.md) |
 | Privacidad (Ley 1581 de 2012) | Parcial | Pendiente #9 |
 
 ### Evolución, colaboración y desempeño en sprints · 10
