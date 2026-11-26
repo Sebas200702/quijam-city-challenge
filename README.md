@@ -80,6 +80,25 @@ Astro + React 19 + Tailwind CSS v4 + TypeScript strict, Leaflet, Supabase Cloud 
 
 Detalle en [`docs/10-stack.md`](docs/10-stack.md).
 
+## Desarrollo
+
+Requisitos: [Bun](https://bun.sh) y Node.js 22.
+
+```bash
+bun install
+cp .env.example .env   # llenar las variables de Supabase y Gemini
+bun run dev            # http://localhost:4321
+```
+
+| Comando | Qué hace |
+|---|---|
+| `bun run check` | Revisión de tipos con `astro check` |
+| `bun run lint` | Lint y formato con Biome (solo verifica) |
+| `bun run format` | Aplica el formato de Biome |
+| `bun run test` | Pruebas con Vitest |
+| `bun run build` | Build de producción (servidor Node standalone) |
+| `bun run verify` | Las cuatro verificaciones en orden; correr antes de cada PR |
+
 ## Reglas de trabajo
 
 - `main` está protegida para todos, incluido el admin: todo cambio entra por pull request con 1 aprobación.
