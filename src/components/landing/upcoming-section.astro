@@ -4,13 +4,9 @@ import { UpcomingEvents } from "./upcoming-events";
 ---
 
 <section aria-labelledby="upcoming-title" class="mx-auto w-full max-w-6xl px-4 py-12 lg:px-8 lg:py-16">
-	<div class="mb-6 flex flex-wrap items-end justify-between gap-4">
-		<div class="q-sec__head">
-			<p class="q-eyebrow">Agenda de la comunidad</p>
-			<h2 id="upcoming-title" class="q-h1">Próximos planes</h2>
-			<p class="q-lead">Eventos que publican vecinos, colectivos y la ciudad. Inscríbete en un toque.</p>
-		</div>
-		<a href="/agenda" class="q-btn q-btn--secondary">Ver toda la agenda</a>
+	<div class="mb-6 flex flex-wrap items-center justify-between gap-4">
+		<h2 id="upcoming-title" class="q-h1">Próximos planes</h2>
+		<a href="/agenda" class="q-btn q-btn--secondary min-h-11">Ver la agenda</a>
 	</div>
 	<UpcomingEvents client:only="react" />
 	<noscript>

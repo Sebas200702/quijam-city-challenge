@@ -1,28 +1,20 @@
 ---
 // Hero: the conversation is the way in. The ask box is a plain GET form, so it
 // works before (or without) JavaScript.
-import { ArrowUp, Mic } from "lucide-react";
+import { ArrowUp } from "lucide-react";
 import { ASSISTANT_HREF } from "../../lib/assistant/assistant-labels";
 import { HERO_PROMPTS } from "./landing-content";
 ---
 
 <section
 	aria-labelledby="hero-title"
-	class="mx-auto grid w-full max-w-6xl items-center gap-10 px-4 pt-8 pb-12 lg:grid-cols-[1.1fr_0.9fr] lg:gap-16 lg:px-8 lg:pt-16 lg:pb-20"
+	class="mx-auto grid w-full max-w-6xl items-center gap-8 px-4 pt-6 pb-12 lg:grid-cols-2 lg:gap-14 lg:px-8 lg:pt-14 lg:pb-20"
 >
-	<div class="flex min-w-0 flex-col gap-6">
-		<p class="q-eyebrow flex items-center gap-2">
-			<span class="q-star text-[var(--gold-text)]" style="width: 14px; height: 14px" aria-hidden="true"></span>
-			Quillart AI · para quienes viven y visitan Barranquilla
-		</p>
-		<h1 id="hero-title" class="q-display lg:text-[56px] lg:leading-[60px]">
+	<div class="flex min-w-0 flex-col gap-5">
+		<h1 id="hero-title" class="q-display lg:text-[60px] lg:leading-[64px]">
 			Barranquilla, a una conversación
 		</h1>
-		<p class="q-lead">
-			Pregunta qué hacer, inscríbete en un plan, publica el evento de tu barrio,
-			abre un foro o reporta algo a la ciudad. Escribe o habla: Quillart AI te
-			conecta con el agente indicado y tú confirmas cada paso.
-		</p>
+		<p class="q-lead">Pregunta, inscríbete, publica. Quillart lo hace contigo.</p>
 
 		<form action={ASSISTANT_HREF} method="get" role="search" aria-label="Pregúntale a Quillart AI">
 			<label for="hero-ask" class="q-sr">Escribe tu pregunta para Quillart AI</label>
@@ -35,74 +27,43 @@ import { HERO_PROMPTS } from "./landing-content";
 					maxlength="500"
 					autocomplete="off"
 					enterkeyhint="send"
-					placeholder="¿Qué hay para hacer este fin de semana?"
+					placeholder="¿Qué hacemos hoy?"
 				/>
-				<a
-					href={ASSISTANT_HREF}
-					class="q-tile q-tile--gold no-underline"
-					style="width: 44px; height: 44px; border-radius: 50%"
-					aria-label="Hablar con Quillart AI por voz"
-				>
-					<Mic size={18} strokeWidth={1.75} aria-hidden="true" />
-				</a>
-				<button
-					type="submit"
-					class="q-btn q-btn--primary q-btn--icon"
-					aria-label="Preguntar"
-				>
+				<button type="submit" class="q-btn q-btn--primary q-btn--icon" aria-label="Preguntar">
 					<ArrowUp size={20} strokeWidth={1.75} aria-hidden="true" />
 				</button>
 			</div>
 		</form>
 
-		<div>
-			<p class="q-sm q-muted mb-2">O empieza con una de estas:</p>
-			<ul class="m-0 flex list-none flex-wrap gap-2 p-0">
-				{
-					HERO_PROMPTS.map((item) => (
-						<li class="max-w-full">
-							<a href={item.href} class="q-chip max-w-full text-left no-underline">
-								{item.label}
-							</a>
-						</li>
-					))
-				}
-			</ul>
-		</div>
-
-		<div class="flex flex-wrap items-center gap-3">
-			<a href="/perfil" class="q-btn q-btn--secondary">Crear mi cuenta</a>
-			<a href="/agenda" class="q-btn q-btn--ghost">Ver la agenda</a>
-		</div>
+		<ul class="m-0 flex list-none flex-wrap gap-2 p-0" aria-label="Ejemplos">
+			{
+				HERO_PROMPTS.map((item) => (
+					<li>
+						<a href={item.href} class="q-chip no-underline">
+							{item.label}
+						</a>
+					</li>
+				))
+			}
+		</ul>
 	</div>
 
-	<figure class="m-0 min-w-0" aria-labelledby="hero-example-caption">
-		<div class="q-card q-card--raised gap-4 p-5 lg:p-6">
-			<div class="q-msg q-msg--user">
-				<div class="q-msg__col">
-					<div class="q-bubble">¿Hay algo de tambora este sábado? Quiero ir con mi hija.</div>
-				</div>
-			</div>
-			<div class="q-msg q-msg--ai" style="align-items: flex-start">
-				<span class="q-avatar" aria-hidden="true">
-					<span class="q-star" style="width: 16px; height: 16px"></span>
-				</span>
-				<div class="q-msg__col">
-					<span class="q-msg__who">Agente de Agenda</span>
-					<div class="q-bubble">
-						Encontré un taller de ritmos del Carnaval en Barrio Abajo, gratis y
-						con cupos. ¿Quieres que te inscriba?
-					</div>
-					<div class="flex flex-wrap gap-2" aria-hidden="true">
-						<span class="q-badge q-badge--optimal">Tú confirmas</span>
-						<span class="q-badge q-badge--neutral">Nada se hace sin tu sí</span>
-					</div>
-				</div>
-			</div>
-			<figcaption id="hero-example-caption" class="q-sm q-subtle">
-				Ejemplo de conversación: el orquestador entiende la pregunta y se la pasa al agente
-				de la sección indicada.
-			</figcaption>
+	<div class="relative min-w-0" aria-hidden="true">
+		<div class="q-illus px-6 pt-10 pb-6 lg:px-10 lg:pt-14">
+			<img
+				src="/illustrations/voice-assistant.svg"
+				alt=""
+				class="mx-auto h-56 w-auto lg:h-80"
+				width="320"
+				height="320"
+			/>
 		</div>
-	</figure>
+		<div class="absolute top-3 left-3 max-w-[62%] rounded-[18px] rounded-bl-[4px] bg-[var(--surface)] px-4 py-2.5 text-[15px] font-semibold text-[var(--ink)] shadow-[var(--shadow-card)] lg:top-5 lg:left-5">
+			¿Planes gratis este sábado?
+		</div>
+		<div class="absolute right-3 bottom-4 flex max-w-[70%] items-center gap-2 rounded-[18px] rounded-br-[4px] bg-[var(--action)] px-4 py-2.5 text-[15px] font-semibold text-[var(--on-action)] shadow-[var(--shadow-card)] lg:right-5 lg:bottom-6">
+			<span class="q-star" style="width: 16px; height: 16px"></span>
+			¡Hay 3! ¿Te inscribo?
+		</div>
+	</div>
 </section>
