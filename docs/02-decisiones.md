@@ -38,6 +38,13 @@ Un mapa tipo red social con geolocalización que muestra en tiempo real eventos,
 - Los cinco integrantes programan; roles por definir.
 - Stack por definir en equipo.
 - OpenJev no se ha probado en ningún equipo.
+- Protección de `main` aplica a todos, incluido el admin.
+- README bilingüe: español principal con resumen en inglés; `docs/` en español.
+
+## Decisiones de producto (26 nov 2026)
+
+- **Frontera entre agentes:** Guía entiende y responde; Recomendador decide qué hacer; Decisor decide cómo y cuándo llegar, y a dónde desviar gente.
+- **Decisor híbrido:** reglas duras descartan rutas con arroyo activo o no accesibles; OpenJev elige entre las que quedan.
 
 ## Bitácora de evolución (criterio de 10 puntos)
 
