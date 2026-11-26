@@ -1,1 +1,5 @@
 @import "tailwindcss";
+@import "../../design-system/quillart-tokens.css";
+@import "../../design-system/quillart.css";
+
+@config "../../design-system/tailwind.preset.cjs";

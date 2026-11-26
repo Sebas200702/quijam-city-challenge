@@ -9,14 +9,29 @@ const { title } = Astro.props;
 ---
 
 <!doctype html>
-<html lang="es">
+<html lang="es" data-theme="light">
 	<head>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link
+			rel="stylesheet"
+			href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap"
+		/>
 		<title>{title}</title>
+		<script is:inline>
+			// Light is the default theme; apply a saved choice before the first paint.
+			try {
+				const theme = localStorage.getItem("quillart-theme");
+				if (theme === "light" || theme === "dark") {
+					document.documentElement.dataset.theme = theme;
+				}
+			} catch {}
+		</script>
 	</head>
-	<body class="min-h-dvh bg-white text-neutral-900 antialiased">
+	<body class="q-root min-h-dvh bg-bg text-ink antialiased">
 		<slot />
 	</body>
 </html>
