@@ -15,7 +15,8 @@
 		"lint": "biome check .",
 		"format": "biome check --write .",
 		"test": "vitest run",
-		"verify": "bun run check && bun run lint && bun run test && bun run build"
+		"verify": "bun run check && bun run lint && bun run test && bun run build",
+		"openjev:probe": "bun run scripts/openjev-probe.ts"
 	},
 	"dependencies": {
 		"@astrojs/node": "^11.1.14",
@@ -33,6 +34,7 @@
 	"devDependencies": {
 		"@astrojs/check": "^0.9.12",
 		"@biomejs/biome": "^2.6.9",
+		"@types/bun": "^1.4.5",
 		"@types/leaflet": "^1.9.23",
 		"typescript": "^6",
 		"vitest": "^5.1.2"

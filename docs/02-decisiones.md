@@ -103,3 +103,9 @@ Base: la asignación hecha por Sebastián en el tablero. Se completaron los issu
 - Redistribución: Esteban tenía 7 issues; #19, #10 y #12 pasan a Santiago, Mateo y Angel. Carga final: 3 a 4 issues por persona.
 - Comunicación: Santiago.
 - Se agregan los issues #24 (tablero de ciudad básico) y #25 (despliegue en Dokploy).
+
+## OpenJev por API (26 nov 2026)
+
+- Se descarta correr OpenJev local en CPU: lento, requiere servicio Python y el modelo de 0,6B eligió mal el desvío de multitudes.
+- El Decisor usa OpenJev por API en Codiv (`openjev-latest`, gratis mientras dure el experimento). Ver [11-openjev.md](11-openjev.md).
+- El puntaje ponderado sigue siendo el plan B obligatorio.
