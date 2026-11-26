@@ -1,6 +1,8 @@
 # Diseño actual
 
-Nombre del producto: **por definir**. Lema provisional: sistema nervioso urbano para Barranquilla 2034.
+Nombre del producto: **QUILLART** (Quilla + Smart + Art). Lema provisional: Tu guía inteligente por Barranquilla.
+
+Es el sistema nervioso digital de Barranquilla como sede del Mundial: turismo inteligente, cartografía en tiempo real, un guía conversacional (**Quillart AI**) y un motor de decisiones urbanas (**Decision Engine**).
 
 ## Problema central
 
@@ -20,6 +22,46 @@ En 2034 Barranquilla recibe más visitantes de los que su información y sus ser
   - **Recomendador:** sugiere qué hacer según los gustos del visitante; prioriza eventos ambientales y negocios de barrio.
   - **Decisor:** modelo de decisión de pesos abiertos (OpenJev). Elige la mejor ruta para el visitante y propone a la ciudad a dónde desviar multitudes.
 - **Músculos (actuar):** aplicación web, QR y WhatsApp, tablero de ciudad, anfitriones en calle.
+
+## Sistema de diseño (QUILLART Design System)
+
+Dirección estética: **Tropical Cyber-Clean**, la calidez del Caribe con la precisión de un centro de mando.
+
+**Modos de la plataforma**
+
+- **Turista** (claro por defecto, también oscuro): mapa + tarjeta de punto de interés + Quillart AI. Lenguaje cercano, una acción primaria por vista; permite habla local ("trancón", "¡Ajá!").
+- **Centro de Mando** (recomendado oscuro): mapa con tráfico, tarjetas de decisión, KPIs, badge EN VIVO. Denso y sobrio, sin habla local.
+
+**Principios**
+
+1. El dato en vivo manda: cada cifra indica su frescura ("hace 30 s") y su fuente.
+2. Color = estado, nunca decoración. Todo estado lleva además una palabra o un glifo.
+3. Calidez local, precisión técnica: voz caribeña, geometría limpia, cifras tabulares.
+4. Claro por defecto (turistas bajo el sol), oscuro para operar.
+
+**Color (bandera de Barranquilla, significado fijo)**
+
+| Color | Significado |
+|---|---|
+| Rojo | Alerta, congestión alta, EN VIVO. |
+| Oro | Energía, turismo, Fan Fest, acción primaria, ruta recomendada. |
+| Verde | Flujo óptimo, transporte disponible, zonas seguras. |
+
+Superficies `bg` → `surface` → `surface-raised`; texto `ink` > `ink-muted` > `ink-subtle`. Contraste WCAG 2.1 verificado en ambos temas (texto ≥ 4,5:1; controles ≥ 3:1).
+
+**Tipografía:** Space Grotesk para títulos y toda cifra de ciudad (KPIs); Inter para interfaz, mapa y conversación.
+
+**Voz y contenido:** tutea, frases cortas con verbo primero ("Toma el Transmetro"); español de Colombia por defecto y ES/EN; sin emoji; la estrella de 8 puntas es el único adorno.
+
+**Geometría de bandera:** franja tricolor 1 : 1 : 2 en el borde superior de cards de marca; marco concéntrico en tarjetas destacadas; estrella de 8 puntas como isotipo, indicador de "pensando" de la IA y marcador de usuario.
+
+**Cartografía:** callejero limpio claro, arteriales en oro pálido; ruta activa en oro sobre borde oscuro; recorrido punteado; todo lo que flota sobre el mapa va en paneles. Tráfico distinguible por trazo (continuo, discontinuo, punteado), no solo por tono.
+
+**Iconos e ilustración:** Lucide (trazo 1,75); ilustraciones unDraw con acento oro, solo en modo Turista.
+
+**Implementación:** componentes en `window.Quillart` (React 18); tokens como variables CSS y preset para React + Tailwind. Movimiento con respeto a `prefers-reduced-motion`.
+
+Fuente: artefacto "QUILLART" (sistema de diseño) en claude.ai.
 
 ## Cinco dimensiones
 
