@@ -1,0 +1,22 @@
+import type { NavSection } from "./bottom-nav";
+import { QuillartLogo } from "./quillart-logo";
+import { ThemeToggle } from "./theme-toggle";
+import { TopNav } from "./top-nav";
+import { WeatherBadge } from "./weather-badge";
+
+interface HomeHeaderProps {
+	weatherLabel: string;
+	current: NavSection;
+	aiHref: string;
+}
+
+export function HomeHeader({ weatherLabel, current, aiHref }: HomeHeaderProps) {
+	return (
+		<header className="flex items-center gap-3 lg:gap-6">
+			<QuillartLogo />
+			<TopNav current={current} aiHref={aiHref} />
+			<WeatherBadge label={weatherLabel} />
+			<ThemeToggle />
+		</header>
+	);
+}
