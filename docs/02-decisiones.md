@@ -139,4 +139,5 @@ Base: la asignación hecha por Sebastián en el tablero. Se completaron los issu
 - El jurado nos catalogó como "gemelo digital". Se define una identidad propia: **QUILLART, el intérprete de la ciudad**. Ver [20-identidad.md](20-identidad.md).
 - Se abandona el lema "sistema nervioso urbano" y la arquitectura pasa a "escuchar, interpretar, acompañar".
 - "Centro de Mando" pasa a "Lo que la ciudad aprende".
-- La demo abre siempre desde el celular del visitante; el tablero y el simulador solo se muestran al cierre, como impacto.
+- La demo abre siempre desde el celular de una persona; el tablero y el simulador solo se muestran al cierre, como impacto.
+- El intérprete trabaja en dos direcciones y le da el mismo peso al barranquillero que al visitante: el Mundial es la vitrina y el día a día es el propósito. Respuestas para el equipo en [21-respuestas.md](21-respuestas.md).

@@ -1,7 +1,7 @@
 # QUIJAM · City Challenge Barranquilla 2034
 
 > Repositorio de trabajo del equipo para el QUIJAM City Challenge.
-> **QUILLART, el intérprete de la ciudad.** Barranquilla se explica sola… si eres de aquí. QUILLART se la explica al mundo.
+> **QUILLART, el intérprete de la ciudad.** Hace que Barranquilla se entienda, para el que llega y para el que vive aquí, y hace que la ciudad, por fin, escuche a su gente.
 >
 > *English summary at the end.*
 
@@ -72,6 +72,7 @@ Detalle en [`docs/`](docs/).
 | [`docs/18-simulador-multitudes.md`](docs/18-simulador-multitudes.md) | Simulador de multitudes: eventos, reglas del desvío, conteos y rendimiento |
 | [`docs/19-caso-1.md`](docs/19-caso-1.md) | Caso 1 de punta a punta: requisitos, guion de ensayo de 2 minutos, plan B y registro de ensayos |
 | [`docs/20-identidad.md`](docs/20-identidad.md) | Identidad: el intérprete de la ciudad, qué no somos (gemelo digital), vocabulario y orden de la demo |
+| [`docs/21-respuestas.md`](docs/21-respuestas.md) | Qué responder cuando pregunten por el proyecto: versiones de 10 s, 30 s y 1 min, y preguntas difíciles |
 | [`docs/feedback.md`](docs/feedback.md) | Registro de retroalimentación por sprint y validación con personas ajenas |
 
 ## Equipo
@@ -130,7 +131,7 @@ prototype and a legacy beyond 2034.
 
 **QUILLART is the city interpreter**, not a digital twin. The knowledge that makes
 Barranquilla work (fair prices, which streams flood, where the good food is) lives
-in its people. QUILLART interprets that local knowledge for visitors, through a
+in its people. QUILLART interprets that local knowledge for residents and visitors, through a
 multilingual Guide, a safety-first route Decider and street hosts that pair an
 older resident with a bilingual youth, and tells the city what it learns from
 its visitors. The pilot corridor runs from Estadio Metropolitano to the Gran Malecón.
