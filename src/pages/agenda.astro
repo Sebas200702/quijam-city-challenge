@@ -1,0 +1,11 @@
+---
+import AgendaPage from "../components/community/agenda-page";
+import BaseLayout from "../layouts/base-layout.astro";
+import { homeContent } from "../lib/home-content";
+
+const { aiHref } = homeContent;
+---
+
+<BaseLayout title="Agenda · Planes en Barranquilla">
+	<AgendaPage client:only="react" aiHref={aiHref} />
+</BaseLayout>

@@ -1,0 +1,11 @@
+---
+import EventForm from "../../components/community/event-form";
+import BaseLayout from "../../layouts/base-layout.astro";
+import { homeContent } from "../../lib/home-content";
+
+const { aiHref } = homeContent;
+---
+
+<BaseLayout title="Publicar un evento">
+	<EventForm client:only="react" aiHref={aiHref} />
+</BaseLayout>
