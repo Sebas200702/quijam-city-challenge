@@ -18,7 +18,7 @@ Guía visual y playground interactivo (privado, pide acceso):
 
 ## Dirección: Tropical Cyber-Clean
 
-La calidez del Caribe con la precisión de un centro de mando. Formas suaves:
+La calidez del Caribe con la precisión de un buen anfitrión. Formas suaves:
 píldoras, radios grandes, sombras difusas y sin bordes duros.
 
 Principios:
@@ -32,7 +32,7 @@ Principios:
 
 ## Temas
 
-- **Oscuro (predeterminado):** mapas y Centro de Mando. Es el valor de `:root`.
+- **Oscuro (predeterminado):** mapas y "Lo que la ciudad aprende". Es el valor de `:root`.
 - **Claro:** uso turístico bajo el sol. Se activa con `data-theme="light"`.
 
 ```js
@@ -120,7 +120,7 @@ Reglas: nunca blanco sobre oro; como texto, rojo y verde usan su variante
 | Badge | `.q-badge` + `--live` `--high` `--optimal` `--alert` `--event` `--active` `--neutral`, `--solid` | Una o dos palabras en mayúsculas. Máximo dos juntos |
 | Densidad | `.q-meter` + `--green` `--gold` `--red` | Verde < 60 ≤ oro < 85 ≤ rojo. `role="meter"` y la palabra de estado |
 | Segmentado | `.q-seg`, `.q-seg__opt.is-on` | Modo, tema, idioma. Botones con `aria-pressed` |
-| Header | `.q-header` | Logo, modo (Turista / Centro de Mando), tema, idioma |
+| Header | `.q-header` | Logo, modo (Turista / Lo que la ciudad aprende), tema, idioma |
 | Card | `.q-card` + `--raised` `--frame` `--active` `--dismissed` | Cabecera, cuerpo y pie con `__head` `__body` `__foot` |
 | Pin de mapa | `.q-pin` + `--fluid` `--event` `--alert`, `.is-selected` | Glifo propio: flechas, estrella, signo de exclamación |
 | Controles de mapa | `.q-mapctl`, `.q-fab`, `.q-zoom` | Capas y centrar en botones redondos; zoom +/− agrupado. Botones de 48px con `aria-label` |

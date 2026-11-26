@@ -133,3 +133,10 @@ Base: la asignación hecha por Sebastián en el tablero. Se completaron los issu
 - **Rutas del visitante en el mapa:** `planRoute` + `/api/decidir` (itinerarios de varios tramos, reglas duras, OpenJev, puntaje ponderado).
 - **Guía del caso 1:** `trip-planner` de #64 se mantiene para las respuestas multilingües; usa el mismo núcleo del Decisor (reglas duras y puntaje). Mapa y Guía coinciden en el caso 1.
 - **Alerta de arroyos:** cuenta regresiva de #62 y banner de #63 sobre el mapa. Los planificadores duplicados de #62 (`route-options`, `route-recalc`, semilla propia) no se traen.
+
+## Identidad: el intérprete de la ciudad (26 nov 2026)
+
+- El jurado nos catalogó como "gemelo digital". Se define una identidad propia: **QUILLART, el intérprete de la ciudad**. Ver [20-identidad.md](20-identidad.md).
+- Se abandona el lema "sistema nervioso urbano" y la arquitectura pasa a "escuchar, interpretar, acompañar".
+- "Centro de Mando" pasa a "Lo que la ciudad aprende".
+- La demo abre siempre desde el celular del visitante; el tablero y el simulador solo se muestran al cierre, como impacto.

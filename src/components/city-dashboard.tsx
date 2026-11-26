@@ -166,7 +166,7 @@ export function CityDashboard() {
 				</span>
 				<span className="q-logo__text">
 					<span className="q-logo__word">QUILLART</span>
-					<span className="q-logo__sub">Centro de Mando · Corredor 2034</span>
+					<span className="q-logo__sub">Lo que la ciudad aprende · Corredor 2034</span>
 				</span>
 			</a>
 

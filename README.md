@@ -1,7 +1,7 @@
 # QUIJAM · City Challenge Barranquilla 2034
 
 > Repositorio de trabajo del equipo para el QUIJAM City Challenge.
-> Nombre del producto: **por definir** (ningún nombre está confirmado).
+> **QUILLART, el intérprete de la ciudad.** Barranquilla se explica sola… si eres de aquí. QUILLART se la explica al mundo.
 >
 > *English summary at the end.*
 
@@ -71,6 +71,7 @@ Detalle en [`docs/`](docs/).
 | [`docs/17-informe-impacto.md`](docs/17-informe-impacto.md) | Informe de impacto con IA: cifras agregadas, verificación de números y respaldo sin IA |
 | [`docs/18-simulador-multitudes.md`](docs/18-simulador-multitudes.md) | Simulador de multitudes: eventos, reglas del desvío, conteos y rendimiento |
 | [`docs/19-caso-1.md`](docs/19-caso-1.md) | Caso 1 de punta a punta: requisitos, guion de ensayo de 2 minutos, plan B y registro de ensayos |
+| [`docs/20-identidad.md`](docs/20-identidad.md) | Identidad: el intérprete de la ciudad, qué no somos (gemelo digital), vocabulario y orden de la demo |
 | [`docs/feedback.md`](docs/feedback.md) | Registro de retroalimentación por sprint y validación con personas ajenas |
 
 ## Equipo
@@ -127,10 +128,12 @@ for a **strategic program** (not an isolated app) that connects five dimensions
 (territory, sustainability, smart city, citizenship, economy), with a working
 prototype and a legacy beyond 2034.
 
-Our draft direction is an open-data city platform inside a three-component
-program: open city data, a network of verified hosts and local businesses, and a
-visitor web app plus a city dashboard. The pilot corridor runs from Estadio
-Metropolitano to the Gran Malecón. The product name is still to be decided.
+**QUILLART is the city interpreter**, not a digital twin. The knowledge that makes
+Barranquilla work (fair prices, which streams flood, where the good food is) lives
+in its people. QUILLART interprets that local knowledge for visitors, through a
+multilingual Guide, a safety-first route Decider and street hosts that pair an
+older resident with a bilingual youth, and tells the city what it learns from
+its visitors. The pilot corridor runs from Estadio Metropolitano to the Gran Malecón.
 Stack: Astro, React 19, Tailwind CSS v4, TypeScript, Leaflet, Supabase, Gemini
 Live API, Bun, Biome, Vitest; deployed on Dokploy. Detailed documentation lives in [`docs/`](docs/) (in Spanish).
 
