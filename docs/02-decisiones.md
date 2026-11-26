@@ -90,3 +90,13 @@ Ver [10-stack.md](10-stack.md).
 
 - **Plan B del Decisor:** una función propia (estado + opciones → opción + confianza). OpenJev detrás si corre; si no, puntaje ponderado en código.
 - **Reparto de esfuerzo:** Guía real, Decisor simple, Recomendador con reglas, tablero básico. El tiempo liberado va al programa, el PowerPoint y la bitácora.
+
+## Roles y asignación (26 nov 2026)
+
+- Sebastián: coordinación y líder técnico (arquitectura, Decisor, despliegue).
+- Santiago: diseño UI/UX y frontend (mapa del corredor, identidad, presentación).
+- Esteban: investigación y programa estratégico.
+- Angel David: prototipado de agentes IA (Guía con Gemini Live, OpenJev, caso 1).
+- Mateo: prototipado de datos y backend (Supabase, Auth, RLS, tablero de ciudad).
+- Comunicación: Santiago y Esteban.
+- Se agregan los issues #24 (tablero de ciudad básico) y #25 (despliegue en Dokploy).

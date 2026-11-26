@@ -66,13 +66,13 @@ Detalle en [`docs/`](docs/).
 
 ## Equipo
 
-| Integrante | Rol |
-|---|---|
-| Sebastián Torregroza | Por definir |
-| Santiago Torregroza | Por definir |
-| Esteban Meléndez | Por definir |
-| Angel David Castro | Por definir |
-| Mateo Cantillo | Por definir |
+| Integrante | GitHub | Rol |
+|---|---|---|
+| Sebastián Torregroza | `Sebas200702` | Coordinación y líder técnico: arquitectura, Decisor, despliegue |
+| Santiago Torregroza | `S-kun-2007` | Diseño UI/UX y frontend: mapa del corredor, identidad, presentación |
+| Esteban Meléndez | `estebann123107` | Investigación y programa estratégico |
+| Angel David Castro | `AngelitoCastro` | Prototipado de agentes IA: Guía con Gemini Live, OpenJev, caso 1 |
+| Mateo Cantillo | `mtccjesus` | Prototipado de datos y backend: Supabase, Auth, RLS, tablero de ciudad |
 
 ## Stack técnico
 
