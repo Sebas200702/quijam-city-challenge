@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { CORRIDOR_SEED } from "../corridor/corridor-seed";
 import type { AsyncChooser } from "../decider/decider-types";
+import { fromCorridorSegment } from "./from-corridor-segment";
 import { parsePlanRequest, planRoute } from "./plan-route";
-import { ROUTE_SEGMENTS_SEED } from "./route-segments-seed";
+
+const ROUTE_SEGMENTS_SEED = CORRIDOR_SEED.segments.map(fromCorridorSegment);
 
 const deps = {
 	segments: ROUTE_SEGMENTS_SEED,

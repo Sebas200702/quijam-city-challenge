@@ -2,8 +2,8 @@ import type { APIRoute } from "astro";
 import { loadCorridorData } from "../../lib/corridor/corridor-data";
 import { createOpenJevChooser } from "../../lib/decider/openjev-chooser";
 import { getOpenJevClient } from "../../lib/openjev/openjev-server";
+import { fromCorridorSegment } from "../../lib/routing/from-corridor-segment";
 import { parsePlanRequest, planRoute } from "../../lib/routing/plan-route";
-import { loadRouteSegments } from "../../lib/routing/route-segments-data";
 
 export const prerender = false;
 
@@ -29,10 +29,8 @@ export const POST: APIRoute = async ({ request }) => {
 		return json({ error: "Body must be valid JSON" }, 400);
 	}
 
-	const [{ data: corridor }, segments] = await Promise.all([
-		loadCorridorData(),
-		loadRouteSegments(),
-	]);
+	const { data: corridor } = await loadCorridorData();
+	const segments = corridor.segments.map(fromCorridorSegment);
 	const parsed = parsePlanRequest(
 		body,
 		new Set(corridor.stops.map((stop) => stop.code)),

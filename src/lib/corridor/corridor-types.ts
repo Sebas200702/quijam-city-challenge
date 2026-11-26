@@ -60,10 +60,36 @@ export interface CorridorBusiness {
 	is_simulated: boolean;
 }
 
+export type TransportMode =
+	| "transmetro"
+	| "bus"
+	| "taxi_verified"
+	| "walk"
+	| "bike";
+
+/** A leg between two stops with its official reference fare (route_segments). */
+export interface RouteSegment {
+	code: string;
+	origin_stop_code: string;
+	destination_stop_code: string;
+	transport_mode: TransportMode;
+	distance_km: number;
+	estimated_minutes: number;
+	reference_fare_cop: number;
+	fare_min_cop: number;
+	fare_max_cop: number;
+	is_green_route: boolean;
+	is_accessible: boolean;
+	/** Flood zone the leg crosses, if any. */
+	flood_zone_code: string | null;
+	is_simulated: boolean;
+}
+
 export interface CorridorData {
 	stops: CorridorStop[];
 	floodZones: FloodZone[];
 	businesses: CorridorBusiness[];
+	segments: RouteSegment[];
 }
 
 /** Where the map data came from: the Supabase project or the local seed copy. */

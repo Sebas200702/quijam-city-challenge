@@ -2,6 +2,7 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { LocateFixed, Minus, Plus } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { crowdByZoneFrom } from "../../lib/city-events/city-state";
 import { useCityState } from "../../lib/city-events/use-city-state";
 import { boundsOf, corridorLine } from "../../lib/corridor/corridor-geometry";
 import {
@@ -19,6 +20,7 @@ import type {
 } from "../../lib/corridor/corridor-types";
 import "./corridor-map.css";
 import { DetailCard } from "./detail-card";
+import { FloodAlertBanner } from "./flood-alert-banner";
 import { MapHeader, type Theme } from "./map-header";
 import {
 	buildCorridorLayers,
@@ -28,6 +30,7 @@ import {
 import { setMarkerSelected } from "./map-markers";
 import { RouteCard } from "./route-card";
 import { StopList } from "./stop-list";
+import { useFloodCountdown } from "./use-flood-countdown";
 import { type RouteQuery, useRoutePlan } from "./use-route-plan";
 
 // Standard OpenStreetMap tiles: no API key. The dark theme darkens them in CSS.
@@ -94,13 +97,19 @@ export default function CorridorMap({ data, source }: CorridorMapProps) {
 	});
 
 	const stops = useMemo(() => orderedStops(data.stops), [data.stops]);
-	const { state: city } = useCityState();
+	const { state: city, lastEvent } = useCityState();
+	const flood = useFloodCountdown(lastEvent, data.floodZones);
+	const crowdByZone = useMemo(() => crowdByZoneFrom(city), [city]);
 	const [query, setQuery] = useState<RouteQuery>({
 		origin: "STOP-MALECON-SUR",
 		destination: "STOP-ESTADIO",
 		accessibleMode: false,
 	});
-	const { plan, loading, error } = useRoutePlan(query, city);
+	const { plan, loading, error } = useRoutePlan(
+		query,
+		flood.blocked,
+		crowdByZone,
+	);
 	const planLayerRef = useRef<L.LayerGroup | null>(null);
 	const floodLayerRef = useRef<L.LayerGroup | null>(null);
 	const detail = useMemo(
@@ -172,7 +181,7 @@ export default function CorridorMap({ data, source }: CorridorMapProps) {
 		const layer = floodLayerRef.current;
 		if (!layer) return;
 		layer.clearLayers();
-		const active = new Set(city.activeFloodZoneIds);
+		const active = new Set(flood.blocked);
 		for (const zone of data.floodZones) {
 			if (!active.has(zone.code)) continue;
 			L.circle([zone.latitude, zone.longitude], {
@@ -181,7 +190,7 @@ export default function CorridorMap({ data, source }: CorridorMapProps) {
 				interactive: false,
 			}).addTo(layer);
 		}
-	}, [city.activeFloodZoneIds, data.floodZones]);
+	}, [flood.blocked, data.floodZones]);
 
 	const toggleLayer = (key: LayerKey) => {
 		setVisible((current) => ({ ...current, [key]: !current[key] }));
@@ -290,7 +299,7 @@ export default function CorridorMap({ data, source }: CorridorMapProps) {
 						plan={plan}
 						loading={loading}
 						error={error}
-						floodAlert={city.activeFloodZoneIds.length > 0}
+						alert={<FloodAlertBanner alert={flood.alert} />}
 					/>
 				)}
 			</div>

@@ -1,4 +1,5 @@
-import { Accessibility, Leaf, TriangleAlert } from "lucide-react";
+import { Accessibility, Leaf } from "lucide-react";
+import type { ReactNode } from "react";
 import type { CorridorStop } from "../../lib/corridor/corridor-types";
 import type { PlanResponse } from "../../lib/routing/plan-route";
 import type { RouteQuery } from "./use-route-plan";
@@ -21,7 +22,8 @@ interface RouteCardProps {
 	plan: PlanResponse | null;
 	loading: boolean;
 	error: string | null;
-	floodAlert: boolean;
+	/** The one interrupting alert (flood), shown on top of the card. */
+	alert?: ReactNode;
 }
 
 /** "Tu siguiente paso": one card, one decision. Details stay folded. */
@@ -32,17 +34,12 @@ export function RouteCard({
 	plan,
 	loading,
 	error,
-	floodAlert,
+	alert,
 }: RouteCardProps) {
 	const route = plan?.route ?? null;
 	return (
 		<section className="q-card corridor-detail route-card" aria-live="polite">
-			{floodAlert ? (
-				<div className="route-card__alert" role="alert">
-					<TriangleAlert size={18} aria-hidden="true" />
-					<span>Aguacero: hay un arroyo activo. Recalculamos tu ruta.</span>
-				</div>
-			) : null}
+			{alert}
 			<div className="q-card__head">
 				<div>
 					<p className="q-eyebrow">Tu siguiente paso</p>
