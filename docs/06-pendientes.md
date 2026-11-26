@@ -8,7 +8,7 @@ Cada una trae la recomendación que salió de la sesión de validación. La colu
 | 2 | Frontera entre agentes | Guía entiende y responde; Recomendador decide qué hacer; Decisor decide cómo y cuándo llegar, y a dónde desviar gente. | Decidido (26 nov): se adopta tal cual |
 | 3 | Decisor híbrido | Reglas duras descartan rutas con arroyo activo o no accesibles; OpenJev elige entre las que quedan. | Decidido (26 nov): se adopta tal cual |
 | 4 | Plan B del Decisor | Una función propia (estado + opciones → opción + confianza) con OpenJev detrás si corre, o puntaje ponderado en código si no. | Decidido (26 nov): se adopta tal cual |
-| 5 | Repositorio de OpenJev | Elegir cuál y probar si corre en algún equipo. Hoy: nunca se ha probado. | Abierto |
+| 5 | Repositorio de OpenJev | Elegir cuál y probar si corre en algún equipo. Hoy: nunca se ha probado. | Decidido (26 nov): OpenJev por API en Codiv; ver [11-openjev.md](11-openjev.md) |
 | 6 | Reparto de esfuerzo | Guía real, Decisor simple, Recomendador con reglas, tablero básico; el tiempo liberado va al programa, el PowerPoint y la bitácora. | Decidido (26 nov): se adopta tal cual |
 | 7 | Panel de presentador | Tres disparadores: aguacero, Malecón saturado, cobro abusivo. | Abierto |
 | 8 | Plan B sin internet | Respuestas del Guía guardadas para los tres casos y un video de respaldo. | Abierto |

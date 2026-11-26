@@ -63,6 +63,7 @@ Detalle en [`docs/`](docs/).
 | [`docs/08-metodologia.md`](docs/08-metodologia.md) | Sprints del bootcamp, flujo por cambio, gestión de tareas, roles y acuerdos |
 | [`docs/09-convenciones.md`](docs/09-convenciones.md) | Idioma, ramas, commits, PR, revisión, código, datos y documentos |
 | [`docs/10-stack.md`](docs/10-stack.md) | Stack técnico, verificación y arquitectura de despliegue |
+| [`docs/11-openjev.md`](docs/11-openjev.md) | OpenJev por API: servicio, implementación, resultados y privacidad |
 
 ## Equipo
 
@@ -76,7 +77,7 @@ Detalle en [`docs/`](docs/).
 
 ## Stack técnico
 
-Astro + React 19 + Tailwind CSS v4 + TypeScript strict, Leaflet, Supabase Cloud (datos, Auth, Realtime), Gemini Live API para el Guía, Bun + Biome + Vitest. Despliegue en Dokploy.
+Astro + React 19 + Tailwind CSS v4 + TypeScript strict, Leaflet, Supabase Cloud (datos, Auth, Realtime), Gemini Live API para el Guía, OpenJev por API (Codiv) para el Decisor, Bun + Biome + Vitest. Despliegue en Dokploy.
 
 Detalle en [`docs/10-stack.md`](docs/10-stack.md).
 
