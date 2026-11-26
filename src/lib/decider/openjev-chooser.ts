@@ -18,7 +18,7 @@ export function createOpenJevChooser(client: OpenJevClient): AsyncChooser {
 		);
 		const result = await client.decide(
 			{
-				context: "Barranquilla 2034 World Cup visitor choosing a route",
+				context: "Barranquilla resident or visitor choosing a route",
 				needs_accessible_route: state.accessibleMode,
 			},
 			{

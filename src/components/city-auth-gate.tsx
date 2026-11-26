@@ -100,7 +100,7 @@ export function CityAuthGate({
 						autoComplete="email"
 						value={email}
 						onChange={(event) => setEmail(event.target.value)}
-						placeholder="ciudad@demo.local"
+						placeholder="tu-correo@entidad.gov.co"
 						className="h-12 w-full rounded-[var(--radius-md)] border border-[var(--line-control)] bg-[var(--bg)] px-4 text-[15px] text-[var(--ink)] placeholder:text-[var(--ink-subtle)]"
 					/>
 				</div>

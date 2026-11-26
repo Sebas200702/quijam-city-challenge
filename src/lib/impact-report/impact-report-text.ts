@@ -85,7 +85,7 @@ export function buildTemplateReport(metrics: ImpactMetrics): string {
 	return [
 		"# Informe de impacto del día",
 		"",
-		`_Datos simulados 2034 · Modo de ciudad: ${metrics.cityModeLabel} · Generado: ${metrics.generatedAt.slice(0, 10)}_`,
+		`_Datos de referencia del corredor · Modo de ciudad: ${metrics.cityModeLabel} · Generado: ${metrics.generatedAt.slice(0, 10)}_`,
 		"",
 		"## Resumen",
 		"",
@@ -125,7 +125,7 @@ export const REPORT_SYSTEM_INSTRUCTION = [
 	"- Si un valor es null, escribe que aún no hay datos.",
 	"- No uses listas numeradas ni escribas números que no estén en el JSON.",
 	"- Español claro, frases cortas, en Markdown, máximo 250 palabras.",
-	"- Indica al inicio que los datos son simulados 2034.",
+	"- Indica al inicio que son datos de referencia del corredor, no mediciones en vivo.",
 	"- Secciones: Resumen, Ocupación por zona, Economía local, Tarifa justa, Recomendación para mañana (sin cifras nuevas).",
 ].join("\n");
 

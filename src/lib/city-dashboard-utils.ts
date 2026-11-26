@@ -30,7 +30,7 @@ export const ZONE_LABELS: Record<CorridorZone, string> = {
 };
 
 export const CITY_MODE_LABELS: Record<CityMode, string> = {
-	world_cup: "Mundial 2034",
+	world_cup: "Mundial",
 	carnival: "Carnaval",
 	daily: "Cotidiano",
 };
