@@ -67,6 +67,7 @@ Detalle en [`docs/`](docs/).
 | [`docs/13-openjev.md`](docs/13-openjev.md) | OpenJev por API: servicio, implementación, resultados y privacidad |
 | [`docs/14-desvio-barrio-abajo.md`](docs/14-desvio-barrio-abajo.md) | Desvío de multitudes a Barrio Abajo: reglas, beneficio y riesgo de desplazamiento (borrador) |
 | [`docs/16-alerta-arroyos.md`](docs/16-alerta-arroyos.md) | Alerta temprana de arroyos: cuenta regresiva, recálculo seguro de rutas y canal `city-events` |
+| [`docs/17-simulador-multitudes.md`](docs/17-simulador-multitudes.md) | Simulador de multitudes: eventos, reglas del desvío, conteos y rendimiento |
 | [`docs/feedback.md`](docs/feedback.md) | Registro de retroalimentación por sprint y validación con personas ajenas |
 
 ## Equipo
