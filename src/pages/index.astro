@@ -1,4 +1,27 @@
 ---
-// Temporary: the app home lives at /inicio until the public landing page arrives.
-return Astro.redirect("/inicio");
+// Public landing page: Quillart AI as the way into the city.
+import AgentGrid from "../components/landing/agent-grid.astro";
+import HowItWorks from "../components/landing/how-it-works.astro";
+import JoinBand from "../components/landing/join-band.astro";
+import LandingFooter from "../components/landing/landing-footer.astro";
+import LandingHeader from "../components/landing/landing-header.astro";
+import LandingHero from "../components/landing/landing-hero.astro";
+import TrustStrip from "../components/landing/trust-strip.astro";
+import UpcomingSection from "../components/landing/upcoming-section.astro";
+import BaseLayout from "../layouts/base-layout.astro";
 ---
+
+<BaseLayout title="QUILLART · Barranquilla, a una conversación" theme="light">
+	<div class="overflow-x-clip">
+		<LandingHeader />
+		<main>
+			<LandingHero />
+			<AgentGrid />
+			<HowItWorks />
+			<UpcomingSection />
+			<TrustStrip />
+			<JoinBand />
+		</main>
+		<LandingFooter />
+	</div>
+</BaseLayout>
