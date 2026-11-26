@@ -12,8 +12,8 @@ Decidido el 26 nov 2026. Las versiones exactas se fijan al crear el proyecto.
 | Datos | Supabase Cloud (plan gratis) | Postgres: corredor, paraderos, tarifas, negocios, reportes. Realtime para el tablero de ciudad. |
 | Autenticación | Supabase Auth | Roles: visitante anónimo, vendedor, ciudad. |
 | Agente Guía | Gemini Live API | Conversación multilingüe por voz en tiempo real, con chat de texto como respaldo. |
-| Agente Decisor | Reglas duras + OpenJev | Reglas descartan rutas con arroyo activo o no accesibles; OpenJev elige entre las restantes. Plan B: pendiente #4. |
-| Agente Recomendador | Por definir | Recomendación de la sesión: reglas (pendiente #6). |
+| Agente Decisor | Reglas duras + OpenJev o puntaje ponderado | Función propia (estado + opciones → opción + confianza). Reglas descartan rutas con arroyo activo o no accesibles; OpenJev elige entre las restantes si corre; si no, puntaje ponderado en código. |
+| Agente Recomendador | Reglas en código | Prioriza eventos ambientales y negocios de barrio según los gustos del visitante. |
 | Gestor de paquetes y runtime | Bun | Instalación, scripts y ejecución. |
 | Linter y formateador | Biome | Un solo comando para lint y formato. |
 | Pruebas | Vitest | Pruebas unitarias de reglas (tarifa justa, Decisor, recomendaciones). |

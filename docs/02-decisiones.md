@@ -85,3 +85,8 @@ Ver [10-stack.md](10-stack.md).
 - Los tótems solares se cambiaron por QR en infraestructura existente, por costo.
 - La gamificación se limitó a eventos ambientales.
 - El Decisor se describió primero como motor de reglas; se corrigió al identificar OpenJev.
+
+## Decisor y reparto de esfuerzo (26 nov 2026)
+
+- **Plan B del Decisor:** una función propia (estado + opciones → opción + confianza). OpenJev detrás si corre; si no, puntaje ponderado en código.
+- **Reparto de esfuerzo:** Guía real, Decisor simple, Recomendador con reglas, tablero básico. El tiempo liberado va al programa, el PowerPoint y la bitácora.
