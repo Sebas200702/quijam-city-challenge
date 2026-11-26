@@ -117,3 +117,8 @@ Base: la asignación hecha por Sebastián en el tablero. Se completaron los issu
 - La línea del corredor sigue las calles: se generó una vez con OSRM (perfil a pie) y se guarda en el repositorio como polyline, para que funcione sin internet.
 - Si Supabase no está configurado o no responde, el mapa usa una copia local de `supabase/seed.sql` y lo dice en pantalla.
 - La interfaz del mapa usa los componentes `q-*` de QUILLART e iconos de `lucide-react`. Una tarjeta con el detalle del punto reemplaza los popups de Leaflet.
+
+## QR del jurado y presencia en vivo (26 nov 2026)
+
+- **Presencia anónima:** el conteo de jurados y visitantes conectados usa un canal público de Supabase Realtime Presence (`visitor-presence`) con un ID temporal (`vis_...`) en `sessionStorage`, sin registro ni datos personales. La identidad del conteo es la clave de presencia del canal.
+- **Generación de QR offline:** se adopta la dependencia `qrcode` para renderizar el QR directamente en el navegador sin servicios externos, manteniendo la operación sin conexión.

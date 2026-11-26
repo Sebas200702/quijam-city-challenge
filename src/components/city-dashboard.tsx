@@ -39,9 +39,6 @@ import { JuryQrPanel } from "./jury-qr-panel";
 const EMPTY_PRESENCE: VisitorPresenceSummary = {
 	connectedCount: 0,
 	qrCount: 0,
-	directCount: 0,
-	sessionIds: [],
-	lastChangeAt: "",
 };
 
 const STATUS_OPTIONS: ReportStatus[] = [
@@ -379,7 +376,9 @@ export function CityDashboard() {
 									? `${presence.qrCount} vía QR`
 									: presenceState === "offline"
 										? "Sin conexión"
-										: "Conectando"}
+										: presenceState === "error"
+											? "Error"
+											: "Conectando"}
 							</span>
 						</div>
 					</article>

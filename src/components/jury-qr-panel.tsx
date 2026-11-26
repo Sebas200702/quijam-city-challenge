@@ -1,6 +1,6 @@
 import { Copy, ExternalLink, Maximize2, QrCode, Users, X } from "lucide-react";
 import QRCode from "qrcode";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type {
 	PresenceConnectionState,
 	VisitorPresenceSummary,
@@ -14,20 +14,41 @@ interface JuryQrPanelProps {
 
 export function JuryQrPanel({ summary, connectionState }: JuryQrPanelProps) {
 	const [baseOrigin, setBaseOrigin] = useState("");
+	const [originReady, setOriginReady] = useState(false);
 	const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
 	const [qrError, setQrError] = useState<string | null>(null);
 	const [copied, setCopied] = useState(false);
 	const [expanded, setExpanded] = useState(false);
 
+	const copiedTimerRef = useRef<number | null>(null);
+	const expandButtonRef = useRef<HTMLButtonElement | null>(null);
+	const closeButtonRef = useRef<HTMLButtonElement | null>(null);
+
 	useEffect(() => {
 		setBaseOrigin(window.location.origin);
+		setOriginReady(true);
+	}, []);
+
+	useEffect(() => {
+		return () => {
+			if (copiedTimerRef.current !== null) {
+				window.clearTimeout(copiedTimerRef.current);
+			}
+		};
 	}, []);
 
 	const targetUrl = buildJuryQrUrl(baseOrigin);
+	const isInvalidOrigin = originReady && targetUrl === null;
 
 	useEffect(() => {
 		let cancelled = false;
 		setQrError(null);
+
+		if (!targetUrl) {
+			setQrDataUrl(null);
+			setExpanded(false);
+			return;
+		}
 
 		void QRCode.toDataURL(targetUrl, {
 			width: 320,
@@ -45,6 +66,7 @@ export function JuryQrPanel({ summary, connectionState }: JuryQrPanelProps) {
 			})
 			.catch(() => {
 				if (!cancelled) {
+					setQrDataUrl(null);
 					setQrError("No se pudo generar el código QR.");
 				}
 			});
@@ -58,20 +80,39 @@ export function JuryQrPanel({ summary, connectionState }: JuryQrPanelProps) {
 		if (!expanded) {
 			return;
 		}
+		closeButtonRef.current?.focus();
+
 		const handleKeyDown = (event: KeyboardEvent) => {
 			if (event.key === "Escape") {
 				setExpanded(false);
+			} else if (event.key === "Tab") {
+				// Keep focus trapped on the single interactive control in the dialog.
+				event.preventDefault();
+				closeButtonRef.current?.focus();
 			}
 		};
+
 		window.addEventListener("keydown", handleKeyDown);
-		return () => window.removeEventListener("keydown", handleKeyDown);
+		return () => {
+			window.removeEventListener("keydown", handleKeyDown);
+			expandButtonRef.current?.focus();
+		};
 	}, [expanded]);
 
 	async function handleCopy() {
+		if (!targetUrl) {
+			return;
+		}
 		try {
 			await navigator.clipboard.writeText(targetUrl);
 			setCopied(true);
-			window.setTimeout(() => setCopied(false), 2000);
+			if (copiedTimerRef.current !== null) {
+				window.clearTimeout(copiedTimerRef.current);
+			}
+			copiedTimerRef.current = window.setTimeout(() => {
+				setCopied(false);
+				copiedTimerRef.current = null;
+			}, 2000);
 		} catch {
 			setCopied(false);
 		}
@@ -106,11 +147,15 @@ export function JuryQrPanel({ summary, connectionState }: JuryQrPanelProps) {
 				<div className="grid items-center gap-6 md:grid-cols-[200px_1fr]">
 					<div className="flex flex-col items-center gap-2">
 						<div className="flex h-[184px] w-[184px] items-center justify-center rounded-[var(--radius-md)] bg-white p-2 shadow-sm">
-							{qrError ? (
+							{isInvalidOrigin ? (
+								<p className="px-3 text-center text-xs font-semibold text-red-700">
+									Dominio inválido
+								</p>
+							) : qrError ? (
 								<p className="px-2 text-center text-xs text-red-700">
 									{qrError}
 								</p>
-							) : qrDataUrl ? (
+							) : qrDataUrl && targetUrl ? (
 								<img
 									src={qrDataUrl}
 									alt={`Código QR para abrir QUILLART visitante en ${targetUrl}`}
@@ -154,7 +199,7 @@ export function JuryQrPanel({ summary, connectionState }: JuryQrPanelProps) {
 
 						{summary.connectedCount === 0 && connectionState === "live" ? (
 							<p className="q-sm q-muted">
-								Aún no hay celulares conectados. Proyecta el QR o abre el enlace
+								Aún no hay celulares conectados. Proyecta el QR o abre el mapa
 								en otro dispositivo para ver subir el contador al instante.
 							</p>
 						) : (
@@ -171,18 +216,26 @@ export function JuryQrPanel({ summary, connectionState }: JuryQrPanelProps) {
 							<input
 								id="jury-qr-origin"
 								type="url"
+								aria-invalid={isInvalidOrigin}
 								value={baseOrigin}
 								onChange={(event) => setBaseOrigin(event.target.value)}
 								placeholder="https://tu-dominio.com"
 								className="h-11 w-full rounded-[var(--radius-md)] border border-[var(--line-control)] bg-[var(--bg)] px-3.5 text-sm text-[var(--ink)]"
 							/>
+							{isInvalidOrigin && (
+								<p role="alert" className="q-sm text-[var(--red-text)]">
+									Dominio inválido. Usa una dirección completa con http:// o
+									https://.
+								</p>
+							)}
 						</div>
 
 						<div className="q-row">
 							<button
+								ref={expandButtonRef}
 								type="button"
 								onClick={() => setExpanded(true)}
-								disabled={!qrDataUrl}
+								disabled={!targetUrl || !qrDataUrl}
 								className="q-btn q-btn--primary q-btn--sm"
 							>
 								<Maximize2 size={16} strokeWidth={1.75} aria-hidden="true" />
@@ -191,13 +244,14 @@ export function JuryQrPanel({ summary, connectionState }: JuryQrPanelProps) {
 							<button
 								type="button"
 								onClick={() => void handleCopy()}
+								disabled={!targetUrl}
 								className="q-btn q-btn--secondary q-btn--sm"
 							>
 								<Copy size={16} strokeWidth={1.75} aria-hidden="true" />
 								{copied ? "Enlace copiado" : "Copiar enlace"}
 							</button>
 							<a
-								href={targetUrl}
+								href="/mapa"
 								target="_blank"
 								rel="noreferrer"
 								className="q-btn q-btn--ghost q-btn--sm"
@@ -210,14 +264,21 @@ export function JuryQrPanel({ summary, connectionState }: JuryQrPanelProps) {
 				</div>
 			</div>
 
-			{expanded && qrDataUrl && (
+			{expanded && qrDataUrl && targetUrl && (
 				<div
 					role="dialog"
 					aria-modal="true"
 					aria-label="QR del jurado en pantalla completa"
-					className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
+					className="fixed inset-0 z-50 flex items-center justify-center p-4"
 				>
-					<div className="q-card w-full max-w-md">
+					<button
+						type="button"
+						tabIndex={-1}
+						aria-label="Cerrar proyección del QR"
+						onClick={() => setExpanded(false)}
+						className="absolute inset-0 bg-black/80"
+					/>
+					<div className="q-card relative z-10 w-full max-w-md">
 						<div className="q-flag" aria-hidden="true">
 							<i />
 							<i />
@@ -229,6 +290,7 @@ export function JuryQrPanel({ summary, connectionState }: JuryQrPanelProps) {
 								<h3 className="q-h2 mt-1">Escanea y entra sin registro</h3>
 							</div>
 							<button
+								ref={closeButtonRef}
 								type="button"
 								onClick={() => setExpanded(false)}
 								aria-label="Cerrar proyección del QR"

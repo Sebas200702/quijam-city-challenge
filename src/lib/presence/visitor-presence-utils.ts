@@ -46,67 +46,63 @@ export function detectEntrySource(search: string): VisitorEntrySource {
 	return raw === "qr" ? "qr" : "direct";
 }
 
-export function buildJuryQrUrl(baseOrigin: string): string {
+/**
+ * Builds an absolute visitor URL for the jury QR code.
+ * Returns null when the origin is empty or not a valid http/https URL so the UI
+ * never encodes a broken relative path into a scannable QR.
+ */
+export function buildJuryQrUrl(baseOrigin: string): string | null {
 	const trimmed = baseOrigin.trim();
 	if (!trimmed) {
-		return "/mapa?origen=qr";
+		return null;
 	}
 	try {
 		const parsed = new URL(trimmed);
 		if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
-			return "/mapa?origen=qr";
+			return null;
 		}
 		return `${parsed.origin}/mapa?origen=qr`;
 	} catch {
-		return "/mapa?origen=qr";
+		return null;
 	}
 }
 
+/**
+ * Summarizes Supabase Realtime presence using the channel presence key as the
+ * session identity (rather than trusting client-provided session_id fields).
+ */
 export function summarizePresenceState(
 	presenceState: Record<string, readonly unknown[]>,
-	nowIso: string = new Date().toISOString(),
 ): VisitorPresenceSummary {
-	const entriesBySession = new Map<string, VisitorEntrySource>();
+	const entriesByKey = new Map<string, VisitorEntrySource>();
 
 	for (const [presenceKey, metas] of Object.entries(presenceState)) {
-		if (!Array.isArray(metas) || metas.length === 0) {
+		if (!presenceKey || !Array.isArray(metas) || metas.length === 0) {
 			continue;
 		}
+		let entry: VisitorEntrySource = "direct";
 		for (const item of metas) {
-			const record =
-				item && typeof item === "object"
-					? (item as Record<string, unknown>)
-					: {};
-			const rawSession =
-				typeof record.session_id === "string" && record.session_id.length > 0
-					? record.session_id
-					: presenceKey;
-			if (!rawSession) {
-				continue;
-			}
-			const entry: VisitorEntrySource = record.entry === "qr" ? "qr" : "direct";
-			const previous = entriesBySession.get(rawSession);
-			if (!previous || entry === "qr") {
-				entriesBySession.set(rawSession, entry);
+			if (
+				item &&
+				typeof item === "object" &&
+				(item as Record<string, unknown>).entry === "qr"
+			) {
+				entry = "qr";
+				break;
 			}
 		}
+		entriesByKey.set(presenceKey, entry);
 	}
 
 	let qrCount = 0;
-	let directCount = 0;
-	for (const source of entriesBySession.values()) {
+	for (const source of entriesByKey.values()) {
 		if (source === "qr") {
 			qrCount += 1;
-		} else {
-			directCount += 1;
 		}
 	}
 
 	return {
-		connectedCount: entriesBySession.size,
+		connectedCount: entriesByKey.size,
 		qrCount,
-		directCount,
-		sessionIds: Array.from(entriesBySession.keys()),
-		lastChangeAt: nowIso,
 	};
 }

@@ -35,43 +35,39 @@ describe("visitor-presence-utils", () => {
 		expect(detectEntrySource("")).toBe("direct");
 	});
 
-	it("builds a clean visitor map QR URL from valid HTTP/HTTPS origins", () => {
+	it("builds an absolute visitor map URL for valid origins and returns null otherwise", () => {
 		expect(buildJuryQrUrl("https://quillart.demo.co/ciudad")).toBe(
 			"https://quillart.demo.co/mapa?origen=qr",
 		);
 		expect(buildJuryQrUrl("http://localhost:4321")).toBe(
 			"http://localhost:4321/mapa?origen=qr",
 		);
-		expect(buildJuryQrUrl("javascript:alert(1)")).toBe("/mapa?origen=qr");
-		expect(buildJuryQrUrl("")).toBe("/mapa?origen=qr");
+		expect(buildJuryQrUrl("javascript:alert(1)")).toBeNull();
+		expect(buildJuryQrUrl("not-a-url")).toBeNull();
+		expect(buildJuryQrUrl("")).toBeNull();
+		expect(buildJuryQrUrl("   ")).toBeNull();
 	});
 
-	it("summarizes presence state with deduplication and separates QR vs direct", () => {
-		const summary = summarizePresenceState(
-			{
-				vis_aaa111222333: [
-					{ session_id: "vis_aaa111222333", entry: "qr" },
-					{ session_id: "vis_aaa111222333", entry: "direct" },
-				],
-				vis_bbb444555666: [{ session_id: "vis_bbb444555666", entry: "direct" }],
-				vis_ccc777888999: [{ session_id: "vis_ccc777888999", entry: "qr" }],
-			},
-			"2026-11-26T21:00:00Z",
-		);
+	it("uses presence keys as session identity and counts QR vs total visitors", () => {
+		const summary = summarizePresenceState({
+			vis_aaa111222333: [
+				{ session_id: "spoofed_1", entry: "qr" },
+				{ session_id: "spoofed_2", entry: "direct" },
+			],
+			vis_bbb444555666: [{ entry: "direct" }],
+			vis_ccc777888999: [{ entry: "qr" }],
+		});
 
 		expect(summary).toEqual({
 			connectedCount: 3,
 			qrCount: 2,
-			directCount: 1,
-			sessionIds: ["vis_aaa111222333", "vis_bbb444555666", "vis_ccc777888999"],
-			lastChangeAt: "2026-11-26T21:00:00Z",
 		});
 	});
 
 	it("handles an empty presence state cleanly", () => {
-		const summary = summarizePresenceState({}, "2026-11-26T21:00:00Z");
-		expect(summary.connectedCount).toBe(0);
-		expect(summary.qrCount).toBe(0);
-		expect(summary.directCount).toBe(0);
+		expect(summarizePresenceState({})).toEqual({
+			connectedCount: 0,
+			qrCount: 0,
+		});
 	});
 });
