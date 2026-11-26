@@ -1,19 +1,12 @@
 import type { FeatureItem } from "../components/home/feature-grid";
 
 /**
- * Simulated content for the home view (Barranquilla 2034 scenario).
- * Replace with data from Supabase once the corridor data is wired in.
+ * Static content for the home view. The home itself is the Quillart AI
+ * conversation; events come from the community store.
  */
 export const homeContent = {
-	weatherLabel: "31° soleado",
 	greeting: "¡Ajá, llegaste!",
 	tagline: "Barranquilla te espera",
-	match: {
-		timeLabel: "Hoy 19:30",
-		title: "Partido inaugural",
-		venue: "Estadio Metropolitano",
-		illustration: "/illustrations/match.svg",
-	},
 	features: [
 		{
 			id: "live-map",
@@ -44,5 +37,6 @@ export const homeContent = {
 			illustration: "/illustrations/food.svg",
 		},
 	] satisfies FeatureItem[],
-	aiHref: "/prueba-guia",
+	/** Quillart AI is the home: the conversation lives at /inicio. */
+	aiHref: "/inicio",
 };
