@@ -65,8 +65,8 @@ Asignación (26 nov 2026):
 | Coordinación | Sebastián |
 | Investigación | Esteban |
 | Diseño | Santiago |
-| Prototipado | Angel David (agentes IA), Mateo (datos y backend), Sebastián (Decisor y despliegue), Santiago (mapa) |
-| Comunicación | Santiago y Esteban (PowerPoint y video) |
+| Prototipado | Mateo (Decisor y Guía con Gemini Live), Angel David (datos, Supabase y tablero), Sebastián (OpenJev y despliegue), Santiago (mapa), Esteban (integración del caso 1) |
+| Comunicación | Santiago (PowerPoint y video) |
 
 Todo el equipo programa. Las tareas de cada uno están asignadas en el tablero del proyecto.
 

@@ -93,10 +93,12 @@ Ver [10-stack.md](10-stack.md).
 
 ## Roles y asignación (26 nov 2026)
 
-- Sebastián: coordinación y líder técnico (arquitectura, Decisor, despliegue).
-- Santiago: diseño UI/UX y frontend (mapa del corredor, identidad, presentación).
-- Esteban: investigación y programa estratégico.
-- Angel David: prototipado de agentes IA (Guía con Gemini Live, OpenJev, caso 1).
-- Mateo: prototipado de datos y backend (Supabase, Auth, RLS, tablero de ciudad).
-- Comunicación: Santiago y Esteban.
+Base: la asignación hecha por Sebastián en el tablero. Se completaron los issues sin responsable y se dejó un solo responsable por issue.
+
+- Sebastián: coordinación y líder técnico (#13 roles, #15 scaffold, #20 OpenJev, #25 despliegue).
+- Santiago: diseño UI/UX y frontend (#17 mapa del corredor, #22 PowerPoint).
+- Esteban: investigación y programa (#7, #8, #10, #11, #12), nombre del producto (#14) y caso 1 de punta a punta (#19).
+- Angel David: datos y backend (#16 modelo de datos y semilla, #24 tablero de ciudad) y matriz caso × dimensión (#9).
+- Mateo: agentes IA (#18 Decisor, #21 Guía con Gemini Live).
+- Comunicación: Santiago.
 - Se agregan los issues #24 (tablero de ciudad básico) y #25 (despliegue en Dokploy).
