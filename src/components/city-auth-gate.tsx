@@ -36,7 +36,9 @@ export function CityAuthGate({
 				<div className="q-band q-band--gold" aria-hidden="true" />
 				<div className="q-card__head">
 					<div>
-						<p className="q-eyebrow">Lo que la ciudad aprende · Acceso restringido</p>
+						<p className="q-eyebrow">
+							Lo que la ciudad aprende · Acceso restringido
+						</p>
 						<h1 className="q-h2 mt-1">Se requiere rol ciudad</h1>
 					</div>
 					<span className="q-badge q-badge--high">{session.role}</span>
