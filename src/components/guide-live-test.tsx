@@ -26,8 +26,11 @@ registerProcessor("capture", Capture);
 export default function GuideLiveTest() {
 	const [mode, setMode] = useState<GuideMode>("audio");
 	const [status, setStatus] = useState("Desconectado");
+	const [connected, setConnected] = useState(false);
 	const [log, setLog] = useState<string[]>([]);
 	const [draft, setDraft] = useState("");
+	/** Answer being streamed right now, shown live until the turn ends. */
+	const [partial, setPartial] = useState("");
 	const sessionRef = useRef<Session | null>(null);
 	const micContextRef = useRef<AudioContext | null>(null);
 	const playbackRef = useRef<{
@@ -35,6 +38,7 @@ export default function GuideLiveTest() {
 		nextStart: number;
 	} | null>(null);
 	const micStreamRef = useRef<MediaStream | null>(null);
+	const transcriptRef = useRef("");
 
 	const append = (line: string) => setLog((lines) => [...lines, line]);
 
@@ -82,8 +86,15 @@ export default function GuideLiveTest() {
 		micContextRef.current = context;
 	}
 
-	function stop() {
-		sessionRef.current?.close();
+	function flushTranscript() {
+		const text = transcriptRef.current.trim();
+		transcriptRef.current = "";
+		setPartial("");
+		if (text) append(`Guía: ${text}`);
+	}
+
+	/** Frees the mic and speakers. Safe to call more than once. */
+	function release() {
 		sessionRef.current = null;
 		for (const track of micStreamRef.current?.getTracks() ?? []) {
 			track.stop();
@@ -92,24 +103,39 @@ export default function GuideLiveTest() {
 		micContextRef.current = null;
 		void playbackRef.current?.context.close();
 		playbackRef.current = null;
+		flushTranscript();
+		setConnected(false);
 		setStatus("Desconectado");
+	}
+
+	function stop() {
+		const session = sessionRef.current;
+		release();
+		session?.close();
 	}
 
 	async function start() {
 		setStatus("Conectando…");
 		try {
 			const session = await openLiveSession(mode, {
-				onText: (text) => append(`Guía: ${text}`),
-				onAudio: playChunk,
+				onText: (text) => {
+					transcriptRef.current += text;
+					setPartial(transcriptRef.current);
+				},
+				onTurnComplete: flushTranscript,
+				// Text mode reads the transcript and keeps the speakers quiet.
+				onAudio: mode === "audio" ? playChunk : () => {},
 				onInterrupted: () => {
 					if (playbackRef.current) playbackRef.current.nextStart = 0;
 				},
 				onClose: (reason) => {
+					if (!sessionRef.current) return;
 					append(`Sesión cerrada: ${reason}`);
-					setStatus("Desconectado");
+					release();
 				},
 			});
 			sessionRef.current = session;
+			setConnected(true);
 			if (mode === "audio") {
 				await startMic(session);
 			}
@@ -124,12 +150,11 @@ export default function GuideLiveTest() {
 
 	function sendText() {
 		if (!sessionRef.current || !draft.trim()) return;
-		sessionRef.current.sendClientContent({ turns: draft, turnComplete: true });
+		// Live models take typed text as realtime input, same as the mic.
+		sessionRef.current.sendRealtimeInput({ text: draft });
 		append(`Tú: ${draft}`);
 		setDraft("");
 	}
-
-	const connected = sessionRef.current !== null;
 
 	return (
 		<section className="mx-auto flex max-w-xl flex-col gap-4 p-4">
@@ -176,6 +201,7 @@ export default function GuideLiveTest() {
 					// biome-ignore lint/suspicious/noArrayIndexKey: append-only log
 					<li key={index}>{line}</li>
 				))}
+				{partial && <li aria-live="polite">Guía: {partial}</li>}
 			</ul>
 		</section>
 	);

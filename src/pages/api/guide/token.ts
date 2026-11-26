@@ -31,7 +31,7 @@ export const POST: APIRoute = async ({ url }) => {
 	const mode: GuideMode =
 		url.searchParams.get("mode") === "text" ? "text" : "audio";
 	const model = import.meta.env.GEMINI_LIVE_MODEL || DEFAULT_LIVE_MODEL;
-	const config = buildLiveTokenConfig(mode, model);
+	const config = buildLiveTokenConfig(model);
 
 	try {
 		const ai = new GoogleGenAI({ apiKey });

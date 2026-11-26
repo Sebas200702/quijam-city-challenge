@@ -1,8 +1,7 @@
 import { type CreateAuthTokenConfig, Modality } from "@google/genai";
-import type { GuideMode } from "./guide-types";
 
-/** Fallback model. Confirm the current Live model name in Google AI Studio before the demo. */
-export const DEFAULT_LIVE_MODEL = "gemini-live-2.5-flash-preview";
+/** Fallback model. Checked on 2026-11-26 against the models list for bidiGenerateContent. */
+export const DEFAULT_LIVE_MODEL = "gemini-3.8-live";
 
 /** Session messages are rejected after this. Must be under 20 hours. */
 const SESSION_MINUTES = 30;
@@ -16,9 +15,10 @@ export const GUIDE_SYSTEM_INSTRUCTION =
 /**
  * Builds a single-use ephemeral token config. Model, modality and system
  * instruction are locked inside the token, so the browser cannot change them.
+ * Live models only answer with audio, so the token always asks for audio plus
+ * its transcript; text mode shows the transcript instead of playing the audio.
  */
 export function buildLiveTokenConfig(
-	mode: GuideMode,
 	model: string,
 	now: Date = new Date(),
 ): CreateAuthTokenConfig {
@@ -33,7 +33,8 @@ export function buildLiveTokenConfig(
 		liveConnectConstraints: {
 			model,
 			config: {
-				responseModalities: [mode === "audio" ? Modality.AUDIO : Modality.TEXT],
+				responseModalities: [Modality.AUDIO],
+				outputAudioTranscription: {},
 				systemInstruction: GUIDE_SYSTEM_INSTRUCTION,
 			},
 		},

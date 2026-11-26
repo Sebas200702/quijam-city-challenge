@@ -6,7 +6,10 @@ import {
 import type { GuideMode, LiveTokenResponse } from "./guide-types";
 
 export interface LiveSessionHandlers {
+	/** Transcript chunk of what the model says. */
 	onText: (text: string) => void;
+	/** The model finished its answer. */
+	onTurnComplete: () => void;
 	/** Base64 PCM16 audio chunk from the model (24 kHz). */
 	onAudio: (base64Pcm: string) => void;
 	onInterrupted: () => void;
@@ -35,12 +38,15 @@ function handleMessage(
 		handlers.onInterrupted();
 	}
 	for (const part of content.modelTurn?.parts ?? []) {
-		if (part.text) {
-			handlers.onText(part.text);
-		}
 		if (part.inlineData?.data) {
 			handlers.onAudio(part.inlineData.data);
 		}
+	}
+	if (content.outputTranscription?.text) {
+		handlers.onText(content.outputTranscription.text);
+	}
+	if (content.turnComplete) {
+		handlers.onTurnComplete();
 	}
 }
 

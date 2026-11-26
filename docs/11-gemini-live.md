@@ -36,11 +36,11 @@ Restricciones según el SDK:
 ## Variables de entorno
 
 - `GEMINI_API_KEY`: solo en el servidor. Nunca con prefijo `PUBLIC_`.
-- `GEMINI_LIVE_MODEL` (opcional): modelo Live. Si no se define se usa `gemini-live-2.5-flash-preview`, que es el nombre del ejemplo del SDK. **Hay que confirmar en Google AI Studio cuál es el modelo Live vigente.**
+- `GEMINI_LIVE_MODEL` (opcional): modelo Live. Si no se define se usa `gemini-3.8-live`. `gemini-live-2.5-flash-preview` (el del ejemplo del SDK) ya no existe: la API responde `is not found for API version v1main`. Para ver los modelos Live vigentes, listar `GET /v1beta/models` y filtrar los que soportan `bidiGenerateContent`.
 
 ## Plan B de texto
 
-1. **Live en modo texto:** la misma página con el modo "Texto". El token bloquea `responseModalities: TEXT` y se envía con `sendClientContent`. Sirve si falla el micrófono o el audio del lugar.
+1. **Live en modo texto:** la misma página con el modo "Texto". Los modelos Live actuales rechazan `responseModalities: TEXT` (`The requested combination of response modalities (TEXT) is not supported by the model`). Por eso el token siempre pide `AUDIO` más `outputAudioTranscription`; en modo texto no se reproduce el audio y la transcripción se muestra en streaming. El texto del usuario se envía con `sendRealtimeInput({ text })`. Sirve si falla el micrófono o el audio del lugar.
 2. **Sin Live:** si Live no conecta, el Guía responde con una llamada normal desde el servidor (`generateContent`). Pendiente de implementar dentro del chat del Guía.
 3. **Sin internet:** respuestas guardadas para los tres casos (pendiente #8).
 
@@ -62,5 +62,5 @@ El micrófono necesita `localhost` o HTTPS.
 ## Estado
 
 - [x] Mecanismo documentado con fuente (el SDK; falta contrastarlo con la página oficial).
-- [ ] Prueba mínima de voz funcionando: el código está listo, pero falta probarlo con una API key real y un micrófono.
-- [x] Plan B de texto: el modo texto de Live está implementado; falta el respaldo sin Live.
+- [ ] Prueba mínima de voz funcionando: con API key real la sesión de voz conecta (26 nov 2026); falta probar la conversación con un micrófono real.
+- [x] Plan B de texto: probado con API key real el 26 nov 2026, la respuesta llega en streaming; falta el respaldo sin Live.
