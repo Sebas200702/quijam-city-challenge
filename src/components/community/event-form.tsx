@@ -97,7 +97,11 @@ export default function EventForm({ aiHref }: EventFormProps) {
 				<ArrowLeft size={18} aria-hidden="true" />
 				Volver a la agenda
 			</a>
-			<PageTitle eyebrow="Agenda" title="Publicar un evento">
+			<PageTitle
+				eyebrow="Agenda"
+				title="Publicar un evento"
+				illustration="/illustrations/publish-post.svg"
+			>
 				Cuéntale a la ciudad qué estás organizando.
 			</PageTitle>
 			{session.loading ? (

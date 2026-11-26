@@ -9,6 +9,7 @@ import {
 	Navigation,
 	Sprout,
 } from "lucide-react";
+import { PLACE_ILLUSTRATIONS } from "../../lib/community/community-illustrations";
 import {
 	directionsUrl,
 	PLACE_KIND_LABELS,
@@ -16,7 +17,7 @@ import {
 import type { PlaceKind } from "../../lib/community/community-types";
 import { AskQuillartButton } from "../assistant/ask-quillart-button";
 import { CommunityShell } from "./community-shell";
-import { EmptyState, Loaded } from "./community-ui";
+import { EmptyState, Loaded, SpotIllustration } from "./community-ui";
 import { EventCard } from "./event-card";
 import { PlaceBadges, PlaceKindTile } from "./place-card";
 import { ThreadCard } from "./thread-card";
@@ -82,6 +83,7 @@ export function PlaceDetail({
 						return (
 							<EmptyState
 								title="No encontramos este lugar"
+								illustration="/illustrations/page-not-found.svg"
 								action={
 									<a href="/lugares" className="q-btn q-btn--primary">
 										Ver todos los lugares
@@ -96,6 +98,12 @@ export function PlaceDetail({
 					const tips = CARE_TIPS[place.kind];
 					return (
 						<>
+							<div className="q-illus py-5">
+								<SpotIllustration
+									src={PLACE_ILLUSTRATIONS[place.kind]}
+									className="h-36! lg:h-56!"
+								/>
+							</div>
 							<section className="flex flex-col gap-3">
 								<div className="flex items-start gap-4">
 									<PlaceKindTile kind={place.kind} />
@@ -173,7 +181,10 @@ export function PlaceDetail({
 									</a>
 								</div>
 								{events.length === 0 ? (
-									<EmptyState title="Todavía no hay eventos aquí">
+									<EmptyState
+										illustration="/illustrations/events-calendar.svg"
+										title="Todavía no hay eventos aquí"
+									>
 										¿Tienes un plan para este lugar? Organízalo y la gente se
 										suma.
 									</EmptyState>
@@ -202,7 +213,10 @@ export function PlaceDetail({
 									</a>
 								</div>
 								{threads.length === 0 ? (
-									<EmptyState title="Nadie ha hablado de este lugar todavía">
+									<EmptyState
+										illustration="/illustrations/share-opinion.svg"
+										title="Nadie ha hablado de este lugar todavía"
+									>
 										Cuenta cómo te fue, pregunta o comparte un dato.
 									</EmptyState>
 								) : (

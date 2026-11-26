@@ -300,7 +300,11 @@ function AuthPanel() {
 	];
 	return (
 		<>
-			<PageTitle eyebrow="Tu cuenta" title="Únete a la comunidad">
+			<PageTitle
+				eyebrow="Tu cuenta"
+				title="Únete a la comunidad"
+				illustration="/illustrations/secure-login.svg"
+			>
 				Para mirar no necesitas cuenta. Créala para publicar eventos,
 				inscribirte o responder en la comunidad.
 			</PageTitle>
@@ -564,6 +568,7 @@ function SignedInView({ profile }: { profile: Profile }) {
 						registered.length === 0 ? (
 							<EmptyState
 								title="Aún no te has inscrito a nada"
+								illustration="/illustrations/events-calendar.svg"
 								action={
 									<a href="/agenda" className="q-btn q-btn--primary">
 										Ver la agenda
@@ -597,6 +602,7 @@ function SignedInView({ profile }: { profile: Profile }) {
 						organized.length === 0 ? (
 							<EmptyState
 								title="Todavía no organizas eventos"
+								illustration="/illustrations/publish-post.svg"
 								action={
 									<a href="/agenda/nuevo" className="q-btn q-btn--primary">
 										Organizar un evento
@@ -633,6 +639,7 @@ function SignedInView({ profile }: { profile: Profile }) {
 						threads.length === 0 ? (
 							<EmptyState
 								title="No has abierto conversaciones"
+								illustration="/illustrations/share-opinion.svg"
 								action={
 									<a href="/foro" className="q-btn q-btn--primary">
 										Ir a la comunidad

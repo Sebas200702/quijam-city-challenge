@@ -12,6 +12,7 @@ import {
 	Users,
 } from "lucide-react";
 import { type ReactNode, useState } from "react";
+import { EVENT_ILLUSTRATIONS } from "../../lib/community/community-illustrations";
 import {
 	directionsUrl,
 	EVENT_CATEGORY_LABELS,
@@ -32,7 +33,13 @@ import type {
 } from "../../lib/community/community-types";
 import { AskQuillartButton } from "../assistant/ask-quillart-button";
 import { CommunityShell } from "./community-shell";
-import { EmptyState, ErrorNote, HeldBadge, Loaded } from "./community-ui";
+import {
+	EmptyState,
+	ErrorNote,
+	HeldBadge,
+	Loaded,
+	SpotIllustration,
+} from "./community-ui";
 import { ThreadCard } from "./thread-card";
 import { signInHref, useLoad, useSession, useStore } from "./use-community";
 
@@ -81,6 +88,7 @@ export default function EventDetail({ id, aiHref }: EventDetailProps) {
 					) : (
 						<EmptyState
 							title="No encontramos este evento"
+							illustration="/illustrations/page-not-found.svg"
 							action={
 								<a href="/agenda" className="q-btn q-btn--primary">
 									Ver la agenda
@@ -122,6 +130,12 @@ function EventView({
 	return (
 		<>
 			<article className="q-card space-y-4 p-5 lg:p-8">
+				<div className="q-illus py-5">
+					<SpotIllustration
+						src={EVENT_ILLUSTRATIONS[event.category]}
+						className="h-36! lg:h-56!"
+					/>
+				</div>
 				<div className="flex flex-wrap items-center gap-2">
 					<span className="q-badge q-badge--event">
 						{EVENT_CATEGORY_LABELS[event.category]}

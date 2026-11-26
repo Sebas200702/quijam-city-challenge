@@ -65,7 +65,11 @@ export default function ModerationPage({ aiHref }: { aiHref?: string }) {
 	const session = useSession();
 	return (
 		<CommunityShell current="forum" aiHref={aiHref}>
-			<PageTitle eyebrow="Alcaldía" title="Moderación">
+			<PageTitle
+				eyebrow="Alcaldía"
+				title="Moderación"
+				illustration="/illustrations/for-review.svg"
+			>
 				La revisión es un triaje automático: primero reglas fijas, luego
 				OpenJev. Lo dudoso llega aquí y una persona decide.
 			</PageTitle>
@@ -76,6 +80,7 @@ export default function ModerationPage({ aiHref }: { aiHref?: string }) {
 			) : (
 				<EmptyState
 					title="Entra con tu cuenta de la ciudad"
+					illustration="/illustrations/secure-login.svg"
 					action={
 						<a href={signInHref()} className="q-btn q-btn--primary">
 							Entrar
@@ -99,6 +104,7 @@ function ModerationGate({ profileId }: { profileId: string }) {
 				) : (
 					<EmptyState
 						title="Esta sección es para el equipo de la ciudad"
+						illustration="/illustrations/security-on.svg"
 						action={
 							<a href="/foro" className="q-btn q-btn--secondary">
 								Ir a Comunidad
@@ -167,7 +173,10 @@ function ModerationQueue({ profileId }: { profileId: string }) {
 					});
 					if (visible.length === 0)
 						return (
-							<EmptyState title="Todo al día">
+							<EmptyState
+								illustration="/illustrations/celebration.svg"
+								title="Todo al día"
+							>
 								No hay reportes ni contenido esperando revisión.
 							</EmptyState>
 						);

@@ -92,6 +92,7 @@ export default function AgendaPage({ aiHref }: AgendaPageProps) {
 			<PageTitle
 				eyebrow="Agenda"
 				title="Planes en Barranquilla"
+				illustration="/illustrations/events-calendar.svg"
 				action={publishLink}
 			>
 				Lo que la comunidad organiza en parques, barrios y el río.
@@ -147,6 +148,7 @@ export default function AgendaPage({ aiHref }: AgendaPageProps) {
 						return filtering ? (
 							<EmptyState
 								title="No encontramos planes con ese filtro"
+								illustration="/illustrations/the-search.svg"
 								action={
 									<button
 										type="button"
@@ -165,6 +167,7 @@ export default function AgendaPage({ aiHref }: AgendaPageProps) {
 						) : (
 							<EmptyState
 								title="Todavía no hay planes en la agenda"
+								illustration="/illustrations/celebration.svg"
 								action={publishLink}
 							>
 								¿Organizas algo en tu barrio? Publícalo y la ciudad se entera.

@@ -68,6 +68,7 @@ export default function ForumPage({ aiHref }: { aiHref?: string }) {
 			<PageTitle
 				eyebrow="Barranquilla"
 				title="Comunidad"
+				illustration="/illustrations/public-discussion.svg"
 				action={
 					!formOpen && (
 						<button
@@ -140,6 +141,7 @@ export default function ForumPage({ aiHref }: { aiHref?: string }) {
 							{(threads) =>
 								threads.length === 0 ? (
 									<EmptyState
+										illustration="/illustrations/online-community.svg"
 										title={
 											category
 												? `Aún no hay conversaciones de ${FORUM_CATEGORY_LABELS[category].toLowerCase()}`

@@ -74,6 +74,7 @@ export default function ThreadPage({
 					) : (
 						<EmptyState
 							title="No encontramos esta conversación"
+							illustration="/illustrations/page-not-found.svg"
 							action={
 								<a href="/foro" className="q-btn q-btn--primary">
 									Ver conversaciones

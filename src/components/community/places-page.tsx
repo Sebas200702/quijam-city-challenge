@@ -45,6 +45,7 @@ export function PlacesPage({ aiHref }: { aiHref?: string }) {
 			<PageTitle
 				eyebrow="Barranquilla y su área"
 				title="Lugares y naturaleza"
+				illustration="/illustrations/through-the-park.svg"
 				action={
 					<a
 						href="/mapa"
@@ -94,7 +95,10 @@ export function PlacesPage({ aiHref }: { aiHref?: string }) {
 							: places.filter((place) => place.kind === filter);
 					if (visible.length === 0)
 						return (
-							<EmptyState title="No hay lugares de este tipo por ahora">
+							<EmptyState
+								illustration="/illustrations/among-nature.svg"
+								title="No hay lugares de este tipo por ahora"
+							>
 								Prueba con otro filtro o mira todos los lugares.
 							</EmptyState>
 						);

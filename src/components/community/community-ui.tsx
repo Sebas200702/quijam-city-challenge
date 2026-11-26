@@ -31,17 +31,57 @@ export function Field({
 	);
 }
 
+/** Decorative unDraw illustration on the light panel (empty alt). */
+export function SpotIllustration({
+	src,
+	className = "h-28! lg:h-40!",
+}: {
+	src: string;
+	/** Height classes; `!` is needed to beat the design system's `height: auto`. */
+	className?: string;
+}) {
+	return (
+		<img
+			src={src}
+			alt=""
+			aria-hidden="true"
+			className={`w-auto! max-w-full object-contain ${className}`}
+		/>
+	);
+}
+
 export function PageTitle({
 	eyebrow,
 	title,
 	action,
 	children,
+	illustration,
 }: {
 	eyebrow?: string;
 	title: string;
 	action?: ReactNode;
 	children?: ReactNode;
+	/** Path under /illustrations; turns the title into an illustrated banner. */
+	illustration?: string;
 }) {
+	if (illustration) {
+		return (
+			<div className="q-card flex-row! items-center gap-4 overflow-hidden bg-[var(--illus)]! p-5 text-[#0B131E] lg:gap-8 lg:p-8">
+				<div className="flex min-w-0 flex-1 flex-col gap-3">
+					<div>
+						{eyebrow && <p className="q-eyebrow text-[#46566B]!">{eyebrow}</p>}
+						<h1 className="q-h1 mt-1 text-[#0B131E]">{title}</h1>
+						{children && <p className="q-p mt-1 text-[#46566B]">{children}</p>}
+					</div>
+					{action && <div className="flex flex-wrap gap-2">{action}</div>}
+				</div>
+				<SpotIllustration
+					src={illustration}
+					className="h-20! shrink-0 sm:h-28! lg:h-44!"
+				/>
+			</div>
+		);
+	}
 	return (
 		<div className="flex flex-wrap items-end justify-between gap-3">
 			<div className="min-w-0">
@@ -69,13 +109,19 @@ export function EmptyState({
 	title,
 	children,
 	action,
+	illustration = "/illustrations/the-search.svg",
 }: {
 	title: string;
 	children?: ReactNode;
 	action?: ReactNode;
+	/** Path under /illustrations; pass null for none. */
+	illustration?: string | null;
 }) {
 	return (
-		<div className="q-card px-5 py-8 text-center">
+		<div className="q-card items-center px-5 py-8 text-center">
+			{illustration && (
+				<SpotIllustration src={illustration} className="mb-4 h-28! lg:h-36!" />
+			)}
 			<p className="q-h3">{title}</p>
 			{children && <p className="q-p q-muted mt-2">{children}</p>}
 			{action && <div className="mt-4 flex justify-center">{action}</div>}
