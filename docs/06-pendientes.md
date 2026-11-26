@@ -19,7 +19,7 @@ Cada una trae la recomendación que salió de la sesión de validación. La colu
 | 13 | Canal del vendedor (WhatsApp o QR) | Pantalla simulada dentro del caso 3. | Abierto |
 | 14 | Arroyos dentro de Sostenibilidad | Sí. | Abierto |
 | 15 | Validación externa | Cinco personas ajenas al equipo antes del Demo Day, para llegar al nivel "validado". | Abierto |
-| 16 | Costo estimado | Tabla de rubros con rangos y supuestos visibles, sin cifra única inventada. | Abierto |
+| 16 | Costo estimado | Tabla de rubros con rangos y supuestos visibles, sin cifra única inventada. | Resuelto (26 nov): ver [16-costos-estimados.md](16-costos-estimados.md) |
 | 17 | Formato | PowerPoint obligatorio en el orden de la diapositiva 30, con la aplicación en vivo en el bloque de prototipo. | Abierto |
 | 18 | Guion del video | Problema 40 s, propuesta 40 s, programa y dimensiones 60 s, demo de tres casos 120 s, impacto y legado 40 s. | Abierto |
 | 19 | Roles | Coordinación, investigación, diseño, prototipado y comunicación. Somos 5 y los 5 programan. | Decidido (26 nov): ver README |
