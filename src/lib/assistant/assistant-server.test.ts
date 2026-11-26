@@ -1,0 +1,345 @@
+import { describe, expect, it, vi } from "vitest";
+import type { DecisionResult, OpenJevClient } from "../openjev/openjev-types";
+import {
+	AGENT_IDS,
+	AGENTS,
+	agentInstruction,
+	sanitizeToolArgs,
+	toolDeclarationsFor,
+} from "./assistant-agents";
+import {
+	AssistantRequestError,
+	answer,
+	MAX_MESSAGES,
+	parseAssistantRequest,
+} from "./assistant-server";
+import type { AssistantContext, AssistantRequest } from "./assistant-types";
+import {
+	contextFacts,
+	sanitizeFunctionCalls,
+	toGeminiContents,
+} from "./gemini-agent";
+
+const context: AssistantContext = {
+	now: "2026-11-26T15:00:00.000Z",
+	signedIn: true,
+	displayName: "Ana",
+	isVisitor: true,
+	fromPath: "/agenda",
+};
+
+const request = (
+	text: string,
+	overrides: Partial<AssistantContext> = {},
+): AssistantRequest => ({
+	messages: [{ role: "user", text }],
+	context: { ...context, ...overrides },
+});
+
+let counter = 0;
+const newId = () => `id-${++counter}`;
+
+describe("parseAssistantRequest", () => {
+	it("accepts a valid request and drops display data", () => {
+		const parsed = parseAssistantRequest({
+			messages: [
+				{ role: "user", text: "planes hoy" },
+				{
+					role: "assistant",
+					agent: "agenda",
+					text: "Busco.",
+					toolCalls: [{ id: "c1", name: "search_events", args: {} }],
+				},
+				{
+					role: "tool",
+					results: [
+						{
+							callId: "c1",
+							name: "search_events",
+							summary: { count: 0 },
+							display: { kind: "notice", tone: "warn", text: "Nada" },
+						},
+					],
+				},
+			],
+			context,
+		});
+		expect(parsed.messages).toHaveLength(3);
+		expect(parsed.messages[2]).toEqual({
+			role: "tool",
+			results: [{ callId: "c1", name: "search_events", summary: { count: 0 } }],
+		});
+		expect(parsed.context).toEqual(context);
+	});
+
+	it.each([
+		["no body", null],
+		["no messages", { messages: [], context }],
+		[
+			"too many messages",
+			{
+				messages: Array.from({ length: MAX_MESSAGES + 1 }, () => ({
+					role: "user",
+					text: "hola",
+				})),
+				context,
+			},
+		],
+		["empty text", { messages: [{ role: "user", text: "  " }], context }],
+		[
+			"text too long",
+			{ messages: [{ role: "user", text: "a".repeat(1001) }], context },
+		],
+		["unknown role", { messages: [{ role: "system", text: "x" }], context }],
+		[
+			"unknown agent",
+			{
+				messages: [
+					{ role: "assistant", agent: "weather", text: "", toolCalls: [] },
+					{ role: "user", text: "hola" },
+				],
+				context,
+			},
+		],
+		[
+			"unknown tool",
+			{
+				messages: [
+					{
+						role: "tool",
+						results: [{ callId: "c1", name: "delete_all", summary: {} }],
+					},
+				],
+				context,
+			},
+		],
+		[
+			"last message from the assistant",
+			{
+				messages: [
+					{ role: "user", text: "hola" },
+					{ role: "assistant", agent: "agenda", text: "Hola", toolCalls: [] },
+				],
+				context,
+			},
+		],
+		["missing context", { messages: [{ role: "user", text: "hola" }] }],
+		[
+			"bad date",
+			{
+				messages: [{ role: "user", text: "hola" }],
+				context: { ...context, now: "mañana" },
+			},
+		],
+		[
+			"external fromPath",
+			{
+				messages: [{ role: "user", text: "hola" }],
+				context: { ...context, fromPath: "https://evil.example" },
+			},
+		],
+	])("rejects %s with status 400", (_name, body) => {
+		try {
+			parseAssistantRequest(body);
+			expect.unreachable();
+		} catch (error) {
+			expect(error).toBeInstanceOf(AssistantRequestError);
+			expect((error as AssistantRequestError).status).toBe(400);
+		}
+	});
+});
+
+describe("answer without Gemini", () => {
+	it("routes, answers locally and gives ids and suggestions", async () => {
+		const response = await answer(request("¿Cómo llego al estadio?"), {
+			openJev: null,
+			gemini: null,
+			newId,
+		});
+		expect(response).toMatchObject({
+			agent: "mobility",
+			routedBy: "keywords",
+			source: "local",
+			toolCalls: [{ name: "plan_route", args: { destination: "estadio" } }],
+		});
+		expect(response.toolCalls[0].id).toMatch(/^id-/);
+		expect(response.suggestions.length).toBeGreaterThanOrEqual(2);
+		expect(response.text).not.toBe("");
+	});
+
+	it("uses OpenJev only for ambiguous text", async () => {
+		const decide = vi.fn(
+			async (): Promise<DecisionResult> => ({
+				ok: true,
+				model: "test",
+				inputTokens: 1,
+				answers: {
+					agent: {
+						type: "choice",
+						choice: "community",
+						confidence: 0.2,
+						probabilities: {},
+					},
+				},
+			}),
+		);
+		const openJev: OpenJevClient = { decide };
+		const response = await answer(request("hola, buenas"), {
+			openJev,
+			gemini: null,
+		});
+		expect(decide).toHaveBeenCalledTimes(1);
+		expect(response.agent).toBe("agenda");
+		expect(response.routedBy).toBe("keywords");
+	});
+
+	it("generates real UUIDs by default", async () => {
+		const response = await answer(request("planes hoy"), {
+			openJev: null,
+			gemini: null,
+		});
+		expect(response.toolCalls[0].id).toMatch(/^[0-9a-f-]{36}$/);
+	});
+});
+
+describe("answer with a (fake) Gemini", () => {
+	const gemini = { apiKey: "test", model: "test-model" };
+
+	it("keeps only tools of the routed agent", async () => {
+		const runGemini = vi.fn(async () => ({
+			text: "Te armo la ruta.",
+			toolCalls: [
+				{
+					name: "plan_route" as const,
+					args: { destination: "centro" as const },
+				},
+				{ name: "create_event" as const, args: {} as never },
+			],
+		}));
+		const response = await answer(request("¿Cómo llego al centro?"), {
+			openJev: null,
+			gemini,
+			runGemini,
+			newId,
+		});
+		expect(response.source).toBe("gemini");
+		expect(response.toolCalls.map((call) => call.name)).toEqual(["plan_route"]);
+	});
+
+	it("falls back to the local agent when Gemini fails", async () => {
+		const onGeminiError = vi.fn();
+		const response = await answer(request("planes hoy"), {
+			openJev: null,
+			gemini,
+			runGemini: async () => {
+				throw new Error("timeout");
+			},
+			onGeminiError,
+		});
+		expect(onGeminiError).toHaveBeenCalled();
+		expect(response.source).toBe("local");
+		expect(response.toolCalls[0].name).toBe("search_events");
+	});
+
+	it("turns actions into a sign-in button when not signed in", async () => {
+		const response = await answer(
+			request("inscríbeme en el evento e-1", { signedIn: false }),
+			{
+				openJev: null,
+				gemini,
+				runGemini: async () => ({
+					text: "¡Listo, te inscribí!",
+					toolCalls: [
+						{ name: "register_for_event", args: { event_id: "e-1" } },
+					],
+				}),
+				newId,
+			},
+		);
+		expect(response.toolCalls.map((call) => call.args)).toEqual([
+			{ path: "/perfil", label: "Entrar o crear cuenta" },
+		]);
+		expect(response.text).toMatch(/cuenta/);
+		expect(response.text).not.toMatch(/te inscribí/);
+	});
+});
+
+describe("agent registry and Gemini helpers", () => {
+	it.each(AGENT_IDS)("%s declares exactly its allowed tools", (agent) => {
+		const names = toolDeclarationsFor(agent).map(
+			(declaration) => declaration.name,
+		);
+		expect(names).toEqual([...AGENTS[agent].tools]);
+		expect(agentInstruction(agent)).toMatch(/at most 3 sentences/);
+	});
+
+	it("city reports mention Línea 123", () => {
+		expect(agentInstruction("city_reports")).toMatch(/Línea 123/);
+	});
+
+	it("drops function calls outside the allow-list or with bad args", () => {
+		const drafts = sanitizeFunctionCalls("agenda", [
+			{ name: "search_events", args: { days_ahead: 3, extra: "x" } },
+			{ name: "report_issue", args: { description: "hueco" } },
+			{ name: "register_for_event", args: {} },
+			{ name: "search_events", args: { category: "party" } },
+			{ name: "open_page", args: { path: "https://evil.example", label: "x" } },
+			{ name: "open_page", args: { path: "/agenda", label: "Agenda" } },
+		]);
+		expect(drafts).toEqual([
+			{ name: "search_events", args: { days_ahead: 3 } },
+			{ name: "open_page", args: { path: "/agenda", label: "Agenda" } },
+		]);
+	});
+
+	it("validates required fields", () => {
+		expect(sanitizeToolArgs("plan_route", { destination: "luna" })).toBeNull();
+		expect(sanitizeToolArgs("get_place", "gran-malecon")).toBeNull();
+		expect(sanitizeToolArgs("my_registrations", {})).toEqual({});
+	});
+
+	it("converts the history to Gemini contents with call ids", () => {
+		const contents = toGeminiContents([
+			{ role: "user", text: "planes hoy" },
+			{
+				role: "assistant",
+				agent: "agenda",
+				text: "",
+				toolCalls: [
+					{ id: "c1", name: "search_events", args: { days_ahead: 0 } },
+				],
+			},
+			{
+				role: "tool",
+				results: [
+					{ callId: "c1", name: "search_events", summary: { count: 1 } },
+				],
+			},
+			{ role: "user", text: "el primero" },
+		]);
+		expect(contents.map((content) => content.role)).toEqual([
+			"user",
+			"model",
+			"user",
+		]);
+		expect(contents[1].parts?.[0].functionCall).toEqual({
+			id: "c1",
+			name: "search_events",
+			args: { days_ahead: 0 },
+		});
+		expect(contents[2].parts?.[0].functionResponse).toEqual({
+			id: "c1",
+			name: "search_events",
+			response: { output: { count: 1 } },
+		});
+		expect(contents[2].parts?.[1].text).toBe("el primero");
+	});
+
+	it("gives the model the Bogotá time and only the person's own facts", () => {
+		const facts = contextFacts(context);
+		expect(facts).toMatch(/Thursday, November 26, 2026/);
+		expect(facts).toMatch(/10:00/);
+		expect(facts).toMatch(/visitor/);
+		expect(contextFacts({ ...context, signedIn: false })).not.toMatch(/Ana/);
+	});
+});

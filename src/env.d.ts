@@ -8,6 +8,7 @@ interface ImportMetaEnv {
 	readonly OPENJEV_MODEL?: string;
 	readonly GEMINI_LIVE_MODEL?: string;
 	readonly GEMINI_REPORT_MODEL?: string;
+	readonly GEMINI_TEXT_MODEL?: string;
 }
 
 interface ImportMeta {
