@@ -58,7 +58,17 @@ Regla: sin issue no hay rama. Sin aprobación no hay fusión.
 
 Roles sugeridos por el deck (diap. 20): coordinación, investigación, diseño, prototipado, comunicación. Los roles pueden rotar; la responsabilidad es colectiva.
 
-Asignación: por definir (pendiente #19).
+Asignación (26 nov 2026):
+
+| Rol del deck | Responsable |
+|---|---|
+| Coordinación | Sebastián |
+| Investigación | Esteban |
+| Diseño | Santiago |
+| Prototipado | Angel David (agentes IA), Mateo (datos y backend), Sebastián (Decisor y despliegue), Santiago (mapa) |
+| Comunicación | Santiago y Esteban (PowerPoint y video) |
+
+Todo el equipo programa. Las tareas de cada uno están asignadas en el tablero del proyecto.
 
 ## 5. Acuerdos del equipo
 
