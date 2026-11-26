@@ -2,7 +2,11 @@
 // in this browser only. Moderation still runs: the server triage endpoint
 // (rules + OpenJev) when reachable, the hard rules in the browser otherwise.
 
-import type { ModerationDecision } from "../moderation/moderation-types";
+import type {
+	ModerationDecision,
+	ModerationLabel,
+	ModerationSource,
+} from "../moderation/moderation-types";
 import { triageContent } from "../moderation/triage";
 import { publishResult, storedStatus } from "./community-mappers";
 import {
@@ -47,6 +51,26 @@ interface DeviceData {
 	registrations: { eventId: string; userId: string }[];
 	threads: ForumThread[];
 	posts: ForumPost[];
+	/** Triage labels and source per content id, for the moderation queue. */
+	moderation?: Record<
+		string,
+		{ labels: ModerationLabel[]; source: ModerationSource | "moderator" }
+	>;
+}
+
+function triageOf(data: DeviceData, id: string) {
+	return data.moderation?.[id] ?? { labels: [], source: "rules" as const };
+}
+
+function rememberTriage(
+	data: DeviceData,
+	id: string,
+	decision: ModerationDecision,
+) {
+	data.moderation = {
+		...data.moderation,
+		[id]: { labels: decision.labels, source: decision.source },
+	};
 }
 
 function emptyData(): DeviceData {
@@ -284,6 +308,7 @@ export function createDeviceCommunityStore(): CommunityStore {
 				createdAt: new Date().toISOString(),
 			};
 			data.events.push(event);
+			rememberTriage(data, event.id, decision);
 			save(data);
 			notify("events");
 			return publishResult(decision, event);
@@ -383,6 +408,7 @@ export function createDeviceCommunityStore(): CommunityStore {
 				createdAt: now,
 			};
 			data.threads.push(thread);
+			rememberTriage(data, thread.id, decision);
 			save(data);
 			notify("forum");
 			return publishResult(decision, thread);
@@ -420,6 +446,7 @@ export function createDeviceCommunityStore(): CommunityStore {
 				createdAt: now,
 			};
 			data.posts.push(post);
+			rememberTriage(data, post.id, decision);
 			if (status === "published") {
 				thread.replyCount += 1;
 				thread.lastActivityAt = now;
@@ -452,8 +479,7 @@ export function createDeviceCommunityStore(): CommunityStore {
 					authorName: event.organizerName,
 					createdAt: event.createdAt,
 					status: event.moderationStatus,
-					labels: [],
-					source: "rules" as const,
+					...triageOf(data, event.id),
 					priority: event.triagePriority,
 					threadId: null,
 				})),
@@ -465,8 +491,7 @@ export function createDeviceCommunityStore(): CommunityStore {
 					authorName: thread.authorName,
 					createdAt: thread.createdAt,
 					status: thread.moderationStatus,
-					labels: [],
-					source: "rules" as const,
+					...triageOf(data, thread.id),
 					priority: thread.triagePriority,
 					threadId: thread.id,
 				})),
@@ -478,8 +503,7 @@ export function createDeviceCommunityStore(): CommunityStore {
 					authorName: post.authorName,
 					createdAt: post.createdAt,
 					status: post.moderationStatus,
-					labels: [],
-					source: "rules" as const,
+					...triageOf(data, post.id),
 					priority: post.triagePriority,
 					threadId: post.threadId,
 				})),
@@ -503,6 +527,10 @@ export function createDeviceCommunityStore(): CommunityStore {
 			} else {
 				const wasPublished = item.moderationStatus === "published";
 				item.moderationStatus = action === "approve" ? "published" : "removed";
+				data.moderation = {
+					...data.moderation,
+					[id]: { ...triageOf(data, id), source: "moderator" },
+				};
 				if (kind === "post") {
 					const post = item as ForumPost;
 					const thread = data.threads.find(
