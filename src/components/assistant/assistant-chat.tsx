@@ -12,8 +12,8 @@ import {
 	VolumeX,
 } from "lucide-react";
 import {
-	type FormEvent,
 	type ReactNode,
+	type SyntheticEvent,
 	useEffect,
 	useId,
 	useRef,
@@ -257,7 +257,7 @@ export function AssistantChat({
 		endRef.current?.scrollIntoView({ block: "end", behavior: "smooth" });
 	}, [messages.length, pending.length, loading]);
 
-	const submit = (event: FormEvent) => {
+	const submit = (event: SyntheticEvent<HTMLFormElement>) => {
 		event.preventDefault();
 		if (!draft.trim() || loading) return;
 		void send(draft);

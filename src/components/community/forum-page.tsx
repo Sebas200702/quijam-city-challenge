@@ -2,8 +2,8 @@
 
 import { CalendarDays, MapPin, Plus, X } from "lucide-react";
 import {
-	type FormEvent,
 	type ReactNode,
+	type SyntheticEvent,
 	useEffect,
 	useId,
 	useState,
@@ -343,7 +343,7 @@ function NewThreadForm({
 			</div>
 		);
 
-	async function submit(formEvent: FormEvent) {
+	async function submit(formEvent: SyntheticEvent<HTMLFormElement>) {
 		formEvent.preventDefault();
 		const input = {
 			title,

@@ -1,7 +1,7 @@
 // One forum conversation: the opening message, its replies and the reply composer.
 
 import { ArrowLeft, CalendarDays, MapPin } from "lucide-react";
-import { type FormEvent, useState } from "react";
+import { type SyntheticEvent, useState } from "react";
 import {
 	FORUM_CATEGORY_LABELS,
 	formatRelative,
@@ -252,7 +252,7 @@ function ReplyComposer({
 	const [error, setError] = useState<string | null>(null);
 	const [notice, setNotice] = useState<PublishResult<ForumPost> | null>(null);
 
-	async function submit(formEvent: FormEvent) {
+	async function submit(formEvent: SyntheticEvent<HTMLFormElement>) {
 		formEvent.preventDefault();
 		const invalid = validatePostBody(body);
 		setNotice(null);
