@@ -70,7 +70,7 @@ describe("computeImpactMetrics", () => {
 			},
 		);
 		expect(metrics.saturatedZoneLabels).toEqual(["Gran Malecon"]);
-		expect(metrics.cityModeLabel).toBe("Mundial 2034");
+		expect(metrics.cityModeLabel).toBe("Mundial");
 	});
 
 	it("summarizes overcharge reports", () => {
@@ -139,9 +139,9 @@ describe("number check", () => {
 });
 
 describe("buildTemplateReport", () => {
-	it("marks the data as simulated and says what is not tracked yet", () => {
+	it("marks the data as reference data and says what is not tracked yet", () => {
 		const report = buildTemplateReport(metrics);
-		expect(report).toContain("Datos simulados 2034");
+		expect(report).toContain("Datos de referencia del corredor");
 		expect(report).toContain("Personas desviadas: aún sin datos");
 		expect(report).toContain(
 			"| Gran Malecon | 3.100 | 3.500 | 89 % | Saturado |",

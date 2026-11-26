@@ -202,7 +202,7 @@ export function CityDashboard() {
 				</span>
 				<span className="q-logo__text">
 					<span className="q-logo__word">QUILLART</span>
-					<span className="q-logo__sub">Centro de Mando · Corredor 2034</span>
+					<span className="q-logo__sub">Centro de Mando · Barranquilla</span>
 				</span>
 			</a>
 
@@ -228,7 +228,7 @@ export function CityDashboard() {
 									: "Conectando"}
 						</span>
 					)}
-					<span className="q-badge q-badge--high">Simulado 2034</span>
+					<span className="q-badge q-badge--neutral">Datos de referencia</span>
 				</div>
 			</div>
 
@@ -505,7 +505,7 @@ export function CityDashboard() {
 										zone.alert_active ? "q-btn--alert" : "q-btn--secondary"
 									}`}
 								>
-									{zone.alert_active ? "Desactivar: " : "Simular alerta: "}
+									{zone.alert_active ? "Desactivar: " : "Activar alerta: "}
 									{zone.name}
 								</button>
 							))}
@@ -518,9 +518,7 @@ export function CityDashboard() {
 					<div className="flex flex-wrap items-baseline justify-between gap-2">
 						<div>
 							<p className="q-eyebrow">Aforo anónimo por zona</p>
-							<h2 className="q-h2 mt-0.5">
-								Visitantes en el corredor (simulado)
-							</h2>
+							<h2 className="q-h2 mt-0.5">Visitantes en el corredor</h2>
 						</div>
 						<span className="q-sm q-subtle">
 							Escala: &lt;60 % Fluido · 60–84 % Moderado · ≥85 % Saturado

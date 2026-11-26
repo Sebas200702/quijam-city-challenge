@@ -129,14 +129,14 @@ export function JuryQrPanel({ summary, connectionState }: JuryQrPanelProps) {
 
 	return (
 		<section
-			aria-label="QR del jurado y visitantes conectados"
+			aria-label="QR de bienvenida y visitantes conectados"
 			className="q-card"
 		>
 			<div className="q-band q-band--green" aria-hidden="true" />
 			<div className="q-card__head">
 				<div>
-					<p className="q-eyebrow">Demo en vivo · Visitantes reales</p>
-					<h2 className="q-h2 mt-1">QR del jurado</h2>
+					<p className="q-eyebrow">En vivo · Visitantes conectados</p>
+					<h2 className="q-h2 mt-1">QR de bienvenida</h2>
 				</div>
 				<span className={`q-badge ${statusBadge.className}`}>
 					{statusBadge.label}
@@ -268,7 +268,7 @@ export function JuryQrPanel({ summary, connectionState }: JuryQrPanelProps) {
 				<div
 					role="dialog"
 					aria-modal="true"
-					aria-label="QR del jurado en pantalla completa"
+					aria-label="QR de bienvenida en pantalla completa"
 					className="fixed inset-0 z-50 flex items-center justify-center p-4"
 				>
 					<button
