@@ -6,6 +6,7 @@ export const INITIAL_CITY_STATE: CityState = {
 	hour: 15,
 	activeFloodZoneIds: [],
 	floodAlertAt: null,
+	floodStartsAt: {},
 	maleconCapacityPct: 60,
 	lastOverchargeReportId: null,
 };
@@ -17,14 +18,22 @@ export function reduceCityEvent(
 	now: number = Date.now(),
 ): CityState {
 	switch (event.type) {
-		case "aguacero":
+		case "aguacero": {
+			const startsAt = now + Math.max(0, event.startsInMin) * 60_000;
+			const floodStartsAt = { ...state.floodStartsAt };
+			for (const id of event.zoneIds) {
+				// A second downpour never pushes an earlier countdown back.
+				floodStartsAt[id] = Math.min(floodStartsAt[id] ?? startsAt, startsAt);
+			}
 			return {
 				...state,
 				activeFloodZoneIds: [
 					...new Set([...state.activeFloodZoneIds, ...event.zoneIds]),
 				],
 				floodAlertAt: state.floodAlertAt ?? now,
+				floodStartsAt,
 			};
+		}
 		case "malecon_saturado":
 			return { ...state, maleconCapacityPct: event.capacityPct };
 		case "cobro_abusivo":

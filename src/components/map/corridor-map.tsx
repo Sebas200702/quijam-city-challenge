@@ -2,6 +2,11 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { LocateFixed, Minus, Plus } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
+import {
+	floodAlertText,
+	hasPendingFlood,
+	mostUrgentFlood,
+} from "../../lib/city-events/flood-countdown";
 import { useCityState } from "../../lib/city-events/use-city-state";
 import { boundsOf, corridorLine } from "../../lib/corridor/corridor-geometry";
 import {
@@ -101,6 +106,23 @@ export default function CorridorMap({ data, source }: CorridorMapProps) {
 		accessibleMode: false,
 	});
 	const { plan, loading, error } = useRoutePlan(query, city);
+	// Clock for the flood countdown: ticks only while an arroyo is counting down.
+	const [now, setNow] = useState(() => Date.now());
+	const counting = hasPendingFlood(city, now);
+	useEffect(() => {
+		setNow(Date.now());
+		if (!counting) return;
+		const timer = window.setInterval(() => setNow(Date.now()), 1000);
+		return () => window.clearInterval(timer);
+	}, [counting]);
+	const urgentFlood = mostUrgentFlood(city, now);
+	const floodAlert = urgentFlood
+		? floodAlertText(
+				urgentFlood,
+				data.floodZones.find((zone) => zone.code === urgentFlood.code)?.name ??
+					urgentFlood.code,
+			)
+		: null;
 	const planLayerRef = useRef<L.LayerGroup | null>(null);
 	const floodLayerRef = useRef<L.LayerGroup | null>(null);
 	const detail = useMemo(
@@ -290,7 +312,7 @@ export default function CorridorMap({ data, source }: CorridorMapProps) {
 						plan={plan}
 						loading={loading}
 						error={error}
-						floodAlert={city.activeFloodZoneIds.length > 0}
+						floodAlert={floodAlert}
 					/>
 				)}
 			</div>

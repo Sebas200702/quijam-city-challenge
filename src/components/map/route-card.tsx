@@ -21,7 +21,8 @@ interface RouteCardProps {
 	plan: PlanResponse | null;
 	loading: boolean;
 	error: string | null;
-	floodAlert: boolean;
+	/** One sentence about the most urgent arroyo, or null without floods. */
+	floodAlert: string | null;
 }
 
 /** "Tu siguiente paso": one card, one decision. Details stay folded. */
@@ -40,7 +41,7 @@ export function RouteCard({
 			{floodAlert ? (
 				<div className="route-card__alert" role="alert">
 					<TriangleAlert size={18} aria-hidden="true" />
-					<span>Aguacero: hay un arroyo activo. Recalculamos tu ruta.</span>
+					<span>{floodAlert} Recalculamos tu ruta.</span>
 				</div>
 			) : null}
 			<div className="q-card__head">

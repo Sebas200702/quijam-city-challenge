@@ -20,6 +20,12 @@ export interface CityState {
 	activeFloodZoneIds: string[];
 	/** When the active flood alert started, as epoch ms; null without alert. */
 	floodAlertAt: number | null;
+	/**
+	 * When each flood zone in activeFloodZoneIds overflows, as epoch ms
+	 * (announcement time + startsInMin). Routes avoid the zone from the
+	 * announcement on; screens show the countdown until this time.
+	 */
+	floodStartsAt: Record<string, number>;
 	/** Gran Malecón occupancy, in percent of capacity. */
 	maleconCapacityPct: number;
 	lastOverchargeReportId: string | null;
