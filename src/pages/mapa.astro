@@ -1,0 +1,13 @@
+---
+import CorridorMap from "../components/map/corridor-map";
+import BaseLayout from "../layouts/base-layout.astro";
+import { loadCorridorData } from "../lib/corridor/corridor-data";
+
+const { data, source } = await loadCorridorData();
+---
+
+<BaseLayout title="Mapa del corredor piloto">
+	<main class="h-[calc(100dvh-3px)] w-full">
+		<CorridorMap client:only="react" data={data} source={source} />
+	</main>
+</BaseLayout>
