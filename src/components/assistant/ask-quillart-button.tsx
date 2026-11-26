@@ -12,7 +12,10 @@ export function AskQuillartButton({
 	label = "Pregúntale a Quillart",
 }: AskQuillartButtonProps) {
 	return (
-		<a className="q-btn q-btn--secondary q-btn--sm" href={askHref(prompt)}>
+		<a
+			className="q-btn q-btn--secondary q-btn--sm min-h-11!"
+			href={askHref(prompt)}
+		>
 			<span
 				className="q-star"
 				style={{ width: 18, height: 18 }}

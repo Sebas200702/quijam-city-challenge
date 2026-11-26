@@ -17,7 +17,7 @@ interface CommunityShellProps {
 export function CommunityShell({
 	current,
 	children,
-	aiHref = "/prueba-guia",
+	aiHref = "/inicio",
 }: CommunityShellProps) {
 	const store = useStore();
 	return (
