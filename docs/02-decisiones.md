@@ -117,3 +117,11 @@ Base: la asignación hecha por Sebastián en el tablero. Se completaron los issu
 - La línea del corredor sigue las calles: se generó una vez con OSRM (perfil a pie) y se guarda en el repositorio como polyline, para que funcione sin internet.
 - Si Supabase no está configurado o no responde, el mapa usa una copia local de `supabase/seed.sql` y lo dice en pantalla.
 - La interfaz del mapa usa los componentes `q-*` de QUILLART e iconos de `lucide-react`. Una tarjeta con el detalle del punto reemplaza los popups de Leaflet.
+
+## Consolidación de rutas y alertas (26 nov 2026)
+
+- **Una sola fuente de tramos:** `segments` en los datos del corredor (de #64). `/api/decidir` los lee de ahí.
+- **Un solo canal `city-events`:** el de #66 (`src/lib/city-events/`). El de #63 no se trae.
+- **Rutas del visitante en el mapa:** `planRoute` + `/api/decidir` (itinerarios de varios tramos, reglas duras, OpenJev, puntaje ponderado).
+- **Guía del caso 1:** `trip-planner` de #64 se mantiene para las respuestas multilingües; usa el mismo núcleo del Decisor (reglas duras y puntaje). Mapa y Guía coinciden en el caso 1.
+- **Alerta de arroyos:** cuenta regresiva de #62 y banner de #63 sobre el mapa. Los planificadores duplicados de #62 (`route-options`, `route-recalc`, semilla propia) no se traen.

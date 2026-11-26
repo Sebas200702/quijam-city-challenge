@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { CORRIDOR_SEED } from "../corridor/corridor-seed";
 import { buildItineraries } from "./build-itineraries";
-import { ROUTE_SEGMENTS_SEED } from "./route-segments-seed";
+import { fromCorridorSegment } from "./from-corridor-segment";
+
+const ROUTE_SEGMENTS_SEED = CORRIDOR_SEED.segments.map(fromCorridorSegment);
 
 const stopZones = Object.fromEntries(
 	CORRIDOR_SEED.stops.map((stop) => [stop.code, stop.zone]),
