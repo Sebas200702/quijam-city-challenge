@@ -28,7 +28,21 @@ import {
 	summarizeReportsByStatus,
 	ZONE_LABELS,
 } from "../lib/city-dashboard-utils";
+import { subscribeVisitorPresence } from "../lib/presence/visitor-presence-service";
+import type {
+	PresenceConnectionState,
+	VisitorPresenceSummary,
+} from "../lib/presence/visitor-presence-types";
 import { CityAuthGate } from "./city-auth-gate";
+import { JuryQrPanel } from "./jury-qr-panel";
+
+const EMPTY_PRESENCE: VisitorPresenceSummary = {
+	connectedCount: 0,
+	qrCount: 0,
+	directCount: 0,
+	sessionIds: [],
+	lastChangeAt: "",
+};
 
 const STATUS_OPTIONS: ReportStatus[] = [
 	"open",
@@ -46,6 +60,10 @@ export function CityDashboard() {
 	const [snapshot, setSnapshot] = useState<CityDashboardSnapshot | null>(null);
 	const [realtimeStatus, setRealtimeStatus] =
 		useState<RealtimeStatus>("connecting");
+	const [presence, setPresence] =
+		useState<VisitorPresenceSummary>(EMPTY_PRESENCE);
+	const [presenceState, setPresenceState] =
+		useState<PresenceConnectionState>("loading");
 	const [nowMs, setNowMs] = useState(() => Date.now());
 	const [error, setError] = useState<string | null>(null);
 	const [busyId, setBusyId] = useState<string | null>(null);
@@ -93,6 +111,7 @@ export function CityDashboard() {
 		}
 
 		let unsubscribe: (() => void) | undefined;
+		let unsubscribePresence: (() => void) | undefined;
 		let active = true;
 
 		void loadSnapshot();
@@ -115,9 +134,29 @@ export function CityDashboard() {
 			}
 		});
 
+		void subscribeVisitorPresence(
+			(nextPresence) => {
+				if (active) {
+					setPresence(nextPresence);
+				}
+			},
+			(state) => {
+				if (active) {
+					setPresenceState(state);
+				}
+			},
+		).then((cleanup) => {
+			if (active) {
+				unsubscribePresence = cleanup;
+			} else {
+				cleanup();
+			}
+		});
+
 		return () => {
 			active = false;
 			unsubscribe?.();
+			unsubscribePresence?.();
 		};
 	}, [configured, session, loadSnapshot]);
 
@@ -325,8 +364,26 @@ export function CityDashboard() {
 				{/* Top KPI strip */}
 				<section
 					aria-label="Resumen operativo"
-					className="grid gap-4 sm:grid-cols-3"
+					className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
 				>
+					<article className="q-kpi">
+						<span className="q-kpi__label">Visitantes conectados</span>
+						<div className="q-kpi__row">
+							<span className="q-kpi__value">{presence.connectedCount}</span>
+							<span
+								className={`q-delta ${
+									presenceState === "live" ? "q-delta--good" : "q-delta--bad"
+								}`}
+							>
+								{presenceState === "live"
+									? `${presence.qrCount} vía QR`
+									: presenceState === "offline"
+										? "Sin conexión"
+										: "Conectando"}
+							</span>
+						</div>
+					</article>
+
 					<article className="q-kpi">
 						<span className="q-kpi__label">Visitantes en corredor</span>
 						<div className="q-kpi__row">
@@ -373,6 +430,8 @@ export function CityDashboard() {
 						</div>
 					</article>
 				</section>
+
+				<JuryQrPanel summary={presence} connectionState={presenceState} />
 
 				{/* Active flood alert card */}
 				<section
