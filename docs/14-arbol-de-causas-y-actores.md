@@ -48,10 +48,10 @@ flowchart BT
 | Causa | Cifra o evidencia verificada | Fuente | Qué la ataca |
 |---|---|---|---|
 | **C1 Datos de ciudad dispersos** (transporte, agenda, calendario, clima, arroyos). | Todavía no hay cifra propia. Por verificar: si Google Maps tiene tránsito de Barranquilla y el estado de la app Sibus. | — | Componente 1: datos abiertos de ciudad. |
-| **C2 Transporte y tarifas sin referencia confiable.** | Taxis sin taxímetro; licitación declarada desierta. En feb 2026, carreras de 2 a 3 km cobradas a $35.000 frente a $12.000 habituales. | RTVC; Blu Radio. | Tarifa justa en la aplicación y reporte de cobros abusivos (Decisor y Guía). |
-| **C3 Flujos concentrados en pocos puntos.** | El estadio está en el extremo sur y la zona turística en el norte. En el Carnaval 2026 hubo más de 820.000 visitantes con ocupación hotelera superior al 90 %, frente a más de 8.600 habitaciones y 16.000 camas. | Balance de la Alcaldía citado por Forbes Colombia; Cotelco Atlántico citado por El Heraldo. | Decisor: propone a la ciudad a dónde desviar multitudes. |
-| **C4 Riesgo climático no visible.** | Más de 50 arroyos urbanos, 15 peligrosos, 9 de esos canalizados; 134 muertes en casi 100 años. No encontramos un sistema público de alerta en operación. El sur registra hasta 5 °C más de temperatura superficial que el norte. | Distrito y Observatorio de Arroyos, citados por El Heraldo (2024); Universidad del Norte, Urban Climate (2024). | Alerta de arroyos y rutas con sombra e hidratación. En la demo los datos son simulados y se dice. |
-| **C5 Oferta local invisible.** | Informalidad laboral en el área metropolitana cerca de 49 % (jul – sep 2026; leído de un gráfico, confirmar). Microempresas: 94,5 % del tejido empresarial. | DANE, boletín GEIH; Cámara de Comercio de Barranquilla. | Componente 2: negocios verificados, QR de "abierto" y sellos por visita. |
+| **C2 Transporte y tarifas sin referencia confiable.** | Taxis sin taxímetro; licitación declarada desierta. En feb 2026 hubo denuncias de carreras de 2 a 3 km cobradas a $35.000 (la tarifa habitual de $12.000 no se pudo confirmar). La licitación del taxímetro se declaró desierta en marzo de 2023. | RTVC; El Universal; Blu Radio. | Tarifa justa en la aplicación y reporte de cobros abusivos (Decisor y Guía). |
+| **C3 Flujos concentrados en pocos puntos.** | El estadio está en el extremo sur y la zona turística en el norte. En el Carnaval 2026 hubo más de 820.000 visitantes con ocupación hotelera superior al 90 % (picos de 100 %), frente a más de 8.600 habitaciones y 16.000 camas (Cotelco, feb 2025). | Balance de la Alcaldía citado por Forbes Colombia (19 feb 2026) y Valora Analitik; Cotelco Atlántico citado por El Heraldo. | Decisor: propone a la ciudad a dónde desviar multitudes. |
+| **C4 Riesgo climático no visible.** | Más de 50 arroyos urbanos, 15 peligrosos, 9 de esos canalizados; 134 muertes en casi 100 años. No encontramos un sistema público de alerta en operación. El sur (estratos 1 a 3) registra hasta 5 °C más de temperatura superficial que el norte. | Distrito y Observatorio de Arroyos, citados por El Heraldo (fecha de la nota por confirmar); Núñez, Hoyos y Arellana, *Urban Climate* vol. 52 (2023). | Alerta de arroyos y rutas con sombra e hidratación. En la demo los datos son simulados y se dice. |
+| **C5 Oferta local invisible.** | Informalidad laboral en Barranquilla A.M.: 49,0 % (jul – sep 2026; nacional 54,5 %). Microempresas: más del 90 % del tejido empresarial (la cifra de 94,5 % no se pudo confirmar). | DANE, boletín GEIH, 13 nov 2026; Cámara de Comercio de Barranquilla (por confirmar). | Componente 2: negocios verificados, QR de "abierto" y sellos por visita. |
 
 ### Por qué importa a escala de megaevento
 
@@ -137,7 +137,9 @@ flowchart LR
 
 ## 3. Pendientes de este documento
 
-- Confirmar la cifra de informalidad (49,0 %) en el anexo de Excel del DANE.
+- Confirmar la cifra de microempresas (94,5 %) en el Estudio Económico y Social del Atlántico 2025 de la Cámara de Comercio.
+- Confirmar la tarifa habitual de $12.000 y la fecha de la nota de arroyos.
+- Ver el detalle de la verificación en [04-cifras-verificadas.md](04-cifras-verificadas.md).
 - Buscar fuente para las causas raíz R1 y R5, o presentarlas como hipótesis.
 - Confirmar quién opera el transporte público y qué datos publica.
 - Pasar a "Por contactar" o "Confirmado" el estado de cada actor cuando haya conversación.
