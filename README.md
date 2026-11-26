@@ -65,6 +65,7 @@ Detalle en [`docs/`](docs/).
 | [`docs/11-modelo-datos.md`](docs/11-modelo-datos.md) | Modelo de datos del corredor en Supabase: esquema, RLS y semilla |
 | [`docs/12-alineacion-rubrica.md`](docs/12-alineacion-rubrica.md) | Cada criterio de la rúbrica: qué tenemos, qué falta, qué resaltar; cinco lecciones y referentes |
 | [`docs/13-openjev.md`](docs/13-openjev.md) | OpenJev por API: servicio, implementación, resultados y privacidad |
+| [`docs/14-desvio-barrio-abajo.md`](docs/14-desvio-barrio-abajo.md) | Desvío de multitudes a Barrio Abajo: reglas, beneficio y riesgo de desplazamiento (borrador) |
 | [`docs/feedback.md`](docs/feedback.md) | Registro de retroalimentación por sprint y validación con personas ajenas |
 
 ## Equipo
