@@ -1,0 +1,12 @@
+---
+import EventDetail from "../../components/community/event-detail";
+import BaseLayout from "../../layouts/base-layout.astro";
+import { homeContent } from "../../lib/home-content";
+
+const id = Astro.params.id ?? "";
+const { aiHref } = homeContent;
+---
+
+<BaseLayout title="Evento · Agenda">
+	<EventDetail client:only="react" id={id} aiHref={aiHref} />
+</BaseLayout>
