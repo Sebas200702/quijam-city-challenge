@@ -69,10 +69,10 @@ Detalle en [`docs/`](docs/).
 | Integrante | GitHub | Rol |
 |---|---|---|
 | Sebastián Torregroza | `Sebas200702` | Coordinación y líder técnico: arquitectura, OpenJev, despliegue |
-| Santiago Torregroza | `S-kun-2007` | Diseño UI/UX y frontend: mapa del corredor, presentación |
-| Esteban Meléndez | `estebann123107` | Investigación y programa estratégico; nombre del producto; caso 1 de punta a punta |
-| Angel David Castro | `AngelitoCastro` | Datos y backend: modelo de datos y semilla en Supabase, tablero de ciudad, matriz caso × dimensión |
-| Mateo Cantillo | `mtccjesus` | Agentes IA: Decisor con reglas duras, Guía con Gemini Live |
+| Santiago Torregroza | `S-kun-2007` | Diseño UI/UX y frontend: mapa del corredor, caso 1 de punta a punta, presentación |
+| Esteban Meléndez | `estebann123107` | Investigación y programa estratégico; nombre del producto |
+| Angel David Castro | `AngelitoCastro` | Datos y backend: modelo de datos y semilla en Supabase, tablero de ciudad; matriz caso × dimensión; tabla de costos |
+| Mateo Cantillo | `mtccjesus` | Agentes IA: Decisor con reglas duras, Guía con Gemini Live; desvío de multitudes a Barrio Abajo |
 
 ## Stack técnico
 

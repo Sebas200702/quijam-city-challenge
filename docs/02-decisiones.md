@@ -96,9 +96,10 @@ Ver [10-stack.md](10-stack.md).
 Base: la asignación hecha por Sebastián en el tablero. Se completaron los issues sin responsable y se dejó un solo responsable por issue.
 
 - Sebastián: coordinación y líder técnico (#13 roles, #15 scaffold, #20 OpenJev, #25 despliegue).
-- Santiago: diseño UI/UX y frontend (#17 mapa del corredor, #22 PowerPoint).
-- Esteban: investigación y programa (#7, #8, #10, #11, #12), nombre del producto (#14) y caso 1 de punta a punta (#19).
-- Angel David: datos y backend (#16 modelo de datos y semilla, #24 tablero de ciudad) y matriz caso × dimensión (#9).
-- Mateo: agentes IA (#18 Decisor, #21 Guía con Gemini Live).
+- Santiago: diseño UI/UX y frontend (#17 mapa del corredor, #19 caso 1 de punta a punta, #22 PowerPoint).
+- Esteban: investigación y programa (#7 objetivo, #8 causas y actores, #11 recursos y alianzas, #14 nombre).
+- Angel David: datos y backend (#16 modelo de datos y semilla, #24 tablero de ciudad), #9 matriz caso × dimensión y #12 tabla de costos.
+- Mateo: agentes IA (#18 Decisor, #21 Guía con Gemini Live) y #10 desvío a Barrio Abajo, que es una salida del Decisor.
+- Redistribución: Esteban tenía 7 issues; #19, #10 y #12 pasan a Santiago, Mateo y Angel. Carga final: 3 a 4 issues por persona.
 - Comunicación: Santiago.
 - Se agregan los issues #24 (tablero de ciudad básico) y #25 (despliegue en Dokploy).
