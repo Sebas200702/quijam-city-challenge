@@ -14,7 +14,7 @@ Cada rol ve solo lo suyo (regla 1). Una superficie es una app distinta con su pr
 | **Ruta** | `/` | `/vendedor` | `/anfitrion` | `/ciudad` | `/presentador` |
 | **Cómo entra** | Sin registro. Abre el enlace o el QR del paradero. Idioma del navegador; se cambia en un toque | QR del negocio o enlace mágico al correo | Supabase Auth (correo y contraseña) | Supabase Auth (correo y contraseña) | Llave de demo (ver 5.4) |
 | **Tema** | Claro | Claro | Claro | Oscuro | Oscuro |
-| **Qué ve** | Mapa del corredor, Guía (voz o texto), una tarjeta "tu siguiente paso", avisos que le aplican, pasaporte, jerga, datos e idioma | Su negocio: abierto o cerrado, menú y precios, visitas recibidas, aviso cuando la ciudad invita visitantes a su barrio | Su turno, su dupla, la asignación entrante, la ruta al punto de encuentro, botones "Aceptar" y "Llegué" | Centro de Mando: mapa con zonas, arroyos, decisiones del Decisor, bandeja de cobros abusivos, indicadores, simulador, línea de tiempo, informe con IA | Disparadores de eventos, modo de ciudad, línea de tiempo, QR del jurado, registro de eventos enviados, reiniciar |
+| **Qué ve** | Mapa del corredor, Guía (voz o texto), una tarjeta "tu siguiente paso", avisos que le aplican, pasaporte, jerga, datos e idioma | Su negocio: abierto o cerrado, productos y precios, visitas recibidas, aviso cuando la ciudad invita visitantes a su barrio | Su turno, su dupla, la asignación entrante, la ruta al punto de encuentro, botones "Aceptar" y "Llegué" | Centro de Mando: mapa con zonas, arroyos, decisiones del Decisor, bandeja de cobros abusivos, indicadores, simulador, línea de tiempo, informe con IA | Disparadores de eventos, modo de ciudad, línea de tiempo, QR del jurado, registro de eventos enviados, reiniciar |
 | **Nunca ve** | Simulador de multitudes, indicadores, informe con IA, confianza del Decisor fuera de "ver detalles", conteos por zona, otros visitantes, reportes de terceros | Datos de visitantes, otros negocios en modo edición, indicadores, simulador, alertas de zonas que no son la suya | Ubicación exacta del visitante fuera de la asignación activa, indicadores, simulador, reportes de cobro | Datos personales: solo conteos anónimos por zona (Ley 1581 de 2012) | Datos personales. No opera la ciudad: solo dispara la demo |
 
 Notas:
@@ -77,7 +77,7 @@ flowchart TD
 | Elemento | Contenido |
 |---|---|
 | Acción principal | Abrir o cerrar el negocio |
-| Menú secundario | Menú y precios, Visitas, Mi sello, Ayuda, Idioma |
+| Menú secundario | Productos y precios, Visitas, Mi sello, Ayuda, Idioma |
 | Hojas | Editar un producto, detalle de visitas del día |
 | Avisos | Discreto: "La ciudad invita visitantes a Barrio Abajo" (solo si su negocio está en la zona destino y abierto) |
 
@@ -88,7 +88,7 @@ flowchart TD
     FIRST -->|sí| HOME
     ALTA --> HOME["Inicio: estado + Marcarme abierta"]
     HOME --> MENU["Menú"]
-    MENU --> MP["Menú y precios"]
+    MENU --> MP["Productos y precios"]
     MENU --> VIS["Visitas"]
     MENU --> SEAL["Mi sello"]
     HOME -.->|desvío hacia su zona| CARD["Aviso: llegan visitantes"]
@@ -330,7 +330,7 @@ Una migración nueva: `supabase/migrations/<fecha>_roles_host_presenter.sql`.
 | #46 Rutas frescas | Capa de calor y criterio de sombra | `src/components/map/heat-layer.ts`, cambios en `src/lib/decider/` |
 | #47 Offline | PWA, caché, notificación de arroyo | `public/manifest.webmanifest`, `public/sw.js`, `src/lib/offline/offline-cache.ts` |
 | #48 Idiomas y jerga | Textos en 4 idiomas, detección, jerga | `src/lib/i18n/i18n.ts`, `src/lib/i18n/messages/{es,en,pt,fr}.ts`, `src/lib/i18n/slang.ts`, `src/components/visitor/language-sheet.tsx`, `src/components/visitor/slang-sheet.tsx` |
-| #49 Vendedor | Alta, abierto/cerrado, menú, visitas | `src/pages/vendedor/index.astro`, `src/pages/vendedor/entrar.astro`, `src/components/vendor/*` |
+| #49 Vendedor | Alta, abierto/cerrado, productos y precios, visitas | `src/pages/vendedor/index.astro`, `src/pages/vendedor/entrar.astro`, `src/components/vendor/*` |
 | #50 Anfitrión | Asignación, aceptar, llegué | `src/pages/anfitrion/index.astro`, `src/pages/anfitrion/entrar.astro`, `src/components/host/*`, `src/lib/host/host-assignments.ts` |
 | #51 Cobro abusivo | Formulario, bandeja, evento | `src/components/visitor/overcharge-sheet.tsx`, `src/components/city/overcharge-inbox.tsx`; publica `cobro_abusivo` desde `src/pages/api/reports.ts` |
 | #52 Arroyos | Cuenta regresiva, modal, recálculo | `src/lib/floods/flood-alert.ts`, `src/components/visitor/flood-alert-modal.tsx` |
@@ -362,6 +362,8 @@ Regla 10: el mismo término para lo mismo en toda la app. Si un término no est�
 | Punto de encuentro | Meeting point | Paradero donde el anfitrión recibe al visitante | Visitante, anfitrión |
 | Paradero | Stop | Estación o parada del corredor | Visitante |
 | Negocio verificado | Verified business | Negocio de barrio con sello de la plataforma | Visitante, vendedor |
+| Productos y precios | Products and prices | Lo que vende el negocio y cuánto cuesta. No se llama "menú" para no confundirlo con el menú de la app | Visitante, vendedor |
+| Menú | Menu | El menú secundario de la app; nunca la carta de un negocio | Todas |
 | Abierto / Cerrado | Open / Closed | Estado del negocio que marca el vendedor | Visitante, vendedor |
 | Sello | Stamp | Marca que suma el visitante al escanear un QR de negocio o evento | Visitante, vendedor |
 | Pasaporte | Passport | Colección de sellos del visitante en negocios verificados y eventos ambientales. **Propuesta, la detalla #45** | Visitante |
