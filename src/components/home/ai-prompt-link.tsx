@@ -9,7 +9,7 @@ export function AiPromptLink({ href }: AiPromptLinkProps) {
 	return (
 		<a
 			href={href}
-			className="flex min-h-14 items-center gap-3 rounded-full bg-[var(--surface)] py-0 pr-2 pl-3 text-[var(--ink-muted)] no-underline shadow-[var(--shadow-card)]"
+			className="flex min-h-14 items-center gap-3 rounded-full bg-[var(--surface)] py-0 pr-2 pl-3 text-[var(--ink-muted)] no-underline shadow-[var(--shadow-modal)] lg:shadow-[var(--shadow-card)]"
 		>
 			<span className="q-avatar" aria-hidden="true">
 				<span
