@@ -1,4 +1,4 @@
-import { X } from "lucide-react";
+import { MessageCircle, X } from "lucide-react";
 import type { SelectionDetail } from "../../lib/corridor/corridor-selection";
 import type {
 	CorridorDataSource,
@@ -24,13 +24,19 @@ interface DetailCardProps {
 	detail: SelectionDetail | null;
 	source: CorridorDataSource;
 	onClose: () => void;
+	onOpenGuide: () => void;
 }
 
 /**
  * QUILLART card (q-card) for the selected point. With nothing selected it shows
  * the brand empty state: tricolor flag, unDraw illustration and a hint.
  */
-export function DetailCard({ detail, source, onClose }: DetailCardProps) {
+export function DetailCard({
+	detail,
+	source,
+	onClose,
+	onOpenGuide,
+}: DetailCardProps) {
 	if (!detail) {
 		return (
 			<section className="q-card corridor-detail corridor-detail--empty">
@@ -58,6 +64,16 @@ export function DetailCard({ detail, source, onClose }: DetailCardProps) {
 							{source === "seed" ? " · sin conexión a Supabase" : ""}
 						</p>
 					</div>
+				</div>
+				<div className="q-card__foot">
+					<button
+						type="button"
+						className="q-btn q-btn--primary q-btn--block"
+						onClick={onOpenGuide}
+					>
+						<MessageCircle size={20} strokeWidth={1.75} aria-hidden="true" />
+						Pregúntale al Guía · Ask the Guide
+					</button>
 				</div>
 			</section>
 		);

@@ -1,7 +1,9 @@
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { LocateFixed, Minus, Plus } from "lucide-react";
+import { LocateFixed, MessageCircle, Minus, Plus } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { crowdByZoneFrom } from "../../lib/city-events/city-state";
+import { useCityState } from "../../lib/city-events/use-city-state";
 import { boundsOf, corridorLine } from "../../lib/corridor/corridor-geometry";
 import {
 	describeSelection,
@@ -16,8 +18,11 @@ import type {
 	CorridorData,
 	CorridorDataSource,
 } from "../../lib/corridor/corridor-types";
+import { DESTINATIONS, type DestinationKey } from "../../lib/trip/trip-planner";
+import { GuidePanel } from "../guide/guide-panel";
 import "./corridor-map.css";
 import { DetailCard } from "./detail-card";
+import { FloodAlertBanner } from "./flood-alert-banner";
 import { MapHeader, type Theme } from "./map-header";
 import {
 	buildCorridorLayers,
@@ -25,7 +30,10 @@ import {
 	type LayerKey,
 } from "./map-layers";
 import { setMarkerSelected } from "./map-markers";
+import { RouteCard } from "./route-card";
 import { StopList } from "./stop-list";
+import { useFloodCountdown } from "./use-flood-countdown";
+import { type RouteQuery, useRoutePlan } from "./use-route-plan";
 
 // Standard OpenStreetMap tiles: no API key. The dark theme darkens them in CSS.
 const TILE_URL = "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
@@ -77,6 +85,7 @@ export default function CorridorMap({ data, source }: CorridorMapProps) {
 	const mapRef = useRef<L.Map | null>(null);
 	const layersRef = useRef<CorridorLayers | null>(null);
 	const [selected, setSelected] = useState<Selection | null>(null);
+	const [guideOpen, setGuideOpen] = useState(false);
 	const [theme, setTheme] = useState<Theme>(() =>
 		document.documentElement.dataset.theme === "dark" ? "dark" : "light",
 	);
@@ -91,6 +100,21 @@ export default function CorridorMap({ data, source }: CorridorMapProps) {
 	});
 
 	const stops = useMemo(() => orderedStops(data.stops), [data.stops]);
+	const { state: city, lastEvent } = useCityState();
+	const flood = useFloodCountdown(lastEvent, data.floodZones);
+	const crowdByZone = useMemo(() => crowdByZoneFrom(city), [city]);
+	const [query, setQuery] = useState<RouteQuery>({
+		origin: "STOP-MALECON-SUR",
+		destination: "STOP-ESTADIO",
+		accessibleMode: false,
+	});
+	const { plan, loading, error } = useRoutePlan(
+		query,
+		flood.blocked,
+		crowdByZone,
+	);
+	const planLayerRef = useRef<L.LayerGroup | null>(null);
+	const floodLayerRef = useRef<L.LayerGroup | null>(null);
 	const detail = useMemo(
 		() => describeSelection(data, selected),
 		[data, selected],
@@ -113,6 +137,8 @@ export default function CorridorMap({ data, source }: CorridorMapProps) {
 		fitCorridor(map, data);
 		mapRef.current = map;
 		layersRef.current = layers;
+		planLayerRef.current = L.layerGroup().addTo(map);
+		floodLayerRef.current = L.layerGroup().addTo(map);
 		return () => {
 			map.remove();
 			mapRef.current = null;
@@ -136,6 +162,39 @@ export default function CorridorMap({ data, source }: CorridorMapProps) {
 		}
 	}, [visible, selected]);
 
+	// Draws the route the Decider chose.
+	useEffect(() => {
+		const layer = planLayerRef.current;
+		if (!layer) return;
+		layer.clearLayers();
+		const route = plan?.route;
+		if (!route) return;
+		const byCode = new Map(data.stops.map((stop) => [stop.code, stop]));
+		const path = route.stopCodes.flatMap((code) => {
+			const stop = byCode.get(code);
+			return stop ? [[stop.latitude, stop.longitude] as L.LatLngTuple] : [];
+		});
+		L.polyline(path, { className: "corridor-plan", interactive: false }).addTo(
+			layer,
+		);
+	}, [plan, data.stops]);
+
+	// Paints flood zones activated by city-events (downpour) in pulsing red.
+	useEffect(() => {
+		const layer = floodLayerRef.current;
+		if (!layer) return;
+		layer.clearLayers();
+		const active = new Set(flood.blocked);
+		for (const zone of data.floodZones) {
+			if (!active.has(zone.code)) continue;
+			L.circle([zone.latitude, zone.longitude], {
+				radius: zone.radius_meters,
+				className: "corridor-flood corridor-flood--red corridor-flood--live",
+				interactive: false,
+			}).addTo(layer);
+		}
+	}, [flood.blocked, data.floodZones]);
+
 	const toggleLayer = (key: LayerKey) => {
 		setVisible((current) => ({ ...current, [key]: !current[key] }));
 		// A hidden layer cannot keep the selected point.
@@ -157,6 +216,12 @@ export default function CorridorMap({ data, source }: CorridorMapProps) {
 		const match = findPoint(data, query);
 		if (match) focusPoint(match);
 		return match !== null;
+	};
+
+	/** From the Guide's trip card: hide the Guide (it keeps its conversation) and show the destination. */
+	const showDestination = (destination: DestinationKey) => {
+		setGuideOpen(false);
+		focusPoint({ kind: "stop", code: DESTINATIONS[destination].stopCode });
 	};
 
 	const toggleTheme = () => {
@@ -192,6 +257,15 @@ export default function CorridorMap({ data, source }: CorridorMapProps) {
 					}}
 					onToggle={toggleLayer}
 				/>
+				<button
+					type="button"
+					className="q-btn q-btn--primary corridor-guide-button"
+					aria-expanded={guideOpen}
+					onClick={() => setGuideOpen(true)}
+				>
+					<MessageCircle size={20} strokeWidth={1.75} aria-hidden="true" />
+					Pregúntale al Guía · Ask the Guide
+				</button>
 				<div className="corridor-panel__stops">
 					<StopList
 						stops={stops}
@@ -229,11 +303,33 @@ export default function CorridorMap({ data, source }: CorridorMapProps) {
 			</div>
 
 			<div className="corridor-app__detail">
-				<DetailCard
-					detail={detail}
-					source={source}
-					onClose={() => setSelected(null)}
-				/>
+				{/* Hidden, not unmounted, so the conversation survives "Ver en el mapa". */}
+				<div hidden={!guideOpen}>
+					<GuidePanel
+						onShowOnMap={showDestination}
+						onClose={() => setGuideOpen(false)}
+					/>
+				</div>
+				{!guideOpen &&
+					(detail ? (
+						<DetailCard
+							detail={detail}
+							source={source}
+							onClose={() => setSelected(null)}
+							onOpenGuide={() => setGuideOpen(true)}
+						/>
+					) : (
+						<RouteCard
+							stops={stops}
+							query={query}
+							onQueryChange={setQuery}
+							plan={plan}
+							loading={loading}
+							error={error}
+							alert={<FloodAlertBanner alert={flood.alert} />}
+							onOpenGuide={() => setGuideOpen(true)}
+						/>
+					))}
 			</div>
 		</div>
 	);

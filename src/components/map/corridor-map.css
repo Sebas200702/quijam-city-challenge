@@ -86,9 +86,9 @@
 		left: auto;
 		right: 16px;
 		bottom: 32px;
-		width: 360px;
+		width: 400px;
 	}
-	.corridor-detail--empty {
+	.corridor-detail--empty:not(.route-card) {
 		display: none;
 	}
 }
@@ -381,4 +381,112 @@
 	color: var(--ink);
 	font-size: 12px;
 	font-weight: 600;
+}
+
+/* ── Guide entry: in the empty card on phones, in the left column on wide screens ── */
+.corridor-guide-button {
+	display: none;
+}
+@media (min-width: 640px) {
+	.corridor-guide-button {
+		display: inline-flex;
+	}
+}
+
+/* ── Planned route and live alerts (decider integration) ── */
+.corridor-plan {
+	fill: none;
+	stroke: var(--green, #1f9d55);
+	stroke-width: 6;
+	stroke-dasharray: 2 10;
+	stroke-linecap: round;
+}
+.corridor-flood--live {
+	animation: corridor-flood-pulse 1.6s ease-in-out infinite;
+}
+@keyframes corridor-flood-pulse {
+	50% {
+		fill-opacity: 0.45;
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.corridor-flood--live {
+		animation: none;
+	}
+}
+.route-card__body {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+.route-card__fields {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 8px;
+}
+.route-card__fields label {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	min-width: 0;
+}
+.route-card__fields select {
+	min-height: 44px;
+	border-radius: 10px;
+	padding: 0 8px;
+	background: var(--surface-raised, #fff);
+	color: inherit;
+	border: 1px solid var(--frame, #d0d5dd);
+}
+.route-card__toggle {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	min-height: 44px;
+}
+.route-card__toggle input {
+	width: 20px;
+	height: 20px;
+}
+.route-card__facts {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+}
+.route-card__details summary {
+	cursor: pointer;
+	min-height: 44px;
+	display: flex;
+	align-items: center;
+}
+.route-card__alert {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 10px 14px;
+	background: var(--red, #c62828);
+	color: #fff;
+	font-weight: 600;
+}
+
+/* ── Flood alert: the only alert that interrupts (epic #57, rule 4). From PR #63. ── */
+.corridor-alert {
+	border-bottom: 2px solid var(--red);
+}
+.corridor-alert__body {
+	padding: 12px 16px;
+}
+.corridor-alert__title {
+	font-weight: 700;
+	color: var(--red-text, var(--red));
+}
+.corridor-alert__text {
+	margin-top: 4px;
+	font-size: 0.875rem;
+	color: var(--ink);
+}
+@media (min-width: 640px) {
+	.route-card__guide {
+		display: none;
+	}
 }

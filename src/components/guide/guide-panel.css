@@ -1,0 +1,167 @@
+/* The Guide: a QUILLART card (q-card, q-msg, q-chip, q-prompt) with the trip
+   card and the report form. Only layout lives here. */
+
+.guide-panel {
+	display: flex;
+	flex-direction: column;
+	max-height: min(72dvh, 680px);
+}
+.guide-panel__title {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+.guide-panel .q-card__head .q-btn {
+	margin: -8px -12px 0 0;
+}
+.guide-panel__log {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	gap: 12px;
+	min-height: 0;
+	padding: 16px;
+	overflow-y: auto;
+}
+.guide-panel__log .q-msg__col {
+	max-width: min(88%, 520px);
+}
+/* The Guide's answers carry the trip card: give them the full width beside the avatar. */
+.guide-panel__log .q-msg--ai .q-msg__col {
+	flex: 1;
+	max-width: none;
+	min-width: 0;
+}
+.guide-panel__foot {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	padding: 0 16px 16px;
+}
+.guide-panel__chips {
+	display: flex;
+	gap: 8px;
+	overflow-x: auto;
+	scrollbar-width: none;
+}
+.guide-panel__chips .q-chip {
+	flex: none;
+}
+
+/* ── Trip card ── */
+.guide-trip {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	padding: 14px;
+	border-radius: var(--radius-lg);
+	background: var(--surface);
+	box-shadow: var(--shadow-card);
+}
+.guide-trip__main {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 12px;
+}
+.guide-trip__icon {
+	display: grid;
+	flex: none;
+	place-items: center;
+	width: 44px;
+	height: 44px;
+	border-radius: var(--radius-md);
+	background: var(--green-soft);
+	color: var(--green-text);
+}
+.guide-trip__text {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 4px;
+	min-width: 0;
+}
+.guide-trip__title {
+	font-weight: 600;
+}
+.guide-trip__fare {
+	margin-left: auto;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
+	text-align: right;
+}
+.guide-trip__amount {
+	font-size: 20px;
+	font-weight: 700;
+	line-height: 24px;
+}
+.guide-trip__taxi {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 6px;
+	margin: 0;
+	padding: 8px 10px;
+	border-radius: var(--radius-md);
+	background: var(--gold-soft);
+	color: var(--ink);
+	font-size: 13px;
+	line-height: 18px;
+}
+
+/* ── Report form ── */
+.guide-report {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	padding: 14px;
+	border-radius: var(--radius-lg);
+	background: var(--surface);
+	box-shadow: var(--shadow-card);
+}
+.guide-report--saved,
+.guide-report--offline {
+	flex-direction: row;
+	align-items: center;
+}
+.guide-report--saved {
+	background: var(--green-soft);
+	color: var(--green-text);
+}
+/* Not sent yet: gold, never the green of a confirmed report. */
+.guide-report--offline {
+	background: var(--gold-soft);
+	color: var(--gold-text);
+}
+.guide-report--saved .q-p,
+.guide-report--offline .q-p {
+	flex: 1;
+	color: var(--ink);
+}
+.guide-report__field {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	margin: 0;
+	padding: 0;
+	border: 0;
+}
+.guide-report__error {
+	margin: 0;
+	color: var(--red-text);
+}
+.guide-input {
+	min-height: 44px;
+	padding: 8px 12px;
+	border: 1px solid var(--line-control);
+	border-radius: var(--radius-md);
+	background: var(--surface-raised);
+	color: var(--ink);
+	font: inherit;
+}
+.guide-input:focus-visible {
+	outline: 2px solid var(--focus);
+	outline-offset: 2px;
+}

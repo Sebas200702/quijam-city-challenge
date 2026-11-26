@@ -34,6 +34,8 @@ import type {
 	VisitorPresenceSummary,
 } from "../lib/presence/visitor-presence-types";
 import { CityAuthGate } from "./city-auth-gate";
+import { CrowdSimPanel } from "./crowd-sim-panel";
+import { ImpactReportPanel } from "./impact-report-panel";
 import { JuryQrPanel } from "./jury-qr-panel";
 
 const EMPTY_PRESENCE: VisitorPresenceSummary = {
@@ -431,6 +433,7 @@ export function CityDashboard() {
 				</section>
 
 				<JuryQrPanel summary={presence} connectionState={presenceState} />
+				{zones.length > 0 && <CrowdSimPanel zones={zones} canWrite />}
 
 				{/* Active flood alert card */}
 				<section
@@ -683,6 +686,8 @@ export function CityDashboard() {
 						</div>
 					</div>
 				</section>
+
+				<ImpactReportPanel />
 			</main>
 		</>
 	);

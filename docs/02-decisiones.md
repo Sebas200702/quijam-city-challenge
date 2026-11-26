@@ -118,6 +118,22 @@ Base: la asignación hecha por Sebastián en el tablero. Se completaron los issu
 - Si Supabase no está configurado o no responde, el mapa usa una copia local de `supabase/seed.sql` y lo dice en pantalla.
 - La interfaz del mapa usa los componentes `q-*` de QUILLART e iconos de `lucide-react`. Una tarjeta con el detalle del punto reemplaza los popups de Leaflet.
 
+## Caso 1: Guía y reporte (26 nov 2026)
+
+- El Guía responde por texto en el idioma del visitante. Con `GEMINI_API_KEY` redacta Gemini usando solo nuestros datos; sin llave o si falla, responde un Guía local en español, inglés, portugués, francés y alemán.
+- La tarjeta de ruta siempre sale del planificador y el Decisor, nunca del texto del modelo.
+- Ruta verde primero; el taxi verificado aparece como alternativa con su rango de tarifa justa.
+- El reporte de cobro abusivo se guarda desde el servidor con la llave pública (aplica RLS) y no pide nombre, teléfono ni ubicación. Sin conexión queda guardado en el teléfono.
+- Guion de ensayo en [19-caso-1.md](19-caso-1.md).
+
+## Consolidación de rutas y alertas (26 nov 2026)
+
+- **Una sola fuente de tramos:** `segments` en los datos del corredor (de #64). `/api/decidir` los lee de ahí.
+- **Un solo canal `city-events`:** el de #66 (`src/lib/city-events/`). El de #63 no se trae.
+- **Rutas del visitante en el mapa:** `planRoute` + `/api/decidir` (itinerarios de varios tramos, reglas duras, OpenJev, puntaje ponderado).
+- **Guía del caso 1:** `trip-planner` de #64 se mantiene para las respuestas multilingües; usa el mismo núcleo del Decisor (reglas duras y puntaje). Mapa y Guía coinciden en el caso 1.
+- **Alerta de arroyos:** cuenta regresiva de #62 y banner de #63 sobre el mapa. Los planificadores duplicados de #62 (`route-options`, `route-recalc`, semilla propia) no se traen.
+
 ## QR del jurado y presencia en vivo (26 nov 2026)
 
 - **Presencia anónima:** el conteo de jurados y visitantes conectados usa un canal público de Supabase Realtime Presence (`visitor-presence`) con un ID temporal (`vis_...`) en `sessionStorage`, sin registro ni datos personales. La identidad del conteo es la clave de presencia del canal.
