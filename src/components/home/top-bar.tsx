@@ -1,4 +1,4 @@
-import type { NavSection } from "./bottom-nav";
+import type { NavSection } from "./nav-sections";
 import { QuillartLogo } from "./quillart-logo";
 import { TopNav } from "./top-nav";
 
