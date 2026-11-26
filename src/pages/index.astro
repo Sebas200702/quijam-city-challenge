@@ -1,30 +1,50 @@
 ---
+import { AiPromptLink } from "../components/home/ai-prompt-link";
+import { BottomNav } from "../components/home/bottom-nav";
+import { FeatureGrid } from "../components/home/feature-grid";
+import { HomeHeader } from "../components/home/home-header";
+import { MatchCard } from "../components/home/match-card";
 import BaseLayout from "../layouts/base-layout.astro";
+import { homeContent } from "../lib/home-content";
+
+const { match, features, aiHref } = homeContent;
 ---
 
-<BaseLayout title="QUILLART · City Challenge 2034">
-	<main class="mx-auto max-w-2xl px-4 py-16">
-		<div class="q-card">
-			<div class="q-flag" aria-hidden="true">
-				<i></i><i></i><i></i>
-			</div>
-			<div class="q-card__head">
-				<div>
-					<p class="q-eyebrow">Barranquilla 2034</p>
-					<h1 class="q-h1 mt-1">QUILLART</h1>
+<BaseLayout title="QUILLART · Barranquilla 2034" theme="light" rememberTheme>
+	<div class="mx-auto flex min-h-[calc(100dvh-3px)] w-full max-w-md flex-col lg:max-w-6xl">
+		<main class="flex flex-1 flex-col gap-4 px-4 pt-4 pb-3 lg:gap-10 lg:px-8 lg:pt-6 lg:pb-16">
+			<HomeHeader
+				weatherLabel={homeContent.weatherLabel}
+				current="home"
+				aiHref={aiHref}
+				client:load
+			/>
+			{/* Mobile: one column in DOM order. Desktop: greeting + AI on the left, match on the right, features below. */}
+			<div class="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-x-12 lg:gap-y-10">
+				<div class="lg:col-start-1 lg:row-start-1 lg:self-end">
+					<h1 class="q-display lg:text-[56px] lg:leading-[60px]">
+						{homeContent.greeting}
+					</h1>
+					<p class="q-p q-muted font-[var(--font-display)] text-xl leading-[26px] lg:text-2xl lg:leading-8">
+						{homeContent.tagline}
+					</p>
 				</div>
-				<span class="q-badge q-badge--high">Simulado 2034</span>
+				<div class="lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:self-center">
+					<MatchCard
+						timeLabel={match.timeLabel}
+						title={match.title}
+						venue={match.venue}
+						illustration={match.illustration}
+					/>
+				</div>
+				<div class="lg:col-span-2 lg:row-start-3">
+					<FeatureGrid items={features} />
+				</div>
+				<div class="lg:col-start-1 lg:row-start-2 lg:self-start">
+					<AiPromptLink href={aiHref} />
+				</div>
 			</div>
-			<div class="q-card__body">
-				<p class="q-p q-muted">
-					Prototipo del corredor Estadio Metropolitano – Gran Malecón.
-				</p>
-			</div>
-			<div class="q-card__foot">
-				<a href="/ciudad" class="q-btn q-btn--primary">
-					Abrir Centro de Mando
-				</a>
-			</div>
-		</div>
-	</main>
+		</main>
+		<BottomNav current="home" aiHref={aiHref} />
+	</div>
 </BaseLayout>

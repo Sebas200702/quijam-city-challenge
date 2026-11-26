@@ -3,13 +3,16 @@ import "../styles/global.css";
 
 interface Props {
 	title: string;
+	/** Default theme. The user's saved choice wins when `rememberTheme` is set. */
+	theme?: "light" | "dark";
+	rememberTheme?: boolean;
 }
 
-const { title } = Astro.props;
+const { title, theme = "dark", rememberTheme = false } = Astro.props;
 ---
 
 <!doctype html>
-<html lang="es" data-theme="dark">
+<html lang="es" data-theme={theme}>
 	<head>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -21,6 +24,18 @@ const { title } = Astro.props;
 			href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap"
 		/>
 		<title>{title}</title>
+		{
+			rememberTheme && (
+				<script is:inline>
+					try {
+						const saved = localStorage.getItem("quillart-theme");
+						if (saved === "light" || saved === "dark") {
+							document.documentElement.dataset.theme = saved;
+						}
+					} catch {}
+				</script>
+			)
+		}
 	</head>
 	<body class="q-root min-h-dvh">
 		<div class="q-flag q-flag--thin" aria-hidden="true">
