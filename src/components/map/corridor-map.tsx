@@ -2,6 +2,7 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { LocateFixed, Minus, Plus } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useCityState } from "../../lib/city-events/use-city-state";
 import { boundsOf, corridorLine } from "../../lib/corridor/corridor-geometry";
 import {
 	describeSelection,
@@ -25,7 +26,9 @@ import {
 	type LayerKey,
 } from "./map-layers";
 import { setMarkerSelected } from "./map-markers";
+import { RouteCard } from "./route-card";
 import { StopList } from "./stop-list";
+import { type RouteQuery, useRoutePlan } from "./use-route-plan";
 
 // Standard OpenStreetMap tiles: no API key. The dark theme darkens them in CSS.
 const TILE_URL = "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
@@ -91,6 +94,15 @@ export default function CorridorMap({ data, source }: CorridorMapProps) {
 	});
 
 	const stops = useMemo(() => orderedStops(data.stops), [data.stops]);
+	const { state: city } = useCityState();
+	const [query, setQuery] = useState<RouteQuery>({
+		origin: "STOP-MALECON-SUR",
+		destination: "STOP-ESTADIO",
+		accessibleMode: false,
+	});
+	const { plan, loading, error } = useRoutePlan(query, city);
+	const planLayerRef = useRef<L.LayerGroup | null>(null);
+	const floodLayerRef = useRef<L.LayerGroup | null>(null);
 	const detail = useMemo(
 		() => describeSelection(data, selected),
 		[data, selected],
@@ -113,6 +125,8 @@ export default function CorridorMap({ data, source }: CorridorMapProps) {
 		fitCorridor(map, data);
 		mapRef.current = map;
 		layersRef.current = layers;
+		planLayerRef.current = L.layerGroup().addTo(map);
+		floodLayerRef.current = L.layerGroup().addTo(map);
 		return () => {
 			map.remove();
 			mapRef.current = null;
@@ -135,6 +149,39 @@ export default function CorridorMap({ data, source }: CorridorMapProps) {
 			setMarkerSelected(marker, key === selectedKey);
 		}
 	}, [visible, selected]);
+
+	// Draws the route the Decider chose.
+	useEffect(() => {
+		const layer = planLayerRef.current;
+		if (!layer) return;
+		layer.clearLayers();
+		const route = plan?.route;
+		if (!route) return;
+		const byCode = new Map(data.stops.map((stop) => [stop.code, stop]));
+		const path = route.stopCodes.flatMap((code) => {
+			const stop = byCode.get(code);
+			return stop ? [[stop.latitude, stop.longitude] as L.LatLngTuple] : [];
+		});
+		L.polyline(path, { className: "corridor-plan", interactive: false }).addTo(
+			layer,
+		);
+	}, [plan, data.stops]);
+
+	// Paints flood zones activated by city-events (downpour) in pulsing red.
+	useEffect(() => {
+		const layer = floodLayerRef.current;
+		if (!layer) return;
+		layer.clearLayers();
+		const active = new Set(city.activeFloodZoneIds);
+		for (const zone of data.floodZones) {
+			if (!active.has(zone.code)) continue;
+			L.circle([zone.latitude, zone.longitude], {
+				radius: zone.radius_meters,
+				className: "corridor-flood corridor-flood--red corridor-flood--live",
+				interactive: false,
+			}).addTo(layer);
+		}
+	}, [city.activeFloodZoneIds, data.floodZones]);
 
 	const toggleLayer = (key: LayerKey) => {
 		setVisible((current) => ({ ...current, [key]: !current[key] }));
@@ -229,11 +276,23 @@ export default function CorridorMap({ data, source }: CorridorMapProps) {
 			</div>
 
 			<div className="corridor-app__detail">
-				<DetailCard
-					detail={detail}
-					source={source}
-					onClose={() => setSelected(null)}
-				/>
+				{detail ? (
+					<DetailCard
+						detail={detail}
+						source={source}
+						onClose={() => setSelected(null)}
+					/>
+				) : (
+					<RouteCard
+						stops={stops}
+						query={query}
+						onQueryChange={setQuery}
+						plan={plan}
+						loading={loading}
+						error={error}
+						floodAlert={city.activeFloodZoneIds.length > 0}
+					/>
+				)}
 			</div>
 		</div>
 	);
