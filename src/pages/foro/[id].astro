@@ -1,0 +1,12 @@
+---
+import ThreadPage from "../../components/community/thread-page";
+import BaseLayout from "../../layouts/base-layout.astro";
+import { homeContent } from "../../lib/home-content";
+
+const { id = "" } = Astro.params;
+const { aiHref } = homeContent;
+---
+
+<BaseLayout title="Conversación">
+	<ThreadPage client:only="react" threadId={id} aiHref={aiHref} />
+</BaseLayout>
