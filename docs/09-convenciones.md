@@ -81,7 +81,9 @@ Se aprueba o se piden cambios concretos. Comentarios en español.
 
 ## Datos
 
-- Los datos del prototipo son simulados y se marcan como tales en la interfaz y en el pitch.
+- **Datos reales y datos de referencia (desde el 27 nov 2026).** Lo que publican las personas (eventos, inscripciones, conversaciones) es real y no se marca. Los datos semilla del corredor (paraderos, tarifas, arroyos, conteos) y la agenda inicial son **datos de referencia** y se marcan con una etiqueta discreta "datos de referencia", una vez por pantalla y no en cada tarjeta. Los escenarios del simulador de multitudes ("Ensayo de escenarios") se presentan como ensayo, no como la ciudad en vivo. Antes decía: "los datos del prototipo son simulados y se marcan como tales".
+- No se inventan cifras: si un dato no está en [04-cifras-verificadas.md](04-cifras-verificadas.md) o en la base, no se muestra como hecho.
+- Todo contenido público escrito por personas pasa por el triaje de moderación ([20-comunidad-y-moderacion.md](20-comunidad-y-moderacion.md)).
 - Toda cifra real lleva fuente y fecha.
 - No se suben datos personales al repositorio.
 - No se suben secretos (`.env`, llaves de API). Se documentan en un `.env.example` sin valores.

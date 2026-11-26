@@ -4,6 +4,8 @@ Nombre del producto: **QUILLART** (Quilla + Smart + Art). Lema provisional: Tu g
 
 Es el sistema nervioso digital de Barranquilla como sede del Mundial: turismo inteligente, cartografía en tiempo real, un guía conversacional (**Quillart AI**) y un motor de decisiones urbanas (**Decision Engine**).
 
+**Actualización 27 nov 2026:** QUILLART es una **plataforma ciudadana real**, no un gemelo virtual ni una simulación. Conecta a residentes y visitantes entre sí y con la ciudad (eventos propios, inscripciones con cupos, foro moderado, espacios públicos y naturaleza). La puerta de entrada es **Quillart AI**: una conversación con agentes especializados por apartado, donde la voz es solo el conducto. Ver [20-comunidad-y-moderacion.md](20-comunidad-y-moderacion.md) y [21-quillart-ai.md](21-quillart-ai.md).
+
 ## Problema central
 
 En 2034 Barranquilla recibe más visitantes de los que su información y sus servicios pueden orientar: datos de ciudad dispersos, transporte y tarifas sin referencia confiable y oferta local invisible. Resultado: visitante desorientado y cobrado de más, ciudad congestionada y gasto del Mundial lejos de los barrios.
@@ -23,13 +25,32 @@ En 2034 Barranquilla recibe más visitantes de los que su información y sus ser
   - **Decisor:** modelo de decisión de pesos abiertos (OpenJev). Elige la mejor ruta para el visitante y propone a la ciudad a dónde desviar multitudes.
 - **Músculos (actuar):** aplicación web, QR y WhatsApp, tablero de ciudad, anfitriones en calle.
 
+### Capa de comunidad y agentes (27 nov 2026)
+
+- **Sentidos:** además de los datos institucionales, lo que publican las personas: eventos, conversaciones y avisos de problemas en el espacio público.
+- **Cerebro:** el Guía se convierte en **Quillart AI**, un orquestador con seis agentes especializados: Agenda, Comunidad, Lugares y naturaleza, Movilidad (usa el Guía y el Decisor), Reportes a la ciudad y Cuenta. OpenJev, además de decidir rutas y desvíos, **modera** (triaje de cada publicación) y **enruta** la conversación al agente correcto.
+- **Músculos:** landing en `/`; app con la conversación en `/inicio`; Agenda, Comunidad (foro), Lugares, Perfil y Mapa; cola de moderación de la ciudad en `/moderacion`; tablero de ciudad en `/ciudad` con el "Ensayo de escenarios" (simulador de multitudes como herramienta de planeación).
+
+| Ruta | Qué es |
+|---|---|
+| `/` | Landing page |
+| `/inicio` | Quillart AI: inicio de la app; acepta `?q=` |
+| `/agenda`, `/agenda/nuevo`, `/agenda/<id>` | Eventos, publicar, detalle e inscripción |
+| `/foro`, `/foro/<id>` | Comunidad: conversaciones y respuestas |
+| `/lugares`, `/lugares/<slug>` | Espacios públicos y naturaleza |
+| `/perfil` | Cuenta, inscripciones y publicaciones |
+| `/mapa` | Corredor piloto, rutas y alertas |
+| `/moderacion` | Cola de moderación (rol ciudad) |
+| `/ciudad` | Tablero de ciudad (rol ciudad) |
+| `/prueba-guia` | Gemini Live (beta) |
+
 ## Sistema de diseño (QUILLART Design System)
 
 Dirección estética: **Tropical Cyber-Clean**, la calidez del Caribe con la precisión de un centro de mando.
 
 **Modos de la plataforma**
 
-- **Turista** (claro por defecto, también oscuro): mapa + tarjeta de punto de interés + Quillart AI. Lenguaje cercano, una acción primaria por vista; permite habla local ("trancón", "¡Ajá!").
+- **Turista** (claro por defecto, también oscuro): desde el 27 nov abre en la conversación con Quillart AI; mapa y tarjeta de punto de interés quedan como un apartado. Lenguaje cercano, una acción primaria por vista; permite habla local ("trancón", "¡Ajá!").
 - **Centro de Mando** (recomendado oscuro): mapa con tráfico, tarjetas de decisión, KPIs, badge EN VIVO. Denso y sobrio, sin habla local.
 
 **Principios**
@@ -68,9 +89,9 @@ Fuente: artefacto "QUILLART" (sistema de diseño) en claude.ai.
 | Dimensión | Cómo la cubrimos |
 |---|---|
 | Ciudad y territorio | Rutas accesibles en el corredor Estadio – Malecón; QR en infraestructura que ya existe. |
-| Sostenibilidad | Alerta de arroyos como resiliencia climática; rutas verdes; recompensas por eventos ambientales; sombra, hidratación y puntos de reciclaje en el mapa. |
-| Ciudad inteligente | Datos abiertos, tres agentes, tablero. |
-| Ciudadanía | Anfitriones intergeneracionales, comités de barrio, reporte de cobros abusivos. |
+| Sostenibilidad | Alerta de arroyos como resiliencia climática; rutas verdes; recompensas por eventos ambientales; sombra, hidratación y puntos de reciclaje en el mapa; catálogo de naturaleza (Ciénaga de Mallorquín, Isla de Salamanca, Bocas de Ceniza) con eventos de la comunidad. |
+| Ciudad inteligente | Datos abiertos, Quillart AI con agentes especializados, moderación por triaje con OpenJev, tablero. |
+| Ciudadanía | Anfitriones intergeneracionales, comités de barrio, reporte de cobros abusivos; eventos propios, inscripciones y foro moderado entre residentes y visitantes; avisos a la ciudad por el triaje. |
 | Economía y oportunidades | Negocios populares verificados; el vendedor se marca abierto con un QR; sellos por visita. El sello de negocio verificado es el primer paso de una formalización progresiva, con capacitación (alcance y aliados por definir). |
 
 ## Corredor piloto

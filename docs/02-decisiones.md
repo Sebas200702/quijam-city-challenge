@@ -138,3 +138,30 @@ Base: la asignación hecha por Sebastián en el tablero. Se completaron los issu
 
 - **Presencia anónima:** el conteo de jurados y visitantes conectados usa un canal público de Supabase Realtime Presence (`visitor-presence`) con un ID temporal (`vis_...`) en `sessionStorage`, sin registro ni datos personales. La identidad del conteo es la clave de presencia del canal.
 - **Generación de QR offline:** se adopta la dependencia `qrcode` para renderizar el QR directamente en el navegador sin servicios externos, manteniendo la operación sin conexión.
+
+## Plataforma ciudadana real y Quillart AI como puerta de entrada (27 nov 2026)
+
+Dirección del líder del equipo, en orden. Detalle en [20-comunidad-y-moderacion.md](20-comunidad-y-moderacion.md) y [21-quillart-ai.md](21-quillart-ai.md).
+
+1. **Entorno real, no simulación.** La app conecta a residentes de Barranquilla y visitantes entre sí y con el entorno: cada persona registra sus propios eventos, se inscribe con cupos, abre conversaciones en un foro y descubre espacios públicos y naturaleza. Se revisa la decisión "Sin red social" del 26 nov: hay comunidad, pero toda publicación pasa por el triaje de moderación.
+2. **No solo el mapa; foros moderados con OpenJev.** El mapa pasa a ser un apartado más. El foro, los eventos y las respuestas se moderan con triaje automático: reglas duras primero, OpenJev con tres preguntas (veredicto, etiqueta, prioridad) después, gana lo más estricto; un rechazo de OpenJev con confianza menor a 0,6 pasa a revisión humana; sin OpenJev decide solo con reglas. Los datos personales nunca se envían a OpenJev. Solo el servidor (llave de servicio) inserta contenido público. Lo retenido lo ven su autor y la ciudad, que lo revisa en `/moderacion`.
+3. **Tareas y documentación ajustadas.** Nueva épica en GitHub con sus sub-issues; cambian las reglas 2, 5 y 9 de la épica #57; nuevos documentos 20 y 21.
+4. **Separarse del gemelo virtual; landing page.** QUILLART deja de presentarse como gemelo virtual o simulación de la ciudad. Se crea una landing en `/` y la app pasa a `/inicio`. Los datos que escriben las personas son reales; los datos semilla del corredor se marcan de forma discreta como "datos de referencia" (antes "datos simulados 2034"). El simulador de multitudes se queda como herramienta de planeación de la ciudad: "Ensayo de escenarios".
+5. **La IA conversacional es la puerta de entrada.** Quillart AI es la pantalla de inicio (`/inicio`) y el conducto para conocer y ejecutar acciones: buscar, inscribirse, publicar, avisar a la ciudad. Toda acción se confirma en una tarjeta antes de ejecutarse y corre en el navegador con la sesión de la persona. Cada pantalla tiene un atajo "Pregúntale a Quillart" con `?q=`.
+6. **Agentes especializados; la voz solo es el conducto.** Un orquestador (continuación → palabras clave → OpenJev → agente por defecto) elige entre seis agentes: Agenda, Comunidad, Lugares y naturaleza, Movilidad, Reportes a la ciudad y Cuenta. Cada uno tiene sus instrucciones y solo sus herramientas. Gemini con llamadas a funciones redacta; si no hay llave o falla, responde un agente local determinista. La voz usa la Web Speech API del navegador (habla a texto y texto a habla); Gemini Live queda en beta en `/prueba-guia`.
+
+7. **Landing y app más visuales, menos texto.** La landing se rehízo con ilustraciones unDraw (una por agente), títulos cortos y chips de ejemplo; se quitaron los párrafos largos y las preguntas frecuentes. Las ilustraciones llegan también a los encabezados de sección, a los estados vacíos y al detalle de lugares y eventos. Ver [07-sistema-de-diseno.md](07-sistema-de-diseno.md).
+8. **Nada inventado en pantalla.** Se quitaron del inicio el partido "Hoy 19:30" y el clima fijo "31° soleado". El clima solo se mostrará cuando venga de una fuente real.
+
+Cambios de producto frente a la épica #57:
+
+- **Regla 2:** el inicio ya no abre en el mapa sino en la conversación con Quillart AI. Navegación móvil: Quillart (Inicio), Agenda, Comunidad, Lugares, Perfil.
+- **Regla 5:** se navega sin cuenta; la cuenta solo se pide para participar (inscribirse, publicar, responder).
+- **Regla 9:** contenido real de las personas, más una etiqueta discreta "datos de referencia" para la semilla del corredor.
+- Nueva variable de entorno solo de servidor: `SUPABASE_SERVICE_ROLE_KEY`.
+
+### Bitácora
+
+- Se pasó de "sin red social" a una comunidad moderada por triaje (reglas + OpenJev + revisión humana), que responde al riesgo original: "una red social nueva arranca vacía y exige moderación". No arranca vacía: la semilla trae lugares reales de la ciudad y una agenda inicial publicada por el equipo ("Agenda QUILLART").
+- OpenJev pasó de decidir solo rutas y desvíos a moderar contenido y enrutar la conversación entre agentes.
+- El Guía pasó de un chat con un solo agente a un orquestador con seis agentes especializados.

@@ -26,6 +26,24 @@ obligatorio:
 
 Corredor piloto: Estadio Metropolitano – Troncal Murillo – Centro – Barrio Abajo – Gran Malecón.
 
+**Actualización 27 nov 2026.** QUILLART es una plataforma ciudadana real, no un
+gemelo virtual. Conecta a residentes de Barranquilla y visitantes entre sí y con
+la ciudad:
+
+- **Quillart AI es la puerta de entrada** (`/inicio`): una conversación que
+  permite conocer la ciudad y ejecutar acciones. Un orquestador elige entre seis
+  agentes especializados (Agenda, Comunidad, Lugares y naturaleza, Movilidad,
+  Reportes a la ciudad y Cuenta). La voz es solo el conducto. Toda acción se
+  confirma antes de ejecutarse.
+- **Comunidad:** cada persona publica sus eventos, se inscribe con cupos, abre
+  conversaciones en el foro y descubre espacios públicos y naturaleza. Se navega
+  sin cuenta; la cuenta solo se pide para participar.
+- **Moderación por triaje:** reglas duras y OpenJev revisan cada publicación;
+  lo dudoso va a revisión humana y los avisos de problemas llegan a la cola de la
+  ciudad (`/moderacion`).
+- Landing en `/`. El mapa del corredor es un apartado más y la semilla del
+  corredor se marca como "datos de referencia".
+
 Detalle en [`docs/`](docs/).
 
 ## Entregables
@@ -71,6 +89,8 @@ Detalle en [`docs/`](docs/).
 | [`docs/17-informe-impacto.md`](docs/17-informe-impacto.md) | Informe de impacto con IA: cifras agregadas, verificación de números y respaldo sin IA |
 | [`docs/18-simulador-multitudes.md`](docs/18-simulador-multitudes.md) | Simulador de multitudes: eventos, reglas del desvío, conteos y rendimiento |
 | [`docs/19-caso-1.md`](docs/19-caso-1.md) | Caso 1 de punta a punta: requisitos, guion de ensayo de 2 minutos, plan B y registro de ensayos |
+| [`docs/20-comunidad-y-moderacion.md`](docs/20-comunidad-y-moderacion.md) | Comunidad (eventos, inscripciones, foro, lugares) y moderación por triaje con reglas duras y OpenJev; cola de la ciudad y puesta en marcha |
+| [`docs/21-quillart-ai.md`](docs/21-quillart-ai.md) | Quillart AI como puerta de entrada: orquestador, agentes especializados, confirmación de acciones y voz como conducto |
 | [`docs/feedback.md`](docs/feedback.md) | Registro de retroalimentación por sprint y validación con personas ajenas |
 
 ## Equipo
@@ -98,6 +118,15 @@ bun install
 cp .env.example .env   # llenar las variables de Supabase y Gemini
 bun run dev            # http://localhost:4321
 ```
+
+| Variable | Dónde | Para qué |
+|---|---|---|
+| `PUBLIC_SUPABASE_URL`, `PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Navegador y servidor | Datos, cuentas y Realtime. Sin ellas, semilla local y comunidad en el dispositivo. |
+| `SUPABASE_SERVICE_ROLE_KEY` | Solo servidor | Publicar después del triaje y cola de moderación. Nunca con `PUBLIC_`. |
+| `GEMINI_API_KEY` | Solo servidor | Quillart AI y Guía. Sin ella responde el agente local. |
+| `TYPESAFE_API_KEY` | Solo servidor | OpenJev: Decisor, moderación y enrutamiento. Sin ella, reglas y puntaje ponderado. |
+
+Puesta en marcha de la comunidad (migración, semilla y rol de ciudad): [`docs/20-comunidad-y-moderacion.md`](docs/20-comunidad-y-moderacion.md).
 
 | Comando | Qué hace |
 |---|---|
@@ -132,6 +161,13 @@ program: open city data, a network of verified hosts and local businesses, and a
 visitor web app plus a city dashboard. The pilot corridor runs from Estadio
 Metropolitano to the Gran Malecón. The product name is still to be decided.
 Stack: Astro, React 19, Tailwind CSS v4, TypeScript, Leaflet, Supabase, Gemini
-Live API, Bun, Biome, Vitest; deployed on Dokploy. Detailed documentation lives in [`docs/`](docs/) (in Spanish).
+Live API, Bun, Biome, Vitest; deployed on Dokploy.
+
+Update (27 Nov 2026): QUILLART is now a real civic platform, not a virtual twin.
+Quillart AI, a conversation backed by an orchestrator and six specialized agents
+(voice is only a conduit), is the entry point to discover the city and take
+actions with confirmation. Residents and visitors publish events, register with
+capacity limits and talk in a forum; every post goes through a moderation triage
+(hard rules plus OpenJev, human review when in doubt). Detailed documentation lives in [`docs/`](docs/) (in Spanish).
 
 `main` is protected for everyone: changes go through a pull request with one approval.
