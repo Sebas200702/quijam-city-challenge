@@ -1,0 +1,12 @@
+---
+import { PlaceDetail } from "../../components/community/place-detail";
+import BaseLayout from "../../layouts/base-layout.astro";
+import { homeContent } from "../../lib/home-content";
+
+const slug = Astro.params.slug ?? "";
+const { aiHref } = homeContent;
+---
+
+<BaseLayout title="Lugar · QUILLART">
+	<PlaceDetail client:only="react" slug={slug} aiHref={aiHref} />
+</BaseLayout>

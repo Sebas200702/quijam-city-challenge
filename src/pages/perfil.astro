@@ -1,0 +1,11 @@
+---
+import { ProfilePage } from "../components/community/profile-page";
+import BaseLayout from "../layouts/base-layout.astro";
+import { homeContent } from "../lib/home-content";
+
+const { aiHref } = homeContent;
+---
+
+<BaseLayout title="Mi perfil · QUILLART">
+	<ProfilePage client:only="react" aiHref={aiHref} />
+</BaseLayout>
