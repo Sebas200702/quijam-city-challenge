@@ -27,6 +27,18 @@ Notas:
 
 Regla común: una sola acción principal (`.q-btn--primary`) por pantalla (regla 2). Lo secundario va en el menú o en una hoja inferior.
 
+Regla 6 en la práctica: cada recomendación trae una frase de por qué con datos reales del corredor. Ejemplo canónico (caso 1, `visitante/c1-02-ruta`): "Evitamos el trancón de la Vía 40; esta ruta tiene sombra en los paraderos." Con aguacero (caso 2): "Evitamos el arroyo de la 46; esta ruta no tiene escaleras." No usar el ejemplo "arroyo de la 21" de la épica: ese arroyo no existe en la semilla.
+
+**Hora canónica de la demo** (la misma en todas las pantallas y en el guion del Demo Day):
+
+| Hora | Momento | Evento |
+|---|---|---|
+| 17:13 | Caso 1: el visitante envía el reporte de cobro abusivo | `cobro_abusivo` |
+| 17:18 | Caso 2: cae el aguacero; arroyo activo en 12 min | `aguacero` |
+| 17:45 | Caso 3: Malecón saturado (89 %) | `malecon_saturado` |
+
+**Valores canónicos del caso 2:** arroyos activos Carrera 46 (`ARR-MURILLO-46`) y La Felicidad (`ARR-FELICIDAD`); ruta accesible segura por la Vía 40; la dupla de anfitriones es de la zona Troncal Murillo (paraderos La Arenosa y Joaquín Barrios Polo) y recibe en "Joaquín Barrios Polo, salida con rampa" (`STOP-MURILLO-SUR`); el anfitrión llega en 8 min y luego 6 min; el visitante, en 15 min y luego 12 min.
+
 ### 2.1 Visitante
 
 **Pantalla de inicio:** mapa a pantalla completa, botón del Guía (voz o texto) y una sola tarjeta "tu siguiente paso" (`.q-next-step`) abajo.
@@ -77,22 +89,29 @@ flowchart TD
 | Elemento | Contenido |
 |---|---|
 | Acción principal | Abrir o cerrar el negocio |
-| Menú secundario | Productos y precios, Visitas, Mi sello, Ayuda, Idioma |
-| Hojas | Editar un producto, detalle de visitas del día |
-| Avisos | Discreto: "La ciudad invita visitantes a Barrio Abajo" (solo si su negocio está en la zona destino y abierto) |
+| Menú secundario | Productos y precios, Visitas, Dar sellos, Ayuda, Cómo te ven, Idioma |
+| Hojas | Editar un producto, detalle de visitas del día, dar un sello por QR |
+| Avisos | Discretos: "La ciudad invita visitantes a Barrio Abajo" (solo si su negocio está en la zona destino y abierto) y "Desvío en pausa" (arroyo activo en su zona o pausa del comité, reglas 5 y 6 de [14-desvio-barrio-abajo.md](14-desvio-barrio-abajo.md)) |
+| Pantallas | `base-01-entrada`, `base-02-alta`, `base-03-inicio`, `base-04-menu`, `base-05-productos`, `base-06-ayuda` (pedir ayuda), `base-07-vista-publica` (cómo ve el visitante su tarjeta), `c3-01-abierta`, `c3-02-llegan-visitantes`, `c3-03-visitas`, `c3-04-dar-sello`, `c3-05-arroyo-pausa` |
+
+"Dar sellos" es la acción del vendedor de entregar un **sello** al visitante (por QR, en los dos sentidos). No confundir con **Negocio verificado**, la insignia que el negocio recibe al darse de alta.
 
 ```mermaid
 flowchart TD
     IN["QR del negocio o enlace mágico"] --> FIRST{"¿Negocio dado de alta?"}
-    FIRST -->|no| ALTA["Alta: nombre, categoría, sello de verificado"]
+    FIRST -->|no| ALTA["Alta: nombre, categoría, insignia de negocio verificado"]
     FIRST -->|sí| HOME
     ALTA --> HOME["Inicio: estado + Marcarme abierta"]
     HOME --> MENU["Menú"]
     MENU --> MP["Productos y precios"]
     MENU --> VIS["Visitas"]
-    MENU --> SEAL["Mi sello"]
-    HOME -.->|desvío hacia su zona| CARD["Aviso: llegan visitantes"]
+    MENU --> SEAL["Dar sellos"]
+    MENU --> HELP["Ayuda: pedir ayuda"]
+    MENU --> PUB["Cómo te ven: vista pública"]
+    SEAL --> QR["Dar un sello por QR"]
+    HOME -.->|Malecón saturado y desvío hacia su zona| CARD["Aviso: llegan visitantes"]
     CARD --> VIS
+    CARD -.->|arroyo en su zona o pausa del comité| PAUSE["Aviso: desvío en pausa"]
 ```
 
 ### 2.3 Anfitrión
@@ -104,6 +123,8 @@ flowchart TD
 | Acción principal | Disponible → Aceptar asignación → Llegué → Terminar |
 | Menú secundario | Mi turno, Mi dupla, Ayuda, Idioma |
 | Hojas | Detalle de la asignación (necesidad: silla de ruedas, idioma; punto de encuentro) |
+| Zona de la demo | Troncal Murillo: paraderos La Arenosa y Joaquín Barrios Polo. Punto de encuentro: "Joaquín Barrios Polo, salida con rampa" (`STOP-MURILLO-SUR`) |
+| Ayudas | Frases: frases de apoyo bilingües para la dupla |
 | Avisos | Asignación entrante: notificación del sistema más hoja expandida (es parte de la respuesta a un arroyo, cuenta como seguridad). Arroyo en su zona: aviso discreto |
 
 ```mermaid
@@ -125,15 +146,16 @@ flowchart TD
 |---|---|
 | Acción principal | Aplicar la decisión del Decisor (con Descartar y Revertir como secundarias) |
 | Navegación | Pestañas: Mapa, Cobros, Indicadores, Informe |
-| Paneles | Decisión con `.q-band`, impacto, confianza en `.q-details`; bandeja de cobros (nuevo, en revisión, resuelto); simulador sobre el mapa; línea de tiempo abajo |
+| Paneles | Decisión con `.q-band`, impacto, confianza en `.q-details`; bandeja de cobros (Abierto, En revisión, Resuelto, Descartado); simulador sobre el mapa; línea de tiempo abajo |
 | Avisos | Arroyo activo: banda roja en el mapa y aviso en la columna. Nunca modal: la persona opera, no está en riesgo |
+| Pausa del comité | El comité de barrio no usa la app: llama o escribe, y el operador de ciudad toca "Pausa del comité" en el tablero en su nombre. El registro guarda quién la pidió (persona o cargo del comité), quién la aplicó y la hora. Mientras dura, Barrio Abajo no aparece como destino |
 
 ```mermaid
 flowchart LR
     LOGIN["Entrar"] --> MAP["Mapa: zonas, arroyos, simulador, línea de tiempo"]
     MAP --> DEC["Decisión pendiente: Aplicar / Descartar"]
-    DEC -->|Aplicar| APPLIED["Desvío activo + Revertir + pausa del comité"]
-    MAP --> REP["Cobros: nuevo → en revisión → resuelto"]
+    DEC -->|Aplicar| APPLIED["Desvío activo + Revertir + Pausa del comité"]
+    MAP --> REP["Cobros: Abierto → En revisión → Resuelto o Descartado"]
     MAP --> KPI["Indicadores (5)"]
     MAP --> AI["Informe con IA → exportar"]
 ```
@@ -144,9 +166,9 @@ flowchart LR
 
 | Elemento | Contenido |
 |---|---|
-| Acción principal | El disparador del caso en curso (Caso 1 → cobro abusivo, Caso 2 → aguacero, Caso 3 → Malecón saturado) |
+| Acción principal | Solo el disparador del caso que se está presentando (Caso 1 → cobro abusivo, Caso 2 → aguacero, Caso 3 → Malecón saturado). Los disparadores de los otros casos son botones secundarios |
 | Secundario | Modo de ciudad, línea de tiempo (reproducir), QR del jurado, enlaces a las otras superficies, reiniciar demo (con confirmación) |
-| Registro | Lista de eventos enviados con hora; confirma que cada superficie reaccionó en menos de 2 s |
+| Registro | Lista de eventos enviados con hora (17:13, 17:18 y 17:45 en la demo); confirma que cada superficie reaccionó en menos de 2 s |
 
 ```mermaid
 flowchart TD
@@ -174,7 +196,7 @@ Reglas 3 y 4 de la épica. Un aviso aparece solo si aplica al visitante y a su r
 
 | Prioridad | Aviso | Disparador | Condición | Forma | Se va cuando |
 |---|---|---|---|---|---|
-| 1 | **Arroyo activo** | `aguacero` (`zoneIds`, `startsInMin`) | Algún `zoneId` está en su ruta o es su zona actual | **Modal** (`.q-alert--modal.q-alert--alert`) con cuenta regresiva "Arroyo activo en 12 min". Acción principal: "Cambiar ruta" (el Decisor ya recalculó). Secundaria: "Pedir anfitrión" si el modo accesible está activo. Notificación del sistema si la app está en segundo plano (#47) | Toca "Cambiar ruta" o "Entendido". Después queda como banda roja en la tarjeta de ruta hasta `reiniciar` |
+| 1 | **Arroyo activo** | `aguacero` (`zoneIds`, `startsInMin`) | Algún `zoneId` está en su ruta o es su zona actual | **Modal** (`.q-alert--modal.q-alert--alert`) con cuenta regresiva "Arroyo activo en 12 min". Acción principal: "Cambiar ruta" (el Decisor ya recalculó). Secundaria: "Entendido". El modal no ofrece anfitrión: la oferta llega después, como aviso discreto `--info` en la ruta recalculada ("¿Quieres que un anfitrión te reciba?"), solo en modo accesible. Notificación del sistema si la app está en segundo plano (#47) | Toca "Cambiar ruta" o "Entendido". Después queda como banda roja en la tarjeta de ruta hasta `reiniciar` |
 | 1 | Arroyo fuera de su ruta | `aguacero` | Ningún `zoneId` le aplica | Sin aviso. La zona se pinta roja en el mapa | — |
 | 2 | **Anfitrión en camino / llegó** | Cambio de estado de su `host_assignments` (ver 4) | La asignación es suya | Aviso discreto `--safe`: "Tu anfitrión va en camino. Llega en 6 min" | Al pasar a "llegó" se reemplaza; al terminar se cierra solo |
 | 3 | **Sugerencia de desvío** | `malecon_saturado` con `capacityPct >= 85` (respaldo en uso). Si la épica acepta `desvio` (propuesta, ver 4.2), pasa a ese evento | Está en `gran_malecon`, no tiene ruta en curso y Barrio Abajo pasa las reglas duras de [14-desvio-barrio-abajo.md](14-desvio-barrio-abajo.md) | Aviso discreto `--info`: "Barrio Abajo a 20 min a pie. 12 negocios abiertos". Acción: "Ver Barrio Abajo" | La cierra, inicia otra ruta o el Malecón baja de 85 % |
@@ -205,9 +227,9 @@ Reglas 3 y 4 de la épica. Un aviso aparece solo si aplica al visitante y a su r
 
 | Superficie | Interrumpe con | Discreto |
 |---|---|---|
-| Vendedor | Nada | Desvío hacia su zona, nueva visita, sello entregado |
+| Vendedor | Nada | Llegan visitantes (desvío hacia su zona), Desvío en pausa (arroyo activo en su zona mientras había desvío, o pausa del comité; reglas 5 y 6 de [14-desvio-barrio-abajo.md](14-desvio-barrio-abajo.md)), nueva visita, sello entregado |
 | Anfitrión | Asignación entrante en un arroyo (notificación + hoja expandida) | Arroyo en su zona, asignación cancelada |
-| Ciudad | Nada | Arroyo activo, nuevo cobro abusivo, decisión pendiente |
+| Ciudad | Nada | Arroyo activo, cobro abusivo en estado Abierto, decisión pendiente |
 | Presentador | Nada | Confirmación de cada evento enviado |
 
 ## 4. Superficie × evento `city-events`
@@ -228,7 +250,7 @@ type CityEvent =
 
 | Evento | Publica | Visitante | Vendedor | Anfitrión | Ciudad | Presentador |
 |---|---|---|---|---|---|---|
-| `aguacero` | Presentador (#41) | Modal si toca su ruta o zona; zona roja en el mapa; ruta recalculada sin el arroyo (#52) | Nada | Aviso discreto si es su zona | Arroyos en rojo, cuenta regresiva, rutas afectadas, simulador reacciona (#42) | Registro "enviado" |
+| `aguacero` | Presentador (#41) | Modal si toca su ruta o zona; zona roja en el mapa; ruta recalculada sin el arroyo (#52) | Si había desvío hacia su zona y el arroyo está en ella: aviso discreto "Desvío en pausa" | Aviso discreto si es su zona | Arroyos en rojo, cuenta regresiva, rutas afectadas, simulador reacciona (#42) | Registro "enviado" |
 | `malecon_saturado` | Presentador (#41) | Con `capacityPct >= 85` y si está en el Malecón: sugerencia discreta de Barrio Abajo (respaldo mientras `desvio` sea propuesta) | Con `capacityPct >= 85` y negocio abierto en Barrio Abajo: aviso "llegan visitantes" | Nada | Malecón en rojo "Saturado"; el Decisor propone desvío (#18, #10) | Registro |
 | `cobro_abusivo` | Servidor, después de guardar el reporte en `/api/reports` (lo dispare el visitante o el botón del presentador) | Nada (su propio reporte se confirma por la respuesta de la API) | Nada | Nada | Nuevo reporte en la bandeja (#51); indicador de ciudadanía (#55) | Registro |
 | `modo_ciudad` | Presentador (#41) | Cambia agenda y recomendaciones | Nada | Nada | Cambia umbrales y etiqueta del modo | Selector marcado |
@@ -346,6 +368,7 @@ Regla 10: el mismo término para lo mismo en toda la app. Si un término no est�
 | Español | Inglés | Qué es | Dónde |
 |---|---|---|---|
 | Guía | Guide | El asistente que responde por voz o texto | Visitante |
+| Respuestas guardadas | Saved answers | Lo que el Guía responde sin conexión (los tres casos) | Visitante |
 | Tu siguiente paso | Your next step | La única tarjeta de acción del inicio | Visitante, vendedor, anfitrión |
 | Ruta verde | Green route | Ruta en transporte público, a pie o en bici | Visitante, ciudad |
 | Ruta accesible | Accessible route | Ruta sin escaleras ni tramos no accesibles | Visitante, ciudad |
@@ -354,25 +377,36 @@ Regla 10: el mismo término para lo mismo en toda la app. Si un término no est�
 | Taxi verificado | Verified taxi | Conductor con QR registrado | Visitante |
 | Cobro abusivo | Overcharge | Cobro por encima de la tarifa de referencia | Visitante, ciudad |
 | Reporte | Report | Lo que envía el visitante sobre un cobro abusivo | Visitante, ciudad |
+| Abierto / En revisión / Resuelto / Descartado | Open / In review / Resolved / Dismissed | Estados del reporte; los mismos de `REPORT_STATUS_LABELS` en `src/lib/city-dashboard-utils.ts`. No usar "nuevo" | Visitante, ciudad |
 | Arroyo | Arroyo (flash flood) | Corriente de agua en la calle durante un aguacero | Todas |
 | Arroyo activo | Active arroyo | Arroyo con agua ahora o en minutos | Todas |
 | Aguacero | Downpour | Lluvia fuerte que activa arroyos | Presentador, ciudad |
 | Anfitrión | Host | Persona del barrio que recibe y acompaña al visitante | Todas |
 | Dupla de anfitriones | Host pair | Adulto mayor y joven bilingüe que trabajan juntos | Anfitrión, ciudad |
+| Asignación | Assignment | Pedido de acompañar a un visitante, con necesidad y punto de encuentro | Anfitrión, ciudad |
+| Turno | Shift | Franja en que el anfitrión está disponible | Anfitrión |
+| Frases | Phrases | Frases de apoyo bilingües para la dupla al recibir al visitante | Anfitrión |
 | Punto de encuentro | Meeting point | Paradero donde el anfitrión recibe al visitante | Visitante, anfitrión |
 | Paradero | Stop | Estación o parada del corredor | Visitante |
-| Negocio verificado | Verified business | Negocio de barrio con sello de la plataforma | Visitante, vendedor |
+| Negocio verificado | Verified business | Insignia del negocio de barrio que se dio de alta y fue verificado. No es un sello | Visitante, vendedor |
 | Productos y precios | Products and prices | Lo que vende el negocio y cuánto cuesta. No se llama "menú" para no confundirlo con el menú de la app | Visitante, vendedor |
 | Menú | Menu | El menú secundario de la app; nunca la carta de un negocio | Todas |
 | Abierto / Cerrado | Open / Closed | Estado del negocio que marca el vendedor | Visitante, vendedor |
-| Sello | Stamp | Marca que suma el visitante al escanear un QR de negocio o evento | Visitante, vendedor |
+| Sello | Stamp | Marca que el visitante guarda en su pasaporte al visitar un negocio verificado o un evento ambiental (QR). No es la insignia de verificado | Visitante, vendedor |
+| Dar sellos | Give stamps | Acción del vendedor de entregar un sello por QR | Vendedor |
+| Recompensa | Reward | Premio por sellos; solo en eventos ambientales | Visitante |
 | Pasaporte | Passport | Colección de sellos del visitante en negocios verificados y eventos ambientales. **Propuesta, la detalla #45** | Visitante |
 | Evento ambiental | Green event | Actividad de reciclaje o cuidado; la única con recompensa | Visitante |
 | Jerga | Slang | Expresiones costeñas con su explicación | Visitante |
 | Sugerencia | Suggestion | Invitación a ir a otra zona; nunca una orden | Visitante |
 | Desvío | Diversion | Decisión de la ciudad de invitar gente a otra zona | Ciudad, vendedor |
-| Pausa del comité | Committee pause | El comité de barrio detiene el desvío | Ciudad |
-| Fluido / Moderado / Saturado | Flowing / Moderate / Saturated | Nivel de gente en una zona | Ciudad |
+| Pausa del comité | Committee pause | El comité de barrio detiene el desvío; el operador de ciudad la aplica en su nombre | Ciudad |
+| Desvío en pausa | Diversion paused | Aviso al vendedor: no llegan visitantes por arroyo activo o pausa del comité | Vendedor |
+| ○ Fluido | Flowing | Zona por debajo del 60 % del umbral. Verde, halo continuo | Ciudad |
+| ◐ Moderado | Moderate | Entre 60 % y 85 %. Oro, halo discontinuo | Ciudad |
+| ● Saturado | Saturated | 85 % o más. Rojo, halo punteado. Siempre palabra + glifo + trazo, nunca solo color | Ciudad |
+| Registro | Log | Lista de eventos enviados con hora en el panel, y de pausas del comité en el tablero | Presentador, ciudad |
+| Llave de demo | Demo key | Clave que abre el panel de presentador en el Demo Day | Presentador |
 | Modo de ciudad: Mundial, Carnaval, Cotidiano | City mode: World Cup, Carnival, Everyday | Escenario que cambia umbrales y contenido | Ciudad, presentador |
 | Centro de Mando | Command Center | El tablero de la ciudad en `/ciudad` | Ciudad |
 | Decisor | Decider | Agente que elige rutas y propone desvíos; el visitante no ve su nombre | Ciudad |
