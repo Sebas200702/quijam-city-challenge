@@ -58,6 +58,7 @@ Detalle en [`docs/`](docs/).
 | [`docs/04-cifras-verificadas.md`](docs/04-cifras-verificadas.md) | Cifras verificadas con fuente y cifras que no deben usarse |
 | [`docs/05-riesgos.md`](docs/05-riesgos.md) | Riesgos abiertos |
 | [`docs/06-pendientes.md`](docs/06-pendientes.md) | Decisiones pendientes y siguiente paso |
+| [`docs/07-sistema-de-diseno.md`](docs/07-sistema-de-diseno.md) | Sistema de diseño (propuesta): tokens, temas, componentes, iconos e ilustraciones. Código en [`design-system/`](design-system/) |
 
 ## Equipo
 
