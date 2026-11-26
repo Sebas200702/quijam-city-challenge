@@ -1,0 +1,72 @@
+---
+// "Para la ciudad y organizaciones": what institutions and collectives get.
+import {
+	ArrowRight,
+	CalendarPlus,
+	ClipboardCheck,
+	Gauge,
+	ShieldCheck,
+} from "lucide-react";
+
+const items = [
+	{
+		icon: CalendarPlus,
+		title: "Agenda abierta",
+		text: "Colectivos, fundaciones y dependencias publican sus eventos y reciben inscripciones con cupos.",
+		href: "/agenda/nuevo",
+		cta: "Publicar un evento",
+	},
+	{
+		icon: ClipboardCheck,
+		title: "Reportes atendidos",
+		text: "Los reportes de la ciudadanía llegan ordenados, con su estado: abierto, en revisión o resuelto.",
+		href: "/ciudad",
+		cta: "Ver los reportes",
+	},
+	{
+		icon: ShieldCheck,
+		title: "Cola de moderación",
+		text: "El equipo revisa solo lo dudoso, con el motivo de cada alerta a la vista.",
+		href: "/moderacion",
+		cta: "Abrir la cola",
+	},
+	{
+		icon: Gauge,
+		title: "Centro de Mando",
+		text: "Aforo por zona, alertas de arroyo y ensayo de escenarios para planear eventos grandes.",
+		href: "/ciudad",
+		cta: "Entrar al Centro de Mando",
+	},
+];
+---
+
+<section aria-labelledby="city-title" class="mx-auto w-full max-w-6xl px-4 py-12 lg:px-8 lg:py-16">
+	<div class="q-sec__head mb-6 lg:mb-8">
+		<p class="q-eyebrow">Instituciones</p>
+		<h2 id="city-title" class="q-h1">Para la ciudad y organizaciones</h2>
+		<p class="q-lead">
+			Lo que la gente pregunta, publica y reporta llega a quienes pueden actuar.
+		</p>
+	</div>
+	<ul class="m-0 grid list-none grid-cols-1 gap-4 p-0 sm:grid-cols-2 lg:grid-cols-4">
+		{
+			items.map((item) => (
+				<li class="q-card gap-3 p-5">
+					<span class="q-tile" aria-hidden="true">
+						<item.icon size={24} strokeWidth={1.75} />
+					</span>
+					<h3 class="q-h2">{item.title}</h3>
+					<p class="q-p q-muted flex-1">{item.text}</p>
+					<a href={item.href} class="q-btn q-btn--ghost q-btn--sm min-h-11 self-start px-0 text-[var(--ink)]">
+						{item.cta}
+						<ArrowRight size={16} strokeWidth={1.75} aria-hidden="true" />
+					</a>
+				</li>
+			))
+		}
+	</ul>
+	<p class="q-sm q-subtle mt-4">
+		El Centro de Mando y la cola de moderación piden una cuenta con rol de ciudad o de
+		moderación.
+	</p>
+</section>

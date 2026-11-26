@@ -1,0 +1,29 @@
+---
+// Public landing page: Quillart AI as the way into the city.
+import AgentGrid from "../components/landing/agent-grid.astro";
+import CommunityCare from "../components/landing/community-care.astro";
+import ForTheCity from "../components/landing/for-the-city.astro";
+import LandingFaq from "../components/landing/landing-faq.astro";
+import LandingFooter from "../components/landing/landing-footer.astro";
+import LandingHeader from "../components/landing/landing-header.astro";
+import LandingHero from "../components/landing/landing-hero.astro";
+import UpcomingSection from "../components/landing/upcoming-section.astro";
+import VoiceSection from "../components/landing/voice-section.astro";
+import BaseLayout from "../layouts/base-layout.astro";
+---
+
+<BaseLayout title="QUILLART · Barranquilla, a una conversación" theme="light">
+	<div class="overflow-x-clip">
+		<LandingHeader />
+		<main>
+			<LandingHero />
+			<AgentGrid />
+			<VoiceSection />
+			<UpcomingSection />
+			<CommunityCare />
+			<ForTheCity />
+			<LandingFaq />
+		</main>
+		<LandingFooter />
+	</div>
+</BaseLayout>

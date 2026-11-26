@@ -1,0 +1,76 @@
+---
+// Footer: sections, help and legal basics.
+const groups = [
+	{
+		title: "Participa",
+		links: [
+			{ href: "/inicio", label: "Quillart AI" },
+			{ href: "/agenda", label: "Agenda" },
+			{ href: "/agenda/nuevo", label: "Publicar un evento" },
+			{ href: "/foro", label: "Foros" },
+		],
+	},
+	{
+		title: "Explora",
+		links: [
+			{ href: "/lugares", label: "Lugares y naturaleza" },
+			{ href: "/mapa", label: "Mapa del corredor" },
+			{ href: "/prueba-guia", label: "Guía por voz (beta)" },
+		],
+	},
+	{
+		title: "Cuenta y ciudad",
+		links: [
+			{ href: "/perfil", label: "Mi cuenta" },
+			{ href: "/moderacion", label: "Moderación" },
+			{ href: "/ciudad", label: "Centro de Mando" },
+		],
+	},
+];
+---
+
+<footer class="border-t border-[var(--line)]">
+	<div class="mx-auto grid w-full max-w-6xl gap-8 px-4 py-10 lg:grid-cols-[1.2fr_2fr] lg:px-8">
+		<div class="flex flex-col gap-3">
+			<a href="/" class="q-logo" aria-label="QUILLART, inicio">
+				<span class="q-logo__tile" aria-hidden="true">
+					<span class="q-star" style="width: 22px; height: 22px"></span>
+				</span>
+				<span class="q-logo__word">QUILLART</span>
+			</a>
+			<p class="q-sm q-muted max-w-xs">
+				Barranquilla, a una conversación. Planes, foros, lugares y reportes en un solo
+				lugar.
+			</p>
+			<p class="q-sm">
+				<strong>Emergencias:</strong> Línea 123
+			</p>
+		</div>
+		<nav aria-label="Pie de página" class="grid grid-cols-2 gap-6 sm:grid-cols-3">
+			{
+				groups.map((group) => (
+					<div>
+						<h2 class="q-eyebrow mb-2">{group.title}</h2>
+						<ul class="m-0 list-none p-0">
+							{group.links.map((link) => (
+								<li>
+									<a
+										href={link.href}
+										class="flex min-h-11 items-center text-[var(--ink)] no-underline hover:underline"
+									>
+										{link.label}
+									</a>
+								</li>
+							))}
+						</ul>
+					</div>
+				))
+			}
+		</nav>
+	</div>
+	<div class="mx-auto w-full max-w-6xl px-4 pb-8 lg:px-8">
+		<p class="q-sm q-subtle">
+			Tratamiento de datos según la Ley 1581 de 2012. Hecho en Barranquilla.
+		</p>
+	</div>
+</footer>
