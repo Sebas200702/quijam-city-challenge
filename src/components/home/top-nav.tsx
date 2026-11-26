@@ -23,7 +23,11 @@ export function TopNav({ current, aiHref }: TopNavProps) {
 			>
 				Inicio
 			</a>
-			<a className={linkClass(current === "explore")} href="/mapa">
+			<a
+				className={linkClass(current === "explore")}
+				href="/mapa"
+				aria-current={current === "explore" ? "page" : undefined}
+			>
 				Explorar
 			</a>
 			<a

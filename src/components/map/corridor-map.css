@@ -149,6 +149,13 @@
 .corridor-chip[aria-pressed="false"] svg {
 	color: var(--ink-subtle);
 }
+/* Wide screens: the left column is 380px, so the chips wrap instead of scrolling (and clipping their shadows). */
+@media (min-width: 640px) {
+	.corridor-chips {
+		flex-wrap: wrap;
+		overflow: visible;
+	}
+}
 @media (max-width: 420px) {
 	.corridor-chip__count {
 		display: none;

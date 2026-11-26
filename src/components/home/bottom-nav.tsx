@@ -25,8 +25,16 @@ export function BottomNav({ current, aiHref }: BottomNavProps) {
 					/>
 					Inicio
 				</a>
-				<a className={tabClass("explore")} href="/mapa">
-					<Compass size={22} strokeWidth={1.75} aria-hidden="true" />
+				<a
+					className={tabClass("explore")}
+					href="/mapa"
+					aria-current={aria("explore")}
+				>
+					<Compass
+						size={22}
+						strokeWidth={current === "explore" ? 2 : 1.75}
+						aria-hidden="true"
+					/>
 					Explorar
 				</a>
 				<a className={tabClass("ai")} href={aiHref} aria-current={aria("ai")}>
