@@ -55,6 +55,15 @@ Ver [07-alineacion-rubrica.md](07-alineacion-rubrica.md).
 - **Lo cotidiano:** el selector de modo de ciudad entra a la demo; el modo cotidiano muestra el uso diario del residente.
 - **Feedback:** se registra en [feedback.md](feedback.md).
 
+## Metodología y convenciones (26 nov 2026)
+
+Ver [08-metodologia.md](08-metodologia.md) y [09-convenciones.md](09-convenciones.md).
+
+- Marco: los tres sprints del bootcamp. Dentro de cada sprint, cada cambio sigue DEFINE → PLAN → BUILD → VERIFY → REVIEW → SHIP.
+- Tareas en GitHub Issues + GitHub Project.
+- PR de ~400 líneas con 1 aprobación.
+- Código y commits en inglés; PR, issues y docs en español.
+
 ## Bitácora de evolución (criterio de 10 puntos)
 
 - Se pasó de "app" a "programa con tres componentes".
