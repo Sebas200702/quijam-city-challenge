@@ -39,8 +39,14 @@ const STATUS_OPTIONS: ReportStatus[] = [
 
 type ThemeMode = "dark" | "light";
 
+/** Same key the layout and the corridor map use, so the choice follows the visitor. */
+const THEME_STORAGE_KEY = "quillart-theme";
+
 export function CityDashboard() {
-	const [theme, setTheme] = useState<ThemeMode>("dark");
+	// Light by default: the layout sets it, or applies the saved choice, before first paint.
+	const [theme, setTheme] = useState<ThemeMode>(() =>
+		document.documentElement.dataset.theme === "dark" ? "dark" : "light",
+	);
 	const [session, setSession] = useState<CitySessionInfo | null>(null);
 	const [authLoading, setAuthLoading] = useState(true);
 	const [snapshot, setSnapshot] = useState<CityDashboardSnapshot | null>(null);
@@ -54,6 +60,11 @@ export function CityDashboard() {
 
 	useEffect(() => {
 		document.documentElement.dataset.theme = theme;
+		try {
+			localStorage.setItem(THEME_STORAGE_KEY, theme);
+		} catch {
+			// Blocked storage: the theme still applies for this visit.
+		}
 	}, [theme]);
 
 	useEffect(() => {
@@ -198,19 +209,19 @@ export function CityDashboard() {
 				<fieldset className="q-seg m-0 border-0" aria-label="Tema de color">
 					<button
 						type="button"
-						aria-pressed={theme === "dark"}
-						onClick={() => setTheme("dark")}
-						className={`q-seg__opt ${theme === "dark" ? "is-on" : ""}`}
-					>
-						Oscuro
-					</button>
-					<button
-						type="button"
 						aria-pressed={theme === "light"}
 						onClick={() => setTheme("light")}
 						className={`q-seg__opt ${theme === "light" ? "is-on" : ""}`}
 					>
 						Claro
+					</button>
+					<button
+						type="button"
+						aria-pressed={theme === "dark"}
+						onClick={() => setTheme("dark")}
+						className={`q-seg__opt ${theme === "dark" ? "is-on" : ""}`}
+					>
+						Oscuro
 					</button>
 				</fieldset>
 
