@@ -69,6 +69,7 @@ Detalle en [`docs/`](docs/).
 | [`docs/15-recursos-y-alianzas.md`](docs/15-recursos-y-alianzas.md) | Aliados, aportes, capacitación y sostenibilidad después de 2034 |
 | [`docs/16-costos-estimados.md`](docs/16-costos-estimados.md) | Tabla de costos estimados por rubro con rangos y supuestos visibles |
 | [`docs/17-informe-impacto.md`](docs/17-informe-impacto.md) | Informe de impacto con IA: cifras agregadas, verificación de números y respaldo sin IA |
+| [`docs/18-simulador-multitudes.md`](docs/18-simulador-multitudes.md) | Simulador de multitudes: eventos, reglas del desvío, conteos y rendimiento |
 | [`docs/feedback.md`](docs/feedback.md) | Registro de retroalimentación por sprint y validación con personas ajenas |
 
 ## Equipo
