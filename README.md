@@ -60,6 +60,8 @@ Detalle en [`docs/`](docs/).
 | [`docs/06-pendientes.md`](docs/06-pendientes.md) | Decisiones pendientes y siguiente paso |
 | [`docs/07-alineacion-rubrica.md`](docs/07-alineacion-rubrica.md) | Cada criterio de la rúbrica: qué tenemos, qué falta, qué resaltar; cinco lecciones y referentes |
 | [`docs/feedback.md`](docs/feedback.md) | Registro de retroalimentación por sprint y validación con personas ajenas |
+| [`docs/08-metodologia.md`](docs/08-metodologia.md) | Sprints del bootcamp, flujo por cambio, gestión de tareas, roles y acuerdos |
+| [`docs/09-convenciones.md`](docs/09-convenciones.md) | Idioma, ramas, commits, PR, revisión, código, datos y documentos |
 
 ## Equipo
 
@@ -79,7 +81,10 @@ Por definir en equipo.
 
 - `main` está protegida para todos, incluido el admin: todo cambio entra por pull request con 1 aprobación.
 - Ramas: `feat/*`, `fix/*`, `docs/*`, `chore/*`.
-- Commits: [Conventional Commits](https://www.conventionalcommits.org/).
+- Commits: [Conventional Commits](https://www.conventionalcommits.org/) en inglés; PR en español; ~400 líneas por PR.
+- Tareas en GitHub Issues + Project.
+
+Detalle en [`docs/08-metodologia.md`](docs/08-metodologia.md) y [`docs/09-convenciones.md`](docs/09-convenciones.md).
 
 ---
 
