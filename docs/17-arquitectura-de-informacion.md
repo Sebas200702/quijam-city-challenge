@@ -66,7 +66,7 @@ flowchart TD
     TRIP -.->|aguacero en su ruta| MODAL["Modal: arroyo activo"]
     MODAL -->|Cambiar ruta| NEXT
     TRIP -.->|anfitrión asignado| HOSTCARD["Aviso discreto: anfitrión en camino"]
-    HOME -.->|desvío activo y está en el Malecón| DIVCARD["Aviso discreto: sugerencia Barrio Abajo"]
+    HOME -.->|Malecón saturado 85 % o más y está en el Malecón| DIVCARD["Aviso discreto: sugerencia Barrio Abajo"]
     DIVCARD --> POI
 ```
 
@@ -177,7 +177,7 @@ Reglas 3 y 4 de la épica. Un aviso aparece solo si aplica al visitante y a su r
 | 1 | **Arroyo activo** | `aguacero` (`zoneIds`, `startsInMin`) | Algún `zoneId` está en su ruta o es su zona actual | **Modal** (`.q-alert--modal.q-alert--alert`) con cuenta regresiva "Arroyo activo en 12 min". Acción principal: "Cambiar ruta" (el Decisor ya recalculó). Secundaria: "Pedir anfitrión" si el modo accesible está activo. Notificación del sistema si la app está en segundo plano (#47) | Toca "Cambiar ruta" o "Entendido". Después queda como banda roja en la tarjeta de ruta hasta `reiniciar` |
 | 1 | Arroyo fuera de su ruta | `aguacero` | Ningún `zoneId` le aplica | Sin aviso. La zona se pinta roja en el mapa | — |
 | 2 | **Anfitrión en camino / llegó** | Cambio de estado de su `host_assignments` (ver 4) | La asignación es suya | Aviso discreto `--safe`: "Tu anfitrión va en camino. Llega en 6 min" | Al pasar a "llegó" se reemplaza; al terminar se cierra solo |
-| 3 | **Sugerencia de desvío** | `desvio` (propuesta, ver 4.2) o, mientras no exista, `malecon_saturado` | Está en `gran_malecon`, no tiene ruta en curso y Barrio Abajo pasa las reglas duras de [14-desvio-barrio-abajo.md](14-desvio-barrio-abajo.md) | Aviso discreto `--info`: "Barrio Abajo a 20 min a pie. 12 negocios abiertos". Acción: "Ver Barrio Abajo" | La cierra, inicia otra ruta, o llega `desvio` con `active: false` |
+| 3 | **Sugerencia de desvío** | `malecon_saturado` con `capacityPct >= 85` (respaldo en uso). Si la épica acepta `desvio` (propuesta, ver 4.2), pasa a ese evento | Está en `gran_malecon`, no tiene ruta en curso y Barrio Abajo pasa las reglas duras de [14-desvio-barrio-abajo.md](14-desvio-barrio-abajo.md) | Aviso discreto `--info`: "Barrio Abajo a 20 min a pie. 12 negocios abiertos". Acción: "Ver Barrio Abajo" | La cierra, inicia otra ruta o el Malecón baja de 85 % |
 | 4 | **Reporte de cobro** | Respuesta de `/api/reports` y luego cambio de estado del reporte | Es su reporte | Aviso discreto `--safe`: "Recibimos tu reporte". Luego "Tu reporte fue resuelto" | La cierra o sale de la pantalla |
 | 5 | Modo de ciudad | `modo_ciudad` | Siempre | Sin aviso. Cambia el contenido (agenda, recomendaciones) | — |
 | — | Línea de tiempo | `tiempo` | — | El visitante lo ignora | — |
@@ -188,7 +188,7 @@ Reglas 3 y 4 de la épica. Un aviso aparece solo si aplica al visitante y a su r
 - **Máximo uno visible.** Hay un solo hueco de aviso encima de la tarjeta "tu siguiente paso". El modal también ocupa ese hueco.
 - **Prioridad:** el número más bajo gana. Uno de mayor prioridad reemplaza al visible; el desplazado vuelve a la cola si no expiró.
 - **Cola:** máximo 3 en espera. Si entra uno igual al que espera (mismo tipo y mismo objeto), se actualiza en lugar de sumarse.
-- **Expira:** sugerencia de desvío a los 20 min o con `desvio` `active: false`; los demás cuando su estado deja de ser cierto.
+- **Expira:** sugerencia de desvío a los 20 min, cuando `malecon_saturado` baja de 85 % o, si se acepta la propuesta, con `desvio` `active: false`; los demás cuando su estado deja de ser cierto.
 - **Tiempo mínimo:** ningún aviso se cierra solo antes de 20 s (WCAG 2.2.1).
 - **Un modal por evento.** Si llega otro `aguacero` para la misma zona, se actualiza la cuenta regresiva sin abrir otro modal.
 - **Lector de pantalla:** discretos con `role="status"`; el modal con `role="alertdialog"` y foco en "Cambiar ruta".
@@ -229,7 +229,7 @@ type CityEvent =
 | Evento | Publica | Visitante | Vendedor | Anfitrión | Ciudad | Presentador |
 |---|---|---|---|---|---|---|
 | `aguacero` | Presentador (#41) | Modal si toca su ruta o zona; zona roja en el mapa; ruta recalculada sin el arroyo (#52) | Nada | Aviso discreto si es su zona | Arroyos en rojo, cuenta regresiva, rutas afectadas, simulador reacciona (#42) | Registro "enviado" |
-| `malecon_saturado` | Presentador (#41) | Nada directo; ver `desvio` | Nada directo | Nada | Malecón en rojo "Saturado"; el Decisor propone desvío (#18, #10) | Registro |
+| `malecon_saturado` | Presentador (#41) | Con `capacityPct >= 85` y si está en el Malecón: sugerencia discreta de Barrio Abajo (respaldo mientras `desvio` sea propuesta) | Con `capacityPct >= 85` y negocio abierto en Barrio Abajo: aviso "llegan visitantes" | Nada | Malecón en rojo "Saturado"; el Decisor propone desvío (#18, #10) | Registro |
 | `cobro_abusivo` | Servidor, después de guardar el reporte en `/api/reports` (lo dispare el visitante o el botón del presentador) | Nada (su propio reporte se confirma por la respuesta de la API) | Nada | Nada | Nuevo reporte en la bandeja (#51); indicador de ciudadanía (#55) | Registro |
 | `modo_ciudad` | Presentador (#41) | Cambia agenda y recomendaciones | Nada | Nada | Cambia umbrales y etiqueta del modo | Selector marcado |
 | `tiempo` | Línea de tiempo (#44), desde el tablero o el panel | Lo ignora | Nada | Nada | Mapa, simulador e indicadores a esa hora | Deslizador sincronizado |

@@ -141,7 +141,7 @@ Base: la asignación hecha por Sebastián en el tablero. Se completaron los issu
 
 ## Arquitectura de información y roles (26 nov 2026)
 
-Ver [16-arquitectura-de-informacion.md](16-arquitectura-de-informacion.md). Issue #56.
+Ver [17-arquitectura-de-informacion.md](17-arquitectura-de-informacion.md). Issue #56.
 
 - **Cinco superficies separadas:** visitante (`/`), vendedor (`/vendedor`), anfitrión (`/anfitrion`), ciudad (`/ciudad`) y presentador (`/presentador`). No hay menú que cruce de una a otra.
 - **Tema:** claro en las tres apps de celular (se usan en la calle); oscuro en ciudad y presentador.
@@ -150,5 +150,5 @@ Ver [16-arquitectura-de-informacion.md](16-arquitectura-de-informacion.md). Issu
 - **Idioma:** se detecta del navegador entre español, inglés, portugués y francés; si no coincide, inglés. Se cambia en un toque y se guarda en el navegador.
 - **Avisos:** un solo hueco de aviso. Solo un arroyo activo en la ruta o la zona del visitante abre un modal; lo demás es tarjeta discreta, con prioridad arroyo > anfitrión > sugerencia de desvío > reporte.
 - **Roles:** `UserRole` pasa a `visitor | vendor | host | city | presenter`; guardia en `src/middleware.ts`; la seguridad real sigue en RLS. Se planifica, no se implementa en #56.
-- **`city-events`:** sin tipos nuevos. Se propone a la épica `desvio`; asignaciones de anfitrión, negocio abierto y estado de reportes van por tablas con Realtime, no por el canal.
+- **`city-events`:** sin tipos nuevos. `desvio` queda solo como propuesta (no se edita la épica); mientras tanto la sugerencia de desvío usa `malecon_saturado` con `capacityPct >= 85`; asignaciones de anfitrión, negocio abierto y estado de reportes van por tablas con Realtime, no por el canal.
 - **Componentes QUILLART nuevos:** `.q-next-step`, `.q-alert` (y `--modal`), `.q-state`, `.q-sim-tag`, `.q-details`; `.q-sheet` se amplía con `--dock`, `--peek` y `--expanded`.
