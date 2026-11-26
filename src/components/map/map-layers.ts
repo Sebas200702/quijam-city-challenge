@@ -10,7 +10,11 @@ import {
 	type Selection,
 	selectionKey,
 } from "../../lib/corridor/corridor-selection";
-import type { CorridorData } from "../../lib/corridor/corridor-types";
+import type {
+	CorridorData,
+	FloodZone,
+	StatusTone,
+} from "../../lib/corridor/corridor-types";
 import { pinIcon } from "./map-markers";
 
 export type LayerKey = "stops" | "floodZones" | "businesses";
@@ -19,6 +23,42 @@ export interface CorridorLayers extends Record<LayerKey, L.LayerGroup> {
 	corridor: L.LayerGroup;
 	/** Every marker, by selectionKey(), so the map can highlight the selected one. */
 	markers: Map<string, L.Marker>;
+	/** Flood zone circles by code, so live alerts can recolor them. */
+	floodCircles: Map<string, L.Circle>;
+}
+
+const floodClass = (tone: StatusTone) =>
+	`corridor-flood corridor-flood--${tone}`;
+
+/**
+ * Recolors flood zones without rebuilding the map: codes in `alertCodes`
+ * (active or counting down) turn red, the rest keep their usual status.
+ */
+export function restyleFloodZones(
+	layers: CorridorLayers,
+	floodZones: readonly FloodZone[],
+	alertCodes: ReadonlySet<string>,
+) {
+	for (const zone of floodZones) {
+		const tone: StatusTone = alertCodes.has(zone.code)
+			? "red"
+			: floodZoneStatus(zone).tone;
+		const circle = layers.floodCircles.get(zone.code);
+		if (circle) {
+			// Options are reused if Leaflet redraws the circle; the element updates now.
+			circle.options.className = floodClass(tone);
+			circle.getElement()?.setAttribute("class", floodClass(tone));
+		}
+		layers.markers
+			.get(selectionKey({ kind: "floodZone", code: zone.code }))
+			?.setIcon(
+				pinIcon({
+					tone,
+					glyph: tone === "red" ? "alert" : "water",
+					label: zone.name,
+				}),
+			);
+	}
 }
 
 /** The corridor's two ends keep their name on the map; other pins show it when selected. */
@@ -29,6 +69,7 @@ export function buildCorridorLayers(
 	onSelect: (selection: Selection) => void,
 ): CorridorLayers {
 	const markers = new Map<string, L.Marker>();
+	const floodCircles = new Map<string, L.Circle>();
 	const marker = (
 		selection: Selection,
 		latLng: L.LatLngTuple,
@@ -76,12 +117,14 @@ export function buildCorridorLayers(
 			data.floodZones.flatMap((zone) => {
 				const { tone } = floodZoneStatus(zone);
 				const center: L.LatLngTuple = [zone.latitude, zone.longitude];
+				const circle = L.circle(center, {
+					radius: zone.radius_meters,
+					className: floodClass(tone),
+					interactive: false,
+				});
+				floodCircles.set(zone.code, circle);
 				return [
-					L.circle(center, {
-						radius: zone.radius_meters,
-						className: `corridor-flood corridor-flood--${tone}`,
-						interactive: false,
-					}),
+					circle,
 					marker(
 						{ kind: "floodZone", code: zone.code },
 						center,
@@ -110,5 +153,6 @@ export function buildCorridorLayers(
 			),
 		),
 		markers,
+		floodCircles,
 	};
 }

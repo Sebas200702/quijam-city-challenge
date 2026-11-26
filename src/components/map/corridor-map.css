@@ -64,6 +64,13 @@
 	right: 12px;
 	bottom: 24px;
 	z-index: 1000;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+/* A flood alert takes the place of the "tap a point" hint. */
+.corridor-app__detail:has(.corridor-alert) .corridor-detail--empty {
+	display: none;
 }
 
 @media (min-width: 640px) {
@@ -381,4 +388,21 @@
 	color: var(--ink);
 	font-size: 12px;
 	font-weight: 600;
+}
+
+/* ── Flood alert: the only alert that interrupts (epic #57, rule 4) ── */
+.corridor-alert {
+	border: 2px solid var(--red);
+}
+.corridor-alert__body {
+	padding: 12px 16px;
+}
+.corridor-alert__title {
+	font-weight: 700;
+	color: var(--red-text);
+}
+.corridor-alert__text {
+	margin-top: 4px;
+	font-size: 0.875rem;
+	color: var(--ink);
 }

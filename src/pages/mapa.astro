@@ -2,12 +2,30 @@
 import CorridorMap from "../components/map/corridor-map";
 import BaseLayout from "../layouts/base-layout.astro";
 import { loadCorridorData } from "../lib/corridor/corridor-data";
+import { buildRouteOptions } from "../lib/flood-alert/route-options";
+import { ROUTE_SEGMENTS } from "../lib/flood-alert/route-segments-seed";
 
 const { data, source } = await loadCorridorData();
+
+// Demo trip until the trip flow (#19) passes its own: /mapa?ruta=<option id>
+// for a Malecon to Estadio route, and &accesible=1 for accessible mode.
+const FROM = "STOP-MALECON-SUR";
+const TO = "STOP-ESTADIO";
+const routeId = Astro.url.searchParams.get("ruta");
+const trip = buildRouteOptions(ROUTE_SEGMENTS, FROM, TO).some(
+	(option) => option.id === routeId,
+)
+	? {
+			optionId: routeId as string,
+			fromStop: FROM,
+			toStop: TO,
+			accessibleMode: Astro.url.searchParams.get("accesible") === "1",
+		}
+	: null;
 ---
 
 <BaseLayout title="Mapa del corredor piloto">
 	<main class="h-[calc(100dvh-3px)] w-full">
-		<CorridorMap client:only="react" data={data} source={source} />
+		<CorridorMap client:only="react" data={data} source={source} trip={trip} />
 	</main>
 </BaseLayout>

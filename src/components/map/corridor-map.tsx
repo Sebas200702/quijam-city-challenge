@@ -18,14 +18,17 @@ import type {
 } from "../../lib/corridor/corridor-types";
 import "./corridor-map.css";
 import { DetailCard } from "./detail-card";
+import { FloodAlertBanner } from "./flood-alert-banner";
 import { MapHeader, type Theme } from "./map-header";
 import {
 	buildCorridorLayers,
 	type CorridorLayers,
 	type LayerKey,
+	restyleFloodZones,
 } from "./map-layers";
 import { setMarkerSelected } from "./map-markers";
 import { StopList } from "./stop-list";
+import { type ActiveTrip, useFloodAlerts } from "./use-flood-alerts";
 
 // Standard OpenStreetMap tiles: no API key. The dark theme darkens them in CSS.
 const TILE_URL = "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
@@ -45,6 +48,8 @@ const LAYER_OF: Record<SelectionKind, LayerKey> = {
 interface CorridorMapProps {
 	data: CorridorData;
 	source: CorridorDataSource;
+	/** The visitor's current trip, recalculated when an arroyo blocks it. */
+	trip?: ActiveTrip | null;
 }
 
 /** Room the floating UI takes: the panel on top (phones) or left (wide), the sheet at the bottom. */
@@ -72,7 +77,11 @@ function fitCorridor(map: L.Map, data: CorridorData) {
 	else map.setView(FALLBACK_CENTER, 13);
 }
 
-export default function CorridorMap({ data, source }: CorridorMapProps) {
+export default function CorridorMap({
+	data,
+	source,
+	trip = null,
+}: CorridorMapProps) {
 	const containerRef = useRef<HTMLElement>(null);
 	const mapRef = useRef<L.Map | null>(null);
 	const layersRef = useRef<CorridorLayers | null>(null);
@@ -90,10 +99,16 @@ export default function CorridorMap({ data, source }: CorridorMapProps) {
 		businesses: true,
 	});
 
+	const flood = useFloodAlerts(data.floodZones, trip);
+	const liveData = useMemo(
+		() => ({ ...data, floodZones: flood.liveFloodZones }),
+		[data, flood.liveFloodZones],
+	);
+
 	const stops = useMemo(() => orderedStops(data.stops), [data.stops]);
 	const detail = useMemo(
-		() => describeSelection(data, selected),
-		[data, selected],
+		() => describeSelection(liveData, selected),
+		[liveData, selected],
 	);
 
 	useEffect(() => {
@@ -130,11 +145,12 @@ export default function CorridorMap({ data, source }: CorridorMapProps) {
 			if (visible[key]) layers[key].addTo(map);
 			else layers[key].remove();
 		}
+		restyleFloodZones(layers, liveData.floodZones, new Set(flood.blocked));
 		const selectedKey = selected ? selectionKey(selected) : null;
 		for (const [key, marker] of layers.markers) {
 			setMarkerSelected(marker, key === selectedKey);
 		}
-	}, [visible, selected]);
+	}, [visible, selected, liveData, flood.blocked]);
 
 	const toggleLayer = (key: LayerKey) => {
 		setVisible((current) => ({ ...current, [key]: !current[key] }));
@@ -229,6 +245,7 @@ export default function CorridorMap({ data, source }: CorridorMapProps) {
 			</div>
 
 			<div className="corridor-app__detail">
+				<FloodAlertBanner alert={flood.alert} recalc={flood.recalc} />
 				<DetailCard
 					detail={detail}
 					source={source}
