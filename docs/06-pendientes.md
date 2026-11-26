@@ -22,7 +22,7 @@ Cada una trae la recomendación que salió de la sesión de validación. La colu
 | 16 | Costo estimado | Tabla de rubros con rangos y supuestos visibles, sin cifra única inventada. | Abierto |
 | 17 | Formato | PowerPoint obligatorio en el orden de la diapositiva 30, con la aplicación en vivo en el bloque de prototipo. | Abierto |
 | 18 | Guion del video | Problema 40 s, propuesta 40 s, programa y dimensiones 60 s, demo de tres casos 120 s, impacto y legado 40 s. | Abierto |
-| 19 | Roles | Coordinación, investigación, diseño, prototipado y comunicación. Somos 5 y los 5 programan; falta asignar. | Decidido (26 nov): ver README |
+| 19 | Roles | Coordinación, investigación, diseño, prototipado y comunicación. Somos 5 y los 5 programan. | Decidido (26 nov): ver README |
 | 20 | Stack técnico | Ver [10-stack.md](10-stack.md). | Decidido (26 nov) |
 
 ## Siguiente paso (Sprint 2, cierra la tarde del 26 nov)
