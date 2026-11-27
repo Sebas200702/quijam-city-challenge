@@ -1,4 +1,25 @@
 import type { FeatureItem } from "../components/home/feature-grid";
+import type { MapNextStep, VisitorMenuItemId } from "./home-content-types";
+
+/** Secondary menu routes (rule 2). "language" opens a sheet instead of a page. */
+export const SECONDARY_MENU_HREFS: Record<
+	Exclude<VisitorMenuItemId, "language">,
+	string
+> = {
+	passport: "/pasaporte",
+	slang: "/jerga",
+	data: "/datos",
+};
+
+/**
+ * First trip the map section suggests. Keep it equal to the default query of the map's
+ * route card (src/components/map/corridor-map.tsx) so "Ver la ruta" shows the same route.
+ */
+export const MAP_NEXT_STEP: MapNextStep = {
+	origin: "STOP-MALECON-SUR",
+	destination: "STOP-ESTADIO",
+	destinationName: "Estadio Metropolitano",
+};
 
 /**
  * Static content for the home view. The home itself is the Quillart AI
