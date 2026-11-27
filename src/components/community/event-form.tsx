@@ -15,6 +15,7 @@ import type {
 	NewEventInput,
 	PublishResult,
 } from "../../lib/community/community-types";
+import { useT } from "../../lib/i18n/use-language";
 import { CommunityShell } from "./community-shell";
 import {
 	ErrorNote,
@@ -90,19 +91,20 @@ export interface EventFormProps {
 }
 
 export default function EventForm({ aiHref }: EventFormProps) {
+	const t = useT();
 	const session = useSession();
 	return (
 		<CommunityShell current="agenda" aiHref={aiHref}>
 			<a href="/agenda" className="q-btn q-btn--ghost self-start">
 				<ArrowLeft size={18} aria-hidden="true" />
-				Volver a la agenda
+				{t.agenda.backToAgenda}
 			</a>
 			<PageTitle
-				eyebrow="Agenda"
-				title="Publicar un evento"
+				eyebrow={t.agenda.eyebrow}
+				title={t.agenda.formTitle}
 				illustration="/illustrations/publish-post.svg"
 			>
-				Cuéntale a la ciudad qué estás organizando.
+				{t.agenda.formIntro}
 			</PageTitle>
 			{session.loading ? (
 				<Loading />
@@ -110,13 +112,11 @@ export default function EventForm({ aiHref }: EventFormProps) {
 				<EventFormBody />
 			) : (
 				<div className="q-card space-y-3 p-5">
-					<p className="q-h3">Inicia sesión para publicar</p>
-					<p className="q-p q-muted">
-						Así los asistentes saben quién organiza y te pueden escribir.
-					</p>
+					<p className="q-h3">{t.agenda.signInTitle}</p>
+					<p className="q-p q-muted">{t.agenda.signInText}</p>
 					<a href={signInHref()} className="q-btn q-btn--primary self-start">
 						<LogIn size={18} aria-hidden="true" />
-						Iniciar sesión
+						{t.agenda.signIn}
 					</a>
 				</div>
 			)}
@@ -125,6 +125,7 @@ export default function EventForm({ aiHref }: EventFormProps) {
 }
 
 function EventFormBody() {
+	const t = useT();
 	const store = useStore();
 	const { state: placesState } = useLoad((s) => s.listPlaces(), []);
 	const [values, setValues] = useState<FormValues>(initialValues);
@@ -166,9 +167,7 @@ function EventFormBody() {
 		try {
 			setResult(await store.createEvent(input));
 		} catch (err) {
-			setError(
-				err instanceof Error ? err.message : "No pudimos publicar el evento.",
-			);
+			setError(err instanceof Error ? err.message : t.agenda.publishError);
 		} finally {
 			setSubmitting(false);
 		}
@@ -182,10 +181,10 @@ function EventFormBody() {
 				<p className="q-h3 break-words">{result.record.title}</p>
 				<div className="flex flex-wrap gap-3">
 					<a href={href} className="q-btn q-btn--primary">
-						Ver mi evento
+						{t.agenda.viewMyEvent}
 					</a>
 					<a href="/agenda" className="q-btn q-btn--secondary">
-						Ir a la agenda
+						{t.agenda.goToAgenda}
 					</a>
 				</div>
 			</div>
@@ -194,30 +193,30 @@ function EventFormBody() {
 
 	return (
 		<form onSubmit={handleSubmit} className="q-card space-y-5 p-5" noValidate>
-			<Field id="event-title" label="Título">
+			<Field id="event-title" label={t.agenda.fieldTitle}>
 				<input
 					id="event-title"
 					className={inputClass}
 					value={values.title}
 					onChange={(e) => set("title", e.target.value)}
 					maxLength={120}
-					placeholder="Ej.: Caminata por el Malecón al atardecer"
+					placeholder={t.agenda.titlePlaceholder}
 					required
 				/>
 			</Field>
 
-			<Field id="event-description" label="Descripción">
+			<Field id="event-description" label={t.agenda.fieldDescription}>
 				<textarea
 					id="event-description"
 					className={textareaClass}
 					value={values.description}
 					onChange={(e) => set("description", e.target.value)}
-					placeholder="¿Qué van a hacer? ¿Qué deben llevar?"
+					placeholder={t.agenda.descriptionPlaceholder}
 					required
 				/>
 			</Field>
 
-			<Field id="event-category" label="Categoría">
+			<Field id="event-category" label={t.agenda.category}>
 				<select
 					id="event-category"
 					className={inputClass}
@@ -233,7 +232,7 @@ function EventFormBody() {
 			</Field>
 
 			<div className="grid gap-4 sm:grid-cols-3">
-				<Field id="event-date" label="Fecha">
+				<Field id="event-date" label={t.agenda.fieldDate}>
 					<input
 						id="event-date"
 						type="date"
@@ -244,7 +243,7 @@ function EventFormBody() {
 						required
 					/>
 				</Field>
-				<Field id="event-start" label="Empieza">
+				<Field id="event-start" label={t.agenda.fieldStart}>
 					<input
 						id="event-start"
 						type="time"
@@ -254,7 +253,7 @@ function EventFormBody() {
 						required
 					/>
 				</Field>
-				<Field id="event-end" label="Termina (opcional)">
+				<Field id="event-end" label={t.agenda.fieldEnd}>
 					<input
 						id="event-end"
 						type="time"
@@ -264,20 +263,18 @@ function EventFormBody() {
 					/>
 				</Field>
 			</div>
-			<p className="q-sm q-muted -mt-3">Hora de Barranquilla.</p>
+			<p className="q-sm q-muted -mt-3">{t.agenda.timeZoneNote}</p>
 
-			<Loaded state={placesState} loadingLabel="Cargando lugares…">
+			<Loaded state={placesState} loadingLabel={t.agenda.loadingPlaces}>
 				{(places) => (
-					<Field id="event-place" label="Lugar">
+					<Field id="event-place" label={t.agenda.fieldPlace}>
 						<select
 							id="event-place"
 							className={inputClass}
 							value={values.placeId}
 							onChange={(e) => set("placeId", e.target.value)}
 						>
-							<option value={OTHER_PLACE}>
-								Otro lugar (escribe la dirección)
-							</option>
+							<option value={OTHER_PLACE}>{t.agenda.otherPlace}</option>
 							{places.map((place) => (
 								<option key={place.id} value={place.id}>
 									{place.name} · {place.neighborhood}
@@ -291,8 +288,8 @@ function EventFormBody() {
 			{!values.placeId && (
 				<Field
 					id="event-location"
-					label="Dirección o punto de encuentro"
-					hint="Ej.: Cra. 50 #72-10, frente a la tienda de don Julio."
+					label={t.agenda.fieldLocation}
+					hint={t.agenda.locationHint}
 				>
 					<input
 						id="event-location"
@@ -306,8 +303,8 @@ function EventFormBody() {
 
 			<Field
 				id="event-capacity"
-				label="Cupos (opcional)"
-				hint="Déjalo vacío si no hay límite."
+				label={t.agenda.fieldCapacity}
+				hint={t.agenda.capacityHint}
 			>
 				<input
 					id="event-capacity"
@@ -322,7 +319,7 @@ function EventFormBody() {
 			</Field>
 
 			<fieldset className="space-y-2">
-				<legend className="q-eyebrow">Entrada</legend>
+				<legend className="q-eyebrow">{t.agenda.entry}</legend>
 				<div className="q-seg">
 					<button
 						type="button"
@@ -331,7 +328,7 @@ function EventFormBody() {
 						aria-pressed={values.isFree}
 						onClick={() => set("isFree", true)}
 					>
-						Gratis
+						{t.agenda.free}
 					</button>
 					<button
 						type="button"
@@ -340,13 +337,13 @@ function EventFormBody() {
 						aria-pressed={!values.isFree}
 						onClick={() => set("isFree", false)}
 					>
-						Con costo
+						{t.agenda.paid}
 					</button>
 				</div>
 			</fieldset>
 
 			{!values.isFree && (
-				<Field id="event-price" label="Valor de la entrada (COP)">
+				<Field id="event-price" label={t.agenda.fieldPrice}>
 					<input
 						id="event-price"
 						type="number"
@@ -356,7 +353,7 @@ function EventFormBody() {
 						className={inputClass}
 						value={values.price}
 						onChange={(e) => set("price", e.target.value)}
-						placeholder="Ej.: 15000"
+						placeholder={t.agenda.pricePlaceholder}
 					/>
 				</Field>
 			)}
@@ -370,19 +367,17 @@ function EventFormBody() {
 					className="q-btn q-btn--primary q-btn--block"
 					disabled={submitting}
 				>
-					{submitting ? "Publicando…" : "Publicar evento"}
+					{submitting ? t.agenda.publishing : t.agenda.publishEvent}
 				</button>
-				<p className="q-sm q-muted text-center">
-					Toda publicación pasa por la moderación de la comunidad.
-				</p>
+				<p className="q-sm q-muted text-center">{t.agenda.moderationNote}</p>
 			</div>
 			<p className="q-sm q-muted text-center">
-				También puedes pedírselo a Quillart:{" "}
+				{t.agenda.askQuillartPrefix}{" "}
 				<a
-					href={askHref("Quiero publicar un evento")}
+					href={askHref(t.agenda.askPublishPrompt)}
 					className="inline-flex min-h-11 items-center font-semibold text-[var(--ink)]"
 				>
-					«Quiero publicar un evento»
+					{t.agenda.askPublishQuoted}
 				</a>
 			</p>
 		</form>

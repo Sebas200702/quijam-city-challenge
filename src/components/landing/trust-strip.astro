@@ -5,15 +5,22 @@ import { LockKeyhole, Phone, ShieldCheck } from "lucide-react";
 const items = [
 	{
 		icon: ShieldCheck,
+		key: "moderation",
 		text: "Moderación con revisión humana",
 		tone: "q-tile--green",
 	},
 	{
 		icon: LockKeyhole,
+		key: "data",
 		text: "Tus datos protegidos · Ley 1581",
 		tone: "q-tile--gold",
 	},
-	{ icon: Phone, text: "¿Emergencia? Llama al 123", tone: "q-tile--red" },
+	{
+		icon: Phone,
+		key: "emergency",
+		text: "¿Emergencia? Llama al 123",
+		tone: "q-tile--red",
+	},
 ];
 ---
 
@@ -22,7 +29,7 @@ const items = [
 		<img src="/illustrations/security-on.svg" alt="" class="h-40 w-auto lg:h-56" loading="lazy" width="260" height="220" />
 	</div>
 	<div>
-		<h2 id="trust-title" class="q-h1 mb-6">Una comunidad cuidada</h2>
+		<h2 id="trust-title" class="q-h1 mb-6" data-i18n="landing.trust.title">Una comunidad cuidada</h2>
 		<ul class="m-0 flex list-none flex-col gap-3 p-0">
 			{
 				items.map((item) => (
@@ -30,7 +37,7 @@ const items = [
 						<span class={`q-tile ${item.tone}`}>
 							<item.icon size={22} strokeWidth={1.75} aria-hidden="true" />
 						</span>
-						<span class="q-p font-semibold">{item.text}</span>
+						<span class="q-p font-semibold" data-i18n={`landing.trust.${item.key}`}>{item.text}</span>
 					</li>
 				))
 			}

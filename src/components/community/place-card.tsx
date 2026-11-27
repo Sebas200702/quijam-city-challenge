@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { PLACE_KIND_LABELS } from "../../lib/community/community-labels";
 import type { Place, PlaceKind } from "../../lib/community/community-types";
+import { useT } from "../../lib/i18n/use-language";
 
 export const PLACE_KIND_ICONS: Record<PlaceKind, LucideIcon> = {
 	nature: Leaf,
@@ -44,26 +45,22 @@ export function PlaceKindTile({ kind }: { kind: PlaceKind }) {
 
 /** "Entrada libre" / "Con costo" and "Accesible" badges. */
 export function PlaceBadges({ place }: { place: Place }) {
+	const t = useT();
 	return (
 		<>
 			<span
 				className={`q-badge ${place.isFree ? "q-badge--optimal" : "q-badge--neutral"}`}
 			>
-				{place.isFree ? "Entrada libre" : "Con costo"}
+				{place.isFree ? t.places.free : t.places.paid}
 			</span>
 			{place.isAccessible && (
 				<span className="q-badge q-badge--neutral">
 					<Accessibility size={12} aria-hidden="true" />
-					Accesible
+					{t.places.accessible}
 				</span>
 			)}
 		</>
 	);
-}
-
-function upcomingText(count: number): string {
-	if (count === 0) return "Sin eventos próximos";
-	return count === 1 ? "1 evento próximo" : `${count} eventos próximos`;
 }
 
 export function PlaceCard({
@@ -73,6 +70,11 @@ export function PlaceCard({
 	place: Place;
 	upcomingCount?: number;
 }) {
+	const t = useT();
+	const upcomingText = (count: number): string => {
+		if (count === 0) return t.places.noUpcoming;
+		return count === 1 ? t.places.oneUpcoming : t.places.manyUpcoming(count);
+	};
 	return (
 		<a
 			href={`/lugares/${encodeURIComponent(place.slug)}`}

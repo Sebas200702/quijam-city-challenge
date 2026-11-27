@@ -13,53 +13,48 @@ import {
 	formatEventDay,
 	formatTime,
 } from "../../lib/community/community-labels";
+import type { Messages } from "../../lib/i18n/messages";
+import { useT } from "../../lib/i18n/use-language";
 import { Loaded } from "../community/community-ui";
 import { useLoad } from "../community/use-community";
 import { AssistantChat } from "./assistant-chat";
 
-const STARTERS = [
-	"Planes para este fin de semana",
-	"Quiero publicar un evento",
-	"Lugares de naturaleza cerca",
-	"¿Cómo llego al estadio?",
-	"Reportar un arroyo o un problema",
-	"¿Qué se habla en la comunidad?",
-	"Mis inscripciones",
-];
-
-const SECTIONS: {
+function sections(t: Messages): {
 	href: string;
 	label: string;
 	hint: string;
 	icon: ReactNode;
-}[] = [
-	{
-		href: "/agenda",
-		label: "Agenda",
-		hint: "Eventos y planes",
-		icon: <CalendarDays size={20} aria-hidden="true" />,
-	},
-	{
-		href: "/foro",
-		label: "Comunidad",
-		hint: "Conversaciones",
-		icon: <MessagesSquare size={20} aria-hidden="true" />,
-	},
-	{
-		href: "/lugares",
-		label: "Lugares",
-		hint: "Parques y naturaleza",
-		icon: <MapPin size={20} aria-hidden="true" />,
-	},
-	{
-		href: "/mapa",
-		label: "Mapa",
-		hint: "Rutas y alertas",
-		icon: <MapIcon size={20} aria-hidden="true" />,
-	},
-];
+}[] {
+	return [
+		{
+			href: "/agenda",
+			label: t.nav.agenda,
+			hint: t.home.agendaHint,
+			icon: <CalendarDays size={20} aria-hidden="true" />,
+		},
+		{
+			href: "/foro",
+			label: t.nav.forum,
+			hint: t.home.forumHint,
+			icon: <MessagesSquare size={20} aria-hidden="true" />,
+		},
+		{
+			href: "/lugares",
+			label: t.nav.places,
+			hint: t.home.placesHint,
+			icon: <MapPin size={20} aria-hidden="true" />,
+		},
+		{
+			href: "/mapa",
+			label: t.nav.map,
+			hint: t.home.mapHint,
+			icon: <MapIcon size={20} aria-hidden="true" />,
+		},
+	];
+}
 
 function TodayStrip() {
+	const t = useT();
 	const { state } = useLoad(
 		async (store) => {
 			const [events, places] = await Promise.all([
@@ -80,18 +75,16 @@ function TodayStrip() {
 		<section aria-labelledby="today-title" className="space-y-3">
 			<div className="flex items-center justify-between gap-2">
 				<h2 id="today-title" className="q-h2">
-					Hoy en tu ciudad
+					{t.home.todayTitle}
 				</h2>
 				<a className="q-sm font-semibold text-[var(--ink)]" href="/agenda">
-					Ver agenda
+					{t.home.seeAgenda}
 				</a>
 			</div>
-			<Loaded state={state} loadingLabel="Buscando planes…">
+			<Loaded state={state} loadingLabel={t.home.searching}>
 				{(items) =>
 					items.length === 0 ? (
-						<p className="q-p q-muted">
-							Todavía no hay eventos próximos. ¡Publica el primero!
-						</p>
+						<p className="q-p q-muted">{t.home.noEvents}</p>
 					) : (
 						<ul className="grid gap-2 lg:grid-cols-3">
 							{items.map(({ event, place }) => (
@@ -127,12 +120,13 @@ function TodayStrip() {
 }
 
 function SectionLinks() {
+	const t = useT();
 	return (
 		<nav
-			aria-label="Secciones"
+			aria-label={t.nav.sections}
 			className="grid grid-cols-2 gap-2 lg:grid-cols-4"
 		>
-			{SECTIONS.map((section) => (
+			{sections(t).map((section) => (
 				<a
 					key={section.href}
 					href={section.href}
@@ -150,11 +144,12 @@ function SectionLinks() {
 }
 
 export function AssistantHome() {
+	const t = useT();
 	return (
 		<AssistantChat
-			greeting="¿Qué quieres hacer hoy en Barranquilla?"
-			intro="Planes, comunidad, lugares y reportes. Escríbeme o háblame."
-			starters={STARTERS}
+			greeting={t.home.greeting}
+			intro={t.home.intro}
+			starters={t.home.starters}
 			emptyState={
 				<div className="mt-2 space-y-6">
 					<TodayStrip />

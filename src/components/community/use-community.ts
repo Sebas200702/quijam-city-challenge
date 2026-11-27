@@ -7,6 +7,8 @@ import type {
 	CommunityTopic,
 	Profile,
 } from "../../lib/community/community-types";
+import { messages } from "../../lib/i18n/messages";
+import { getLanguage } from "../../lib/i18n/use-language";
 
 export function useStore(): CommunityStore {
 	return getCommunityStore();
@@ -72,7 +74,7 @@ export function useLoad<T>(
 						message:
 							error instanceof Error
 								? error.message
-								: "No pudimos cargar la información.",
+								: messages[getLanguage()].shared.ui.loadError,
 					}),
 			);
 		return () => {

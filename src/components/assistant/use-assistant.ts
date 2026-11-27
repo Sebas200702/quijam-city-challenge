@@ -17,6 +17,7 @@ import type {
 } from "../../lib/assistant/assistant-types";
 import { isActionTool } from "../../lib/assistant/assistant-types";
 import { declinedResult, runTool } from "../../lib/assistant/tool-executor";
+import { getLanguage } from "../../lib/i18n/use-language";
 import { useSession, useStore } from "../community/use-community";
 
 /** Follow-up calls with tool results after one message from the person. */
@@ -231,6 +232,7 @@ export function useAssistant() {
 					displayName: current?.displayName ?? null,
 					isVisitor: current?.isVisitor ?? null,
 					fromPath: referrerPath(),
+					language: getLanguage(),
 				},
 			};
 			const response = await fetch("/api/assistant", {

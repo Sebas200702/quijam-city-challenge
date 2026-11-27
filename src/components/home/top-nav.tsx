@@ -1,5 +1,6 @@
 import { UserRound } from "lucide-react";
-import { type NavSection, navLinks } from "./nav-sections";
+import { useT } from "../../lib/i18n/use-language";
+import { type NavSection, navLinks, sectionLabel } from "./nav-sections";
 
 interface TopNavProps {
 	current: NavSection;
@@ -16,8 +17,12 @@ const linkClass = (active: boolean) =>
 
 /** Desktop navigation (hidden on small screens, where BottomNav takes over). */
 export function TopNav({ current }: TopNavProps) {
+	const t = useT();
 	return (
-		<nav aria-label="Secciones" className="hidden items-center gap-1 lg:flex">
+		<nav
+			aria-label={t.nav.sections}
+			className="hidden items-center gap-1 lg:flex"
+		>
 			{navLinks().map((link) => (
 				<a
 					key={link.section}
@@ -32,7 +37,7 @@ export function TopNav({ current }: TopNavProps) {
 							aria-hidden="true"
 						/>
 					)}
-					{link.label}
+					{sectionLabel(t, link.section)}
 				</a>
 			))}
 			<a
@@ -41,7 +46,7 @@ export function TopNav({ current }: TopNavProps) {
 				aria-current={current === "profile" ? "page" : undefined}
 			>
 				<UserRound size={18} strokeWidth={1.75} aria-hidden="true" />
-				Perfil
+				{t.nav.profile}
 			</a>
 		</nav>
 	);

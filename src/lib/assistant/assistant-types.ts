@@ -15,6 +15,7 @@ import type {
 	PlaceKind,
 	PublishResult,
 } from "../community/community-types";
+import type { Language } from "../i18n/languages";
 
 /** Specialized agents, one per section of the platform. */
 export type AssistantAgentId =
@@ -135,6 +136,8 @@ export interface AssistantContext {
 	isVisitor: boolean | null;
 	/** Page the person came from, e.g. "/agenda/123", if any. */
 	fromPath: string | null;
+	/** Interface language the person chose; the reply should use it. */
+	language?: Language;
 }
 
 export interface AssistantRequest {

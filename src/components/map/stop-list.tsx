@@ -1,16 +1,7 @@
 import { Route } from "lucide-react";
 import { stopServices } from "../../lib/corridor/corridor-geometry";
-import {
-	STOP_TYPE_LABELS,
-	ZONE_LABELS,
-} from "../../lib/corridor/corridor-selection";
 import type { CorridorStop } from "../../lib/corridor/corridor-types";
-import {
-	MAP_COPY,
-	type MapLang,
-	STOP_TYPE_LABELS_EN,
-	ZONE_LABELS_EN,
-} from "./map-chrome-copy";
+import { useT } from "../../lib/i18n/use-language";
 import "./map-chrome.css";
 import { CorridorArt } from "./map-illustrations";
 import { ServiceIcon, STOP_TYPE_ICONS } from "./service-icon";
@@ -19,20 +10,13 @@ interface StopListProps {
 	stops: CorridorStop[];
 	selectedCode: string | null;
 	onPick: (stop: CorridorStop) => void;
-	/** Copy language. Defaults to Spanish. */
-	lang?: MapLang;
 }
 
 /** The corridor's stops in order, as a numbered line from south to north. */
-export function StopList({
-	stops,
-	selectedCode,
-	onPick,
-	lang = "es",
-}: StopListProps) {
-	const copy = MAP_COPY[lang];
-	const typeLabels = lang === "en" ? STOP_TYPE_LABELS_EN : STOP_TYPE_LABELS;
-	const zoneLabels = lang === "en" ? ZONE_LABELS_EN : ZONE_LABELS;
+export function StopList({ stops, selectedCode, onPick }: StopListProps) {
+	const copy = useT().map;
+	const typeLabels = copy.stopTypes;
+	const zoneLabels = copy.zones;
 
 	return (
 		<section
@@ -92,11 +76,7 @@ export function StopList({
 										{stopServices(stop)
 											.filter((service) => service !== "recycling")
 											.map((service) => (
-												<ServiceIcon
-													key={service}
-													service={service}
-													lang={lang}
-												/>
+												<ServiceIcon key={service} service={service} />
 											))}
 									</span>
 								</button>

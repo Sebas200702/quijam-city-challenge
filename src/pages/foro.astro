@@ -6,6 +6,6 @@ import { homeContent } from "../lib/home-content";
 const { aiHref } = homeContent;
 ---
 
-<BaseLayout title="Comunidad">
+<BaseLayout title="Comunidad" titleKey="forum.pageTitle">
 	<ForumPage client:only="react" aiHref={aiHref} />
 </BaseLayout>

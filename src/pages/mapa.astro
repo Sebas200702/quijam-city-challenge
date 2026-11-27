@@ -11,10 +11,10 @@ const { data, source } = await loadCorridorData();
 const { aiHref } = homeContent;
 ---
 
-<BaseLayout title="Mapa del corredor · QUILLART">
+<BaseLayout title="Mapa del corredor · QUILLART" titleKey="map.pageTitle">
 	{/* Top bar with the secondary menu on every width; tab bar on phones. */}
 	<div class="flex h-[calc(100dvh-3px)] w-full flex-col">
-		<TopBar current="map" aiHref={aiHref} menu client:load />
+		<TopBar current="map" aiHref={aiHref} client:load />
 		<main class="relative min-h-0 flex-1">
 			<VisitorMapSection client:only="react" data={data} source={source}>
 				{/* Shown until the map loads: never a blank screen (rule 8). */}
@@ -30,6 +30,6 @@ const { aiHref } = homeContent;
 			</VisitorMapSection>
 			<VisitorPresenceBeacon client:only="react" />
 		</main>
-		<BottomNav current="map" aiHref={aiHref} />
+		<BottomNav client:load current="map" aiHref={aiHref} />
 	</div>
 </BaseLayout>

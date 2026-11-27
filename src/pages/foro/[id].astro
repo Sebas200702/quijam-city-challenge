@@ -7,6 +7,6 @@ const { id = "" } = Astro.params;
 const { aiHref } = homeContent;
 ---
 
-<BaseLayout title="Conversación">
+<BaseLayout title="Conversación" titleKey="forum.threadPageTitle">
 	<ThreadPage client:only="react" threadId={id} aiHref={aiHref} />
 </BaseLayout>

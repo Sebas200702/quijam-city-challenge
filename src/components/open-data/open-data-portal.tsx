@@ -18,8 +18,8 @@ import type {
 } from "../../lib/open-data/open-data-types";
 import { BottomNav } from "../home/bottom-nav";
 import { QuillartLogo } from "../home/quillart-logo";
-import { ThemeToggle } from "../home/theme-toggle";
 import { TopNav } from "../home/top-nav";
+import { SecondaryMenu } from "../visitor-home/secondary-menu";
 
 type OriginFilter = "all" | OpenDataOrigin;
 
@@ -307,7 +307,7 @@ export function OpenDataPortal({
 					<QuillartLogo />
 				</a>
 				<TopNav current="map" aiHref={aiHref} />
-				<ThemeToggle />
+				<SecondaryMenu />
 			</header>
 
 			<main className="flex flex-1 flex-col gap-6 px-4 pt-4 pb-24 lg:gap-8 lg:px-8 lg:pt-8 lg:pb-16">

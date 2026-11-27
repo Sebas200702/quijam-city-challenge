@@ -1,5 +1,7 @@
 // Pure rules shared by both stores and the forms: validation, filters and limits.
 
+import { messages } from "../i18n/messages";
+import { getLanguage } from "../i18n/use-language";
 import type {
 	CommunityEvent,
 	EventQuery,
@@ -10,6 +12,9 @@ import type {
 	SignUpInput,
 	ThreadQuery,
 } from "./community-types";
+
+/** Validation messages in the chosen language (Spanish on the server). */
+const validation = () => messages[getLanguage()].shared.validation;
 
 /** Barranquilla is UTC-5 all year (no daylight saving time). */
 const BOGOTA_OFFSET = "-05:00";
@@ -31,38 +36,32 @@ export function validateEventInput(
 	input: NewEventInput,
 	now: Date = new Date(),
 ): string | null {
-	if (input.title.trim().length < 4)
-		return "El título debe tener al menos 4 caracteres.";
-	if (input.title.trim().length > 120)
-		return "El título no puede pasar de 120 caracteres.";
-	if (input.description.trim().length < 10)
-		return "Cuenta un poco más del evento (mínimo 10 caracteres).";
+	if (input.title.trim().length < 4) return validation().titleMin4;
+	if (input.title.trim().length > 120) return validation().titleMax120;
+	if (input.description.trim().length < 10) return validation().eventBodyMin;
 	const start = new Date(input.startsAt);
 	if (Number.isNaN(start.getTime())) return "Indica la fecha y hora de inicio.";
-	if (start.getTime() < now.getTime())
-		return "La fecha de inicio ya pasó. Elige una fecha futura.";
+	if (start.getTime() < now.getTime()) return validation().eventStartPast;
 	if (input.endsAt) {
 		const end = new Date(input.endsAt);
 		if (Number.isNaN(end.getTime()) || end <= start)
-			return "La hora de cierre debe ser después del inicio.";
+			return validation().eventEndAfterStart;
 	}
 	if (!input.placeId && !input.locationText?.trim())
-		return "Elige un lugar o escribe la dirección del encuentro.";
+		return validation().eventPlaceMissing;
 	if (
 		input.capacity !== null &&
 		(!Number.isInteger(input.capacity) || input.capacity < 1)
 	)
-		return "Los cupos deben ser un número entero mayor que cero.";
+		return validation().capacityInteger;
 	if (!input.isFree && (input.priceCop === null || input.priceCop <= 0))
 		return "Indica el valor de la entrada en pesos.";
 	return null;
 }
 
 export function validateThreadInput(input: NewThreadInput): string | null {
-	if (input.title.trim().length < 4)
-		return "El título debe tener al menos 4 caracteres.";
-	if (input.title.trim().length > 140)
-		return "El título no puede pasar de 140 caracteres.";
+	if (input.title.trim().length < 4) return validation().titleMin4;
+	if (input.title.trim().length > 140) return validation().titleMax140;
 	if (input.body.trim().length < 2) return "Escribe tu mensaje.";
 	return null;
 }
@@ -113,11 +112,9 @@ export function isReservedDisplayName(name: string): boolean {
 
 function validateDisplayName(name: string): string | null {
 	const trimmed = name.trim();
-	if (trimmed.length < 2)
-		return "Escribe cómo quieres que te vean (mínimo 2 caracteres).";
+	if (trimmed.length < 2) return validation().displayNameMin;
 	if (trimmed.length > 60) return "Tu nombre no puede pasar de 60 caracteres.";
-	if (isReservedDisplayName(trimmed))
-		return "Ese nombre está reservado para entidades oficiales. Usa tu nombre o un apodo.";
+	if (isReservedDisplayName(trimmed)) return validation().reservedName;
 	return null;
 }
 
@@ -125,9 +122,8 @@ export function validateSignUp(input: SignUpInput): string | null {
 	const nameError = validateDisplayName(input.displayName);
 	if (nameError) return nameError;
 	if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.email.trim()))
-		return "Escribe un correo válido.";
-	if (input.password.length < 8)
-		return "La contraseña debe tener al menos 8 caracteres.";
+		return validation().invalidEmail;
+	if (input.password.length < 8) return validation().passwordMin;
 	return null;
 }
 
@@ -141,7 +137,7 @@ export function registrationBlocker(
 	now: Date = new Date(),
 ): string | null {
 	if (event.status === "cancelled") return "Este evento fue cancelado.";
-	if (isPastEvent(event, now)) return "Este evento ya pasó.";
+	if (isPastEvent(event, now)) return validation().eventPassed;
 	if (event.capacity !== null && event.registeredCount >= event.capacity)
 		return "No quedan cupos para este evento.";
 	return null;

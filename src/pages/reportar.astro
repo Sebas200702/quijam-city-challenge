@@ -13,9 +13,13 @@ const initialSegmentCode = Astro.url.searchParams.get("segment");
 const { aiHref } = homeContent;
 ---
 
-<BaseLayout title="Reportar cobro abusivo · QUILLART" theme="light">
+<BaseLayout
+	title="Reportar cobro abusivo · QUILLART"
+	titleKey="reports.pageTitle"
+	theme="light"
+>
 	<div class="mx-auto flex min-h-[calc(100dvh-3px)] w-full flex-col">
-		<TopBar current="map" aiHref={aiHref} />
+		<TopBar client:load current="map" aiHref={aiHref} />
 		<main class="mx-auto w-full max-w-xl flex-1 px-4 pt-4 pb-24 lg:py-8">
 			<OverchargeReportPage
 				client:load
@@ -23,6 +27,6 @@ const { aiHref } = homeContent;
 				initialSegmentCode={initialSegmentCode}
 			/>
 		</main>
-		<BottomNav current="map" aiHref={aiHref} />
+		<BottomNav client:load current="map" aiHref={aiHref} />
 	</div>
 </BaseLayout>

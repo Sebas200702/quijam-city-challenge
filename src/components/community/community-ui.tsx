@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import type { PublishResult } from "../../lib/community/community-types";
+import { useT } from "../../lib/i18n/use-language";
 import type { LoadState } from "./use-community";
 
 export const inputClass =
@@ -129,11 +130,12 @@ export function EmptyState({
 	);
 }
 
-export function Loading({ label = "Cargando…" }: { label?: string }) {
+export function Loading({ label }: { label?: string }) {
+	const t = useT();
 	return (
 		<p className="q-p q-muted flex items-center gap-2" aria-live="polite">
 			<span className="q-star q-star--think" aria-hidden="true" />
-			{label}
+			{label ?? t.shared.ui.loading}
 		</p>
 	);
 }
@@ -177,5 +179,6 @@ export function PublishNotice({
 
 /** Badge for the author's own content that is waiting for a moderator. */
 export function HeldBadge() {
-	return <span className="q-badge q-badge--high">En revisión</span>;
+	const t = useT();
+	return <span className="q-badge q-badge--high">{t.shared.ui.heldBadge}</span>;
 }

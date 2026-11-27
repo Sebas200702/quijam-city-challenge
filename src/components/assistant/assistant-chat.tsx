@@ -25,6 +25,7 @@ import type {
 	AssistantMessage,
 	AssistantToolResult,
 } from "../../lib/assistant/assistant-types";
+import { useT } from "../../lib/i18n/use-language";
 import {
 	ErrorNote,
 	PublishNotice,
@@ -50,6 +51,7 @@ function DisplayView({
 	display: AssistantDisplay;
 	toolName: AssistantToolResult["name"];
 }) {
+	const t = useT();
 	switch (display.kind) {
 		case "events":
 			return (
@@ -87,7 +89,7 @@ function DisplayView({
 					<PublishNotice result={display.result} />
 					{display.href && (
 						<a className="q-btn q-btn--secondary q-btn--sm" href={display.href}>
-							Ver publicación
+							{t.chat.viewPost}
 						</a>
 					)}
 				</div>
@@ -119,7 +121,7 @@ function DisplayView({
 					{toolName === "plan_route" && (
 						<a className="q-btn q-btn--secondary q-btn--sm" href="/mapa">
 							<MapIcon size={16} aria-hidden="true" />
-							Ver la ruta en el mapa
+							{t.chat.viewRoute}
 						</a>
 					)}
 				</div>
@@ -199,6 +201,7 @@ export function AssistantChat({
 	emptyState,
 }: AssistantChatProps) {
 	const assistant = useAssistant();
+	const t = useT();
 	const {
 		messages,
 		pending,
@@ -272,16 +275,14 @@ export function AssistantChat({
 			className={`q-prompt shadow-[var(--shadow-card)] ${empty ? "lg:py-1.5" : ""}`}
 		>
 			<label htmlFor={inputId} className="q-sr">
-				Escríbele a Quillart
+				{t.chat.composerLabel}
 			</label>
 			<input
 				id={inputId}
 				value={voice.listening ? voice.interim : draft}
 				onChange={(event) => setDraft(event.target.value)}
 				readOnly={voice.listening}
-				placeholder={
-					voice.listening ? "Te escucho…" : "Escribe o habla con Quillart"
-				}
+				placeholder={voice.listening ? t.chat.listening : t.chat.placeholder}
 				autoComplete="off"
 				enterKeyHint="send"
 				maxLength={1000}
@@ -300,7 +301,7 @@ export function AssistantChat({
 						<Mic size={20} aria-hidden="true" />
 					)}
 					<span className="q-sr">
-						{voice.listening ? "Dejar de escuchar" : "Hablar con Quillart"}
+						{voice.listening ? t.chat.stopListening : t.chat.talk}
 					</span>
 				</button>
 			)}
@@ -310,7 +311,7 @@ export function AssistantChat({
 				disabled={loading || voice.listening || !draft.trim()}
 			>
 				<SendHorizontal size={20} aria-hidden="true" />
-				<span className="q-sr">Enviar</span>
+				<span className="q-sr">{t.chat.send}</span>
 			</button>
 		</form>
 	);
@@ -334,14 +335,14 @@ export function AssistantChat({
 						) : (
 							<VolumeX size={16} aria-hidden="true" />
 						)}
-						Leer respuestas en voz alta
+						{t.chat.readAloud}
 					</button>
 				)}
 				<a
 					className="q-btn q-btn--ghost q-btn--sm min-h-11"
 					href="/prueba-guia"
 				>
-					Voz en vivo (beta)
+					{t.chat.liveVoice}
 				</a>
 				{!empty && (
 					<button
@@ -351,7 +352,7 @@ export function AssistantChat({
 						disabled={loading}
 					>
 						<RotateCcw size={16} aria-hidden="true" />
-						Nueva conversación
+						{t.chat.newConversation}
 					</button>
 				)}
 			</div>
@@ -410,7 +411,7 @@ export function AssistantChat({
 							<div className="q-msg q-msg--ai">
 								<AiAvatar thinking />
 								<div className="q-thinking">
-									Pensando
+									{t.chat.thinking}
 									<span className="q-thinking__dots" aria-hidden="true">
 										<i />
 										<i />
@@ -428,7 +429,7 @@ export function AssistantChat({
 									onClick={error.retry}
 								>
 									<RotateCcw size={16} aria-hidden="true" />
-									Reintentar
+									{t.chat.retry}
 								</button>
 							</div>
 						)}

@@ -3,6 +3,7 @@
 // allow-list and the tool schema before it reaches the browser.
 
 import type { Content, FunctionCall, Part } from "@google/genai";
+import type { Language } from "../i18n/languages";
 import {
 	type AgentTurn,
 	agentInstruction,
@@ -46,6 +47,13 @@ const bogotaFormat = new Intl.DateTimeFormat("en-US", {
 	minute: "2-digit",
 });
 
+const LANGUAGE_LABELS: Record<Language, string> = {
+	es: "Spanish",
+	en: "English",
+	pt: "Portuguese",
+	fr: "French",
+};
+
 /** Facts about the moment and the person (only their own data). */
 export function contextFacts(context: AssistantContext): string {
 	const time = Date.parse(context.now);
@@ -65,6 +73,9 @@ export function contextFacts(context: AssistantContext): string {
 			: null,
 		`- The person is ${who}.`,
 		context.fromPath ? `- Came from the page ${context.fromPath}.` : null,
+		context.language
+			? `- The person chose ${LANGUAGE_LABELS[context.language]} as their app language: reply in it, unless they write in another language.`
+			: null,
 	]
 		.filter(Boolean)
 		.join("\n");

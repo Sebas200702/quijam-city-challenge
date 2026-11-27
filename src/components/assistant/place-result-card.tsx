@@ -3,8 +3,10 @@
 import { Accessibility, MapPin } from "lucide-react";
 import { PLACE_KIND_LABELS } from "../../lib/community/community-labels";
 import type { Place } from "../../lib/community/community-types";
+import { useT } from "../../lib/i18n/use-language";
 
 export function PlaceResultCard({ place }: { place: Place }) {
+	const t = useT();
 	return (
 		<a
 			href={`/lugares/${encodeURIComponent(place.slug)}`}
@@ -18,12 +20,12 @@ export function PlaceResultCard({ place }: { place: Place }) {
 			</p>
 			<div className="flex flex-wrap gap-1.5 pt-1">
 				<span className="q-badge q-badge--neutral">
-					{place.isFree ? "Gratis" : "Con costo"}
+					{place.isFree ? t.places.freeShort : t.places.paid}
 				</span>
 				{place.isAccessible && (
 					<span className="q-badge q-badge--optimal">
 						<Accessibility size={12} aria-hidden="true" />
-						Accesible
+						{t.places.accessible}
 					</span>
 				)}
 			</div>

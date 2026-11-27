@@ -32,6 +32,7 @@ import type {
 	CorridorData,
 	CorridorDataSource,
 } from "../../lib/corridor/corridor-types";
+import { useT } from "../../lib/i18n/use-language";
 import { DESTINATIONS, type DestinationKey } from "../../lib/trip/trip-planner";
 import { GuidePanel } from "../guide/guide-panel";
 import "./corridor-map.css";
@@ -44,6 +45,7 @@ import {
 	FLOOD_HATCH_ID,
 	floodCircle,
 	type LayerKey,
+	relabelPins,
 	routeLine,
 } from "./map-layers";
 import { pinIcon, setMarkerSelected, userIcon } from "./map-markers";
@@ -116,6 +118,11 @@ export default function CorridorMap({
 	source,
 	notices,
 }: CorridorMapProps) {
+	const t = useT().map;
+	// The map's effects read the language through a ref, so a change relabels the pins
+	// without building the map again.
+	const tRef = useRef(t);
+	tRef.current = t;
 	const containerRef = useRef<HTMLElement>(null);
 	const mapRef = useRef<L.Map | null>(null);
 	const layersRef = useRef<CorridorLayers | null>(null);
@@ -130,6 +137,18 @@ export default function CorridorMap({
 	const [theme, setTheme] = useState<Theme>(() =>
 		document.documentElement.dataset.theme === "dark" ? "dark" : "light",
 	);
+	// The theme can also change from the secondary menu: follow the page attribute.
+	useEffect(() => {
+		const root = document.documentElement;
+		const observer = new MutationObserver(() =>
+			setTheme(root.dataset.theme === "dark" ? "dark" : "light"),
+		);
+		observer.observe(root, {
+			attributes: true,
+			attributeFilter: ["data-theme"],
+		});
+		return () => observer.disconnect();
+	}, []);
 	const pointNames = useMemo(
 		() => searchablePoints(data).map((point) => point.name),
 		[data],
@@ -182,11 +201,15 @@ export default function CorridorMap({
 			.addTo(map);
 		tileLayerRef.current = tileLayer;
 		map.on("zoomend", () => setNear(map.getZoom() >= NEAR_ZOOM));
-		const layers = buildCorridorLayers(data, (selection) => {
-			setSelected(selection);
-			const marker = layersRef.current?.markers.get(selectionKey(selection));
-			if (marker) map.panInside(marker.getLatLng(), overlayPadding(map));
-		});
+		const layers = buildCorridorLayers(
+			data,
+			(selection) => {
+				setSelected(selection);
+				const marker = layersRef.current?.markers.get(selectionKey(selection));
+				if (marker) map.panInside(marker.getLatLng(), overlayPadding(map));
+			},
+			tRef.current,
+		);
 		layers.corridor.addTo(map);
 		fitCorridor(map, data);
 		mapRef.current = map;
@@ -213,8 +236,16 @@ export default function CorridorMap({
 		};
 	}, []);
 
+	// A new language relabels every pin (title and visible name/status).
+	// biome-ignore lint/correctness/useExhaustiveDependencies: `t` is the trigger; the pins come from `tRef`.
+	useEffect(() => {
+		const layers = layersRef.current;
+		if (layers) relabelPins(layers, data, tRef.current);
+	}, [t, data]);
+
 	// Show or hide each layer, then mark the selected marker again: Leaflet
-	// rebuilds a marker's element when its layer comes back.
+	// rebuilds a marker's element when its layer comes back (and when a new language relabels it).
+	// biome-ignore lint/correctness/useExhaustiveDependencies: `t` re-marks the pin after relabelPins replaced its icon.
 	useEffect(() => {
 		const map = mapRef.current;
 		const layers = layersRef.current;
@@ -227,7 +258,7 @@ export default function CorridorMap({
 		for (const [key, marker] of layers.markers) {
 			setMarkerSelected(marker, key === selectedKey);
 		}
-	}, [visible, selected]);
+	}, [visible, selected, t]);
 
 	// Draws the route the Decider chose: gold on a dark edge (green edge when it is the accessible one).
 	useEffect(() => {
@@ -253,9 +284,9 @@ export default function CorridorMap({
 		if (!layer) return;
 		layer.clearLayers();
 		if (!origin) return;
-		const label = `Estás aquí: ${origin.name}`;
+		const label = t.userHereAt(origin.name);
 		const marker = L.marker([origin.latitude, origin.longitude], {
-			icon: userIcon({ accessible: query.accessibleMode, label: "Estás aquí" }),
+			icon: userIcon({ accessible: query.accessibleMode, label: t.userHere }),
 			interactive: false,
 			keyboard: false,
 			zIndexOffset: 500,
@@ -266,7 +297,7 @@ export default function CorridorMap({
 			element?.setAttribute("aria-label", label);
 		});
 		marker.addTo(layer);
-	}, [origin, query.accessibleMode]);
+	}, [origin, query.accessibleMode, t]);
 
 	// Paints flood zones activated by city-events (downpour) in pulsing, hatched red.
 	useEffect(() => {
@@ -284,7 +315,7 @@ export default function CorridorMap({
 					tone: "red",
 					glyph: "alert",
 					label: zone.name,
-					status: "Arroyo activo",
+					status: t.activeFlood,
 					labeled: true,
 				}),
 				interactive: false,
@@ -292,7 +323,7 @@ export default function CorridorMap({
 				zIndexOffset: 800,
 			}).addTo(layer);
 		}
-	}, [flood.blocked, data.floodZones]);
+	}, [flood.blocked, data.floodZones, t]);
 
 	const toggleLayer = (key: LayerKey) => {
 		setVisible((current) => ({ ...current, [key]: !current[key] }));
@@ -354,7 +385,7 @@ export default function CorridorMap({
 			<section
 				ref={containerRef}
 				className="corridor-app__map"
-				aria-label="Mapa del corredor"
+				aria-label={t.mapAria}
 			/>
 			<MapStatusOverlay
 				tiles={tiles}
@@ -368,7 +399,7 @@ export default function CorridorMap({
 				<div className="corridor-maptags">
 					<span className="q-badge q-badge--optimal corridor-maptags__badge">
 						<Accessibility size={14} strokeWidth={1.75} aria-hidden="true" />
-						Modo accesible
+						{t.accessibleMode}
 					</span>
 				</div>
 			)}
@@ -394,7 +425,7 @@ export default function CorridorMap({
 					onClick={() => setGuideOpen(true)}
 				>
 					<MessageCircle size={20} strokeWidth={1.75} aria-hidden="true" />
-					Pregúntale al Guía · Ask the Guide
+					{t.askGuideBilingual}
 				</button>
 				<div className="corridor-panel__stops">
 					<StopList
@@ -409,8 +440,8 @@ export default function CorridorMap({
 				<button
 					type="button"
 					className="q-fab"
-					aria-label="Ir a donde estás"
-					title="Ir a donde estás"
+					aria-label={t.locate}
+					title={t.locate}
 					onClick={locate}
 				>
 					<LocateFixed size={22} strokeWidth={1.75} aria-hidden="true" />
@@ -418,8 +449,8 @@ export default function CorridorMap({
 				<button
 					type="button"
 					className="q-fab corridor-controls__overview"
-					aria-label="Ver todo el corredor"
-					title="Ver todo el corredor"
+					aria-label={t.overview}
+					title={t.overview}
 					onClick={() => mapRef.current && fitCorridor(mapRef.current, data)}
 				>
 					<Scan size={22} strokeWidth={1.75} aria-hidden="true" />
@@ -427,14 +458,14 @@ export default function CorridorMap({
 				<div className="q-zoom">
 					<button
 						type="button"
-						aria-label="Acercar"
+						aria-label={t.zoomIn}
 						onClick={() => mapRef.current?.zoomIn()}
 					>
 						<Plus size={20} strokeWidth={1.75} aria-hidden="true" />
 					</button>
 					<button
 						type="button"
-						aria-label="Alejar"
+						aria-label={t.zoomOut}
 						onClick={() => mapRef.current?.zoomOut()}
 					>
 						<Minus size={20} strokeWidth={1.75} aria-hidden="true" />
@@ -443,8 +474,8 @@ export default function CorridorMap({
 				<button
 					type="button"
 					className="q-fab"
-					aria-label="Leyenda del mapa"
-					title="Leyenda del mapa"
+					aria-label={t.legend}
+					title={t.legend}
 					aria-expanded={legendOpen}
 					aria-controls="corridor-legend"
 					onClick={() => setLegendOpen((open) => !open)}
@@ -520,22 +551,18 @@ function MapPatterns() {
 }
 
 const LEGEND_ITEMS = [
-	{ key: "route", swatch: "route", label: "Ruta recomendada" },
-	{ key: "corridor", swatch: "corridor", label: "Corredor piloto" },
-	{ key: "stop", swatch: "stop", label: "Paradero", Icon: BusFront },
-	{
-		key: "arroyo",
-		swatch: "arroyo",
-		label: "Arroyo activo",
-		Icon: TriangleAlert,
-	},
-	{ key: "risk", swatch: "risk", label: "Arroyo con riesgo", Icon: Droplet },
-	{ key: "business", swatch: "business", label: "Negocio abierto" },
-	{ key: "user", swatch: "user", label: "Estás aquí" },
+	{ key: "route", swatch: "route" },
+	{ key: "corridor", swatch: "corridor" },
+	{ key: "stop", swatch: "stop", Icon: BusFront },
+	{ key: "arroyo", swatch: "arroyo", Icon: TriangleAlert },
+	{ key: "risk", swatch: "risk", Icon: Droplet },
+	{ key: "business", swatch: "business" },
+	{ key: "user", swatch: "user" },
 ] as const;
 
 /** What each line, colour and pin means, always with a word next to it. */
 function MapLegend({ open, onClose }: { open: boolean; onClose: () => void }) {
+	const t = useT().map;
 	return (
 		<section
 			id="corridor-legend"
@@ -545,12 +572,12 @@ function MapLegend({ open, onClose }: { open: boolean; onClose: () => void }) {
 		>
 			<div className="corridor-legend__head">
 				<h2 id="corridor-legend-title" className="corridor-legend__title">
-					Qué ves en el mapa
+					{t.legendTitle}
 				</h2>
 				<button
 					type="button"
 					className="q-btn q-btn--ghost q-btn--icon"
-					aria-label="Cerrar la leyenda"
+					aria-label={t.legendClose}
 					onClick={onClose}
 				>
 					<X size={20} strokeWidth={1.75} aria-hidden="true" />
@@ -569,7 +596,7 @@ function MapLegend({ open, onClose }: { open: boolean; onClose: () => void }) {
 								<span className="q-star" />
 							) : null}
 						</span>
-						{item.label}
+						{t.legendItems[item.key]}
 					</li>
 				))}
 			</ul>
@@ -591,6 +618,7 @@ function MapStatusOverlay({
 	onRetry,
 	onOpenGuide,
 }: MapStatusOverlayProps) {
+	const t = useT().map;
 	if (!online) {
 		return (
 			<div className="corridor-status corridor-status--note">
@@ -599,11 +627,8 @@ function MapStatusOverlay({
 						<WifiOff size={22} strokeWidth={1.75} aria-hidden="true" />
 					</span>
 					<div>
-						<p className="q-state__title">Sin conexión</p>
-						<p className="q-state__text">
-							Paraderos y arroyos siguen a la vista. El fondo del mapa puede
-							verse incompleto.
-						</p>
+						<p className="q-state__title">{t.statusOfflineTitle}</p>
+						<p className="q-state__text">{t.statusOfflineText}</p>
 					</div>
 				</div>
 			</div>
@@ -618,10 +643,8 @@ function MapStatusOverlay({
 						!
 					</span>
 					<div>
-						<p className="q-state__title">No pudimos cargar el mapa</p>
-						<p className="q-state__text">
-							Revisa tu señal e inténtalo otra vez. El Guía sigue disponible.
-						</p>
+						<p className="q-state__title">{t.statusErrorTitle}</p>
+						<p className="q-state__text">{t.statusErrorText}</p>
 						<div className="corridor-status__actions">
 							<button
 								type="button"
@@ -629,7 +652,7 @@ function MapStatusOverlay({
 								onClick={onRetry}
 							>
 								<RefreshCw size={18} strokeWidth={1.75} aria-hidden="true" />
-								Reintentar
+								{t.retry}
 							</button>
 							<button
 								type="button"
@@ -641,7 +664,7 @@ function MapStatusOverlay({
 									strokeWidth={1.75}
 									aria-hidden="true"
 								/>
-								Pregúntale al Guía
+								{t.askGuideShort}
 							</button>
 						</div>
 					</div>
@@ -657,8 +680,8 @@ function MapStatusOverlay({
 						<span className="q-star q-star--think" aria-hidden="true" />
 					</span>
 					<div>
-						<p className="q-state__title">Cargando el mapa</p>
-						<p className="q-state__text">Revisamos rutas, tarifas y arroyos.</p>
+						<p className="q-state__title">{t.statusLoadingTitle}</p>
+						<p className="q-state__text">{t.statusLoadingText}</p>
 					</div>
 				</div>
 			</div>

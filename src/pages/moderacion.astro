@@ -6,6 +6,9 @@ import { homeContent } from "../lib/home-content";
 const { aiHref } = homeContent;
 ---
 
-<BaseLayout title="Moderación de la comunidad">
+<BaseLayout
+	title="Moderación de la comunidad"
+	titleKey="forum.moderationPageTitle"
+>
 	<ModerationPage client:only="react" aiHref={aiHref} />
 </BaseLayout>

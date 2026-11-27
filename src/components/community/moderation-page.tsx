@@ -7,8 +7,8 @@ import type {
 	ModerationAction,
 	ModerationQueueItem,
 } from "../../lib/community/community-types";
+import { useT } from "../../lib/i18n/use-language";
 import type {
-	ContentKind,
 	ModerationLabel,
 	ModerationStatus,
 } from "../../lib/moderation/moderation-types";
@@ -21,32 +21,6 @@ import {
 	PageTitle,
 } from "./community-ui";
 import { signInHref, useLoad, useSession, useStore } from "./use-community";
-
-const KIND_LABELS: Record<ContentKind, string> = {
-	event: "Evento",
-	thread: "Conversación",
-	post: "Respuesta",
-};
-
-const LABEL_NAMES: Record<ModerationLabel, string> = {
-	ok: "Sin problemas",
-	personal_data: "Datos personales",
-	harassment: "Ofensivo",
-	hate: "Odio o discriminación",
-	threat: "Amenaza",
-	sexual: "Contenido sexual",
-	spam: "Publicidad",
-	scam: "Posible estafa",
-	misinformation: "Posible desinformación",
-	impersonation: "Suplantación",
-	off_topic: "Fuera de tema",
-};
-
-const SOURCE_LABELS: Record<ModerationQueueItem["source"], string> = {
-	rules: "Reglas",
-	openjev: "OpenJev",
-	moderator: "Moderador",
-};
 
 /** Local result of an action while the queue reloads. */
 type Override = ModerationStatus | "resolved";
@@ -64,16 +38,16 @@ function contentHref(item: ModerationQueueItem): string | null {
 }
 
 export default function ModerationPage({ aiHref }: { aiHref?: string }) {
+	const t = useT();
 	const session = useSession();
 	return (
 		<CommunityShell current="forum" aiHref={aiHref}>
 			<PageTitle
-				eyebrow="Alcaldía"
-				title="Moderación"
+				eyebrow={t.forum.moderation.eyebrow}
+				title={t.forum.moderation.title}
 				illustration="/illustrations/for-review.svg"
 			>
-				La revisión es un triaje automático: primero reglas fijas, luego
-				OpenJev. Lo dudoso llega aquí y una persona decide.
+				{t.forum.moderation.intro}
 			</PageTitle>
 			{session.loading ? (
 				<Loading />
@@ -81,15 +55,15 @@ export default function ModerationPage({ aiHref }: { aiHref?: string }) {
 				<ModerationGate profileId={session.profile.id} />
 			) : (
 				<EmptyState
-					title="Entra con tu cuenta de la ciudad"
+					title={t.forum.moderation.signInTitle}
 					illustration="/illustrations/secure-login.svg"
 					action={
 						<a href={signInHref()} className="q-btn q-btn--primary">
-							Entrar
+							{t.forum.moderation.signIn}
 						</a>
 					}
 				>
-					La cola de moderación es solo para el equipo de la Alcaldía.
+					{t.forum.moderation.signInHint}
 				</EmptyState>
 			)}
 		</CommunityShell>
@@ -97,24 +71,24 @@ export default function ModerationPage({ aiHref }: { aiHref?: string }) {
 }
 
 function ModerationGate({ profileId }: { profileId: string }) {
+	const t = useT();
 	const { state } = useLoad((store) => store.canModerate(), [profileId]);
 	return (
-		<Loaded state={state} loadingLabel="Revisando tus permisos…">
+		<Loaded state={state} loadingLabel={t.forum.moderation.checkingPermissions}>
 			{(allowed) =>
 				allowed ? (
 					<ModerationQueue profileId={profileId} />
 				) : (
 					<EmptyState
-						title="Esta sección es para el equipo de la ciudad"
+						title={t.forum.moderation.noAccessTitle}
 						illustration="/illustrations/security-on.svg"
 						action={
 							<a href="/foro" className="q-btn q-btn--secondary">
-								Ir a Comunidad
+								{t.forum.moderation.goToForum}
 							</a>
 						}
 					>
-						Tu cuenta no tiene permiso de moderación. Si trabajas con la
-						Alcaldía, pide que te habiliten.
+						{t.forum.moderation.noAccessHint}
 					</EmptyState>
 				)
 			}
@@ -123,6 +97,7 @@ function ModerationGate({ profileId }: { profileId: string }) {
 }
 
 function ModerationQueue({ profileId }: { profileId: string }) {
+	const t = useT();
 	const store = useStore();
 	const { state, reload } = useLoad(
 		(current) => current.listModerationQueue(),
@@ -156,9 +131,7 @@ function ModerationQueue({ profileId }: { profileId: string }) {
 				return rest;
 			});
 			setError(
-				caught instanceof Error
-					? caught.message
-					: "No pudimos guardar la decisión. Intenta de nuevo.",
+				caught instanceof Error ? caught.message : t.forum.moderation.saveError,
 			);
 		} finally {
 			setPending((value) => ({ ...value, [key]: false }));
@@ -168,7 +141,7 @@ function ModerationQueue({ profileId }: { profileId: string }) {
 	return (
 		<div className="flex max-w-3xl flex-col gap-6">
 			{error && <ErrorNote message={error} />}
-			<Loaded state={state} loadingLabel="Cargando la cola…">
+			<Loaded state={state} loadingLabel={t.forum.moderation.loadingQueue}>
 				{(items) => {
 					const visible = items.flatMap((item) => {
 						const override = overrides[keyOf(item)];
@@ -185,9 +158,9 @@ function ModerationQueue({ profileId }: { profileId: string }) {
 						return (
 							<EmptyState
 								illustration="/illustrations/celebration.svg"
-								title="Todo al día"
+								title={t.forum.moderation.allClear}
 							>
-								No hay reportes ni contenido esperando revisión.
+								{t.forum.moderation.allClearHint}
 							</EmptyState>
 						);
 					const emergency = visible.filter(
@@ -209,32 +182,32 @@ function ModerationQueue({ profileId }: { profileId: string }) {
 						<>
 							<QueueSection
 								id="urgent"
-								title="Atención urgente"
-								hint="Posibles emergencias. Si hay riesgo para la vida, activa la línea 123."
+								title={t.forum.moderation.urgentTitle}
+								hint={t.forum.moderation.urgentHint}
 								items={emergency}
 								pending={pending}
 								onAct={act}
 							/>
 							<QueueSection
 								id="city"
-								title="Para la ciudad"
-								hint="Reportes que alguna dependencia debe atender."
+								title={t.forum.moderation.cityTitle}
+								hint={t.forum.moderation.cityHint}
 								items={city}
 								pending={pending}
 								onAct={act}
 							/>
 							<QueueSection
 								id="held"
-								title="En revisión"
-								hint="Contenido retenido por el triaje o por reportes de la comunidad. Decide si se publica."
+								title={t.forum.moderation.heldTitle}
+								hint={t.forum.moderation.heldHint}
 								items={held}
 								pending={pending}
 								onAct={act}
 							/>
 							<QueueSection
 								id="reported"
-								title="Reportado por la comunidad"
-								hint="Publicado, pero alguien lo reportó. Con 3 reportes se oculta solo."
+								title={t.forum.moderation.reportedTitle}
+								hint={t.forum.moderation.reportedHint}
 								items={reported}
 								pending={pending}
 								onAct={act}
@@ -262,6 +235,7 @@ function QueueSection({
 	pending: Record<string, boolean>;
 	onAct: (item: ModerationQueueItem, action: ModerationAction) => void;
 }) {
+	const t = useT();
 	return (
 		<section aria-labelledby={`queue-${id}`} className="space-y-3">
 			<div>
@@ -274,7 +248,7 @@ function QueueSection({
 			{items.length === 0 ? (
 				<p className="q-p q-muted flex items-center gap-2">
 					<ShieldCheck size={18} aria-hidden="true" />
-					Nada pendiente aquí.
+					{t.forum.moderation.nothingPending}
 				</p>
 			) : (
 				<ul className="flex flex-col gap-3">
@@ -301,6 +275,8 @@ function QueueItem({
 	busy: boolean;
 	onAct: (item: ModerationQueueItem, action: ModerationAction) => void;
 }) {
+	const t = useT();
+	const m = t.forum.moderation;
 	const href = contentHref(item);
 	const held = item.status === "held";
 	const flagged = item.labels.filter((label) => label !== "ok");
@@ -310,27 +286,25 @@ function QueueItem({
 	return (
 		<li className="q-card space-y-3 px-5 py-4">
 			<div className="flex flex-wrap items-center gap-2">
-				<span className="q-eyebrow">{KIND_LABELS[item.kind]}</span>
+				<span className="q-eyebrow">{m.kinds[item.kind]}</span>
 				{item.priority === "emergency" && (
-					<span className="q-badge q-badge--live">Urgente</span>
+					<span className="q-badge q-badge--live">{m.urgent}</span>
 				)}
 				{item.priority === "city_attention" && (
-					<span className="q-badge q-badge--high">Para la ciudad</span>
+					<span className="q-badge q-badge--high">{m.forCity}</span>
 				)}
 				{held ? (
-					<span className="q-badge q-badge--high">Retenido</span>
+					<span className="q-badge q-badge--high">{m.held}</span>
 				) : (
-					<span className="q-badge q-badge--optimal">Publicado</span>
+					<span className="q-badge q-badge--optimal">{m.published}</span>
 				)}
 				{item.communityReports > 0 && (
 					<span className="q-badge q-badge--alert">
-						{item.communityReports === 1
-							? "Reportado por 1 persona"
-							: `Reportado por ${item.communityReports} personas`}
+						{m.reportedBy(item.communityReports)}
 					</span>
 				)}
 			</div>
-			<h3 className="q-h3 break-words">{item.title || "Sin título"}</h3>
+			<h3 className="q-h3 break-words">{item.title || m.untitled}</h3>
 			<p className="q-p q-muted line-clamp-3 whitespace-pre-line break-words">
 				{item.body}
 			</p>
@@ -341,7 +315,7 @@ function QueueItem({
 							key={label}
 							className={`q-badge ${label === "ok" ? "q-badge--optimal" : "q-badge--alert"}`}
 						>
-							{LABEL_NAMES[label]}
+							{m.labels[label]}
 						</span>
 					))}
 				</div>
@@ -349,7 +323,7 @@ function QueueItem({
 			<p className="q-sm q-muted">
 				{item.authorName} ·{" "}
 				<time dateTime={item.createdAt}>{formatRelative(item.createdAt)}</time>{" "}
-				· Decidió: {SOURCE_LABELS[item.source]}
+				· {m.decidedBy} {m.sources[item.source]}
 			</p>
 			<div className="flex flex-wrap gap-2">
 				{held ? (
@@ -359,7 +333,7 @@ function QueueItem({
 						disabled={busy}
 						onClick={() => onAct(item, "approve")}
 					>
-						Aprobar
+						{m.approve}
 					</button>
 				) : (
 					<button
@@ -368,7 +342,7 @@ function QueueItem({
 						disabled={busy}
 						onClick={() => onAct(item, "resolve")}
 					>
-						Marcar atendido
+						{m.markAttended}
 					</button>
 				)}
 				{item.kind === "thread" && item.priority !== "none" && !held && (
@@ -378,7 +352,7 @@ function QueueItem({
 						disabled={busy}
 						onClick={() => onAct(item, "verify")}
 					>
-						Confirmar reporte
+						{m.confirmReport}
 					</button>
 				)}
 				<button
@@ -387,11 +361,11 @@ function QueueItem({
 					disabled={busy}
 					onClick={() => onAct(item, "remove")}
 				>
-					Retirar
+					{m.remove}
 				</button>
 				{href && (
 					<a href={href} className="q-btn q-btn--ghost">
-						Ver contenido
+						{m.viewContent}
 					</a>
 				)}
 			</div>

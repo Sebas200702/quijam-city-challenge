@@ -15,6 +15,7 @@ import type {
 	ForumThread,
 	PublishResult,
 } from "../../lib/community/community-types";
+import { useT } from "../../lib/i18n/use-language";
 import { AskQuillartButton } from "../assistant/ask-quillart-button";
 import { CommunityShell } from "./community-shell";
 import {
@@ -53,6 +54,7 @@ function readLinks(): ForumLinks {
 }
 
 export default function ForumPage({ aiHref }: { aiHref?: string }) {
+	const t = useT();
 	const [initial] = useState(readLinks);
 	const [category, setCategory] = useState<ForumCategory | null>(null);
 	const [formOpen, setFormOpen] = useState(initial.open);
@@ -66,8 +68,8 @@ export default function ForumPage({ aiHref }: { aiHref?: string }) {
 	return (
 		<CommunityShell current="forum" aiHref={aiHref}>
 			<PageTitle
-				eyebrow="Barranquilla"
-				title="Comunidad"
+				eyebrow={t.forum.eyebrow}
+				title={t.forum.title}
 				illustration="/illustrations/public-discussion.svg"
 				action={
 					!formOpen && (
@@ -80,13 +82,12 @@ export default function ForumPage({ aiHref }: { aiHref?: string }) {
 							}}
 						>
 							<Plus size={18} aria-hidden="true" />
-							Nueva conversación
+							{t.forum.newThread}
 						</button>
 					)
 				}
 			>
-				Vecinos y visitantes conectados: pregunta, cuenta lo que pasa en tu
-				barrio y ayuda a cuidar la ciudad.
+				{t.forum.intro}
 			</PageTitle>
 
 			<div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start lg:gap-8">
@@ -111,17 +112,17 @@ export default function ForumPage({ aiHref }: { aiHref?: string }) {
 									href={`/foro/${encodeURIComponent(notice.record.id)}`}
 									className="q-btn q-btn--secondary"
 								>
-									Ver tu conversación
+									{t.forum.viewYourThread}
 								</a>
 							)}
 						</div>
 					)}
 
 					<fieldset className="min-w-0">
-						<legend className="q-eyebrow mb-2">Filtrar por tema</legend>
+						<legend className="q-eyebrow mb-2">{t.forum.filterByTopic}</legend>
 						<div className="flex gap-2 overflow-x-auto pb-1">
 							<CategoryChip
-								label="Todas"
+								label={t.forum.allTopics}
 								selected={category === null}
 								onSelect={() => setCategory(null)}
 							/>
@@ -136,16 +137,21 @@ export default function ForumPage({ aiHref }: { aiHref?: string }) {
 						</div>
 					</fieldset>
 
-					<section aria-label="Conversaciones" className="flex flex-col gap-3">
-						<Loaded state={state} loadingLabel="Cargando conversaciones…">
+					<section
+						aria-label={t.forum.conversations}
+						className="flex flex-col gap-3"
+					>
+						<Loaded state={state} loadingLabel={t.forum.loadingThreads}>
 							{(threads) =>
 								threads.length === 0 ? (
 									<EmptyState
 										illustration="/illustrations/online-community.svg"
 										title={
 											category
-												? `Aún no hay conversaciones de ${FORUM_CATEGORY_LABELS[category].toLowerCase()}`
-												: "Aún no hay conversaciones"
+												? t.forum.emptyInCategory(
+														FORUM_CATEGORY_LABELS[category].toLowerCase(),
+													)
+												: t.forum.empty
 										}
 										action={
 											!formOpen && (
@@ -154,13 +160,12 @@ export default function ForumPage({ aiHref }: { aiHref?: string }) {
 													className="q-btn q-btn--primary"
 													onClick={() => setFormOpen(true)}
 												>
-													Empieza una conversación
+													{t.forum.startOne}
 												</button>
 											)
 										}
 									>
-										Sé la primera persona en contar algo de tu barrio o
-										preguntar por la ciudad.
+										{t.forum.emptyHint}
 									</EmptyState>
 								) : (
 									threads.map((thread) => (
@@ -175,12 +180,10 @@ export default function ForumPage({ aiHref }: { aiHref?: string }) {
 				<aside className="flex flex-col gap-4">
 					<CommunityRules />
 					<div className="q-card space-y-3 px-5 py-4">
-						<p className="q-p">
-							¿Viste un hueco, un arroyo o algo que la ciudad deba saber?
-						</p>
+						<p className="q-p">{t.forum.reportPrompt}</p>
 						<AskQuillartButton
-							prompt="Quiero reportar un problema en mi barrio"
-							label="Reportar con Quillart"
+							prompt={t.forum.reportWithQuillartPrompt}
+							label={t.forum.reportWithQuillart}
 						/>
 					</div>
 				</aside>
@@ -216,25 +219,22 @@ function CategoryChip({
 }
 
 function CommunityRules() {
+	const t = useT();
 	return (
 		<section className="q-card space-y-2 px-5 py-4" aria-labelledby="rules">
 			<h2 id="rules" className="q-h3">
-				Cómo conversamos aquí
+				{t.forum.rules.title}
 			</h2>
 			<ul className="q-sm q-muted list-disc space-y-1 pl-5">
-				<li>Con respeto, aunque no estemos de acuerdo.</li>
+				<li>{t.forum.rules.respect}</li>
+				<li>{t.forum.rules.noPersonalData}</li>
+				<li>{t.forum.rules.riskReports}</li>
 				<li>
-					Nada de datos personales: ni teléfonos, ni direcciones, ni documentos.
+					{t.forum.rules.emergencyBefore}{" "}
+					<strong className="text-[var(--ink)]">123</strong>
+					{t.forum.rules.emergencyAfter}
 				</li>
-				<li>Los reportes de riesgo llegan a la Alcaldía para atenderlos.</li>
-				<li>
-					¿Emergencia? Llama al{" "}
-					<strong className="text-[var(--ink)]">123</strong>: el foro no
-					reemplaza esa línea.
-				</li>
-				<li>
-					La moderación es automática y una persona revisa lo que quede en duda.
-				</li>
+				<li>{t.forum.rules.moderation}</li>
 			</ul>
 		</section>
 	);
@@ -256,6 +256,7 @@ function NewThreadForm({
 	onCancel: () => void;
 	onDone: (result: PublishResult<ForumThread>) => void;
 }) {
+	const t = useT();
 	const store = useStore();
 	const session = useSession();
 	const formId = useId();
@@ -323,21 +324,18 @@ function NewThreadForm({
 	if (!session.profile)
 		return (
 			<div className="q-card space-y-3 px-5 py-5">
-				<h2 className="q-h3">Entra para conversar</h2>
-				<p className="q-p q-muted">
-					Para abrir una conversación necesitas tu cuenta. Es gratis y toma un
-					minuto.
-				</p>
+				<h2 className="q-h3">{t.forum.form.signInTitle}</h2>
+				<p className="q-p q-muted">{t.forum.form.signInBody}</p>
 				<div className="flex flex-wrap gap-2">
 					<a href={signInHref()} className="q-btn q-btn--primary">
-						Entrar o crear cuenta
+						{t.forum.form.signIn}
 					</a>
 					<button
 						type="button"
 						className="q-btn q-btn--ghost"
 						onClick={onCancel}
 					>
-						Ahora no
+						{t.forum.form.notNow}
 					</button>
 				</div>
 			</div>
@@ -370,9 +368,7 @@ function NewThreadForm({
 			else onDone(result);
 		} catch (caught) {
 			setError(
-				caught instanceof Error
-					? caught.message
-					: "No pudimos publicar. Intenta de nuevo.",
+				caught instanceof Error ? caught.message : t.forum.form.publishError,
 			);
 		} finally {
 			setBusy(false);
@@ -387,38 +383,38 @@ function NewThreadForm({
 			noValidate
 		>
 			<h2 id={`${formId}-heading`} className="q-h3">
-				Nueva conversación
+				{t.forum.newThread}
 			</h2>
 			{(place || event) && (
 				<div className="flex flex-wrap gap-2">
 					{place && (
 						<AttachmentChip
 							icon={<MapPin size={16} aria-hidden="true" />}
-							label={place.name ?? "Lugar"}
+							label={place.name ?? t.forum.form.place}
 							onRemove={() => setPlace(null)}
 						/>
 					)}
 					{event && (
 						<AttachmentChip
 							icon={<CalendarDays size={16} aria-hidden="true" />}
-							label={event.name ?? "Evento"}
+							label={event.name ?? t.forum.form.event}
 							onRemove={() => setEvent(null)}
 						/>
 					)}
 				</div>
 			)}
-			<Field id={`${formId}-title`} label="Título">
+			<Field id={`${formId}-title`} label={t.forum.form.titleLabel}>
 				<input
 					id={`${formId}-title`}
 					className={inputClass}
 					value={title}
 					maxLength={140}
 					required
-					placeholder="Ej.: ¿Cómo está el arroyo de la 21 hoy?"
+					placeholder={t.forum.form.titlePlaceholder}
 					onChange={(change) => setTitle(change.target.value)}
 				/>
 			</Field>
-			<Field id={`${formId}-category`} label="Tema">
+			<Field id={`${formId}-category`} label={t.forum.form.topic}>
 				<select
 					id={`${formId}-category`}
 					className={inputClass}
@@ -436,15 +432,15 @@ function NewThreadForm({
 			</Field>
 			<Field
 				id={`${formId}-body`}
-				label="Mensaje"
-				hint="No compartas teléfonos, direcciones ni documentos."
+				label={t.forum.form.message}
+				hint={t.forum.form.messageHint}
 			>
 				<textarea
 					id={`${formId}-body`}
 					className={textareaClass}
 					value={body}
 					required
-					placeholder="Cuéntale a la comunidad…"
+					placeholder={t.forum.form.messagePlaceholder}
 					onChange={(change) => setBody(change.target.value)}
 				/>
 			</Field>
@@ -457,7 +453,7 @@ function NewThreadForm({
 					disabled={busy}
 					aria-busy={busy}
 				>
-					{busy ? "Publicando…" : "Publicar"}
+					{busy ? t.forum.form.publishing : t.forum.form.publish}
 				</button>
 				<button
 					type="button"
@@ -465,7 +461,7 @@ function NewThreadForm({
 					onClick={onCancel}
 					disabled={busy}
 				>
-					Cancelar
+					{t.forum.form.cancel}
 				</button>
 			</div>
 		</form>
@@ -481,6 +477,7 @@ function AttachmentChip({
 	label: string;
 	onRemove: () => void;
 }) {
+	const t = useT();
 	return (
 		<span className="q-badge q-badge--high min-h-11 gap-1.5 pr-1 pl-3">
 			{icon}
@@ -488,7 +485,7 @@ function AttachmentChip({
 			<button
 				type="button"
 				onClick={onRemove}
-				aria-label={`Quitar ${label}`}
+				aria-label={t.forum.form.remove(label)}
 				className="grid size-11 place-items-center rounded-full"
 			>
 				<X size={16} aria-hidden="true" />

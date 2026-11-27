@@ -1,7 +1,6 @@
 import {
 	Bus,
 	Droplets,
-	Languages,
 	type LucideIcon,
 	Moon,
 	Search,
@@ -15,13 +14,14 @@ import type {
 	CorridorDataSource,
 	StatusTone,
 } from "../../lib/corridor/corridor-types";
-import { MAP_COPY, type MapCopy, type MapLang } from "./map-chrome-copy";
+import type { MapMessages } from "../../lib/i18n/dictionaries/map";
+import { useT } from "../../lib/i18n/use-language";
 import "./map-chrome.css";
 import type { LayerKey } from "./map-layers";
 
 const LAYER_TOGGLES: {
 	key: LayerKey;
-	label: (copy: MapCopy) => string;
+	label: (copy: MapMessages) => string;
 	tone: StatusTone;
 	Icon: LucideIcon;
 }[] = [
@@ -51,10 +51,6 @@ interface MapHeaderProps {
 	visible: Record<LayerKey, boolean>;
 	counts: Record<LayerKey, number>;
 	onToggle: (key: LayerKey) => void;
-	/** Copy language. Defaults to Spanish. */
-	lang?: MapLang;
-	/** Shows the one-tap language button when given. */
-	onToggleLang?: () => void;
 	/** "seed" means Supabase is out of reach: shows the offline badge. */
 	source?: CorridorDataSource;
 	/** The screen's single "datos de referencia" tag for the corridor seed (rule 9). Defaults to true. */
@@ -73,12 +69,10 @@ export function MapHeader({
 	visible,
 	counts,
 	onToggle,
-	lang = "es",
-	onToggleLang,
 	source,
 	showReferenceTag = true,
 }: MapHeaderProps) {
-	const copy = MAP_COPY[lang];
+	const copy = useT().map;
 	const listId = useId();
 	const [query, setQuery] = useState("");
 	const [missed, setMissed] = useState<string | null>(null);
@@ -123,17 +117,6 @@ export function MapHeader({
 					<Search size={20} strokeWidth={1.75} aria-hidden="true" />
 					<span className="q-sr">{copy.searchButton}</span>
 				</button>
-				{onToggleLang && (
-					<button
-						type="button"
-						className="q-btn q-btn--ghost mc-lang"
-						aria-label={copy.langButton}
-						onClick={onToggleLang}
-					>
-						<Languages size={18} strokeWidth={1.75} aria-hidden="true" />
-						<span aria-hidden="true">{lang.toUpperCase()}</span>
-					</button>
-				)}
 				<button
 					type="button"
 					className="q-btn q-btn--ghost q-btn--icon"

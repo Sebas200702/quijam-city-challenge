@@ -3,6 +3,7 @@
 import { Map as MapIcon } from "lucide-react";
 import { useState } from "react";
 import type { PlaceKind } from "../../lib/community/community-types";
+import { useT } from "../../lib/i18n/use-language";
 import { AskQuillartButton } from "../assistant/ask-quillart-button";
 import { CommunityShell } from "./community-shell";
 import { EmptyState, Loaded, PageTitle } from "./community-ui";
@@ -11,17 +12,18 @@ import { useLoad } from "./use-community";
 
 type KindFilter = PlaceKind | "all";
 
-const FILTERS: { value: KindFilter; label: string }[] = [
-	{ value: "all", label: "Todos" },
-	{ value: "nature", label: "Naturaleza" },
-	{ value: "park", label: "Parques" },
-	{ value: "waterfront", label: "Río y mar" },
-	{ value: "culture", label: "Cultura" },
-	{ value: "heritage", label: "Patrimonio" },
-	{ value: "sport", label: "Deporte" },
+const FILTERS: KindFilter[] = [
+	"all",
+	"nature",
+	"park",
+	"waterfront",
+	"culture",
+	"heritage",
+	"sport",
 ];
 
 export function PlacesPage({ aiHref }: { aiHref?: string }) {
+	const t = useT();
 	const [filter, setFilter] = useState<KindFilter>("all");
 	const { state } = useLoad(
 		async (store) => {
@@ -43,8 +45,8 @@ export function PlacesPage({ aiHref }: { aiHref?: string }) {
 	return (
 		<CommunityShell current="places" aiHref={aiHref}>
 			<PageTitle
-				eyebrow="Barranquilla y su área"
-				title="Lugares y naturaleza"
+				eyebrow={t.places.eyebrow}
+				title={t.places.title}
 				illustration="/illustrations/through-the-park.svg"
 				action={
 					<a
@@ -52,42 +54,41 @@ export function PlacesPage({ aiHref }: { aiHref?: string }) {
 						className="q-btn q-btn--secondary q-btn--sm min-h-11!"
 					>
 						<MapIcon size={16} aria-hidden="true" />
-						Ver en el mapa
+						{t.places.viewOnMap}
 					</a>
 				}
 			>
-				Parques, ciénagas, el río y los espacios de la ciudad. Mira qué pasa en
-				cada uno y anímate a ir.
+				{t.places.intro}
 			</PageTitle>
 
 			<div className="flex flex-wrap items-center gap-2">
 				<AskQuillartButton
-					prompt="Recomiéndame un plan de naturaleza para este fin de semana"
-					label="Pídele un plan a Quillart"
+					prompt={t.places.askPrompt}
+					label={t.places.askLabel}
 				/>
 			</div>
 
 			<fieldset>
-				<legend className="sr-only">Filtrar por tipo de lugar</legend>
+				<legend className="sr-only">{t.places.filterLegend}</legend>
 				<div className="flex flex-wrap gap-2">
 					{FILTERS.map((option) => {
-						const on = filter === option.value;
+						const on = filter === option;
 						return (
 							<button
-								key={option.value}
+								key={option}
 								type="button"
 								aria-pressed={on}
-								onClick={() => setFilter(option.value)}
+								onClick={() => setFilter(option)}
 								className={`q-chip ${on ? "bg-[var(--action)]! text-[var(--on-action)]!" : ""}`}
 							>
-								{option.label}
+								{t.places.filters[option]}
 							</button>
 						);
 					})}
 				</div>
 			</fieldset>
 
-			<Loaded state={state} loadingLabel="Cargando lugares…">
+			<Loaded state={state} loadingLabel={t.places.loading}>
 				{({ places, upcoming }) => {
 					const visible =
 						filter === "all"
@@ -97,9 +98,9 @@ export function PlacesPage({ aiHref }: { aiHref?: string }) {
 						return (
 							<EmptyState
 								illustration="/illustrations/among-nature.svg"
-								title="No hay lugares de este tipo por ahora"
+								title={t.places.emptyTitle}
 							>
-								Prueba con otro filtro o mira todos los lugares.
+								{t.places.emptyText}
 							</EmptyState>
 						);
 					return (

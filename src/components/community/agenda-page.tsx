@@ -8,6 +8,7 @@ import type {
 	CommunityEvent,
 	EventCategory,
 } from "../../lib/community/community-types";
+import { useT } from "../../lib/i18n/use-language";
 import { AskQuillartButton } from "../assistant/ask-quillart-button";
 import { CommunityShell } from "./community-shell";
 import { EmptyState, Loaded, PageTitle } from "./community-ui";
@@ -29,12 +30,12 @@ function daysFromToday(iso: string, now: Date): number {
 	return Math.round((day(iso) - day(now.toISOString())) / DAY_MS);
 }
 
-function groupEvents(events: CommunityEvent[], now: Date): EventGroup[] {
-	const groups: EventGroup[] = [
-		{ title: "Hoy y mañana", events: [] },
-		{ title: "Esta semana", events: [] },
-		{ title: "Más adelante", events: [] },
-	];
+function groupEvents(
+	events: CommunityEvent[],
+	now: Date,
+	titles: [string, string, string],
+): EventGroup[] {
+	const groups: EventGroup[] = titles.map((title) => ({ title, events: [] }));
 	for (const event of events) {
 		const days = daysFromToday(event.startsAt, now);
 		const index = days <= 1 ? 0 : days <= 6 ? 1 : 2;
@@ -57,6 +58,7 @@ export interface AgendaPageProps {
 }
 
 export default function AgendaPage({ aiHref }: AgendaPageProps) {
+	const t = useT();
 	const { profile } = useSession();
 	const [search, setSearch] = useState("");
 	const [category, setCategory] = useState<EventCategory | null>(null);
@@ -83,28 +85,28 @@ export default function AgendaPage({ aiHref }: AgendaPageProps) {
 	const publishLink = (
 		<a href="/agenda/nuevo" className="q-btn q-btn--primary">
 			<Plus size={18} aria-hidden="true" />
-			Publicar evento
+			{t.agenda.publishEvent}
 		</a>
 	);
 
 	return (
 		<CommunityShell current="agenda" aiHref={aiHref}>
 			<PageTitle
-				eyebrow="Agenda"
-				title="Planes en Barranquilla"
+				eyebrow={t.agenda.eyebrow}
+				title={t.agenda.title}
 				illustration="/illustrations/events-calendar.svg"
 				action={publishLink}
 			>
-				Lo que la comunidad organiza en parques, barrios y el río.
+				{t.agenda.intro}
 			</PageTitle>
 
 			<div className="flex flex-wrap items-center gap-3">
-				<AskQuillartButton prompt="¿Qué planes hay este fin de semana?" />
+				<AskQuillartButton prompt={t.agenda.askPrompt} />
 			</div>
 
-			<section aria-label="Buscar eventos" className="space-y-3">
+			<section aria-label={t.agenda.searchLabel} className="space-y-3">
 				<label htmlFor="agenda-search" className="q-sr">
-					Buscar eventos
+					{t.agenda.searchLabel}
 				</label>
 				<div className="q-search">
 					<Search
@@ -117,17 +119,17 @@ export default function AgendaPage({ aiHref }: AgendaPageProps) {
 						type="search"
 						value={search}
 						onChange={(event) => setSearch(event.target.value)}
-						placeholder="Busca un plan: salsa, caminata, taller…"
+						placeholder={t.agenda.searchPlaceholder}
 						autoComplete="off"
 					/>
 				</div>
 				<fieldset
 					className="-mx-4 flex min-w-0 gap-2 overflow-x-auto px-4 pb-1 lg:mx-0 lg:flex-wrap lg:px-0"
-					aria-label="Filtrar por categoría"
+					aria-label={t.agenda.filterByCategory}
 				>
-					<legend className="q-sr">Categoría</legend>
+					<legend className="q-sr">{t.agenda.category}</legend>
 					<CategoryChip
-						label="Todos"
+						label={t.agenda.all}
 						active={category === null}
 						onClick={() => setCategory(null)}
 					/>
@@ -142,12 +144,12 @@ export default function AgendaPage({ aiHref }: AgendaPageProps) {
 				</fieldset>
 			</section>
 
-			<Loaded state={state} loadingLabel="Buscando planes…">
+			<Loaded state={state} loadingLabel={t.agenda.loading}>
 				{({ events, placeNames, registered }) => {
 					if (events.length === 0) {
 						return filtering ? (
 							<EmptyState
-								title="No encontramos planes con ese filtro"
+								title={t.agenda.emptyFilteredTitle}
 								illustration="/illustrations/the-search.svg"
 								action={
 									<button
@@ -158,25 +160,29 @@ export default function AgendaPage({ aiHref }: AgendaPageProps) {
 											setCategory(null);
 										}}
 									>
-										Ver todos los planes
+										{t.agenda.seeAllPlans}
 									</button>
 								}
 							>
-								Prueba con otra palabra u otra categoría.
+								{t.agenda.emptyFilteredText}
 							</EmptyState>
 						) : (
 							<EmptyState
-								title="Todavía no hay planes en la agenda"
+								title={t.agenda.emptyTitle}
 								illustration="/illustrations/celebration.svg"
 								action={publishLink}
 							>
-								¿Organizas algo en tu barrio? Publícalo y la ciudad se entera.
+								{t.agenda.emptyText}
 							</EmptyState>
 						);
 					}
 					return (
 						<div className="space-y-6">
-							{groupEvents(events, new Date()).map((group) => (
+							{groupEvents(events, new Date(), [
+								t.agenda.groupTodayTomorrow,
+								t.agenda.groupThisWeek,
+								t.agenda.groupLater,
+							]).map((group) => (
 								<section key={group.title} className="space-y-3">
 									<h2 className="q-h2">{group.title}</h2>
 									<ul className="grid gap-3 lg:grid-cols-2">

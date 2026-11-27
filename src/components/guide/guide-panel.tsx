@@ -16,6 +16,12 @@ import {
 import { Fragment, useEffect, useId, useRef, useState } from "react";
 import type { GuideAnswer } from "../../lib/guide/guide-answer";
 import type { GuideLanguage } from "../../lib/guide/guide-local";
+import type {
+	GuideMessages,
+	GuideSuggestionIcon,
+} from "../../lib/i18n/dictionaries/guide";
+import { VOICE_LOCALES } from "../../lib/i18n/languages";
+import { useLanguage, useT } from "../../lib/i18n/use-language";
 import type { DestinationKey } from "../../lib/trip/trip-planner";
 import { AskQuillartButton } from "../assistant/ask-quillart-button";
 import {
@@ -30,14 +36,7 @@ import {
 	GuideMicIllustration,
 	GuideOfflineIllustration,
 } from "./guide-illustrations";
-import {
-	answerSlang,
-	browserLanguage,
-	type GuidePanelText,
-	type GuideSuggestionIcon,
-	glossSlang,
-	guideText,
-} from "./guide-text";
+import { answerSlang, browserLanguage, glossSlang } from "./guide-text";
 import { ReportForm } from "./report-form";
 import { TripCard } from "./trip-card";
 
@@ -157,7 +156,7 @@ function Suggestions({
 	wrap,
 	onAsk,
 }: {
-	text: GuidePanelText;
+	text: GuideMessages["panel"];
 	disabled: boolean;
 	wrap: boolean;
 	onAsk: (question: string) => void;
@@ -206,11 +205,13 @@ export function GuidePanel({
 	const endRef = useRef<HTMLDivElement>(null);
 	const inputRef = useRef<HTMLInputElement>(null);
 	const nextId = useRef(1);
-	const text = guideText(language).panel;
+	const interfaceLanguage = useLanguage();
+	const guide = useT().guide;
+	const text = guide.panel;
 
 	// Same voice conduit as Quillart AI, listening in the visitor's language.
 	const voice = useVoiceConduit((question) => ask(question, true), {
-		lang: typeof navigator === "undefined" ? "es-CO" : navigator.language,
+		lang: VOICE_LOCALES[interfaceLanguage],
 	});
 	const micProblem: StateKind | null =
 		voice.errorCode === null
@@ -360,7 +361,7 @@ export function GuidePanel({
 			message.voice && text.saidByVoice,
 			message.language &&
 				(message.voice || message.language !== browserLanguage()) &&
-				text.detected(message.language),
+				text.detected(guide.languageNames[message.language]),
 		]
 			.filter(Boolean)
 			.join(" · ");
@@ -654,7 +655,7 @@ function StateCard({
 	onRetry,
 }: {
 	kind: StateKind;
-	text: GuidePanelText;
+	text: GuideMessages["panel"];
 	onRetry?: () => void;
 }) {
 	const Illustration = STATE_ILLUSTRATIONS[kind];
