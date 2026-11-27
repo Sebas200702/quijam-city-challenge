@@ -103,6 +103,23 @@ Orden del pitch (diap. 30): problema, propuesta, programa, prototipo, impacto. V
 | PowerPoint | Vacío |
 | Video | Vacío |
 
+### Actualización 27 nov 2026: plataforma ciudadana real
+
+Cambio de dirección registrado en [02-decisiones.md](02-decisiones.md). Cómo toca cada criterio:
+
+| Criterio | Qué suma | Dónde |
+|---|---|---|
+| Visión estratégica e integralidad (20) | Deja de ser un gemelo virtual: es una plataforma que la ciudad puede operar desde el primer día, con comunidad, agenda y lugares. | [03-diseno-actual.md](03-diseno-actual.md) |
+| Integración de las cinco líneas (15) | Ciudadanía (eventos propios, foro, avisos a la ciudad) y sostenibilidad (naturaleza y espacios públicos) entran en el uso diario, no solo en el Mundial. | [20-comunidad-y-moderacion.md](20-comunidad-y-moderacion.md) |
+| Desarrollo y madurez del prototipo (15) | Funciones reales con cuentas, inscripciones con cupos, moderación y cola de la ciudad; la IA ejecuta acciones con confirmación. Apunta al nivel "funcional". | [20-comunidad-y-moderacion.md](20-comunidad-y-moderacion.md), [21-quillart-ai.md](21-quillart-ai.md) |
+| Innovación y diferenciación (10) | Agentes especializados por apartado con la voz como conducto; OpenJev modera y enruta, con reglas duras que siempre ganan y revisión humana en la duda. | [21-quillart-ai.md](21-quillart-ai.md), [13-openjev.md](13-openjev.md) |
+| Viabilidad, sostenibilidad e impacto (10) | El legado no depende del Mundial: la comunidad sirve todos los días. Privacidad aplicada en el triaje y en RLS (Ley 1581 de 2012). | [11-modelo-datos.md](11-modelo-datos.md) |
+| Evolución y sprints (10) | Bitácora del cambio de "sin red social" a comunidad moderada. | [02-decisiones.md](02-decisiones.md) |
+
+Qué resaltar en el pitch: "Le preguntas a Quillart, y Quillart lo hace: te inscribe, publica tu evento o avisa a la ciudad. Nada se publica sin pasar por el triaje".
+
+Riesgo: el nivel "validado" sigue pendiente de la prueba con cinco personas ajenas (pendiente #15).
+
 ## 2. Cinco lecciones para Barranquilla 2034 (diap. 10)
 
 | Lección del deck | Cómo responde el programa |

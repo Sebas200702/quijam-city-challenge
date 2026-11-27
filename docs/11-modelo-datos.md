@@ -9,6 +9,8 @@ Esquema inicial para el corredor piloto **Estadio Metropolitano – Troncal Muri
 | [`supabase/migrations/20261126000001_corridor_schema.sql`](../supabase/migrations/20261126000001_corridor_schema.sql) | Tablas, índices, triggers `updated_at` y registro en `supabase_realtime`. |
 | [`supabase/migrations/20261126000002_rls_policies.sql`](../supabase/migrations/20261126000002_rls_policies.sql) | Función `current_user_role()` y políticas RLS por rol. |
 | [`supabase/seed.sql`](../supabase/seed.sql) | Datos semilla simulados e idempotentes del corredor piloto 2034. |
+| [`supabase/migrations/20261127000001_community_schema.sql`](../supabase/migrations/20261127000001_community_schema.sql) | Capa de comunidad (27 nov): perfiles, lugares, eventos, inscripciones con cupos, foro, columnas de moderación, RLS y Realtime. |
+| [`supabase/seed-community.sql`](../supabase/seed-community.sql) | Lugares de la ciudad, agenda inicial ("Agenda QUILLART") con fechas relativas a hoy e hilo de bienvenida. Idempotente. |
 
 ## Tablas
 
@@ -25,6 +27,7 @@ Esquema inicial para el corredor piloto **Estadio Metropolitano – Troncal Muri
 ## Datos simulados y privacidad
 
 - Todas las tablas del corredor incluyen `is_simulated boolean not null default true`; la interfaz debe mostrar este estado.
+- Desde el 27 nov 2026 la interfaz muestra ese estado como una etiqueta discreta "datos de referencia" (ver [09-convenciones.md](09-convenciones.md)). Las tablas de comunidad no llevan `is_simulated`: su contenido lo escriben personas reales.
 - Privacidad (Ley 1581 de 2012): no se almacenan datos personales ni ubicación exacta del visitante. Los reportes de cobro abusivo solo guardan zona, tramo, tarifas y código QR opcional del conductor; el tablero consume conteos anónimos por zona.
 
 ## Matriz de permisos (RLS)
@@ -46,5 +49,39 @@ Ejecutar en el **SQL Editor** de Supabase en este orden (todos los scripts son i
 1. `supabase/migrations/20261126000001_corridor_schema.sql`
 2. `supabase/migrations/20261126000002_rls_policies.sql`
 3. `supabase/seed.sql`
+4. `supabase/migrations/20261127000001_community_schema.sql` (usa `current_user_role()` y `touch_updated_at()` de los pasos 1 y 2)
+5. `supabase/seed-community.sql`
 
 Para habilitar un usuario con rol `city` o `vendor`, insertar su `user_id` (desde Authentication → Users) en `public.user_profiles` o definir `{"role": "city"}` en `app_metadata`.
+
+## Capa de comunidad (27 nov 2026)
+
+Detalle funcional y del triaje en [20-comunidad-y-moderacion.md](20-comunidad-y-moderacion.md).
+
+| Tabla | Uso | Realtime |
+|---|---|---|
+| `profiles` | Perfil público de cada cuenta: nombre visible, barrio opcional, `is_visitor`. Se crea con un trigger sobre `auth.users` desde los metadatos del registro. | No |
+| `places` | Espacios públicos y naturaleza (`nature`, `park`, `culture`, `heritage`, `sport`, `waterfront`) con coordenadas dentro del área de Barranquilla, accesibilidad, gratuidad y horario. | No |
+| `events` | Eventos publicados por cualquier persona: categoría, inicio y fin, lugar o dirección, cupos, `registered_count`, gratis o con valor, organizador, `status` (`published`, `cancelled`). | Sí |
+| `event_registrations` | Inscripción de una persona a un evento (clave `event_id` + `user_id`). | No |
+| `forum_threads` | Conversaciones por categoría, opcionalmente ligadas a un lugar o un evento; `reply_count` y `last_activity_at`. | Sí |
+| `forum_posts` | Respuestas en una conversación. | Sí |
+
+**Columnas de moderación** (en `events`, `forum_threads` y `forum_posts`): `moderation_status` (`published`, `held`, `removed`), `moderation_labels`, `moderation_source` (`rules`, `openjev`, `moderator`), `triage_priority` (`none`, `city_attention`, `emergency`) y `city_resolved_at`.
+
+**Triggers:**
+
+- `handle_event_registration`: bloquea la fila del evento, rechaza inscripciones a eventos cancelados, retenidos, pasados o sin cupos, y mantiene `registered_count` al día de forma atómica.
+- `handle_forum_post`: `reply_count` cuenta solo respuestas publicadas; una respuesta retenida suma cuando se aprueba.
+
+### Permisos de la comunidad (RLS)
+
+| Tabla | Anónimo | Persona con cuenta | Rol `city` | Servidor (llave de servicio) |
+|---|---|---|---|---|
+| `profiles` | `SELECT` | `SELECT`; `UPDATE` del propio | `SELECT` | Todo |
+| `places` | `SELECT` | `SELECT` | `ALL` | Todo |
+| `events` | `SELECT` publicados | `SELECT` publicados y los propios; `UPDATE` solo de `status` (cancelar) en los propios | `SELECT` todo; cancelar | Inserta después del triaje; modera |
+| `event_registrations` | Sin acceso | `INSERT`/`DELETE` propias; `SELECT` propias y las de sus eventos | — | Todo |
+| `forum_threads`, `forum_posts` | `SELECT` publicados | `SELECT` publicados y los propios | `SELECT` todo | Inserta después del triaje; modera |
+
+Regla clave: **los clientes no tienen permiso de `INSERT` en `events`, `forum_threads` ni `forum_posts`**. Todo contenido público entra por `POST /api/community/publish`, que corre el triaje y escribe con la llave de servicio. Lo retenido solo lo ven su autor y la ciudad.

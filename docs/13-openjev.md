@@ -81,9 +81,26 @@ Comparado con la prueba local (Qwen3-0.6B en CPU):
 | Latencia | 1,0 a 1,6 s | ~0,5 s |
 | Repetibilidad | Idéntica en 3 corridas | Misma elección; probabilidades varían levemente |
 
+## Nuevos usos (27 nov 2026)
+
+OpenJev deja de usarse solo en el Decisor. Mismo patrón en todos los usos: reglas duras primero, OpenJev elige entre opciones fijas con su confianza, respaldo sin OpenJev.
+
+| Uso | Archivo | Preguntas | Respaldo |
+|---|---|---|---|
+| Decisor: ruta y desvío | `src/lib/decider/` | `route`, desvío (`choice`) | Puntaje ponderado |
+| Moderación por triaje | `src/lib/moderation/triage.ts` | `verdict` (publish, review, reject), `label` (ok, harassment, hate, threat, sexual, spam, scam, off_topic), `priority` (none, city_attention, emergency) | Solo reglas duras |
+| Enrutamiento de Quillart AI | `src/lib/assistant/orchestrator.ts` | Un `choice` con los seis agentes, solo si las palabras clave no deciden | Agente por defecto |
+
+Reglas de la moderación:
+
+- Las reglas duras rechazan datos personales, odio y amenazas **antes** de llamar a OpenJev: ese texto nunca sale del servidor.
+- Gana el veredicto más estricto entre reglas y OpenJev.
+- Un `reject` de OpenJev con confianza menor a **0,6** (`MIN_REJECT_CONFIDENCE`) se convierte en revisión humana.
+- Detalle en [20-comunidad-y-moderacion.md](20-comunidad-y-moderacion.md) y [21-quillart-ai.md](21-quillart-ai.md).
+
 ## Privacidad
 
-El estado de cada decisión sale a un tercero. Solo se envían datos simulados y conteos anónimos: nunca ubicación exacta, nombres ni datos personales (Ley 1581 de 2012).
+El estado de cada decisión sale a un tercero. Solo se envían datos simulados y conteos anónimos: nunca ubicación exacta, nombres ni datos personales (Ley 1581 de 2012). En la moderación se envía el texto público que la persona quiere publicar, sin autor ni cuenta, y solo si las reglas no encontraron datos personales. En el enrutamiento se envía solo el mensaje.
 
 ## Pendiente
 

@@ -2,6 +2,8 @@
 
 Issue #21. Cómo conecta el navegador con Gemini Live sin exponer la API key.
 
+> **Actualización 27 nov 2026:** la voz es ahora **solo un conducto** hacia Quillart AI ([21-quillart-ai.md](21-quillart-ai.md)). En la app la voz usa la Web Speech API del navegador (habla a texto y texto a habla) y entra al mismo orquestador y agentes que el texto. Gemini Live **queda en beta** en `/prueba-guia`: todavía no usa los agentes ni sus herramientas. Llevarlo a la app con las mismas herramientas y la misma regla de confirmación está en el backlog.
+
 ## Mecanismo: tokens efímeros
 
 1. El navegador llama a `POST /api/guide/token?mode=audio|text`.

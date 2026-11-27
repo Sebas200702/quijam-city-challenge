@@ -137,10 +137,20 @@ Revertir. Toda decisión se puede revertir.
 
 - **Iconos:** [lucide-react](https://lucide.dev), 24×24, trazo 1,75, color
   heredado. Sin iconos rellenos.
-- **Ilustraciones:** [unDraw](https://undraw.co), con el acento `#6c63ff`
-  cambiado a Oro `#FCD116`, sobre `.q-illus`. Una por vista y solo en modo
-  Turista. Usadas: Travel Everywhere, Destination, Location Search, Chat Bot,
-  Fans, Street Food, Walk in the City, Navigation, Order a Car.
+- **Ilustraciones:** [unDraw](https://undraw.co), con el acento cambiado a Oro
+  `#FCD116`, sobre `.q-illus` (panel claro fijo, se ve igual en modo oscuro).
+  Las nuevas salen del paquete npm `undraw-svg` (colección unDraw, licencia MIT)
+  porque undraw.co no es accesible desde el entorno de desarrollo; el acento
+  viene como `currentColor` y se reemplaza por `#FCD116`. Viven en
+  `public/illustrations/`.
+- **Dónde van (27 nov 2026):** la landing (portada, una por agente, pasos,
+  confianza y cierre), el encabezado de cada sección (`PageTitle` con
+  `illustration`), los estados vacíos y "no encontrado" (`EmptyState`), el
+  detalle de lugares y eventos según su tipo
+  (`src/lib/community/community-illustrations.ts`) y la portada de Quillart AI.
+  Regla: más imagen y menos texto; títulos de 2 a 4 palabras.
+- **Altura:** `.q-illus img` fija `height: auto`; para darles alto en Tailwind
+  hay que usar `!` (por ejemplo `h-28!`), como hace `SpotIllustration`.
 
 ## Uso en React + Tailwind
 
