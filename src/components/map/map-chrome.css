@@ -1,0 +1,323 @@
+/* Map chrome (header, stop list, detail card): small additions on top of
+   QUILLART (design-system/quillart.css) and corridor-map.css. Colour is state,
+   never decoration: every coloured icon sits next to a word. */
+
+/* ── Tones for icons ── */
+.mc-tone--green {
+	color: var(--green-text);
+}
+.mc-tone--gold {
+	color: var(--gold-text);
+}
+.mc-tone--red {
+	color: var(--red-text);
+}
+.mc-tone--neutral {
+	color: var(--ink-muted);
+}
+
+/* Service pills: icon in the service colour. */
+.mc-tag svg {
+	flex: none;
+}
+.mc-tag--green svg {
+	color: var(--green-text);
+}
+.mc-tag--gold svg {
+	color: var(--gold-text);
+}
+
+/* ── Header ── */
+.mc-search {
+	min-width: 0;
+}
+.mc-search input {
+	min-width: 0;
+}
+.mc-lang {
+	min-width: 44px;
+	min-height: 44px;
+	padding: 0 8px;
+	gap: 4px;
+	font-size: 13px;
+	font-weight: 700;
+	letter-spacing: 0.04em;
+}
+.mc-miss-region:empty {
+	display: none;
+}
+.mc-miss {
+	display: flex;
+	align-items: flex-start;
+	gap: 8px;
+	margin: 0;
+	padding: 10px 14px;
+	border-radius: var(--radius-md);
+	background: var(--surface-raised);
+	box-shadow:
+		var(--shadow-card),
+		inset 4px 0 0 var(--red);
+	color: var(--ink);
+	font-size: 13px;
+	line-height: 18px;
+}
+.mc-miss svg {
+	flex: none;
+	margin-top: 1px;
+	color: var(--red-text);
+}
+.mc-miss strong {
+	font-weight: 600;
+}
+.mc-meta {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 6px;
+}
+.mc-meta .q-sim-tag {
+	box-shadow:
+		inset 0 0 0 1px var(--line),
+		var(--shadow-card);
+}
+.mc-offline {
+	height: 24px;
+	box-shadow: var(--shadow-card);
+}
+
+/* ── Stop list ── */
+.mc-tile-sm {
+	width: 40px;
+	height: 40px;
+	border-radius: 14px;
+}
+.mc-stops-head {
+	justify-content: flex-start;
+	align-items: center;
+	gap: 12px;
+}
+.corridor-stops .mc-stops-head {
+	align-items: center;
+}
+.mc-stops-head__text {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+}
+.mc-stop-zone {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	min-width: 0;
+}
+.mc-stop-zone__text {
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}
+.mc-stop-zone svg {
+	flex: none;
+	color: var(--gold-text);
+}
+.corridor-stop[aria-pressed="true"] .mc-stop-zone {
+	color: var(--ink);
+}
+.mc-state {
+	min-height: 0;
+	padding: 16px 20px 24px;
+}
+.mc-state__illus {
+	width: 160px;
+	height: auto;
+}
+
+/* ── Detail card ── */
+.mc-detail-head {
+	display: flex;
+	align-items: flex-start;
+	justify-content: flex-start;
+	gap: 12px;
+}
+.mc-detail-head__text {
+	flex: 1;
+	min-width: 0;
+}
+.mc-hero {
+	margin-top: 2px;
+}
+.mc-hero--green {
+	background: var(--green-soft);
+	color: var(--green-text);
+}
+.mc-hero--gold {
+	background: var(--gold-soft);
+	color: var(--gold-text);
+}
+.mc-hero--red {
+	background: var(--red-soft);
+	color: var(--red-text);
+}
+.mc-hero--neutral {
+	background: var(--line);
+	color: var(--ink);
+}
+.mc-badges {
+	gap: 8px;
+}
+.mc-badge-star {
+	width: 12px;
+	height: 12px;
+}
+.mc-why {
+	display: flex;
+	align-items: flex-start;
+	gap: 8px;
+	margin: 0;
+	font-size: 14px;
+	line-height: 20px;
+	font-weight: 600;
+}
+.mc-why svg {
+	flex: none;
+	margin-top: 2px;
+}
+.mc-why--alert {
+	padding: 10px 12px;
+	border-radius: var(--radius-md);
+	background: var(--red-soft);
+	color: var(--red-text);
+}
+.mc-facts dt svg {
+	flex: none;
+	color: var(--gold-text);
+}
+/* An odd last fact takes the whole row instead of leaving a hole. */
+.mc-facts > div:last-child:nth-child(odd) {
+	grid-column: 1 / -1;
+}
+.mc-facts dd {
+	font-size: 15px;
+	line-height: 20px;
+}
+
+/* Host pair: illustration and one sentence. */
+.mc-hosts {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 10px 14px 10px 8px;
+	border-radius: var(--radius-md);
+	background: var(--gold-soft);
+}
+.mc-hosts p {
+	margin: 0;
+}
+.mc-hosts__art {
+	flex: none;
+	width: 72px;
+	height: auto;
+}
+.mc-hosts__title {
+	font-size: 14px;
+	line-height: 20px;
+	font-weight: 600;
+	color: var(--ink);
+}
+
+.mc-service-hints {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	margin: 0;
+	padding: 0 16px 14px;
+	list-style: none;
+	font-size: 13px;
+	line-height: 18px;
+	color: var(--ink-muted);
+}
+.mc-service-hints li {
+	display: flex;
+	align-items: flex-start;
+	gap: 10px;
+}
+.mc-service-hints strong {
+	color: var(--ink);
+	font-weight: 600;
+}
+
+/* ── Empty card and offline note ── */
+.mc-empty-art {
+	width: 100%;
+	max-width: 220px;
+	height: auto;
+	max-height: 104px;
+}
+.mc-hints {
+	display: flex;
+	flex-direction: column;
+	align-self: stretch;
+	gap: 8px;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	text-align: left;
+	font-size: 13px;
+	line-height: 18px;
+	color: var(--ink-muted);
+}
+.mc-hints li {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+.mc-hint-icon {
+	display: grid;
+	flex: none;
+	place-items: center;
+	width: 28px;
+	height: 28px;
+	border-radius: 10px;
+	background: var(--bg);
+}
+.mc-offline-note {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	align-self: stretch;
+	margin: 0;
+	padding: 8px 12px 8px 8px;
+	border-radius: var(--radius-md);
+	background: var(--bg);
+	box-shadow: inset 0 0 0 1px var(--line-control);
+	font-size: 13px;
+	line-height: 18px;
+	color: var(--ink-muted);
+	text-align: left;
+}
+.mc-offline-note__art {
+	flex: none;
+	width: 64px;
+	height: auto;
+}
+
+/* Detail: the primary action stays in reach while the body scrolls. */
+.mc-detail > .q-card__foot {
+	position: sticky;
+	bottom: 0;
+	z-index: 1;
+	padding-top: 12px;
+	background: var(--surface-raised);
+}
+.mc-offline-line {
+	display: flex;
+	align-items: flex-start;
+	gap: 8px;
+	margin: 0;
+	font-size: 13px;
+	line-height: 18px;
+	color: var(--ink-muted);
+}
+p.mc-offline-line svg {
+	flex: none;
+	margin-top: 1px;
+}

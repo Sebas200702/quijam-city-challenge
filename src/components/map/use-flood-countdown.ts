@@ -10,7 +10,10 @@ import {
 
 const TICK_MS = 15_000;
 
-/** Turns `aguacero` events into per-arroyo countdowns, the zones routes must avoid and the one alert to show. */
+/**
+ * Turns `aguacero` events into per-arroyo countdowns, the zones routes must
+ * avoid and the one alert to show (with the epoch ms it becomes active).
+ */
 export function useFloodCountdown(
 	lastEvent: CityEvent | null,
 	floodZones: readonly FloodZoneRef[],
@@ -34,11 +37,14 @@ export function useFloodCountdown(
 		return () => clearInterval(timer);
 	}, [counting]);
 
-	return useMemo(
-		() => ({
+	return useMemo(() => {
+		const urgent = mostUrgentAlert(floodZones, countdowns, now);
+		return {
 			blocked: blockedFloodZoneIds(floodZones, countdowns, now),
-			alert: mostUrgentAlert(floodZones, countdowns, now),
-		}),
-		[floodZones, countdowns, now],
-	);
+			// `activeAt` lets the arroyo modal show a live mm:ss countdown.
+			alert: urgent
+				? { ...urgent, activeAt: countdowns[urgent.zone.code] }
+				: null,
+		};
+	}, [floodZones, countdowns, now]);
 }

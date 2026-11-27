@@ -6,6 +6,8 @@ Referencia del habla de Barranquilla y del Caribe colombiano para el equipo y pa
 2. **No confundir cariño con insulto.** La moderación trata la jerga costeña amistosa como normal ([`20-comunidad-y-moderacion.md`](20-comunidad-y-moderacion.md)); aquí queda escrito qué es amistoso y qué pide cuidado.
 3. **Escribir con medida.** El modo Turista usa un lenguaje cercano que permite habla local ("trancón", "¡Ajá!"); el modo Lo que la ciudad aprende, no ([`03-diseno-actual.md`](03-diseno-actual.md)). Las reglas de uso están al final.
 
+> **En la app.** La página `/jerga` del menú del visitante y el glosario de la Guía usan hoy una lista corta y curada (`src/lib/visitor-menu/slang-source.ts`; el issue #48 prevé moverla al servidor). Este documento es la referencia más amplia: de aquí salen los términos que se sumen a esa lista, con su registro y su regla de uso.
+
 > **Estado: borrador por validar.** Está armado desde el conocimiento general del habla del Caribe colombiano. Antes de usar un término en un texto público (botones, mensajes, demo), **confírmalo con alguien de Barranquilla**, igual que se hace con la retroalimentación de [`feedback.md`](feedback.md). Cuando se valide, anotarlo en [`feedback.md`](feedback.md).
 
 ## Cómo leer las tablas
