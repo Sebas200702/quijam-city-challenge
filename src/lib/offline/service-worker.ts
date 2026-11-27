@@ -3,6 +3,7 @@
 // also fills in the build version and the list of files to save. Production
 // only: `astro dev` never registers it.
 
+import { notificationTarget } from "../notifications/app-notification";
 import {
 	type CacheRoute,
 	cacheNameFor,
@@ -27,15 +28,34 @@ interface FetchEvent extends ExtendableEvent {
 	request: Request;
 	respondWith(response: Response | Promise<Response>): void;
 }
+interface NotificationEvent extends ExtendableEvent {
+	notification: Notification;
+}
+interface WindowClient {
+	url: string;
+	focus(): Promise<WindowClient>;
+	navigate(url: string): Promise<WindowClient | null>;
+}
 interface WorkerScope {
 	location: Location;
 	skipWaiting(): Promise<void>;
-	clients: { claim(): Promise<void> };
+	clients: {
+		claim(): Promise<void>;
+		matchAll(options: {
+			type: "window";
+			includeUncontrolled: boolean;
+		}): Promise<WindowClient[]>;
+		openWindow(url: string): Promise<WindowClient | null>;
+	};
 	addEventListener(
 		type: "install" | "activate",
 		listener: (event: ExtendableEvent) => void,
 	): void;
 	addEventListener(type: "fetch", listener: (event: FetchEvent) => void): void;
+	addEventListener(
+		type: "notificationclick",
+		listener: (event: NotificationEvent) => void,
+	): void;
 }
 
 const worker = self as unknown as WorkerScope;
@@ -71,6 +91,37 @@ worker.addEventListener("fetch", (event) => {
 	const route = cacheRouteFor(request, worker.location.origin);
 	if (route === "bypass") return;
 	event.respondWith(handle(route, request));
+});
+
+// A tapped notification (arroyo alert, later event reminders) opens its page
+// in the app window that is already open, or in a new one.
+worker.addEventListener("notificationclick", (event) => {
+	event.notification.close();
+	const target = notificationTarget(
+		event.notification.data,
+		worker.location.origin,
+	);
+	event.waitUntil(
+		(async () => {
+			const windows = await worker.clients.matchAll({
+				type: "window",
+				includeUncontrolled: true,
+			});
+			const open = windows.find(
+				(client) => new URL(client.url).origin === worker.location.origin,
+			);
+			if (open) {
+				try {
+					await open.focus();
+					if (open.url !== target) await open.navigate(target);
+					return;
+				} catch {
+					// Not controlled by this worker: open a new window instead.
+				}
+			}
+			await worker.clients.openWindow(target);
+		})(),
+	);
 });
 
 function handle(

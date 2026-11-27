@@ -4,6 +4,7 @@ import { BottomNav } from "../home/bottom-nav";
 import type { NavSection } from "../home/nav-sections";
 import { QuillartLogo } from "../home/quillart-logo";
 import { TopNav } from "../home/top-nav";
+import { FloodNotifier } from "../notices/flood-notifier";
 import { SecondaryMenu } from "../visitor-home/secondary-menu";
 import { useStore } from "./use-community";
 
@@ -43,6 +44,7 @@ export function CommunityShell({
 				{children}
 			</main>
 			<BottomNav current={current} aiHref={aiHref} />
+			<FloodNotifier />
 		</div>
 	);
 }

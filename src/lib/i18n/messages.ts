@@ -7,6 +7,7 @@ import { guide } from "./dictionaries/guide";
 import { inbox } from "./dictionaries/inbox";
 import { landing } from "./dictionaries/landing";
 import { map } from "./dictionaries/map";
+import { notifications } from "./dictionaries/notifications";
 import { offline } from "./dictionaries/offline";
 import { places } from "./dictionaries/places";
 import { profile } from "./dictionaries/profile";
@@ -77,6 +78,7 @@ export type Messages = BaseMessages & {
 	places: (typeof places)[Language];
 	map: (typeof map)[Language];
 	offline: (typeof offline)[Language];
+	notifications: (typeof notifications)[Language];
 	guide: (typeof guide)[Language];
 	profile: (typeof profile)[Language];
 	reports: (typeof reports)[Language];
@@ -257,6 +259,7 @@ function build(language: Language): Messages {
 		places: places[language],
 		map: map[language],
 		offline: offline[language],
+		notifications: notifications[language],
 		guide: guide[language],
 		profile: profile[language],
 		reports: reports[language],

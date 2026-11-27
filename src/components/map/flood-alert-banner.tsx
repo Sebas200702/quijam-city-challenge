@@ -1,11 +1,18 @@
 import { useEffect, useMemo } from "react";
+import { useT } from "../../lib/i18n/use-language";
 import {
 	arroyoNotice,
 	floodTouchesVisitor,
 } from "../../lib/notices/notice-builders";
 import type { Notice, VisitorContext } from "../../lib/notices/notice-types";
+import { floodNotification } from "../../lib/notifications/flood-notification";
+import {
+	forgetShownNotifications,
+	showAppNotification,
+} from "../../lib/notifications/notify";
 import { ArroyoBand } from "../notices/arroyo-band";
 import { NoticeSlot } from "../notices/notice-slot";
+import { NotificationOptIn } from "../notices/notification-opt-in";
 import { useNoticeQueue } from "../notices/use-notice-queue";
 import type { useFloodCountdown } from "./use-flood-countdown";
 
@@ -43,12 +50,26 @@ export function FloodAlertBanner({
 
 	useEffect(() => {
 		// `reiniciar` clears every countdown: the alert goes away and so does the queue.
-		if (!alert) reset();
-		else if (notice) push(notice);
+		if (!alert) {
+			reset();
+			forgetShownNotifications();
+		} else if (notice) push(notice);
 	}, [alert, notice, push, reset]);
 
 	const answered =
 		notice !== null && queue.state.seenModals.includes(notice.key);
+
+	// With the app in the background the modal is not seen: the same alert
+	// goes out as a system notification (#47), once per stage. A countdown
+	// already answered in the modal does not come back; "active now" does.
+	const notifyCopy = useT().notifications;
+	useEffect(() => {
+		if (!alert || !notice || document.visibilityState !== "hidden") return;
+		if (alert.status.kind === "countdown" && answered) return;
+		void showAppNotification(
+			floodNotification(alert.zone, alert.status, notifyCopy),
+		);
+	}, [alert, notice, answered, notifyCopy]);
 	const onAction = (_notice: Notice, actionId: string) => {
 		if (actionId === "change-route") onChangeRoute?.();
 	};
@@ -56,7 +77,12 @@ export function FloodAlertBanner({
 	return (
 		<>
 			<NoticeSlot queue={queue} onAction={onAction} />
-			{alert && answered && <ArroyoBand alert={alert} />}
+			{alert && answered && (
+				<>
+					<ArroyoBand alert={alert} />
+					<NotificationOptIn />
+				</>
+			)}
 		</>
 	);
 }
