@@ -4,6 +4,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { VOICE_LOCALES } from "../../lib/i18n/languages";
+import { messages } from "../../lib/i18n/messages";
 import { getLanguage } from "../../lib/i18n/use-language";
 
 /** BCP 47 tag of the chosen interface language (es-CO, en-US, pt-BR, fr-FR). */
@@ -126,12 +127,21 @@ export interface VoiceConduit {
 	setReadAloud(value: boolean): void;
 }
 
-const ERRORS: Record<string, string> = {
-	"not-allowed": "Necesitamos permiso para usar el micrófono.",
-	"service-not-allowed": "Necesitamos permiso para usar el micrófono.",
-	"audio-capture": "No encontramos un micrófono.",
-	network: "El dictado por voz necesita internet.",
-};
+/** Error text in the chosen language, read when the error happens. */
+function voiceError(code: string): string {
+	const chat = messages[getLanguage()].chat;
+	switch (code) {
+		case "not-allowed":
+		case "service-not-allowed":
+			return chat.micPermission;
+		case "audio-capture":
+			return chat.noMic;
+		case "network":
+			return chat.needsInternet;
+		default:
+			return chat.couldNotListen;
+	}
+}
 
 /** Speech-to-text that calls `onFinal` with what the person said. */
 export function useVoiceConduit(onFinal: (text: string) => void): VoiceConduit {
@@ -185,9 +195,7 @@ export function useVoiceConduit(onFinal: (text: string) => void): VoiceConduit {
 		};
 		instance.onerror = (event) => {
 			if (event.error !== "no-speech" && event.error !== "aborted")
-				setError(
-					ERRORS[event.error] ?? "No pudimos escucharte. Escribe tu mensaje.",
-				);
+				setError(voiceError(event.error));
 		};
 		instance.onend = () => {
 			setListening(false);
@@ -203,7 +211,7 @@ export function useVoiceConduit(onFinal: (text: string) => void): VoiceConduit {
 			instance.start();
 			setListening(true);
 		} catch {
-			setError("No pudimos activar el micrófono.");
+			setError(messages[getLanguage()].chat.micFailed);
 		}
 	}, []);
 

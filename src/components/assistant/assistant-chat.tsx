@@ -51,6 +51,7 @@ function DisplayView({
 	display: AssistantDisplay;
 	toolName: AssistantToolResult["name"];
 }) {
+	const t = useT();
 	switch (display.kind) {
 		case "events":
 			return (
@@ -88,7 +89,7 @@ function DisplayView({
 					<PublishNotice result={display.result} />
 					{display.href && (
 						<a className="q-btn q-btn--secondary q-btn--sm" href={display.href}>
-							Ver publicación
+							{t.chat.viewPost}
 						</a>
 					)}
 				</div>
@@ -120,7 +121,7 @@ function DisplayView({
 					{toolName === "plan_route" && (
 						<a className="q-btn q-btn--secondary q-btn--sm" href="/mapa">
 							<MapIcon size={16} aria-hidden="true" />
-							Ver la ruta en el mapa
+							{t.chat.viewRoute}
 						</a>
 					)}
 				</div>
@@ -334,14 +335,14 @@ export function AssistantChat({
 						) : (
 							<VolumeX size={16} aria-hidden="true" />
 						)}
-						Leer respuestas en voz alta
+						{t.chat.readAloud}
 					</button>
 				)}
 				<a
 					className="q-btn q-btn--ghost q-btn--sm min-h-11"
 					href="/prueba-guia"
 				>
-					Voz en vivo (beta)
+					{t.chat.liveVoice}
 				</a>
 				{!empty && (
 					<button
