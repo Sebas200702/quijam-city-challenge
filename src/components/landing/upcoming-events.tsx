@@ -4,6 +4,7 @@ import { CalendarPlus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { getCommunityStore } from "../../lib/community/community-store";
 import type { CommunityEvent } from "../../lib/community/community-types";
+import { useT } from "../../lib/i18n/use-language";
 import { EventCard } from "../community/event-card";
 
 type State =
@@ -18,6 +19,7 @@ type State =
 const EVENT_LIMIT = 3;
 
 export function UpcomingEvents() {
+	const t = useT();
 	const [state, setState] = useState<State>({ status: "loading" });
 
 	useEffect(() => {
@@ -50,7 +52,7 @@ export function UpcomingEvents() {
 						key={index}
 						className="h-[148px] animate-pulse rounded-[var(--radius-lg)] bg-[var(--surface)] shadow-[var(--shadow-card)]"
 					>
-						<span className="q-sr">Cargando planes</span>
+						<span className="q-sr">{t.landing.upcoming.loading}</span>
 					</li>
 				))}
 			</ul>
@@ -62,16 +64,16 @@ export function UpcomingEvents() {
 			<div className="q-card items-start gap-3 p-5">
 				<p className="q-p">
 					{state.status === "error"
-						? "No pudimos cargar los próximos planes en este momento."
-						: "Todavía no hay planes publicados para los próximos días."}
+						? t.landing.upcoming.error
+						: t.landing.upcoming.empty}
 				</p>
 				<div className="flex flex-wrap gap-2">
 					<a href="/agenda" className="q-btn q-btn--secondary">
-						Ver la agenda
+						{t.landing.upcoming.viewAgenda}
 					</a>
 					<a href="/agenda/nuevo" className="q-btn q-btn--ghost">
 						<CalendarPlus size={18} strokeWidth={1.75} aria-hidden="true" />
-						Publicar un evento
+						{t.landing.upcoming.publish}
 					</a>
 				</div>
 			</div>

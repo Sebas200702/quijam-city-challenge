@@ -11,13 +11,13 @@ import { HERO_PROMPTS } from "./landing-content";
 	class="mx-auto grid w-full max-w-6xl items-center gap-8 px-4 pt-6 pb-12 lg:grid-cols-2 lg:gap-14 lg:px-8 lg:pt-14 lg:pb-20"
 >
 	<div class="flex min-w-0 flex-col gap-5">
-		<h1 id="hero-title" class="q-display lg:text-[60px] lg:leading-[64px]">
+		<h1 id="hero-title" class="q-display lg:text-[60px] lg:leading-[64px]" data-i18n="landing.hero.title">
 			Barranquilla, a una conversación
 		</h1>
-		<p class="q-lead">Pregunta, inscríbete, publica. Quillart lo hace contigo.</p>
+		<p class="q-lead" data-i18n="landing.hero.lead">Pregunta, inscríbete, publica. Quillart lo hace contigo.</p>
 
-		<form action={ASSISTANT_HREF} method="get" role="search" aria-label="Pregúntale a Quillart AI">
-			<label for="hero-ask" class="q-sr">Escribe tu pregunta para Quillart AI</label>
+		<form action={ASSISTANT_HREF} method="get" role="search" aria-label="Pregúntale a Quillart AI" data-i18n-attr="aria-label:landing.hero.formLabel">
+			<label for="hero-ask" class="q-sr" data-i18n="landing.hero.inputLabel">Escribe tu pregunta para Quillart AI</label>
 			<div class="q-prompt shadow-[var(--shadow-card)]">
 				<input
 					id="hero-ask"
@@ -28,19 +28,20 @@ import { HERO_PROMPTS } from "./landing-content";
 					autocomplete="off"
 					enterkeyhint="send"
 					placeholder="¿Qué hacemos hoy?"
+					data-i18n-attr="placeholder:landing.hero.placeholder"
 				/>
-				<button type="submit" class="q-btn q-btn--primary q-btn--icon" aria-label="Preguntar">
+				<button type="submit" class="q-btn q-btn--primary q-btn--icon" aria-label="Preguntar" data-i18n-attr="aria-label:landing.hero.submit">
 					<ArrowUp size={20} strokeWidth={1.75} aria-hidden="true" />
 				</button>
 			</div>
 		</form>
 
-		<ul class="m-0 flex list-none flex-wrap gap-2 p-0" aria-label="Ejemplos">
+		<ul class="m-0 flex list-none flex-wrap gap-2 p-0" aria-label="Ejemplos" data-i18n-attr="aria-label:landing.hero.examples">
 			{
-				HERO_PROMPTS.map((item) => (
+				HERO_PROMPTS.map((item, index) => (
 					<li>
 						<a href={item.href} class="q-chip no-underline">
-							{item.label}
+							<span data-i18n={`landing.hero.chip${index + 1}`}>{item.label}</span>
 						</a>
 					</li>
 				))
@@ -58,12 +59,12 @@ import { HERO_PROMPTS } from "./landing-content";
 				height="320"
 			/>
 		</div>
-		<div class="absolute top-3 left-3 max-w-[62%] rounded-[18px] rounded-bl-[4px] bg-[var(--surface)] px-4 py-2.5 text-[15px] font-semibold text-[var(--ink)] shadow-[var(--shadow-card)] lg:top-5 lg:left-5">
+		<div class="absolute top-3 left-3 max-w-[62%] rounded-[18px] rounded-bl-[4px] bg-[var(--surface)] px-4 py-2.5 text-[15px] font-semibold text-[var(--ink)] shadow-[var(--shadow-card)] lg:top-5 lg:left-5" data-i18n="landing.hero.bubbleUser">
 			¿Planes gratis este sábado?
 		</div>
 		<div class="absolute right-3 bottom-4 flex max-w-[70%] items-center gap-2 rounded-[18px] rounded-br-[4px] bg-[var(--action)] px-4 py-2.5 text-[15px] font-semibold text-[var(--on-action)] shadow-[var(--shadow-card)] lg:right-5 lg:bottom-6">
 			<span class="q-star" style="width: 16px; height: 16px"></span>
-			¡Hay 3! ¿Te inscribo?
+			<span data-i18n="landing.hero.bubbleAi">¡Hay 3! ¿Te inscribo?</span>
 		</div>
 	</div>
 </section>

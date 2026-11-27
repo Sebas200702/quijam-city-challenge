@@ -3,13 +3,19 @@
 import { CircleCheck, Mic, Sparkles } from "lucide-react";
 
 const steps = [
-	{ icon: Mic, title: "Habla o escribe", tone: "q-tile--gold" },
+	{ icon: Mic, key: "step1", title: "Habla o escribe", tone: "q-tile--gold" },
 	{
 		icon: Sparkles,
+		key: "step2",
 		title: "Te atiende el agente indicado",
 		tone: "q-tile--green",
 	},
-	{ icon: CircleCheck, title: "Tú confirmas", tone: "q-tile--red" },
+	{
+		icon: CircleCheck,
+		key: "step3",
+		title: "Tú confirmas",
+		tone: "q-tile--red",
+	},
 ];
 ---
 
@@ -19,7 +25,7 @@ const steps = [
 			<img src="/illustrations/audio-conversation.svg" alt="" class="h-44 w-auto lg:h-64" loading="lazy" width="300" height="260" />
 		</div>
 		<div class="order-1 lg:order-2">
-			<h2 id="how-title" class="q-h1 mb-6">Así de fácil</h2>
+			<h2 id="how-title" class="q-h1 mb-6" data-i18n="landing.how.title">Así de fácil</h2>
 			<ol class="m-0 flex list-none flex-col gap-4 p-0">
 				{
 					steps.map((step, index) => (
@@ -28,8 +34,8 @@ const steps = [
 								<step.icon size={26} strokeWidth={1.75} aria-hidden="true" />
 							</span>
 							<span class="q-h3">
-								<span class="q-sr">Paso {index + 1}: </span>
-								{step.title}
+								<span class="q-sr" data-i18n={`landing.how.${step.key}Sr`}>Paso {index + 1}: </span>
+								<span data-i18n={`landing.how.${step.key}`}>{step.title}</span>
 							</span>
 						</li>
 					))

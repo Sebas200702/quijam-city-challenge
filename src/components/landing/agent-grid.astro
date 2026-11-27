@@ -5,7 +5,7 @@ import { AGENT_TILES } from "./landing-content";
 ---
 
 <section aria-labelledby="agents-title" class="mx-auto w-full max-w-6xl px-4 py-10 lg:px-8 lg:py-16">
-	<h2 id="agents-title" class="q-h1 mb-6 text-center lg:mb-10">¿Qué quieres hacer?</h2>
+	<h2 id="agents-title" class="q-h1 mb-6 text-center lg:mb-10" data-i18n="landing.agents.title">¿Qué quieres hacer?</h2>
 	<ul class="m-0 grid list-none grid-cols-2 gap-3 p-0 lg:grid-cols-3 lg:gap-6">
 		{
 			AGENT_TILES.map((tile) => (
@@ -18,9 +18,9 @@ import { AGENT_TILES } from "./landing-content";
 							<img src={tile.illustration} alt="" class="h-26! w-auto! max-w-full object-contain lg:h-42!" loading="lazy" width="160" height="160" />
 						</div>
 						<div class="flex flex-1 flex-col gap-2 p-3 lg:p-5">
-							<h3 class="q-h3 text-[16px] leading-tight lg:text-[20px]">{tile.title}</h3>
+							<h3 class="q-h3 text-[16px] leading-tight lg:text-[20px]" data-i18n={`landing.agents.${tile.id}.title`}>{tile.title}</h3>
 							<span class="q-sm q-muted mt-auto flex items-center gap-1">
-								<span class="line-clamp-2">“{tile.example.label}”</span>
+								<span class="line-clamp-2" data-i18n={`landing.agents.${tile.id}.example`}>“{tile.example.label}”</span>
 								<ArrowRight size={16} strokeWidth={1.75} aria-hidden="true" className="shrink-0" />
 							</span>
 						</div>
