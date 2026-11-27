@@ -16,6 +16,7 @@ import type {
 	PublishResult,
 } from "../community/community-types";
 import type { Language } from "../i18n/languages";
+import type { ScreenContext } from "./screen-context-types";
 
 /** Specialized agents, one per section of the platform. */
 export type AssistantAgentId =
@@ -138,6 +139,8 @@ export interface AssistantContext {
 	fromPath: string | null;
 	/** Interface language the person chose; the reply should use it. */
 	language?: Language;
+	/** What the person is looking at (audit v2, U06). */
+	screen?: ScreenContext;
 }
 
 export interface AssistantRequest {
@@ -149,7 +152,7 @@ export interface AssistantResponse {
 	/** The specialized agent that answered this turn. */
 	agent: AssistantAgentId;
 	/** How the orchestrator chose it. */
-	routedBy: "openjev" | "gemini" | "keywords" | "continuation";
+	routedBy: "openjev" | "gemini" | "keywords" | "continuation" | "screen";
 	text: string;
 	toolCalls: AssistantToolCall[];
 	/** Who answered: Gemini with tools, or the local intent router. */

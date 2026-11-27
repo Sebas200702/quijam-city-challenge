@@ -10,6 +10,7 @@ import type {
 } from "../community/community-types";
 import { detectDestination } from "../guide/guide-local";
 import { type AgentTurn, PROFILE_PATH } from "./assistant-agents";
+import { PLACES } from "../community/places-catalog";
 import { hasAnyKeyword, matchPlace, normalizeText } from "./assistant-text";
 import {
 	type AssistantAgentId,
@@ -20,6 +21,7 @@ import {
 	isActionTool,
 } from "./assistant-types";
 import { latestUserText } from "./orchestrator";
+import { screenEventId, screenPlaceSlug } from "./screen-context";
 
 const BOGOTA_OFFSET_MS = -5 * 60 * 60 * 1000;
 
@@ -184,6 +186,14 @@ function pickEventId(text: string, ids: string[]): string | null {
 	return ids.length === 1 ? ids[0] : null;
 }
 
+/** The place the text names, or the one open on the screen ("¿qué hay aquí?"). */
+function placeFor(text: string, context: AssistantContext) {
+	const named = matchPlace(text);
+	if (named) return named;
+	const slug = screenPlaceSlug(context.screen);
+	return slug ? (PLACES.find((place) => place.slug === slug) ?? null) : null;
+}
+
 function signInTurn(reason: string): AgentTurn {
 	return {
 		text: `${reason} Primero entra a tu cuenta o créala, es rapidito.`,
@@ -251,7 +261,10 @@ function agendaTurn(
 
 	const wantsOut = hasAnyKeyword(normalized, UNREGISTER_WORDS);
 	if (wantsOut || hasAnyKeyword(normalized, REGISTER_WORDS)) {
-		const eventId = pickEventId(text, recentEventIds(messages));
+		// "Inscríbeme" on an event's screen means that event.
+		const eventId =
+			pickEventId(text, recentEventIds(messages)) ??
+			screenEventId(context.screen);
 		if (!context.signedIn) {
 			return signInTurn("Para inscribirte necesitas una cuenta.");
 		}
@@ -283,7 +296,7 @@ function agendaTurn(
 	if (daysAhead !== null) args.days_ahead = daysAhead;
 	const category = firstMatch(normalized, EVENT_CATEGORY_WORDS);
 	if (category) args.category = category;
-	const place = matchPlace(text);
+	const place = placeFor(text, context);
 	if (place) args.place_slug = place.slug;
 	const what = category
 		? `planes de ${EVENT_CATEGORY_LABELS[category].toLowerCase()}`
@@ -326,7 +339,7 @@ function communityTurn(text: string, context: AssistantContext): AgentTurn {
 	const args: AssistantToolArgs["list_threads"] = {};
 	const category = firstMatch(normalized, FORUM_CATEGORY_WORDS);
 	if (category) args.category = category;
-	const place = matchPlace(text);
+	const place = placeFor(text, context);
 	if (place) args.place_slug = place.slug;
 	return {
 		text: "Mira de qué se está hablando en la comunidad.",
@@ -345,9 +358,9 @@ const DIRECTIONS_WORDS = [
 	"directions",
 ];
 
-function placesTurn(text: string): AgentTurn {
+function placesTurn(text: string, context: AssistantContext): AgentTurn {
 	const normalized = normalizeText(text);
-	const place = matchPlace(text);
+	const place = placeFor(text, context);
 	if (place) {
 		if (hasAnyKeyword(normalized, DIRECTIONS_WORDS)) {
 			return {
@@ -369,7 +382,7 @@ function placesTurn(text: string): AgentTurn {
 	};
 }
 
-function mobilityTurn(text: string): AgentTurn {
+function mobilityTurn(text: string, context: AssistantContext): AgentTurn {
 	const destination = detectDestination(text);
 	if (destination) {
 		return {
@@ -377,7 +390,7 @@ function mobilityTurn(text: string): AgentTurn {
 			toolCalls: [{ name: "plan_route", args: { destination } }],
 		};
 	}
-	const place = matchPlace(text);
+	const place = placeFor(text, context);
 	if (place) {
 		return {
 			text: `Te muestro cómo llegar a ${place.name}.`,
@@ -419,7 +432,7 @@ function cityReportsTurn(text: string, context: AssistantContext): AgentTurn {
 		const turn = signInTurn("Para enviar el reporte necesitas una cuenta.");
 		return { ...turn, text: `${prefix}${turn.text}` };
 	}
-	const place = matchPlace(text);
+	const place = placeFor(text, context);
 	return {
 		text: `${prefix}Preparé tu reporte para la ciudad; revísalo y confírmalo abajo.`,
 		toolCalls: [
@@ -591,9 +604,9 @@ export function answerLocally(
 		case "community":
 			return communityTurn(text, context);
 		case "places":
-			return placesTurn(text);
+			return placesTurn(text, context);
 		case "mobility":
-			return mobilityTurn(text);
+			return mobilityTurn(text, context);
 		case "city_reports":
 			return cityReportsTurn(text, context);
 		case "account":

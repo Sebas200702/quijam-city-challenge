@@ -7,10 +7,13 @@
 //    unless its keywords clearly name another section.
 // 2. Keywords. A pure, accent-insensitive Spanish + English keyword score.
 //    The agent with the highest score wins when it is the only one on top.
-// 3. OpenJev. When keywords are null or tied and a client exists, a choice
+// 3. Screen. Without a clear keyword, the agent that owns the screen the
+//    person is looking at answers (Agenda on /agenda, Mobility on /mapa), and
+//    it wins a keyword tie it is part of (audit v2, U06).
+// 4. OpenJev. When keywords are null or tied and a client exists, a choice
 //    question over the six agent descriptions; accepted at confidence >= 0.35.
 //    Only the person's message text is sent (no names, no context).
-// 4. Default. A tie is broken by section priority (reports and mobility are
+// 5. Default. A tie is broken by section priority (reports and mobility are
 //    time sensitive), and with no signal at all the Agenda agent answers: it is
 //    the main reason people open the platform ("¿qué hay pa' hacer?" questions
 //    without a place go to Places through the keywords instead).
@@ -18,6 +21,7 @@
 import type { OpenJevClient } from "../openjev/openjev-types";
 import { AGENT_IDS, AGENTS } from "./assistant-agents";
 import { countKeywords, hasAnyKeyword, normalizeText } from "./assistant-text";
+import { agentForScreen } from "./screen-context";
 import type {
 	AssistantAgentId,
 	AssistantContext,
@@ -373,7 +377,7 @@ export async function routeWithOpenJev(
 
 export async function routeMessage(
 	messages: AssistantMessage[],
-	_context: AssistantContext,
+	context: AssistantContext,
 	deps: RouteDeps,
 ): Promise<RouteDecision> {
 	const previous = lastAssistantAgent(messages);
@@ -396,11 +400,16 @@ export async function routeMessage(
 
 	if (byKeywords) return { agent: byKeywords, routedBy: "keywords" };
 
+	const tied = tiedAgents(text);
+	const screenAgent = agentForScreen(context.screen);
+	if (screenAgent && (tied.length === 0 || tied.includes(screenAgent))) {
+		return { agent: screenAgent, routedBy: "screen" };
+	}
+
 	if (deps.openJev && text.trim() !== "") {
 		const chosen = await routeWithOpenJev(deps.openJev, text);
 		if (chosen) return { agent: chosen, routedBy: "openjev" };
 	}
 
-	const tied = tiedAgents(text);
 	return { agent: tied[0] ?? DEFAULT_AGENT, routedBy: "keywords" };
 }

@@ -28,6 +28,7 @@ import {
 import { type GeminiAgentOptions, runGeminiAgent } from "./gemini-agent";
 import { answerLocally, EMERGENCY_TEXT } from "./local-agents";
 import { routeMessage } from "./orchestrator";
+import { parseScreenContext } from "./screen-context";
 
 export const MAX_MESSAGES = 30;
 export const MAX_USER_TEXT = 1000;
@@ -179,6 +180,8 @@ function parseContext(value: unknown): AssistantContext {
 	if (fromPath !== null && !fromPath.startsWith("/")) {
 		fail("context.fromPath must be an internal path.");
 	}
+	// The screen only helps the agents: an unusable one is dropped, not refused.
+	const screen = parseScreenContext(value.screen);
 	return {
 		now,
 		signedIn: value.signedIn,
@@ -190,6 +193,7 @@ function parseContext(value: unknown): AssistantContext {
 		isVisitor,
 		fromPath,
 		...(isLanguage(value.language) ? { language: value.language } : {}),
+		...(screen ? { screen } : {}),
 	};
 }
 

@@ -15,6 +15,7 @@ import type {
 	PublishResult,
 } from "../../lib/community/community-types";
 import { useT } from "../../lib/i18n/use-language";
+import { usePublishScreen } from "../agent-dock/use-screen-context";
 import { CommunityShell } from "./community-shell";
 import {
 	EmptyState,
@@ -53,6 +54,16 @@ export default function ThreadPage({
 		},
 		[threadId, session.profile?.id],
 		["forum"],
+	);
+	const shown = state.status === "ready" ? state.data.thread : null;
+	usePublishScreen(
+		shown
+			? {
+					route: "/foro/[id]",
+					title: shown.title,
+					entity: { kind: "thread", id: shown.id, name: shown.title },
+				}
+			: null,
 	);
 
 	return (

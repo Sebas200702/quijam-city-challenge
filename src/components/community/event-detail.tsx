@@ -33,6 +33,7 @@ import type {
 	Profile,
 } from "../../lib/community/community-types";
 import { useT } from "../../lib/i18n/use-language";
+import { usePublishScreen } from "../agent-dock/use-screen-context";
 import { AskQuillartButton } from "../assistant/ask-quillart-button";
 import { CommunityShell } from "./community-shell";
 import {
@@ -75,6 +76,21 @@ export default function EventDetail({ id, aiHref }: EventDetailProps) {
 		},
 		[id, profile?.id],
 		["events", "forum"],
+	);
+	const shown = state.status === "ready" ? state.data : null;
+	usePublishScreen(
+		shown
+			? {
+					route: "/agenda/[id]",
+					title: shown.event.title,
+					entity: {
+						kind: "event",
+						id: shown.event.id,
+						name: shown.event.title,
+					},
+					...(shown.place ? { zone: shown.place.neighborhood } : {}),
+				}
+			: null,
 	);
 
 	return (

@@ -21,6 +21,7 @@ import type {
 } from "../../lib/assistant/assistant-types";
 import { isActionTool } from "../../lib/assistant/assistant-types";
 import { answerOffline } from "../../lib/assistant/offline-answer";
+import { screenContext } from "../../lib/assistant/screen-context-store";
 import { declinedResult, runTool } from "../../lib/assistant/tool-executor";
 import { withOfflineGuide } from "../../lib/guide/guide-offline";
 import { messages as dictionaries } from "../../lib/i18n/messages";
@@ -215,7 +216,11 @@ export function useAssistant() {
 			call,
 			agent,
 			running: false,
-			grounded: isActionGrounded(call, history, [referrerPath()]),
+			// The page the person came from or has open is their own choice.
+			grounded: isActionGrounded(call, history, [
+				referrerPath(),
+				screenContext.get().entity?.id,
+			]),
 			edit: (text) => editAction(call.id, text),
 		}),
 		[editAction],
@@ -252,6 +257,7 @@ export function useAssistant() {
 					isVisitor: current?.isVisitor ?? null,
 					fromPath: referrerPath(),
 					language: getLanguage(),
+					screen: screenContext.get(),
 				},
 			};
 			let response: Response;

@@ -18,6 +18,7 @@ import type {
 	AssistantContext,
 	AssistantMessage,
 } from "./assistant-types";
+import { screenFacts } from "./screen-context";
 
 /** Alias that follows Google's current Flash model. Override with GEMINI_TEXT_MODEL. */
 export const DEFAULT_TEXT_MODEL = "gemini-flash-latest";
@@ -76,6 +77,7 @@ export function contextFacts(context: AssistantContext): string {
 		context.language
 			? `- The person chose ${LANGUAGE_LABELS[context.language]} as their app language: reply in it, unless they write in another language.`
 			: null,
+		...screenFacts(context.screen),
 	]
 		.filter(Boolean)
 		.join("\n");
