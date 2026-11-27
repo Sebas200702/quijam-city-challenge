@@ -37,7 +37,7 @@ import type {
 } from "../../lib/assistant/screen-context-types";
 import { type UiChange, uiBus } from "../../lib/assistant/ui-action-bus";
 import type { Messages } from "../../lib/i18n/messages";
-import { useT } from "../../lib/i18n/use-language";
+import { useLanguage, useT } from "../../lib/i18n/use-language";
 import { scrollBehavior } from "../../lib/reduced-motion";
 import { ErrorNote } from "../community/community-ui";
 import { BottomNav } from "../home/bottom-nav";
@@ -46,7 +46,9 @@ import { useOnline } from "../map/use-route-plan";
 import { ActionConfirmCard } from "../assistant/action-confirm-card";
 import { AiAvatar, MessageView } from "../assistant/assistant-chat";
 import { useAnswerAnnouncement } from "../assistant/use-answer-announcement";
+import { LIVE_VOICE_TEXT } from "../assistant/live-voice-text";
 import { useAssistant } from "../assistant/use-assistant";
+import { useLiveVoice } from "../assistant/use-live-voice";
 import { useVoiceConduit } from "../assistant/voice-conduit";
 import { onDockRequest } from "./dock-control";
 import { useScreenContext } from "./use-screen-context";
@@ -97,6 +99,9 @@ export default function AgentDock({ role }: AgentDockProps) {
 	const screen = useScreenContext();
 	const online = useOnline();
 	const voice = useVoiceConduit((spoken) => void assistant.send(spoken));
+	// Gemini Live: real-time voice with the same agents, tools and confirmation card.
+	const live = useLiveVoice(assistant);
+	const liveText = LIVE_VOICE_TEXT[useLanguage()];
 	const [open, setOpen] = useState(false);
 	const [shared, setShared] = useState(isScreenShared);
 	const [text, setText] = useState("");
@@ -200,7 +205,11 @@ export default function AgentDock({ role }: AgentDockProps) {
 
 	const submit = async (event: SyntheticEvent<HTMLFormElement>) => {
 		event.preventDefault();
-		if (!text.trim() || loading) return;
+		if (!text.trim() || loading || assistant.actionRunning()) return;
+		if (live.status === "live" && live.sendText(text)) {
+			setText("");
+			return;
+		}
 		// Kept in the box if it could not be sent (U20: never dropped silently).
 		if (await assistant.send(text)) setText("");
 	};
@@ -391,6 +400,13 @@ export default function AgentDock({ role }: AgentDockProps) {
 						)}
 
 						{voice.error && <ErrorNote message={voice.error} />}
+						{live.status === "fallback" ? (
+							<ErrorNote message={liveText.fallback} />
+						) : live.status === "connecting" || live.status === "live" ? (
+							<p className="q-sm q-muted" role="status">
+								{live.status === "live" ? liveText.live : liveText.connecting}
+							</p>
+						) : null}
 						<form className="q-dock__prompt" onSubmit={submit}>
 							<label htmlFor={inputId} className="q-sr">
 								{t.dock.inputLabel}
@@ -407,24 +423,42 @@ export default function AgentDock({ role }: AgentDockProps) {
 								maxLength={1000}
 								aria-describedby={loading ? hintId : undefined}
 							/>
-							{voice.canListen && (
-								<button
-									type="button"
-									className="q-dock__icon"
-									onClick={voice.listening ? voice.stop : voice.start}
-									aria-pressed={voice.listening}
-									disabled={loading}
-								>
-									{voice.listening ? (
-										<MicOff size={20} aria-hidden="true" />
-									) : (
-										<Mic size={20} aria-hidden="true" />
-									)}
-									<span className="q-sr">
-										{voice.listening ? t.chat.stopListening : t.chat.talk}
-									</span>
-								</button>
-							)}
+							{/* The dock is live: the mic opens Gemini Live (same agents, tools and
+							    confirmation card); the browser's dictation is only the fallback. */}
+							<button
+								type="button"
+								className="q-dock__icon"
+								onClick={() => {
+									if (live.active) {
+										live.stop();
+										return;
+									}
+									if (voice.listening) {
+										voice.stop();
+										return;
+									}
+									if (live.status === "fallback" && voice.canListen) {
+										voice.start();
+										return;
+									}
+									void live.start();
+								}}
+								aria-pressed={live.active || voice.listening}
+								disabled={loading && !live.active}
+							>
+								{live.active || voice.listening ? (
+									<MicOff size={20} aria-hidden="true" />
+								) : (
+									<Mic size={20} aria-hidden="true" />
+								)}
+								<span className="q-sr">
+									{live.active
+										? liveText.stop
+										: voice.listening
+											? t.chat.stopListening
+											: liveText.start}
+								</span>
+							</button>
 							{loading ? (
 								<button
 									type="button"
