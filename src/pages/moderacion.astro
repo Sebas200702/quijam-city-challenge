@@ -1,5 +1,5 @@
 ---
-import ModerationPage from "../components/community/moderation-page";
+import { ModerationWithMfa } from "../components/city/moderation-with-mfa";
 import BaseLayout from "../layouts/base-layout.astro";
 import { homeContent } from "../lib/home-content";
 
@@ -10,5 +10,5 @@ const { aiHref } = homeContent;
 	title="Moderación de la comunidad"
 	titleKey="forum.moderationPageTitle"
 >
-	<ModerationPage client:only="react" aiHref={aiHref} />
+	<ModerationWithMfa client:only="react" aiHref={aiHref} />
 </BaseLayout>

@@ -46,10 +46,16 @@ export function createAnswerStream(
 ): ReadableStream<Uint8Array> {
 	const delay = options.chunkDelayMs ?? CHUNK_DELAY_MS;
 	const encoder = new TextEncoder();
+	// Set when the client disconnects: the answer may still be running, and
+	// writing to a cancelled stream throws into the model loop, which would
+	// look like a Gemini failure. From then on every write is dropped.
+	let cancelled = false;
 	return new ReadableStream({
 		async start(controller) {
-			const send = (event: AssistantStreamEvent) =>
+			const send = (event: AssistantStreamEvent) => {
+				if (cancelled) return;
 				controller.enqueue(encoder.encode(encodeEvent(event)));
+			};
 			let streamed = false;
 			try {
 				const response = await run({
@@ -63,6 +69,7 @@ export function createAnswerStream(
 				});
 				if (!streamed) {
 					for (const piece of chunkText(response.text)) {
+						if (cancelled) break;
 						send({ type: "text", text: piece });
 						await wait(delay);
 					}
@@ -72,8 +79,11 @@ export function createAnswerStream(
 				options.onError?.(error);
 				send({ type: "error", error: UNEXPECTED_ERROR });
 			} finally {
-				controller.close();
+				if (!cancelled) controller.close();
 			}
+		},
+		cancel() {
+			cancelled = true;
 		},
 	});
 }

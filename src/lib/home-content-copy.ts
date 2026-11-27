@@ -22,6 +22,7 @@ export const VISITOR_SHELL_COPY: Record<VisitorLanguage, VisitorShellCopy> = {
 			dark ? "Oscuro. Cámbialo a claro" : "Claro. Cámbialo a oscuro",
 		menuOfflineNote:
 			"Sin conexión: pasaporte, jerga e idioma funcionan con lo guardado. Los datos abiertos necesitan internet.",
+		privacyLink: "Política de privacidad",
 		nextStepEyebrow: "Tu siguiente paso",
 		nextStepTitle: (destination) => `Ve al ${destination}`,
 		nextStepRouteLabel: "Ruta",
@@ -72,6 +73,7 @@ export const VISITOR_SHELL_COPY: Record<VisitorLanguage, VisitorShellCopy> = {
 			dark ? "Dark. Switch to light" : "Light. Switch to dark",
 		menuOfflineNote:
 			"Offline: passport, slang and language work with what is saved. Open data needs internet.",
+		privacyLink: "Privacy policy",
 		nextStepEyebrow: "Your next step",
 		nextStepTitle: (destination) => `Go to ${destination}`,
 		nextStepRouteLabel: "Route",
@@ -122,6 +124,7 @@ export const VISITOR_SHELL_COPY: Record<VisitorLanguage, VisitorShellCopy> = {
 			dark ? "Escuro. Mudar para claro" : "Claro. Mudar para escuro",
 		menuOfflineNote:
 			"Sem conexão: passaporte, gíria e idioma funcionam com o que está salvo. Os dados abertos precisam de internet.",
+		privacyLink: "Política de privacidade",
 		nextStepEyebrow: "Seu próximo passo",
 		nextStepTitle: (destination) => `Vá ao ${destination}`,
 		nextStepRouteLabel: "Rota",
@@ -175,6 +178,7 @@ export const VISITOR_SHELL_COPY: Record<VisitorLanguage, VisitorShellCopy> = {
 			dark ? "Sombre. Passer au clair" : "Clair. Passer au sombre",
 		menuOfflineNote:
 			"Hors ligne : passeport, argot et langue marchent avec ce qui est enregistré. Les données ouvertes demandent internet.",
+		privacyLink: "Politique de confidentialité",
 		nextStepEyebrow: "Votre prochaine étape",
 		nextStepTitle: (destination) => `Allez au ${destination}`,
 		nextStepRouteLabel: "Route",

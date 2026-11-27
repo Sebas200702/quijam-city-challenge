@@ -2,6 +2,7 @@
 // results as cards, action confirmations and a composer with text and voice.
 
 import {
+	AudioLines,
 	ExternalLink,
 	Map as MapIcon,
 	Mic,
@@ -25,7 +26,8 @@ import type {
 	AssistantMessage,
 	AssistantToolResult,
 } from "../../lib/assistant/assistant-types";
-import { useT } from "../../lib/i18n/use-language";
+import { voiceInput } from "../../lib/guide/live-status";
+import { useLanguage, useT } from "../../lib/i18n/use-language";
 import { scrollBehavior } from "../../lib/reduced-motion";
 import {
 	ErrorNote,
@@ -35,8 +37,10 @@ import {
 import { EventCard } from "../community/event-card";
 import { ThreadCard } from "../community/thread-card";
 import { ActionConfirmCard } from "./action-confirm-card";
+import { LIVE_VOICE_TEXT } from "./live-voice-text";
 import { PlaceResultCard } from "./place-result-card";
 import { useAssistant } from "./use-assistant";
+import { useLiveVoice } from "./use-live-voice";
 import { speak, useVoiceConduit } from "./voice-conduit";
 
 const NOTICE_TONES = {
@@ -216,6 +220,9 @@ export function AssistantChat({
 	} = assistant;
 	const [draft, setDraft] = useState("");
 	const voice = useVoiceConduit((text) => void send(text));
+	const live = useLiveVoice(assistant);
+	const liveText = LIVE_VOICE_TEXT[useLanguage()];
+	const input = voiceInput(live.status, voice.canListen);
 	const inputId = useId();
 	const endRef = useRef<HTMLDivElement>(null);
 	const spokenCount = useRef<number | null>(null);
@@ -248,13 +255,14 @@ export function AssistantChat({
 		const fresh = messages.slice(spokenCount.current);
 		spokenCount.current = messages.length;
 		// A restored conversation arrives all at once: do not read it again.
-		if (!voice.readAloud || fresh.length > 3) return;
+		// Live speaks with its own voice.
+		if (!voice.readAloud || live.active || fresh.length > 3) return;
 		const text = fresh
 			.filter((message) => message.role === "assistant")
 			.map((message) => message.text)
 			.join(" ");
 		if (text.trim()) speak(text);
-	}, [messages, voice.readAloud]);
+	}, [messages, voice.readAloud, live.active]);
 
 	// biome-ignore lint/correctness/useExhaustiveDependencies: scroll when the log grows.
 	useEffect(() => {
@@ -267,12 +275,51 @@ export function AssistantChat({
 
 	const submit = (event: SyntheticEvent<HTMLFormElement>) => {
 		event.preventDefault();
-		if (!draft.trim() || loading) return;
+		// A confirmed action is running: keep the draft until it finishes.
+		if (!draft.trim() || loading || assistant.actionRunning()) return;
+		if (live.status === "live") {
+			// A new message means "not now" for the action still waiting.
+			for (const action of pending) void assistant.cancel(action.call.id);
+			if (live.sendText(draft)) {
+				setDraft("");
+				return;
+			}
+		}
 		void send(draft);
 		setDraft("");
 	};
 
+	const toggleLive = () => {
+		if (live.active) {
+			live.stop();
+			return;
+		}
+		voice.stop();
+		void live.start();
+	};
+
+	const startOver = () => {
+		live.stop();
+		assistant.reset();
+	};
+
+	const liveNote =
+		live.status === "connecting"
+			? liveText.connecting
+			: live.status === "live"
+				? liveText.live
+				: null;
+
 	const chips = empty ? starters : suggestions;
+
+	const liveStatus =
+		live.status === "fallback" ? (
+			<ErrorNote message={liveText.fallback} />
+		) : liveNote ? (
+			<p className="q-sm q-muted" role="status">
+				{liveNote}
+			</p>
+		) : null;
 
 	const composer = (
 		<form
@@ -292,7 +339,7 @@ export function AssistantChat({
 				enterKeyHint="send"
 				maxLength={1000}
 			/>
-			{voice.canListen && (
+			{input === "speech" && (
 				<button
 					type="button"
 					className={`q-btn q-btn--icon ${voice.listening ? "q-btn--alert" : "q-btn--secondary"}`}
@@ -343,17 +390,20 @@ export function AssistantChat({
 						{t.chat.readAloud}
 					</button>
 				)}
-				<a
-					className="q-btn q-btn--ghost q-btn--sm min-h-11"
-					href="/prueba-guia"
+				<button
+					type="button"
+					className={`q-btn q-btn--sm min-h-11 ${live.active ? "q-btn--alert" : "q-btn--ghost"}`}
+					onClick={toggleLive}
+					aria-pressed={live.active}
 				>
-					{t.chat.liveVoice}
-				</a>
+					<AudioLines size={16} aria-hidden="true" />
+					{live.active ? liveText.stop : liveText.start}
+				</button>
 				{!empty && (
 					<button
 						type="button"
 						className="q-btn q-btn--ghost q-btn--sm min-h-11"
-						onClick={assistant.reset}
+						onClick={startOver}
 						disabled={loading}
 					>
 						<RotateCcw size={16} aria-hidden="true" />
@@ -378,6 +428,7 @@ export function AssistantChat({
 					</div>
 					{composer}
 					{voice.error && <ErrorNote message={voice.error} />}
+					{liveStatus}
 					<div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] lg:mx-0 lg:flex-wrap lg:overflow-visible lg:px-0 [&::-webkit-scrollbar]:hidden">
 						{chips.map((chip) => (
 							<button
@@ -455,6 +506,7 @@ export function AssistantChat({
 					</div>
 					<div className="sticky bottom-[72px] z-20 mt-auto -mx-4 space-y-2 bg-gradient-to-t from-[var(--bg)] from-70% to-transparent px-4 pt-6 pb-2 lg:bottom-0 lg:mx-0 lg:px-0 lg:pb-6">
 						{voice.error && <ErrorNote message={voice.error} />}
+						{liveStatus}
 						{chips.length > 0 && !loading && (
 							<div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 lg:mx-0 lg:flex-wrap lg:px-0">
 								{chips.map((chip) => (

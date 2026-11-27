@@ -1,6 +1,10 @@
 import { Modality } from "@google/genai";
 import { describe, expect, it } from "vitest";
-import { buildLiveTokenConfig, DEFAULT_LIVE_MODEL } from "./live-token-config";
+import {
+	buildLiveTokenConfig,
+	DEFAULT_LIVE_MODEL,
+	GUIDE_SYSTEM_INSTRUCTION,
+} from "./live-token-config";
 
 const now = new Date("2026-11-26T12:00:00Z");
 
@@ -24,6 +28,29 @@ describe("buildLiveTokenConfig", () => {
 			config.liveConnectConstraints?.config?.outputAudioTranscription,
 		).toEqual({});
 		expect(config.lockAdditionalFields).toEqual([]);
+	});
+
+	it("keeps the Guide instruction and no tools when no agent is given", () => {
+		const config = buildLiveTokenConfig("some-model", now);
+		expect(config.liveConnectConstraints?.config?.systemInstruction).toBe(
+			GUIDE_SYSTEM_INSTRUCTION,
+		);
+		expect(config.liveConnectConstraints?.config?.tools).toBeUndefined();
+	});
+
+	it("locks the agent's instruction, tools and input transcript into the token", () => {
+		const tools = [
+			{ functionDeclarations: [{ name: "search_events", description: "x" }] },
+		];
+		const config = buildLiveTokenConfig("some-model", now, {
+			systemInstruction: "agent rules",
+			tools,
+		});
+		const live = config.liveConnectConstraints?.config;
+		expect(live?.systemInstruction).toBe("agent rules");
+		expect(live?.tools).toEqual(tools);
+		expect(live?.inputAudioTranscription).toEqual({});
+		expect(live?.responseModalities).toEqual([Modality.AUDIO]);
 	});
 
 	it("defaults to a Live model the API serves", () => {

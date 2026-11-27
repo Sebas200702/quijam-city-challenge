@@ -13,10 +13,19 @@ select set_config('test.rosa', public.create_business_claim('BIZ-FRITOS-ROSA'), 
 select set_config('test.masc', public.create_business_claim('BIZ-MASCARAS-BA'), false);
 select 'ok 0 codes are ' || length(current_setting('test.rosa')) || ' chars, stored hashed: ' || (select count(*) from public.business_claims where token_hash <> current_setting('test.rosa'));
 
-create or replace function pg_temp.act_as(uid text) returns void language plpgsql as $$
+-- Impersonates a user like PostgREST does: role, request.jwt.claim.sub and the
+-- full request.jwt.claims (with `aal`, which current_user_role() needs for city).
+create or replace function pg_temp.act_as(uid text, aal text default 'aal1') returns void language plpgsql as $$
 begin
-  if uid is null then perform set_config('role', 'anon', true); perform set_config('request.jwt.claim.sub', '', true);
-  else perform set_config('role', 'authenticated', true); perform set_config('request.jwt.claim.sub', uid, true); end if;
+  if uid is null then
+    perform set_config('role', 'anon', true);
+    perform set_config('request.jwt.claim.sub', '', true);
+    perform set_config('request.jwt.claims', '{"role":"anon"}', true);
+  else
+    perform set_config('role', 'authenticated', true);
+    perform set_config('request.jwt.claim.sub', uid, true);
+    perform set_config('request.jwt.claims', json_build_object('sub', uid, 'role', 'authenticated', 'aal', aal)::text, true);
+  end if;
 end $$;
 
 -- 1. Anonymous cannot claim
@@ -34,8 +43,8 @@ begin; select pg_temp.act_as('00000000-0000-0000-0000-00000000000b');
 do $$ begin perform public.claim_business(current_setting('test.rosa')); raise exception 'FAIL reused token'; exception when no_data_found then raise notice 'ok 3 token cannot be reused'; end $$;
 rollback;
 
--- 4. City account claiming keeps role city
-begin; select pg_temp.act_as('00000000-0000-0000-0000-00000000000c');
+-- 4. City account (aal2) claiming keeps role city
+begin; select pg_temp.act_as('00000000-0000-0000-0000-00000000000c', 'aal2');
 select * from public.claim_business(current_setting('test.masc'));
 commit;
 select 'ok 4 city keeps role: ' || role from public.user_profiles where user_id='00000000-0000-0000-0000-00000000000c';
@@ -75,7 +84,8 @@ do $$ begin insert into public.business_visits (business_id) select id from publ
 rollback;
 begin; select pg_temp.act_as('00000000-0000-0000-0000-00000000000a'); select 'ok 7c owner sees ' || count(*) || ' visits' from public.business_visits; rollback;
 begin; select pg_temp.act_as('00000000-0000-0000-0000-00000000000d'); select 'ok 7d other person sees ' || count(*) from public.business_visits; rollback;
-begin; select pg_temp.act_as('00000000-0000-0000-0000-00000000000c'); select 'ok 7e city sees ' || count(*) from public.business_visits; rollback;
+begin; select pg_temp.act_as('00000000-0000-0000-0000-00000000000c', 'aal2'); do $$ declare n int; begin select count(*) into n from public.business_visits; if n = 0 then raise exception 'FAIL city aal2 sees no visits'; end if; raise notice 'ok 7e city (aal2) sees % visits', n; end $$; rollback;
+begin; select pg_temp.act_as('00000000-0000-0000-0000-00000000000c', 'aal1'); do $$ declare n int; begin select count(*) into n from public.business_visits; if n <> 0 then raise exception 'FAIL city aal1 sees % visits', n; end if; raise notice 'ok 7f city without second factor (aal1) sees 0 visits'; end $$; rollback;
 -- 8. Visitors can still read businesses (map) and claim_token is not exposed through a select by anon? (column is readable: check)
 begin; select pg_temp.act_as(null);
 do $$ begin perform count(*) from public.business_claims; raise exception 'FAIL anon read claims'; exception when insufficient_privilege then raise notice 'ok 8a anon cannot read claim codes'; end $$;
@@ -84,7 +94,10 @@ begin; select pg_temp.act_as('00000000-0000-0000-0000-00000000000a');
 do $$ begin perform count(*) from public.business_claims; raise exception 'FAIL user read claims'; exception when insufficient_privilege then raise notice 'ok 8c signed-in user cannot read claim codes'; end $$;
 do $$ begin perform public.create_business_claim('BIZ-CAFE-PAZ'); raise exception 'FAIL vendor created claim'; exception when insufficient_privilege then raise notice 'ok 8d only city creates claim codes'; end $$;
 rollback;
-begin; select pg_temp.act_as('00000000-0000-0000-0000-00000000000c'); select 'ok 8e city creates a code: ' || (length(public.create_business_claim('BIZ-CAFE-PAZ')) = 36); rollback;
+begin; select pg_temp.act_as('00000000-0000-0000-0000-00000000000c', 'aal2'); select 'ok 8e city (aal2) creates a code: ' || (length(public.create_business_claim('BIZ-CAFE-PAZ')) = 36); rollback;
+begin; select pg_temp.act_as('00000000-0000-0000-0000-00000000000c', 'aal1');
+do $$ begin perform public.create_business_claim('BIZ-CAFE-PAZ'); raise exception 'FAIL city aal1 created a code'; exception when insufficient_privilege then raise notice 'ok 8f city without second factor (aal1) cannot create a code'; end $$;
+rollback;
 -- 9. Wrong code
 begin; select pg_temp.act_as('00000000-0000-0000-0000-00000000000d');
 do $$ begin perform public.claim_business('not-the-right-code-at-all'); raise exception 'FAIL wrong code'; exception when no_data_found then raise notice 'ok 9 wrong code rejected'; end $$;

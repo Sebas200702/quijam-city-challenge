@@ -82,7 +82,7 @@ Toda herramienta de acción (`ACTION_TOOLS`: inscribirse, cancelar inscripción,
 ## Voz como conducto
 
 - **Por defecto:** Web Speech API del navegador. Micrófono → texto (reconocimiento de voz) → el mismo flujo de texto. La respuesta se puede leer en voz alta (síntesis de voz). Si el navegador no soporta reconocimiento, el botón de micrófono no aparece y queda el texto.
-- **Beta:** Gemini Live sigue en `/prueba-guia` (ver [29-gemini-live.md](29-gemini-live.md)). Todavía no usa los agentes ni sus herramientas.
+- **Beta:** Gemini Live en la conversación, con el botón "Voz en vivo (beta)" (#94). El servidor elige el agente con el mismo orquestador y el token efímero bloquea su instrucción y sus herramientas. Las herramientas corren en el navegador con la sesión de la persona y toda acción usa la misma tarjeta de confirmación, con aviso por voz. Si Live falla, sigue la Web Speech API y el texto. Ver [29-gemini-live.md](29-gemini-live.md). `/prueba-guia` queda como prueba del Guía sin herramientas.
 
 ## Entradas a la conversación
 
@@ -116,6 +116,5 @@ bun run dev
 
 ## Por construir
 
-- Gemini Live con herramientas: voz en tiempo real usando los mismos agentes y la misma regla de confirmación.
 - Recordatorios de eventos y notificaciones.
 - Medir el enrutamiento: qué agente eligió el orquestador frente al que la persona necesitaba.
