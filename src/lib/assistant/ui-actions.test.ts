@@ -116,6 +116,44 @@ describe("sanitizeUiAction (whitelist)", () => {
 		expect(sanitizeUiAction({ type: "ui.focus", target: "body" })).toBeNull();
 	});
 
+	it("opens the city data screen and the other app sections", () => {
+		for (const path of [
+			"/ciudad",
+			"/anfitrion",
+			"/vendedor",
+			"/presentador",
+			"/moderacion",
+			"/privacidad",
+			"/agenda/nuevo",
+		]) {
+			expect(safeOpenPath(path)).toBe(path);
+		}
+		expect(sanitizeUiAction({ type: "ui.open", path: "/ciudad" })).toEqual({
+			type: "ui.open",
+			path: "/ciudad",
+		});
+		expect(safeOpenPath("/ciudadela")).toBeNull();
+	});
+
+	it("keeps whole-app controls only with valid values", () => {
+		expect(
+			sanitizeUiAction({ type: "app.language", language: "en", fromCall: "c" }),
+		).toEqual({ type: "app.language", language: "en", fromCall: "c" });
+		expect(
+			sanitizeUiAction({ type: "app.language", language: "de" }),
+		).toBeNull();
+		expect(sanitizeUiAction({ type: "app.language" })).toBeNull();
+		expect(sanitizeUiAction({ type: "app.theme", theme: "dark" })).toEqual({
+			type: "app.theme",
+			theme: "dark",
+		});
+		expect(sanitizeUiAction({ type: "app.theme", theme: "neon" })).toBeNull();
+		// `navigate` and extra fields mean nothing for them.
+		expect(
+			sanitizeUiAction({ type: "app.back", navigate: true, href: "/x" }),
+		).toEqual({ type: "app.back" });
+	});
+
 	it("bounds the list and skips non-arrays", () => {
 		expect(sanitizeUiActions("nope")).toEqual([]);
 		const many = Array.from({ length: 20 }, () => ({
@@ -156,6 +194,10 @@ describe("uiActionHref", () => {
 		expect(
 			uiActionHref({ type: "ui.focus", target: "event-actions" }),
 		).toBeNull();
+		// Whole-app controls apply on any screen.
+		expect(uiActionHref({ type: "app.language", language: "fr" })).toBeNull();
+		expect(uiActionHref({ type: "app.theme", theme: "dark" })).toBeNull();
+		expect(uiActionHref({ type: "app.back" })).toBeNull();
 	});
 
 	it("follows the shared URL contracts of the other screens", () => {
@@ -300,6 +342,112 @@ describe("uiActionsForCalls (derived on the server)", () => {
 		]);
 		const other = call("reply_to_thread", { thread_id: "t-2", body: "x" });
 		expect(uiActionsForCalls([other], "", screen)).toEqual([]);
+	});
+
+	it("lets the model filter the agenda on screen, or just open it", () => {
+		expect(
+			uiActionsForCalls(
+				[call("filter_agenda", { category: "music", when: "finde" })],
+				"",
+			),
+		).toEqual([
+			{
+				type: "agenda.filter",
+				fromCall: "c1",
+				categoria: "music",
+				fecha: "finde",
+				navigate: true,
+			},
+		]);
+		expect(
+			uiActionsForCalls([call("filter_agenda", { query: "  salsa " })], ""),
+		).toEqual([
+			{ type: "agenda.filter", fromCall: "c1", q: "salsa", navigate: true },
+		]);
+		expect(
+			uiActionsForCalls([call("filter_agenda", { query: "   " })], ""),
+		).toEqual([{ type: "ui.open", fromCall: "c1", path: "/agenda" }]);
+	});
+
+	it("lets the model filter the places on screen, or just open them", () => {
+		expect(
+			uiActionsForCalls([call("filter_places", { kind: "park" })], ""),
+		).toEqual([
+			{ type: "places.filter", fromCall: "c1", tipo: "park", navigate: true },
+		]);
+		expect(uiActionsForCalls([call("filter_places", {})], "")).toEqual([
+			{ type: "ui.open", fromCall: "c1", path: "/lugares" },
+		]);
+	});
+
+	it("shows a catalog place on the map, opening it", () => {
+		const actions = uiActionsForCalls(
+			[call("show_on_map", { place_slug: "gran-malecon" })],
+			"",
+		);
+		expect(actions.map((action) => action.type)).toEqual([
+			"map.drop",
+			"map.flyTo",
+		]);
+		expect(actions[1]).toMatchObject({
+			zoom: 16,
+			lugar: "gran-malecon",
+			navigate: true,
+		});
+		expect(
+			uiActionsForCalls([call("show_on_map", { place_slug: "nope" })], ""),
+		).toEqual([]);
+	});
+
+	it("draws a route to any destination the map resolves", () => {
+		expect(
+			uiActionsForCalls(
+				[call("show_route", { destination: "parque-washington" })],
+				"",
+			),
+		).toEqual([
+			{
+				type: "map.showRoute",
+				fromCall: "c1",
+				destino: "parque-washington",
+				navigate: true,
+			},
+		]);
+		// A place written by its name becomes its slug.
+		expect(
+			uiActionsForCalls(
+				[call("show_route", { destination: "Gran Malecón del Río" })],
+				"",
+			),
+		).toMatchObject([{ destino: "gran-malecon" }]);
+		expect(
+			uiActionsForCalls([call("show_route", { destination: "¿?" })], ""),
+		).toEqual([]);
+	});
+
+	it("turns language, theme, focus and back into whole-app actions", () => {
+		expect(
+			uiActionsForCalls(
+				[
+					call("set_language", { language: "pt" }, "a"),
+					call("set_theme", { theme: "dark" }, "b"),
+					call("focus_on", { target: "agenda-results" }, "c"),
+					call("go_back", {}, "d"),
+				],
+				"",
+			),
+		).toEqual([
+			{ type: "app.language", fromCall: "a", language: "pt" },
+			{ type: "app.theme", fromCall: "b", theme: "dark" },
+			{ type: "ui.focus", fromCall: "c", target: "agenda-results" },
+			{ type: "app.back", fromCall: "d" },
+		]);
+	});
+
+	it("adds nothing to the screen for a slang lookup", () => {
+		expect(
+			uiActionsForCalls([call("lookup_slang", { term: "bacán" })], ""),
+		).toEqual([]);
 	});
 
 	it("maps days ahead to the agenda date chips", () => {

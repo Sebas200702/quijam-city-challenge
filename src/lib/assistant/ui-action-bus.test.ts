@@ -153,4 +153,139 @@ describe("UI action dispatcher", () => {
 		off();
 		expect(bus.has("places.filter")).toBe(false);
 	});
+
+	it("changes the language and theme on any screen, with chips and undo", () => {
+		let language: "es" | "en" | "pt" | "fr" = "es";
+		let theme: "light" | "dark" = "light";
+		const e = env({
+			pathname: () => "/foro",
+			setLanguage: vi.fn((next) => {
+				language = next;
+			}),
+			getLanguage: () => language,
+			setTheme: vi.fn((next) => {
+				theme = next;
+			}),
+			getTheme: () => theme,
+		});
+		const bus = createUiBus(e);
+		expect(bus.has("app.language")).toBe(true);
+		expect(bus.has("app.theme")).toBe(true);
+		expect(bus.has("app.back")).toBe(true);
+		const listener = vi.fn();
+		bus.onChange(listener);
+
+		const result = bus.dispatch([
+			{ type: "app.language", language: "en", fromCall: "c1" },
+			{ type: "app.theme", theme: "dark", fromCall: "c2" },
+		]);
+
+		expect(result.navigation).toBeNull();
+		expect(language).toBe("en");
+		expect(theme).toBe("dark");
+		// The theme chip speaks the language just chosen.
+		expect(result.changes.map((change) => change.labels)).toEqual([
+			["English"],
+			["Dark mode"],
+		]);
+		expect(listener).toHaveBeenCalledWith(result.changes);
+		for (const change of [...result.changes].reverse()) change.undo();
+		expect(language).toBe("es");
+		expect(theme).toBe("light");
+	});
+
+	it("labels the theme in Spanish by default", () => {
+		const e = env({ setTheme: vi.fn(), getTheme: () => "dark" });
+		const [change] = createUiBus(e).dispatch([
+			{ type: "app.theme", theme: "light" },
+		]).changes;
+		expect(change.labels).toEqual(["Modo claro"]);
+		change.undo();
+		expect(e.setTheme).toHaveBeenLastCalledWith("dark");
+	});
+
+	it("applies language and theme now even when the turn opens another screen", () => {
+		const e = env({
+			pathname: () => "/inicio",
+			setLanguage: vi.fn(),
+			getLanguage: () => "es",
+		});
+		const bus = createUiBus(e);
+		const result = bus.dispatch([
+			{ type: "ui.open", path: "/mapa" },
+			{ type: "app.language", language: "fr" },
+			{ type: "map.showRoute", destino: "centro", navigate: true },
+		]);
+		expect(e.setLanguage).toHaveBeenCalledWith("fr");
+		expect(result.changes.map((change) => change.labels)).toEqual([
+			["Français"],
+		]);
+		expect(result.navigation?.href).toBe("/mapa");
+		// Never pending: the next screen must not replay it.
+		expect(result.navigation?.pending.map((action) => action.type)).toEqual([
+			"map.showRoute",
+		]);
+	});
+
+	it("goes back as a navigation the caller follows, dropping what came after", () => {
+		const e = env({ pathname: () => "/lugares" });
+		const bus = createUiBus(e);
+		const handler = vi.fn(() => ({ labels: ["Parques"] }));
+		bus.register("places.filter", handler);
+
+		const result = bus.dispatch([
+			{ type: "places.filter", tipo: "park" },
+			{ type: "app.back" },
+			{ type: "places.filter", tipo: "waterfront" },
+		]);
+
+		expect(handler).toHaveBeenCalledTimes(1);
+		expect(result.changes).toHaveLength(1);
+		expect(result.navigation).toEqual({
+			href: "/lugares",
+			pending: [],
+			back: true,
+		});
+		expect(e.back).not.toHaveBeenCalled();
+		if (!result.navigation) throw new Error("expected a navigation");
+		bus.follow(result.navigation);
+		expect(e.back).toHaveBeenCalledTimes(1);
+		expect(e.navigate).not.toHaveBeenCalled();
+		expect(e.storage.data.has(PENDING_KEY)).toBe(false);
+	});
+
+	it("lets a screen opened earlier in the turn win over a later back", () => {
+		const e = env({ pathname: () => "/inicio" });
+		const bus = createUiBus(e);
+		const result = bus.dispatch([
+			{ type: "ui.open", path: "/agenda" },
+			{ type: "app.back" },
+		]);
+		expect(result.navigation).toEqual({ href: "/agenda", pending: [] });
+		if (!result.navigation) throw new Error("expected a navigation");
+		bus.follow(result.navigation);
+		expect(e.navigate).toHaveBeenCalledWith("/agenda");
+		expect(e.back).not.toHaveBeenCalled();
+	});
+
+	it("never replays whole-app controls left in storage", () => {
+		const storage = memoryStorage();
+		storage.setItem(
+			PENDING_KEY,
+			JSON.stringify({
+				path: "/mapa",
+				at: 1_000,
+				actions: [
+					{ type: "app.theme", theme: "dark" },
+					{ type: "map.showRoute", destino: "centro" },
+				],
+			}),
+		);
+		const e = env({ pathname: () => "/mapa", storage, setTheme: vi.fn() });
+		const bus = createUiBus(e);
+		const handler = vi.fn(() => ({ labels: [] }));
+		bus.register("map.showRoute", handler);
+		expect(handler).toHaveBeenCalledTimes(1);
+		expect(e.setTheme).not.toHaveBeenCalled();
+	});
 });

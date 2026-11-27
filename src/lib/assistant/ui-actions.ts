@@ -15,6 +15,8 @@ import {
 	isPlaceKind,
 } from "../community/list-filters";
 import { PLACES } from "../community/places-catalog";
+import { isLanguage } from "../i18n/languages";
+import { isTheme } from "../theme";
 import { normalizeText } from "./assistant-text";
 import type { AssistantToolArgs, AssistantToolCall } from "./assistant-types";
 import { DRAFT_FIELDS, screenThreadId } from "./screen-context";
@@ -51,6 +53,9 @@ export const UI_ACTION_TYPES: readonly UiActionType[] = [
 	"form.prefill",
 	"ui.focus",
 	"ui.open",
+	"app.language",
+	"app.theme",
+	"app.back",
 ];
 
 export const UI_FOCUS_TARGETS: readonly UiFocusTarget[] = [
@@ -75,9 +80,17 @@ export const OPENABLE_PATHS = [
 	"/pasaporte",
 	"/jerga",
 	"/datos",
+	"/ciudad",
+	"/anfitrion",
+	"/vendedor",
+	"/presentador",
+	"/moderacion",
+	"/privacidad",
 ];
 
 const PATH_SHAPE = /^\/[a-z0-9\-/]*(\?[^#\s\\]*)?$/i;
+/** Route destinations the map resolves: named ones, stop codes, place slugs. */
+const ROUTE_KEY = /^[a-z0-9][a-z0-9_-]{0,79}$/i;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
 	return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -190,7 +203,7 @@ export function sanitizeUiAction(value: unknown): UiAction | null {
 			// (resolveRouteTarget) and ignores a key it cannot place.
 			const destino =
 				typeof value.destino === "string" ? value.destino.trim() : "";
-			if (!/^[a-z0-9][a-z0-9_-]{0,79}$/i.test(destino)) return null;
+			if (!ROUTE_KEY.test(destino)) return null;
 			return {
 				...base,
 				type: "map.showRoute",
@@ -227,9 +240,24 @@ export function sanitizeUiAction(value: unknown): UiAction | null {
 			const path = safeOpenPath(value.path);
 			return path ? { ...base, type: "ui.open", path } : null;
 		}
+		// Whole-app controls apply on any screen: `navigate` means nothing there.
+		case "app.language":
+			return isLanguage(value.language)
+				? { ...appBase(base), type: "app.language", language: value.language }
+				: null;
+		case "app.theme":
+			return isTheme(value.theme)
+				? { ...appBase(base), type: "app.theme", theme: value.theme }
+				: null;
+		case "app.back":
+			return { ...appBase(base), type: "app.back" };
 		default:
 			return null;
 	}
+}
+
+function appBase(base: { fromCall?: string }): { fromCall?: string } {
+	return base.fromCall ? { fromCall: base.fromCall } : {};
 }
 
 /** Whitelisted actions from untrusted input (a response, the session). */
@@ -265,7 +293,11 @@ export function uiActionHref(action: UiAction): string | null {
 			return prefillHref(action.form, action.fields);
 		case "ui.open":
 			return action.path;
+		// Focus stays on this screen; app.* applies wherever the person is.
 		case "ui.focus":
+		case "app.language":
+		case "app.theme":
+		case "app.back":
 			return null;
 	}
 }
@@ -292,6 +324,19 @@ export function whenFromDaysAhead(
 		return "finde";
 	}
 	return daysAhead <= 6 ? "semana" : undefined;
+}
+
+/**
+ * The map's key for a route destination: named destinations, stop codes and
+ * place slugs pass as they are; a place written by name ("Gran Malecón")
+ * becomes its slug, anything else a slug-shaped guess the map may not place.
+ */
+export function routeKey(destination: string): string {
+	const key = destination.trim();
+	if (ROUTE_KEY.test(key)) return key;
+	const text = normalizeText(key);
+	const place = PLACES.find((item) => normalizeText(item.name) === text);
+	return place?.slug ?? text.trim().replace(/ /g, "-");
 }
 
 function placePin(slug: string | undefined): MapPin | null {
@@ -355,7 +400,8 @@ function fromCall(
 			];
 		}
 		case "get_place":
-		case "get_directions": {
+		case "get_directions":
+		case "show_on_map": {
 			const args = call.args as AssistantToolArgs["get_place"];
 			const pin = placePin(args.place_slug);
 			if (!pin) return [];
@@ -369,8 +415,9 @@ function fromCall(
 					zoom: 16,
 					label: pin.label,
 					lugar: args.place_slug,
-					// "Llévame al Malecón": the person wants to go, so open the map there (U05).
-					...(call.name === "get_directions" ? { navigate: true } : {}),
+					// "Llévame al Malecón" / "muéstramelo en el mapa": the person wants
+					// to see it, so open the map there (U05). A plain lookup only marks it.
+					...(call.name === "get_place" ? {} : { navigate: true }),
 				},
 			];
 		}
@@ -386,6 +433,63 @@ function fromCall(
 				},
 			];
 		}
+		case "show_route": {
+			const args = call.args as AssistantToolArgs["show_route"];
+			return [
+				{
+					...source,
+					type: "map.showRoute",
+					destino: routeKey(args.destination),
+					navigate: true,
+				},
+			];
+		}
+		// UI tools: the model drives the screen directly; each one is the action.
+		case "filter_agenda": {
+			const args = call.args as AssistantToolArgs["filter_agenda"];
+			const q = shortText(args.query, MAX_QUERY);
+			const categoria = isEventCategory(args.category)
+				? args.category
+				: undefined;
+			const fecha = isAgendaWhen(args.when) ? args.when : undefined;
+			// No filter at all: "abre la agenda".
+			if (!q && !categoria && !fecha) {
+				return [{ ...source, type: "ui.open", path: "/agenda" }];
+			}
+			return [
+				{
+					...source,
+					type: "agenda.filter",
+					q,
+					categoria,
+					fecha,
+					navigate: true,
+				},
+			];
+		}
+		case "filter_places": {
+			const args = call.args as AssistantToolArgs["filter_places"];
+			const q = shortText(args.query, MAX_QUERY);
+			const tipo = isPlaceKind(args.kind) ? args.kind : undefined;
+			if (!q && !tipo) {
+				return [{ ...source, type: "ui.open", path: "/lugares" }];
+			}
+			return [{ ...source, type: "places.filter", q, tipo, navigate: true }];
+		}
+		case "set_language": {
+			const args = call.args as AssistantToolArgs["set_language"];
+			return [{ ...source, type: "app.language", language: args.language }];
+		}
+		case "set_theme": {
+			const args = call.args as AssistantToolArgs["set_theme"];
+			return [{ ...source, type: "app.theme", theme: args.theme }];
+		}
+		case "focus_on": {
+			const args = call.args as AssistantToolArgs["focus_on"];
+			return [{ ...source, type: "ui.focus", target: args.target }];
+		}
+		case "go_back":
+			return [{ ...source, type: "app.back" }];
 		case "get_event": {
 			const args = call.args as AssistantToolArgs["get_event"];
 			return screen?.entity?.kind === "event" &&

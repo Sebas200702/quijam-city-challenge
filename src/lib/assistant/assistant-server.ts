@@ -1,6 +1,8 @@
-// Server side of Quillart AI: validates the request, lets the orchestrator
-// pick one specialized agent, runs it with Gemini (or the local fallback) and
-// returns tool calls with ids for the browser to run and confirm.
+// Server side of Quillart AI: validates the request, routes it to one
+// specialized agent, runs Gemini as the orchestrator focused on that agent
+// (every tool, including the UI tools that drive the screen) or the local
+// fallback as that agent alone, and returns tool calls with ids for the
+// browser to run and confirm, plus the UI actions they derive.
 
 import { isLanguage } from "../i18n/languages";
 import type { OpenJevClient } from "../openjev/openjev-types";
@@ -9,6 +11,7 @@ import {
 	AGENTS,
 	type AgentTurn,
 	limitActionCalls,
+	ORCHESTRATOR_AGENT,
 	PROFILE_PATH,
 	TOOL_SCHEMAS,
 	type ToolCallDraft,
@@ -24,6 +27,7 @@ import {
 	type AssistantToolName,
 	type AssistantToolResult,
 	isActionTool,
+	isUiTool,
 } from "./assistant-types";
 import { type GeminiAgentOptions, runGeminiAgent } from "./gemini-agent";
 import { answerLocally } from "./local-agents";
@@ -312,12 +316,25 @@ export async function answer(
 	);
 
 	const newId = deps.newId ?? (() => crypto.randomUUID());
-	const allowed = AGENTS[agent].tools;
+	// Gemini runs as the orchestrator with every tool, whatever the route; the
+	// local fallback only answers as the routed agent.
+	const allowed =
+		source === "gemini"
+			? AGENTS[ORCHESTRATOR_AGENT].tools
+			: AGENTS[agent].tools;
 	// One action per turn, for Gemini and the local agents alike: a single
 	// confirmation card, never a chain of writes.
 	const toolCalls = limitActionCalls(
 		turn.toolCalls.filter((call) => allowed.includes(call.name)),
 	).map((call) => ({ id: newId(), ...call }) as AssistantToolCall);
+	// Only screen changes and no words: no later round will write any, so say
+	// it is done instead of leaving an empty bubble.
+	const text =
+		turn.text.trim() === "" &&
+		toolCalls.length > 0 &&
+		toolCalls.every((call) => isUiTool(call.name))
+			? localCopy(context.language).uiDone
+			: turn.text;
 	// Visible changes come only from these validated calls, through the whitelist.
 	const uiActions = uiActionsForCalls(
 		toolCalls,
@@ -328,7 +345,7 @@ export async function answer(
 	return {
 		agent,
 		routedBy,
-		text: turn.text,
+		text,
 		toolCalls,
 		source,
 		suggestions: AGENTS[agent].suggestions,
