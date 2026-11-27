@@ -13,6 +13,7 @@ import {
 	TOOL_SCHEMAS,
 	type ToolCallDraft,
 } from "./assistant-agents";
+import type { AnswerHooks } from "./assistant-stream";
 import {
 	type AssistantAgentId,
 	type AssistantContext,
@@ -263,22 +264,24 @@ export function enforceAccount(
 export async function answer(
 	request: AssistantRequest,
 	deps: AnswerDeps,
+	hooks: AnswerHooks = {},
 ): Promise<AssistantResponse> {
 	const { messages, context } = request;
 	const { agent, routedBy } = await routeMessage(messages, context, {
 		openJev: deps.openJev,
 	});
+	hooks.onStart?.(agent, routedBy);
 
 	let turn: AgentTurn | null = null;
 	let source: AssistantResponse["source"] = "local";
 	if (deps.gemini) {
+		const runGemini = deps.runGemini ?? runGeminiAgent;
+		// Signed out, enforceAccount may replace the model's text: never stream it.
+		const onText = context.signedIn ? hooks.onText : undefined;
 		try {
-			turn = await (deps.runGemini ?? runGeminiAgent)(
-				agent,
-				messages,
-				context,
-				deps.gemini,
-			);
+			turn = onText
+				? await runGemini(agent, messages, context, deps.gemini, onText)
+				: await runGemini(agent, messages, context, deps.gemini);
 			source = "gemini";
 		} catch (error) {
 			deps.onGeminiError?.(error);

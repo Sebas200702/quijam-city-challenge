@@ -157,3 +157,17 @@ export interface AssistantResponse {
 	/** Short follow-up suggestions for chips. */
 	suggestions: string[];
 }
+
+/**
+ * One line of the streamed answer (NDJSON): the routed agent first, then the
+ * text as it is written, then the final response, whose text is authoritative.
+ */
+export type AssistantStreamEvent =
+	| {
+			type: "start";
+			agent: AssistantAgentId;
+			routedBy: AssistantResponse["routedBy"];
+	  }
+	| { type: "text"; text: string }
+	| { type: "done"; response: AssistantResponse }
+	| { type: "error"; error: string };

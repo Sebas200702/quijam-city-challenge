@@ -4,6 +4,10 @@ import {
 	answer,
 	parseAssistantRequest,
 } from "../../lib/assistant/assistant-server";
+import {
+	ASSISTANT_STREAM_TYPE,
+	createAnswerStream,
+} from "../../lib/assistant/assistant-stream";
 import { DEFAULT_TEXT_MODEL } from "../../lib/assistant/gemini-agent";
 import { getOpenJevClient } from "../../lib/openjev/openjev-server";
 import { guardRequest } from "../../lib/security/api-guard";
@@ -27,6 +31,8 @@ function json(body: unknown, status: number): Response {
  * One Quillart AI turn: the orchestrator routes the conversation to one
  * specialized agent, which answers with Gemini when GEMINI_API_KEY is set and
  * with the local agents otherwise or on failure. Tool calls run in the browser.
+ * With "Accept: application/x-ndjson" the answer is streamed (see
+ * assistant-stream.ts); otherwise it is one JSON response.
  */
 export const POST: APIRoute = async (context) => {
 	const limited = guardRequest(context, "assistant");
@@ -46,7 +52,7 @@ export const POST: APIRoute = async (context) => {
 	try {
 		const parsed = parseAssistantRequest(body);
 		const apiKey = import.meta.env.GEMINI_API_KEY;
-		const response = await answer(parsed, {
+		const deps = {
 			openJev: getOpenJevClient(),
 			gemini: apiKey
 				? {
@@ -54,13 +60,30 @@ export const POST: APIRoute = async (context) => {
 						model: import.meta.env.GEMINI_TEXT_MODEL || DEFAULT_TEXT_MODEL,
 					}
 				: null,
-			onGeminiError: (error) =>
+			onGeminiError: (error: unknown) =>
 				console.warn(
 					"[assistant] Gemini failed, using the local agents",
 					error,
 				),
-		});
-		return json(response, 200);
+		};
+		if (request.headers.get("Accept")?.includes(ASSISTANT_STREAM_TYPE)) {
+			const stream = createAnswerStream(
+				(hooks) => answer(parsed, deps, hooks),
+				{
+					onError: (error) =>
+						console.error("[assistant] Unexpected error", error),
+				},
+			);
+			return new Response(stream, {
+				status: 200,
+				headers: {
+					"Content-Type": `${ASSISTANT_STREAM_TYPE}; charset=utf-8`,
+					"Cache-Control": "no-store",
+					"X-Accel-Buffering": "no",
+				},
+			});
+		}
+		return json(await answer(parsed, deps), 200);
 	} catch (error) {
 		if (error instanceof AssistantRequestError) {
 			return json({ error: error.message }, error.status);
