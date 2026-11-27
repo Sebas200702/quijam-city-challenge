@@ -4,6 +4,7 @@ import type {
 	CorridorDataSource,
 	StatusTone,
 } from "../../lib/corridor/corridor-types";
+import { useT } from "../../lib/i18n/use-language";
 import { ServiceTag } from "./service-icon";
 
 const BADGE_CLASS: Record<StatusTone, string> = {
@@ -37,6 +38,10 @@ export function DetailCard({
 	onClose,
 	onOpenGuide,
 }: DetailCardProps) {
+	const t = useT();
+	// The corridor data code writes these labels in Spanish.
+	const labels: Record<string, string> = t.map.labels;
+	const tr = (text: string) => labels[text] ?? text;
 	if (!detail) {
 		return (
 			<section className="q-card corridor-detail corridor-detail--empty">
@@ -55,13 +60,11 @@ export function DetailCard({
 						/>
 					</div>
 					<div className="corridor-detail__intro">
-						<h2 className="q-h2">Toca un punto del mapa</h2>
-						<p className="q-sm q-muted">
-							Verás sus servicios, alertas y cómo moverte sin trancón.
-						</p>
+						<h2 className="q-h2">{t.map.detail.emptyTitle}</h2>
+						<p className="q-sm q-muted">{t.map.detail.emptyHint}</p>
 						<p className="q-sm q-subtle">
-							Datos de referencia
-							{source === "seed" ? " · sin conexión" : ""}
+							{t.map.detail.reference}
+							{source === "seed" ? t.map.detail.offline : ""}
 						</p>
 					</div>
 				</div>
@@ -72,7 +75,7 @@ export function DetailCard({
 						onClick={onOpenGuide}
 					>
 						<MessageCircle size={20} strokeWidth={1.75} aria-hidden="true" />
-						Pregúntale al Guía · Ask the Guide
+						{t.map.controls.askGuide}
 					</button>
 				</div>
 			</section>
@@ -88,7 +91,7 @@ export function DetailCard({
 			<div className={`q-band ${BAND_CLASS[detail.status.tone]}`} />
 			<div className="q-card__head">
 				<div>
-					<p className="q-eyebrow">{detail.eyebrow}</p>
+					<p className="q-eyebrow">{tr(detail.eyebrow)}</p>
 					<h2 id="corridor-detail-title" className="q-h2">
 						{detail.title}
 					</h2>
@@ -96,7 +99,7 @@ export function DetailCard({
 				<button
 					type="button"
 					className="q-btn q-btn--ghost q-btn--icon"
-					aria-label="Cerrar detalle"
+					aria-label={t.map.detail.close}
 					onClick={onClose}
 				>
 					<X size={20} strokeWidth={1.75} aria-hidden="true" />
@@ -105,10 +108,12 @@ export function DetailCard({
 			<div className="q-card__body">
 				<div className="q-row">
 					<span className={`q-badge ${BADGE_CLASS[detail.status.tone]}`}>
-						{detail.status.label}
+						{tr(detail.status.label)}
 					</span>
 					{detail.simulated && (
-						<span className="q-badge q-badge--neutral">Dato de referencia</span>
+						<span className="q-badge q-badge--neutral">
+							{t.map.detail.referenceData}
+						</span>
 					)}
 				</div>
 				{detail.description && (
@@ -118,14 +123,17 @@ export function DetailCard({
 					<dl className="q-dl">
 						{detail.facts.map((fact) => (
 							<div key={fact.label}>
-								<dt>{fact.label}</dt>
-								<dd>{fact.value}</dd>
+								<dt>{tr(fact.label)}</dt>
+								<dd>{tr(fact.value)}</dd>
 							</div>
 						))}
 					</dl>
 				)}
 				{detail.services.length > 0 && (
-					<ul className="corridor-detail__tags" aria-label="Servicios">
+					<ul
+						className="corridor-detail__tags"
+						aria-label={t.map.detail.services}
+					>
 						{detail.services.map((service) => (
 							<ServiceTag key={service} service={service} />
 						))}

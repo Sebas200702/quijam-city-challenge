@@ -1,18 +1,16 @@
 import { Accessibility, Leaf, MessageCircle } from "lucide-react";
 import type { ReactNode } from "react";
 import type { CorridorStop } from "../../lib/corridor/corridor-types";
+import { useT } from "../../lib/i18n/use-language";
 import type { PlanResponse } from "../../lib/routing/plan-route";
 import type { RouteQuery } from "./use-route-plan";
 
 const copFormatter = new Intl.NumberFormat("es-CO", {
 	maximumFractionDigits: 0,
 });
-const fare = (cop: number) =>
-	cop === 0 ? "Gratis" : `$${copFormatter.format(cop)}`;
-
-const REASON_LABEL = {
-	"active-flood": "cruza un arroyo activo",
-	"not-accessible": "no es accesible",
+const REASON_KEY = {
+	"active-flood": "reasonFlood",
+	"not-accessible": "reasonNotAccessible",
 } as const;
 
 interface RouteCardProps {
@@ -39,28 +37,33 @@ export function RouteCard({
 	alert,
 	onOpenGuide,
 }: RouteCardProps) {
+	const t = useT();
+	const fare = (cop: number) =>
+		cop === 0 ? t.map.route.free : `$${copFormatter.format(cop)}`;
 	const route = plan?.route ?? null;
 	return (
 		<section className="q-card corridor-detail route-card" aria-live="polite">
 			{alert}
 			<div className="q-card__head">
 				<div>
-					<p className="q-eyebrow">Tu siguiente paso</p>
+					<p className="q-eyebrow">{t.map.route.eyebrow}</p>
 					<h2 className="q-h">
 						{route
 							? route.label
 							: loading
-								? "Buscando tu ruta…"
-								: "Elige tu destino"}
+								? t.map.route.searching
+								: t.map.route.pickDestination}
 					</h2>
 				</div>
-				<span className="q-badge q-badge--neutral">Datos de referencia</span>
+				<span className="q-badge q-badge--neutral">
+					{t.map.route.reference}
+				</span>
 			</div>
 
 			<div className="q-card__body route-card__body">
 				<div className="route-card__fields">
 					<label>
-						<span className="q-sm q-muted">Estás en</span>
+						<span className="q-sm q-muted">{t.map.route.from}</span>
 						<select
 							value={query.origin}
 							onChange={(event) =>
@@ -75,7 +78,7 @@ export function RouteCard({
 						</select>
 					</label>
 					<label>
-						<span className="q-sm q-muted">Vas a</span>
+						<span className="q-sm q-muted">{t.map.route.to}</span>
 						<select
 							value={query.destination}
 							onChange={(event) =>
@@ -100,46 +103,50 @@ export function RouteCard({
 						}
 					/>
 					<Accessibility size={18} aria-hidden="true" />
-					<span>Necesito una ruta accesible</span>
+					<span>{t.map.route.accessible}</span>
 				</label>
 
 				{error ? (
-					<p className="q-p">
-						No pudimos calcular la ruta. Revisa tu conexión e intenta de nuevo.
-					</p>
+					<p className="q-p">{t.map.route.error}</p>
 				) : plan ? (
 					<>
 						<p className="q-p route-card__why">{plan.explanation}</p>
 						{route ? (
 							<div className="route-card__facts">
-								<span className="q-chip">{route.durationMinutes} min</span>
 								<span className="q-chip">
-									Tarifa justa {fare(route.fareCop)}
+									{t.map.route.minutes(route.durationMinutes)}
+								</span>
+								<span className="q-chip">
+									{t.map.route.fairFare(fare(route.fareCop))}
 								</span>
 								{route.accessible ? (
-									<span className="q-chip">Accesible</span>
+									<span className="q-chip">{t.map.route.accessibleChip}</span>
 								) : null}
 								{route.isGreen ? (
 									<span className="q-chip">
-										<Leaf size={14} aria-hidden="true" /> Ruta verde
+										<Leaf size={14} aria-hidden="true" />{" "}
+										{t.map.route.greenRoute}
 									</span>
 								) : null}
 							</div>
 						) : null}
 						<details className="route-card__details">
-							<summary>Ver detalles</summary>
+							<summary>{t.map.route.details}</summary>
 							<p className="q-sm">
 								{plan.chosenBy === "openjev"
-									? `Eligió el modelo de decisión OpenJev con ${Math.round(plan.confidence * 100)} % de confianza.`
+									? t.map.route.chosenOpenjev(Math.round(plan.confidence * 100))
 									: plan.chosenBy === "weighted"
-										? "Eligió el puntaje por tiempo, tarifa y congestión."
-										: "Ninguna ruta pasó las reglas de seguridad."}
+										? t.map.route.chosenWeighted
+										: t.map.route.chosenNone}
 							</p>
 							{plan.discarded.length > 0 ? (
 								<ul className="q-sm">
 									{plan.discarded.map((item) => (
 										<li key={item.id}>
-											Descartada: {item.label} ({REASON_LABEL[item.reason]})
+											{t.map.route.discarded(
+												item.label,
+												t.map.route[REASON_KEY[item.reason]],
+											)}
 										</li>
 									))}
 								</ul>
@@ -148,8 +155,11 @@ export function RouteCard({
 								<ul className="q-sm">
 									{plan.alternatives.map((item) => (
 										<li key={item.id}>
-											Otra opción: {item.label}, {item.durationMinutes} min,{" "}
-											{fare(item.fareCop)}
+											{t.map.route.alternative(
+												item.label,
+												item.durationMinutes,
+												fare(item.fareCop),
+											)}
 										</li>
 									))}
 								</ul>
@@ -165,7 +175,7 @@ export function RouteCard({
 					onClick={onOpenGuide}
 				>
 					<MessageCircle size={20} strokeWidth={1.75} aria-hidden="true" />
-					Pregúntale al Guía · Ask the Guide
+					{t.map.controls.askGuide}
 				</button>
 			</div>
 		</section>

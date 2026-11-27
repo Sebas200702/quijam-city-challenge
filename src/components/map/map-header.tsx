@@ -9,17 +9,18 @@ import {
 } from "lucide-react";
 import { useId, useState } from "react";
 import type { StatusTone } from "../../lib/corridor/corridor-types";
+import { useT } from "../../lib/i18n/use-language";
 import type { LayerKey } from "./map-layers";
 
 const LAYER_TOGGLES: {
 	key: LayerKey;
-	label: string;
+	label: "stops" | "floodZones" | "businesses";
 	tone: StatusTone;
 	Icon: LucideIcon;
 }[] = [
-	{ key: "stops", label: "Paraderos", tone: "green", Icon: Bus },
-	{ key: "floodZones", label: "Arroyos", tone: "red", Icon: Droplets },
-	{ key: "businesses", label: "Negocios", tone: "gold", Icon: Store },
+	{ key: "stops", label: "stops", tone: "green", Icon: Bus },
+	{ key: "floodZones", label: "floodZones", tone: "red", Icon: Droplets },
+	{ key: "businesses", label: "businesses", tone: "gold", Icon: Store },
 ];
 
 export type Theme = "light" | "dark";
@@ -45,6 +46,7 @@ export function MapHeader({
 	counts,
 	onToggle,
 }: MapHeaderProps) {
+	const t = useT();
 	const listId = useId();
 	const [query, setQuery] = useState("");
 	const [missed, setMissed] = useState<string | null>(null);
@@ -58,20 +60,20 @@ export function MapHeader({
 		<>
 			<form
 				className="q-search"
-				aria-label="Buscar en el corredor"
+				aria-label={t.map.header.searchForm}
 				onSubmit={submit}
 			>
 				<span className="q-logo__tile corridor-search__logo" aria-hidden="true">
 					<span className="q-star" />
 				</span>
 				<label htmlFor={`${listId}-input`} className="q-sr">
-					Buscar un paradero, arroyo o negocio
+					{t.map.header.searchLabel}
 				</label>
 				<input
 					id={`${listId}-input`}
 					type="search"
 					list={listId}
-					placeholder="¿Para dónde vas?"
+					placeholder={t.map.header.placeholder}
 					autoComplete="off"
 					value={query}
 					onChange={(event) => setQuery(event.target.value)}
@@ -83,13 +85,13 @@ export function MapHeader({
 				</datalist>
 				<button type="submit" className="q-btn q-btn--ghost q-btn--icon">
 					<Search size={20} strokeWidth={1.75} aria-hidden="true" />
-					<span className="q-sr">Buscar</span>
+					<span className="q-sr">{t.map.header.search}</span>
 				</button>
 				<button
 					type="button"
 					className="q-btn q-btn--ghost q-btn--icon"
 					aria-label={
-						theme === "light" ? "Usar tema oscuro" : "Usar tema claro"
+						theme === "light" ? t.map.header.useDark : t.map.header.useLight
 					}
 					onClick={onToggleTheme}
 				>
@@ -102,11 +104,11 @@ export function MapHeader({
 			</form>
 
 			<p className="corridor-search-miss" role="status">
-				{missed ? `No encontramos «${missed}» en el corredor.` : ""}
+				{missed ? t.map.header.notFound(missed) : ""}
 			</p>
 
 			<fieldset className="corridor-chips">
-				<legend className="q-sr">Capas del mapa</legend>
+				<legend className="q-sr">{t.map.header.layers}</legend>
 				{LAYER_TOGGLES.map(({ key, label, tone, Icon }) => (
 					<button
 						key={key}
@@ -116,7 +118,7 @@ export function MapHeader({
 						onClick={() => onToggle(key)}
 					>
 						<Icon size={18} strokeWidth={1.75} aria-hidden="true" />
-						{label}
+						{t.map.header[label]}
 						<span className="corridor-chip__count">{counts[key]}</span>
 					</button>
 				))}

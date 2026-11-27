@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import type { TransportMode } from "../../lib/corridor/corridor-types";
 import { formatFare, type GuideLanguage } from "../../lib/guide/guide-local";
+import { useLanguage } from "../../lib/i18n/use-language";
 import { DESTINATIONS, type TripPlan } from "../../lib/trip/trip-planner";
 import { guideText } from "./guide-text";
 
@@ -35,7 +36,7 @@ export function TripCard({
 	onShowOnMap,
 	onReport,
 }: TripCardProps) {
-	const text = guideText(language);
+	const text = guideText(useLanguage());
 	const { green, taxi } = plan;
 	const GreenIcon = green ? MODE_ICONS[green.transport_mode] : Flag;
 

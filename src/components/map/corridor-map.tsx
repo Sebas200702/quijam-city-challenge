@@ -18,6 +18,7 @@ import type {
 	CorridorData,
 	CorridorDataSource,
 } from "../../lib/corridor/corridor-types";
+import { useT } from "../../lib/i18n/use-language";
 import { DESTINATIONS, type DestinationKey } from "../../lib/trip/trip-planner";
 import { GuidePanel } from "../guide/guide-panel";
 import "./corridor-map.css";
@@ -81,6 +82,7 @@ function fitCorridor(map: L.Map, data: CorridorData) {
 }
 
 export default function CorridorMap({ data, source }: CorridorMapProps) {
+	const t = useT();
 	const containerRef = useRef<HTMLElement>(null);
 	const mapRef = useRef<L.Map | null>(null);
 	const layersRef = useRef<CorridorLayers | null>(null);
@@ -240,7 +242,7 @@ export default function CorridorMap({ data, source }: CorridorMapProps) {
 			<section
 				ref={containerRef}
 				className="corridor-app__map"
-				aria-label="Mapa del corredor"
+				aria-label={t.map.controls.map}
 			/>
 
 			<aside className="corridor-panel">
@@ -264,7 +266,7 @@ export default function CorridorMap({ data, source }: CorridorMapProps) {
 					onClick={() => setGuideOpen(true)}
 				>
 					<MessageCircle size={20} strokeWidth={1.75} aria-hidden="true" />
-					Pregúntale al Guía · Ask the Guide
+					{t.map.controls.askGuide}
 				</button>
 				<div className="corridor-panel__stops">
 					<StopList
@@ -279,7 +281,7 @@ export default function CorridorMap({ data, source }: CorridorMapProps) {
 				<button
 					type="button"
 					className="q-fab"
-					aria-label="Centrar el corredor"
+					aria-label={t.map.controls.center}
 					onClick={() => mapRef.current && fitCorridor(mapRef.current, data)}
 				>
 					<LocateFixed size={22} strokeWidth={1.75} aria-hidden="true" />
@@ -287,14 +289,14 @@ export default function CorridorMap({ data, source }: CorridorMapProps) {
 				<div className="q-zoom">
 					<button
 						type="button"
-						aria-label="Acercar"
+						aria-label={t.map.controls.zoomIn}
 						onClick={() => mapRef.current?.zoomIn()}
 					>
 						<Plus size={20} strokeWidth={1.75} aria-hidden="true" />
 					</button>
 					<button
 						type="button"
-						aria-label="Alejar"
+						aria-label={t.map.controls.zoomOut}
 						onClick={() => mapRef.current?.zoomOut()}
 					>
 						<Minus size={20} strokeWidth={1.75} aria-hidden="true" />

@@ -12,6 +12,7 @@ import {
 	SERVICE_LABELS,
 	type ServiceKey,
 } from "../../lib/corridor/corridor-geometry";
+import { useT } from "../../lib/i18n/use-language";
 
 const SERVICE_ICONS: Record<ServiceKey, LucideIcon> = {
 	accessible: Accessibility,
@@ -30,24 +31,28 @@ interface ServiceIconProps {
 
 /** Icon of a stop or business service, named for screen readers. */
 export function ServiceIcon({ service, size = 16 }: ServiceIconProps) {
+	const t = useT();
 	const Icon = SERVICE_ICONS[service];
 	return (
 		<Icon
 			size={size}
 			strokeWidth={1.75}
 			role="img"
-			aria-label={SERVICE_LABELS[service]}
+			aria-label={
+				t.map.labels[SERVICE_LABELS[service] as keyof typeof t.map.labels]
+			}
 		/>
 	);
 }
 
 /** Icon plus label, as a small pill. */
 export function ServiceTag({ service }: { service: ServiceKey }) {
+	const t = useT();
 	const Icon = SERVICE_ICONS[service];
 	return (
 		<li className="corridor-tag">
 			<Icon size={14} strokeWidth={1.75} aria-hidden="true" />
-			{SERVICE_LABELS[service]}
+			{t.map.labels[SERVICE_LABELS[service] as keyof typeof t.map.labels]}
 		</li>
 	);
 }

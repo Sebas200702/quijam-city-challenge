@@ -1,3 +1,4 @@
+import { useT } from "../../lib/i18n/use-language";
 import type { useFloodCountdown } from "./use-flood-countdown";
 
 type FloodAlert = ReturnType<typeof useFloodCountdown>["alert"];
@@ -7,16 +8,17 @@ type FloodAlert = ReturnType<typeof useFloodCountdown>["alert"];
  * the most urgent. Says what happens and what to do, in one or two short lines.
  */
 export function FloodAlertBanner({ alert }: { alert: FloodAlert }) {
+	const t = useT();
 	if (!alert) return null;
 	const { zone, status } = alert;
 	const title =
 		status.kind === "active"
-			? `${zone.name}: activo`
-			: `${zone.name}: se activa en ${status.minutesLeft} min`;
+			? t.map.flood.active(zone.name)
+			: t.map.flood.soon(zone.name, status.minutesLeft);
 	const advice =
 		status.kind === "active"
-			? "No cruces. El agua arrastra. Recalculamos tu ruta."
-			: "Evita la zona desde ahora. Ya ajustamos tu ruta.";
+			? t.map.flood.adviceActive
+			: t.map.flood.adviceSoon;
 	return (
 		<div role="alert" className="corridor-alert">
 			<div className="q-band q-band--red" aria-hidden="true" />

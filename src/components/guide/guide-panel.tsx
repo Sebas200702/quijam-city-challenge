@@ -1,6 +1,7 @@
 import { Send, X } from "lucide-react";
 import { useEffect, useId, useRef, useState } from "react";
 import type { GuideAnswer } from "../../lib/guide/guide-answer";
+import { useT } from "../../lib/i18n/use-language";
 import type { DestinationKey } from "../../lib/trip/trip-planner";
 import "./guide-panel.css";
 import { ReportForm } from "./report-form";
@@ -16,7 +17,14 @@ const SUGGESTIONS = [
 
 type Message =
 	| { id: number; role: "user"; text: string }
-	| { id: number; role: "ai"; text: string; answer?: GuideAnswer };
+	| {
+			id: number;
+			role: "ai";
+			text: string;
+			/** A fixed message of the panel: its text follows the interface language. */
+			fixed?: "welcome" | "error";
+			answer?: GuideAnswer;
+	  };
 
 interface GuidePanelProps {
 	onShowOnMap: (destination: DestinationKey) => void;
@@ -24,12 +32,14 @@ interface GuidePanelProps {
 }
 
 export function GuidePanel({ onShowOnMap, onClose }: GuidePanelProps) {
+	const t = useT();
 	const inputId = useId();
 	const [messages, setMessages] = useState<Message[]>([
 		{
 			id: 0,
 			role: "ai",
 			text: "¡Ajá! Soy el Guía del corredor. Pregúntame en tu idioma. · Hi! Ask me in your language.",
+			fixed: "welcome",
 		},
 	]);
 	const [draft, setDraft] = useState("");
@@ -73,6 +83,7 @@ export function GuidePanel({ onShowOnMap, onClose }: GuidePanelProps) {
 					id: nextId.current++,
 					role: "ai",
 					text: "No pude responder ahora. Intenta de nuevo. · I could not answer right now. Please try again.",
+					fixed: "error",
 				},
 			]);
 		} finally {
@@ -83,7 +94,7 @@ export function GuidePanel({ onShowOnMap, onClose }: GuidePanelProps) {
 	return (
 		<section
 			className="q-card q-card--raised guide-panel"
-			aria-label="Guía del corredor"
+			aria-label={t.map.guide.panel}
 		>
 			<div className="q-card__head">
 				<div className="guide-panel__title">
@@ -92,13 +103,13 @@ export function GuidePanel({ onShowOnMap, onClose }: GuidePanelProps) {
 					</span>
 					<div>
 						<p className="q-eyebrow">Quillart AI</p>
-						<h2 className="q-h2">Guía del corredor</h2>
+						<h2 className="q-h2">{t.map.guide.panel}</h2>
 					</div>
 				</div>
 				<button
 					type="button"
 					className="q-btn q-btn--ghost q-btn--icon"
-					aria-label="Cerrar el Guía"
+					aria-label={t.map.guide.close}
 					onClick={onClose}
 				>
 					<X size={20} strokeWidth={1.75} aria-hidden="true" />
@@ -119,9 +130,9 @@ export function GuidePanel({ onShowOnMap, onClose }: GuidePanelProps) {
 								<span className="q-star" />
 							</span>
 							<div className="q-msg__col">
-								<span className="q-msg__who">Guía</span>
+								<span className="q-msg__who">{t.map.guide.who}</span>
 								<div className="q-bubble" lang={message.answer?.language}>
-									{message.text}
+									{message.fixed ? t.map.guide[message.fixed] : message.text}
 								</div>
 								{message.answer?.plan && (
 									<TripCard
@@ -144,9 +155,9 @@ export function GuidePanel({ onShowOnMap, onClose }: GuidePanelProps) {
 								{message.answer && (
 									<span className="q-msg__meta">
 										{message.answer.source === "gemini"
-											? "Gemini"
-											: "Guía sin conexión"}{" "}
-										· datos de referencia
+											? t.map.guide.sourceGemini
+											: t.map.guide.sourceOffline}{" "}
+										· {t.map.guide.referenceData}
 									</span>
 								)}
 							</div>
@@ -156,7 +167,7 @@ export function GuidePanel({ onShowOnMap, onClose }: GuidePanelProps) {
 				{thinking && (
 					<div className="q-thinking">
 						<span className="q-star q-star--think" aria-hidden="true" />
-						Pensando
+						{t.map.guide.thinking}
 						<span className="q-thinking__dots" aria-hidden="true">
 							<i />
 							<i />
@@ -190,12 +201,12 @@ export function GuidePanel({ onShowOnMap, onClose }: GuidePanelProps) {
 					}}
 				>
 					<label htmlFor={inputId} className="q-sr">
-						Pregunta al Guía en tu idioma
+						{t.map.guide.inputLabel}
 					</label>
 					<input
 						id={inputId}
 						type="text"
-						placeholder="Pregunta en tu idioma · Ask in your language"
+						placeholder={t.map.guide.placeholder}
 						maxLength={500}
 						autoComplete="off"
 						value={draft}
@@ -207,7 +218,7 @@ export function GuidePanel({ onShowOnMap, onClose }: GuidePanelProps) {
 						disabled={thinking || draft.trim() === ""}
 					>
 						<Send size={18} strokeWidth={1.75} aria-hidden="true" />
-						<span className="q-sr">Enviar</span>
+						<span className="q-sr">{t.map.guide.send}</span>
 					</button>
 				</form>
 			</div>

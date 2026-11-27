@@ -1,6 +1,7 @@
 import { CircleCheck, CloudOff, Send, X } from "lucide-react";
 import { useId, useState } from "react";
 import type { GuideLanguage } from "../../lib/guide/guide-local";
+import { useLanguage } from "../../lib/i18n/use-language";
 import {
 	REPORT_TRANSPORT_MODES,
 	type ReportTransportMode,
@@ -33,8 +34,8 @@ function keepOnPhone(report: unknown) {
 	}
 }
 
-export function ReportForm({ plan, language, onClose }: ReportFormProps) {
-	const text = guideText(language).report;
+export function ReportForm({ plan, onClose }: ReportFormProps) {
+	const text = guideText(useLanguage()).report;
 	const id = useId();
 	const [mode, setMode] = useState<ReportTransportMode>("taxi");
 	const [charged, setCharged] = useState("");
