@@ -64,11 +64,6 @@ interface RouteCardProps {
 	onOpenGuide: () => void;
 	/** Starts guidance on the chosen route. When set it becomes the primary action. */
 	onStart?: () => void;
-	/**
-	 * Shows the "Datos de referencia" tag for the corridor seed (epic #57, rule 9:
-	 * once per screen). Pass false when the screen header already carries it.
-	 */
-	showSimTag?: boolean;
 }
 
 /** Small decorative illustration for a state block. */
@@ -181,7 +176,6 @@ export function RouteCard({
 	alert,
 	onOpenGuide,
 	onStart,
-	showSimTag = true,
 }: RouteCardProps) {
 	const t = useT().map;
 	const fare = makeFare(t);
@@ -513,10 +507,6 @@ export function RouteCard({
 			</label>
 
 			<div aria-live="polite">{body}</div>
-
-			{showSimTag ? (
-				<span className="q-sim-tag self-start">{t.referenceTag}</span>
-			) : null}
 
 			{/* Sticky so the action stays in reach while the card scrolls on phones. */}
 			<div className="sticky bottom-0 z-[1] -mx-5 -mb-5 flex flex-col gap-2 bg-[var(--surface-raised)] px-5 pt-2 pb-5 empty:hidden">

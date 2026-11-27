@@ -402,7 +402,7 @@ export default function CorridorMap({ data, source }: CorridorMapProps) {
 				onOpenGuide={() => setGuideOpen(true)}
 			/>
 
-			{/* The card below already carries the one "Datos de referencia" tag (rule 9). */}
+			{/* The header carries the one "Datos de referencia" tag of the screen (rule 9). */}
 			{query.accessibleMode && (
 				<div className="corridor-maptags">
 					<span className="q-badge q-badge--optimal corridor-maptags__badge">

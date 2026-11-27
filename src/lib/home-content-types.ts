@@ -20,8 +20,6 @@ export type VisitorMenuItemId =
 
 /** Every string the visitor shell shows, in one language. */
 export interface VisitorShellCopy {
-	/** Rule 9: tag for the corridor seed, once per screen. */
-	referenceTag: string;
 	openMenu: string;
 	changeLanguage: (languageName: string) => string;
 	close: string;
