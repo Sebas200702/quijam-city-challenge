@@ -62,6 +62,15 @@ describe("planRoute", () => {
 		);
 	});
 
+	it("tells the visitor the route has shade when every stop has it", async () => {
+		const plan = await planRoute(caseOne, deps);
+
+		expect(plan.route?.shadeShare).toBe(1);
+		expect(plan.explanation).toContain(
+			"Esta ruta tiene sombra en los paraderos.",
+		);
+	});
+
 	it("uses the remote chooser when given one", async () => {
 		const remote: AsyncChooser = async () => ({
 			optionId: "SEG-MAL-EST-TAXI",

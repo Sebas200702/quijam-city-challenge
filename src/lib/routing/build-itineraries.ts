@@ -20,6 +20,8 @@ export interface BuildItinerariesInput {
 	origin: string;
 	destination: string;
 	crowdByZone: CrowdByZone;
+	/** Stop codes with shade (stops.has_shade); missing means no shade data. */
+	shadedStops?: ReadonlySet<string>;
 	/** Longest trip, in legs. */
 	maxLegs?: number;
 }
@@ -35,8 +37,7 @@ function labelFor(legs: RouteSegment[]): string {
 
 function toItinerary(
 	legs: RouteSegment[],
-	stopZones: Record<string, string>,
-	crowdByZone: CrowdByZone,
+	{ stopZones, crowdByZone, shadedStops }: BuildItinerariesInput,
 ): Itinerary {
 	const stopCodes = [
 		legs[0].originStopCode,
@@ -51,6 +52,10 @@ function toItinerary(
 		durationMinutes: legs.reduce((sum, leg) => sum + leg.minutes, 0),
 		fareCop: legs.reduce((sum, leg) => sum + leg.fareCop, 0),
 		crowdLevel,
+		shadeShare: shadedStops
+			? stopCodes.filter((code) => shadedStops.has(code)).length /
+				stopCodes.length
+			: undefined,
 		accessible: legs.every((leg) => leg.isAccessible),
 		floodZoneIds: legs.flatMap((leg) =>
 			leg.floodZoneCode ? [leg.floodZoneCode] : [],
@@ -67,7 +72,7 @@ export function buildItineraries(input: BuildItinerariesInput): Itinerary[] {
 	const trips: Itinerary[] = [];
 	const walk = (stop: string, legs: RouteSegment[], visited: Set<string>) => {
 		if (stop === input.destination && legs.length > 0) {
-			trips.push(toItinerary(legs, input.stopZones, input.crowdByZone));
+			trips.push(toItinerary(legs, input));
 			return;
 		}
 		if (legs.length >= maxLegs) return;

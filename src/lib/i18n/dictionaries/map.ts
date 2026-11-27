@@ -225,6 +225,7 @@ const es = {
 	whyWheelchair: "esta es accesible en silla de ruedas",
 	whyGreen: "esta ruta es verde: transporte público o a pie",
 	whyNoFlood: "esta ruta no cruza arroyos activos",
+	whyShade: "esta ruta tiene sombra en los paraderos",
 	confidenceLevels: { high: "Alta", medium: "Media", low: "Baja" },
 	confidenceValue: (level: string, percent: number) =>
 		`${level} · ${percent} %`,
@@ -447,6 +448,7 @@ const en: MapMessages = {
 	whyWheelchair: "this one is wheelchair accessible",
 	whyGreen: "this route is green: public transport or on foot",
 	whyNoFlood: "this route does not cross active arroyos",
+	whyShade: "this route has shade at its stops",
 	confidenceLevels: { high: "High", medium: "Medium", low: "Low" },
 	confidenceValue: (level: string, percent: number) => `${level} · ${percent}%`,
 };
@@ -668,6 +670,7 @@ const pt: MapMessages = {
 	whyWheelchair: "esta é acessível para cadeira de rodas",
 	whyGreen: "esta rota é verde: transporte público ou a pé",
 	whyNoFlood: "esta rota não atravessa arroios ativos",
+	whyShade: "esta rota tem sombra nas paradas",
 	confidenceLevels: { high: "Alta", medium: "Média", low: "Baixa" },
 	confidenceValue: (level: string, percent: number) => `${level} · ${percent}%`,
 };
@@ -895,6 +898,7 @@ const fr: MapMessages = {
 	whyWheelchair: "celui-ci est accessible en fauteuil roulant",
 	whyGreen: "cet itinéraire est vert : transport public ou à pied",
 	whyNoFlood: "cet itinéraire ne traverse aucun ruisseau en alerte",
+	whyShade: "cet itinéraire a de l’ombre aux arrêts",
 	confidenceLevels: { high: "Élevée", medium: "Moyenne", low: "Faible" },
 	confidenceValue: (level: string, percent: number) =>
 		`${level} · ${percent} %`,

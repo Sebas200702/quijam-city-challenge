@@ -82,4 +82,21 @@ describe("buildItineraries", () => {
 
 		expect(trips).toEqual([]);
 	});
+
+	it("gives each trip the share of its stops with shade", () => {
+		const trips = buildItineraries({
+			segments: ROUTE_SEGMENTS_SEED,
+			stopZones,
+			origin: "STOP-MALECON-SUR",
+			destination: "STOP-ESTADIO",
+			crowdByZone: {},
+			shadedStops: new Set(["STOP-MALECON-SUR", "STOP-CENTRO"]),
+		});
+		const direct = trips.find((trip) => trip.id === "SEG-MAL-EST-TM-GREEN");
+		const viaCentro = trips.find((trip) => trip.id.startsWith("SEG-MAL-CEN"));
+
+		expect(direct?.shadeShare).toBe(0.5);
+		expect(viaCentro?.shadeShare).toBe(0.5);
+		expect(malecónToStadium()[0].shadeShare).toBeUndefined();
+	});
 });
