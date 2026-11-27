@@ -19,16 +19,19 @@ Rama: `feat/pendientes-santiago` (sale de `integ/pending-prs`, PR #214). Entrega
 
 | ID | Specs | Ruta | Estado |
 |---|---|---|---|
-| T1 | S1 | inline | metro y community aplicadas; MFA espera decisión |
-| T2 | S2 | inline | merges hechos |
-| T3 | S3 | inline | pendiente |
-| T4 | S4, S5 | delegada (paralela) | pendiente |
-| T5 | S6 | delegada (paralela) | pendiente |
-| T6 | S7, S8 | delegada (paralela) | pendiente |
-| T7 | S9 | inline | pendiente |
+| T1 | S1 | inline | hecho: las 3 migraciones aplicadas en prod |
+| T2 | S2 | inline | hecho (b304ecd, 6bbfad8) |
+| T3 | S3 | inline | hecho (9300448) |
+| T4 | S4, S5 | delegada (paralela) | hecho (fec6149); falta probar la voz en un navegador real |
+| T5 | S6 | delegada (paralela) | hecho (fd1b9bc); no se ejecutó contra la base |
+| T6 | S7, S8 | delegada + inline | hecho (a0fc19a, fec6149) |
+| T7 | S9 | inline | hecho: 6 worktrees borrados |
 
 ## Log
 
 - L1 (2026-11-27, usuario): "los pendientes que dejo anotado santiago" / "las ramas wip".
 - L2: Los datos de prod pasan las nuevas restricciones (stops 23, flood_zones 4, businesses 5: 0 fuera de rango). Las 2 migraciones se aplicaron con éxito.
 - L3: `city_mfa_aal2` quita los poderes de ciudad a las 2 cuentas de ciudad sin TOTP. No se aplicó sin decisión del usuario.
+- L4 (usuario): "Aplicar ahora" `city_mfa_aal2`. Aplicada.
+- L5: `gemini-flash-latest` dio 503 y luego timeout; `gemini-3.5-flash` responde 200.
+- L6: Verificación final: astro check 0 errores, vitest 823/827 (los 4 fallos de api-guard ocurren también en main con .env real), build pasa.
