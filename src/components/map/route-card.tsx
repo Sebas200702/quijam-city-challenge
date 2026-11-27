@@ -77,8 +77,8 @@ interface RouteCardProps {
 	/** Starts guidance on the chosen route. When set it becomes the primary action. */
 	onStart?: () => void;
 	/**
-	 * Shows the "datos simulados 2034" tag. Off by default: on the map screen the
-	 * header carries the one tag per screen (epic #57, rule 9).
+	 * Shows the "Datos de referencia" tag for the corridor seed (epic #57, rule 9:
+	 * once per screen). Pass false when the screen header already carries it.
 	 */
 	showSimTag?: boolean;
 }
@@ -187,7 +187,7 @@ export function RouteCard({
 	alert,
 	onOpenGuide,
 	onStart,
-	showSimTag = false,
+	showSimTag = true,
 }: RouteCardProps) {
 	const online = useOnline();
 	const age = usePlanAge(plan);
@@ -513,7 +513,7 @@ export function RouteCard({
 			<div aria-live="polite">{body}</div>
 
 			{showSimTag ? (
-				<span className="q-sim-tag self-start">Datos simulados 2034</span>
+				<span className="q-sim-tag self-start">Datos de referencia</span>
 			) : null}
 
 			{/* Sticky so the action stays in reach while the card scrolls on phones. */}
