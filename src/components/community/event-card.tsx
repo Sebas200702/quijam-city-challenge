@@ -68,7 +68,7 @@ export function EventCard({
 	return (
 		<a
 			href={`/agenda/${encodeURIComponent(event.id)}`}
-			className={`q-card flex-row! gap-4 p-4 text-inherit no-underline transition-shadow hover:shadow-[var(--glow-gold)] ${cancelled ? "opacity-70" : ""}`}
+			className={`q-card flex-row! gap-4 p-4 text-inherit no-underline transition-shadow lg:hover:shadow-[var(--glow-gold)] ${cancelled ? "opacity-70" : ""}`}
 			aria-label={`${event.title}, ${formatEventDay(event.startsAt)}`}
 		>
 			<DateBlock iso={event.startsAt} />

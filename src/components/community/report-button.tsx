@@ -50,7 +50,7 @@ export function ReportButton({
 			type="button"
 			className={
 				compact
-					? "inline-flex min-h-11 items-center gap-1 bg-transparent px-1 text-[13px] font-semibold text-[var(--ink-muted)] hover:text-[var(--red-text)]"
+					? "inline-flex min-h-11 items-center gap-1 bg-transparent px-1 text-[13px] font-semibold text-[var(--ink-muted)] lg:hover:text-[var(--red-text)]"
 					: "q-btn q-btn--ghost q-btn--sm min-h-11!"
 			}
 			aria-expanded={open}

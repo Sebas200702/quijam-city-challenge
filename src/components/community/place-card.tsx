@@ -76,7 +76,7 @@ export function PlaceCard({
 	return (
 		<a
 			href={`/lugares/${encodeURIComponent(place.slug)}`}
-			className="q-card w-full flex-row! gap-4 p-4 text-inherit no-underline transition-shadow hover:shadow-[var(--glow-gold)]"
+			className="q-card w-full flex-row! gap-4 p-4 text-inherit no-underline transition-shadow lg:hover:shadow-[var(--glow-gold)]"
 		>
 			<PlaceKindTile kind={place.kind} />
 			<div className="min-w-0 flex-1 space-y-1.5">
