@@ -2,8 +2,22 @@ import { describe, expect, it } from "vitest";
 import {
 	googleAuthEnabled,
 	googleOAuthCredentials,
+	isOAuthReturn,
 	oauthRedirectTo,
 } from "./google-auth";
+
+describe("isOAuthReturn", () => {
+	it("detects the tokens the OAuth return leaves in the hash", () => {
+		expect(isOAuthReturn("#access_token=a&refresh_token=b&type=bearer")).toBe(
+			true,
+		);
+	});
+
+	it("ignores a normal visit", () => {
+		expect(isOAuthReturn("")).toBe(false);
+		expect(isOAuthReturn("#panel-signin")).toBe(false);
+	});
+});
 
 describe("googleAuthEnabled", () => {
 	it("hides the button unless the flag is true (previous behavior)", () => {

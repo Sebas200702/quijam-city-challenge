@@ -8,6 +8,7 @@ import {
 	useEffect,
 	useState,
 } from "react";
+import { isOAuthReturn } from "../../lib/auth/google-auth";
 import { GOOGLE_AUTH_ENABLED } from "../../lib/auth/google-sign-in";
 import { initials } from "../../lib/community/community-labels";
 import { validateSignUp } from "../../lib/community/community-rules";
@@ -29,6 +30,8 @@ import { EventCard } from "./event-card";
 import { GoogleSignInButton } from "./google-sign-in-button";
 import { MyDataPanel } from "./my-data-panel";
 import { ThreadCard } from "./thread-card";
+import { TurnstileWidget } from "./turnstile-widget";
+import { useCaptcha } from "./use-captcha";
 import { useLoad, useSession, useStore } from "./use-community";
 
 /** Only same-site paths: "/agenda/x" yes, "//evil.com" or "https://…" no. */
@@ -38,6 +41,10 @@ export function safeReturnPath(raw: string | null): string | null {
 		return null;
 	return raw;
 }
+
+/** Read at load, before supabase-js removes the OAuth tokens from the URL. */
+const OPENED_BY_OAUTH =
+	typeof window !== "undefined" && isOAuthReturn(window.location.hash);
 
 function returnPath(): string | null {
 	if (typeof window === "undefined") return null;
@@ -117,6 +124,18 @@ function PrivacyNote() {
 	return <p className="q-sm q-muted">{t.profile.privacyNote}</p>;
 }
 
+/** The Turnstile widget, only when a site key is configured. */
+function CaptchaField({ captcha }: { captcha: ReturnType<typeof useCaptcha> }) {
+	if (!captcha.enabled) return null;
+	return (
+		<TurnstileWidget
+			siteKey={captcha.siteKey}
+			onToken={captcha.setToken}
+			resetSignal={captcha.resetSignal}
+		/>
+	);
+}
+
 function SignInForm() {
 	const t = useT();
 	const store = useStore();
@@ -124,18 +143,25 @@ function SignInForm() {
 	const [password, setPassword] = useState("");
 	const [busy, setBusy] = useState(false);
 	const [error, setError] = useState<string | null>(null);
+	const captcha = useCaptcha();
 
 	async function handleSubmit(event: SyntheticEvent<HTMLFormElement>) {
 		event.preventDefault();
+		if (captcha.missing) {
+			setError(t.profile.captchaRequired);
+			return;
+		}
 		setBusy(true);
 		setError(null);
 		try {
-			await store.signIn(email.trim(), password);
+			await store.signIn(email.trim(), password, captcha.token);
 			const back = returnPath();
 			if (back) window.location.assign(back);
 		} catch (err) {
 			setError(errorText(err, t.profile.signInFailed));
 			setBusy(false);
+		} finally {
+			captcha.reset();
 		}
 	}
 
@@ -163,6 +189,7 @@ function SignInForm() {
 					className={inputClass}
 				/>
 			</Field>
+			<CaptchaField captcha={captcha} />
 			{error && <ErrorNote message={error} />}
 			<SubmitButton
 				busy={busy}
@@ -184,6 +211,7 @@ function SignUpForm() {
 	const [busy, setBusy] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [confirmEmail, setConfirmEmail] = useState<string | null>(null);
+	const captcha = useCaptcha();
 
 	async function handleSubmit(event: SyntheticEvent<HTMLFormElement>) {
 		event.preventDefault();
@@ -199,10 +227,17 @@ function SignUpForm() {
 			setError(invalid);
 			return;
 		}
+		if (captcha.missing) {
+			setError(t.profile.captchaRequired);
+			return;
+		}
 		setBusy(true);
 		setError(null);
 		try {
-			const result = await store.signUp(input);
+			const result = await store.signUp({
+				...input,
+				captchaToken: captcha.token,
+			});
 			if (result.needsConfirmation) {
 				setConfirmEmail(input.email);
 				setBusy(false);
@@ -213,6 +248,8 @@ function SignUpForm() {
 		} catch (err) {
 			setError(errorText(err, t.profile.signUpFailed));
 			setBusy(false);
+		} finally {
+			captcha.reset();
 		}
 	}
 
@@ -288,6 +325,7 @@ function SignUpForm() {
 				onChange={setIsVisitor}
 			/>
 			<PrivacyNote />
+			<CaptchaField captcha={captcha} />
 			{error && <ErrorNote message={error} />}
 			<SubmitButton
 				busy={busy}
@@ -703,6 +741,12 @@ function SignedInView({ profile }: { profile: Profile }) {
 export function ProfilePage({ aiHref }: { aiHref?: string }) {
 	const t = useT();
 	const { profile, loading } = useSession();
+	// Back from Google with a session: return where the person was, like the email form.
+	useEffect(() => {
+		if (!profile || !OPENED_BY_OAUTH) return;
+		const back = returnPath();
+		if (back) window.location.assign(back);
+	}, [profile]);
 	return (
 		<CommunityShell current="profile" aiHref={aiHref}>
 			{loading ? (

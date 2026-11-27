@@ -24,6 +24,14 @@ export function oauthRedirectTo(
 	return url.toString();
 }
 
+/**
+ * True when the page was opened by the OAuth return: the implicit flow puts the
+ * tokens in the hash (`#access_token=…`). Read it before supabase-js cleans the URL.
+ */
+export function isOAuthReturn(hash: string): boolean {
+	return new URLSearchParams(hash.replace(/^#/, "")).has("access_token");
+}
+
 export function googleOAuthCredentials(redirectTo: string) {
 	return { provider: "google" as const, options: { redirectTo } };
 }

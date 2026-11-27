@@ -160,6 +160,8 @@ export interface SignUpInput {
 	displayName: string;
 	neighborhood: string | null;
 	isVisitor: boolean;
+	/** Turnstile token, when the CAPTCHA is on (issue #124). */
+	captchaToken?: string | null;
 }
 
 export interface ProfilePatch {
@@ -252,7 +254,11 @@ export interface CommunityStore {
 	getSession(): Promise<Profile | null>;
 	onSessionChange(listener: (profile: Profile | null) => void): () => void;
 	signUp(input: SignUpInput): Promise<SignUpResult>;
-	signIn(email: string, password: string): Promise<Profile>;
+	signIn(
+		email: string,
+		password: string,
+		captchaToken?: string | null,
+	): Promise<Profile>;
 	signOut(): Promise<void>;
 	updateProfile(patch: ProfilePatch): Promise<Profile>;
 
