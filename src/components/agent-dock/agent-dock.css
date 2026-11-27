@@ -280,10 +280,10 @@
 	justify-content: center;
 	gap: 1px;
 	padding: 4px 18px;
-	border: 1.5px solid var(--gold-text);
+	border: 1px solid var(--line-control);
 	border-radius: 999px;
 	background: var(--surface);
-	box-shadow: var(--glow-gold);
+	box-shadow: var(--shadow-card);
 	color: var(--ink);
 	text-align: left;
 	cursor: pointer;
