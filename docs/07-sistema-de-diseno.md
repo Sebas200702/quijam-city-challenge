@@ -135,18 +135,19 @@ Revertir. Toda decisión se puede revertir.
 
 ## Componentes de navegación por rol (issue #56)
 
-Sostienen las reglas de UX de la épica #57 y la arquitectura de
-[20-arquitectura-de-informacion.md](20-arquitectura-de-informacion.md). Solo
+Sostienen las reglas de UX de la épica #57 (con las reglas 2, 5 y 9 actualizadas
+el 27 nov en la épica #79) y la arquitectura de
+[26-arquitectura-de-informacion.md](26-arquitectura-de-informacion.md). Solo
 usan tokens existentes: ningún color nuevo.
 
 | Componente | Clases | Cuándo usarlo |
 |---|---|---|
-| Tu siguiente paso | `.q-next-step`, `__head` `__eyebrow` `__title` `__why` `__facts` | La única tarjeta de acción en la pantalla de inicio del visitante, del vendedor y del anfitrión. Un título con verbo, una frase de por qué y un solo `.q-btn--primary.q-btn--block` |
+| Tu siguiente paso | `.q-next-step`, `__head` `__eyebrow` `__title` `__why` `__facts` | Tarjeta de acción concreta: dentro de la conversación de Quillart AI o del mapa (`/mapa`) para la persona, y como inicio del vendedor y del anfitrión. Un título con verbo, una frase de por qué y un solo `.q-btn--primary.q-btn--block` |
 | Aviso | `.q-alert` + `--info` `--safe` `--alert`, `__icon` `__body` `__title` `__text` `__actions` `__close` | Tarjeta discreta para todo lo que no es seguridad: desvío, anfitrión en camino, reporte enviado. Máximo uno visible a la vez |
 | Aviso de seguridad | `.q-backdrop` > `.q-alert.q-alert--alert.q-alert--modal` | Solo para un arroyo activo que toca la ruta o la zona del visitante. Es la única interrupción permitida |
 | Hoja inferior | `.q-sheet` + `--dock` `--peek` `--expanded`, `__grab` `__handle` `__head` `__body` `__more` | Detalle sobre el mapa (ruta, negocio, menú secundario). En `--peek` se oculta `__more` |
 | Estado | `.q-state` + `--loading` `--empty` `--error` `--offline`, `__glyph` `__title` `__text` `__action` | Ocupa el área completa cuando no hay contenido que mostrar. Cada pantalla tiene los cuatro |
-| Datos simulados | `.q-sim-tag` | Una vez por pantalla, cerca del mapa o del título. Nunca en cada tarjeta |
+| Datos de referencia | `.q-sim-tag` | Texto "Datos de referencia". Solo sobre la semilla del corredor (paraderos, tarifas, arroyos, conteos), una vez por pantalla, cerca del mapa o del título. Nunca en cada tarjeta ni sobre lo que publican las personas (regla 9). El texto lo pone el componente; la clase solo da la forma |
 | Ver detalles | `.q-details` (sobre `<details>`), `__body` | Probabilidades, confianza y fuentes del Decisor. Cerrado por defecto |
 
 ### Tu siguiente paso
