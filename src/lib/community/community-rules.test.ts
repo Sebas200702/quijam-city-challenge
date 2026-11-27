@@ -3,9 +3,11 @@ import {
 	bogotaLocalToIso,
 	filterEvents,
 	isoToBogotaLocal,
+	isReservedDisplayName,
 	registrationBlocker,
 	spotsLeft,
 	validateEventInput,
+	validateProfilePatch,
 	validateSignUp,
 } from "./community-rules";
 import type { CommunityEvent, NewEventInput } from "./community-types";
@@ -28,6 +30,7 @@ function event(overrides: Partial<CommunityEvent> = {}): CommunityEvent {
 		priceCop: null,
 		organizerId: "u1",
 		organizerName: "Ana",
+		organizerVerified: false,
 		status: "published",
 		moderationStatus: "published",
 		triagePriority: "none",
@@ -174,5 +177,37 @@ describe("validateSignUp", () => {
 		expect(validateSignUp(base)).toBeNull();
 		expect(validateSignUp({ ...base, email: "ana" })).toMatch(/correo/);
 		expect(validateSignUp({ ...base, password: "corta" })).toMatch(/8/);
+	});
+});
+
+describe("reserved display names", () => {
+	it("blocks names that pass for an authority or the platform", () => {
+		expect(isReservedDisplayName("Alcaldía de Barranquilla")).toBe(true);
+		expect(isReservedDisplayName("POLICÍA nacional")).toBe(true);
+		expect(isReservedDisplayName("Equipo Quillart")).toBe(true);
+	});
+
+	it("allows ordinary names that only contain the letters", () => {
+		expect(isReservedDisplayName("Ana Policarpa")).toBe(false);
+		expect(isReservedDisplayName("Adminta Rojas")).toBe(false);
+	});
+
+	it("is enforced in sign-up and profile edits", () => {
+		expect(
+			validateSignUp({
+				email: "a@b.co",
+				password: "secreto123",
+				displayName: "Bomberos",
+				neighborhood: null,
+				isVisitor: false,
+			}),
+		).toMatch(/reservado/);
+		expect(
+			validateProfilePatch({
+				displayName: "Ana",
+				neighborhood: null,
+				isVisitor: false,
+			}),
+		).toBeNull();
 	});
 });

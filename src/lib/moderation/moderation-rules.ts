@@ -107,6 +107,66 @@ const EMERGENCY_TERMS = [
 	"desaparecido",
 ];
 
+// Chain-message style alarms: real reports rarely ask to be forwarded.
+const MISINFORMATION_TERMS = [
+	"difundan",
+	"difundir urgente",
+	"compartan antes de que lo borren",
+	"reenvien",
+	"reenvia a todos",
+	"pasalo",
+	"cadena",
+	"alerta maxima",
+	"los medios no lo dicen",
+	"nadie lo esta diciendo",
+	"100% confirmado",
+	"confirmadisimo",
+];
+
+// Speaking as an authority the author is not.
+const IMPERSONATION_TERMS = [
+	"comunicado oficial",
+	"mensaje oficial",
+	"aviso oficial",
+	"somos la alcaldia",
+	"soy de la alcaldia",
+	"de parte de la alcaldia",
+	"la policia informa",
+	"los bomberos informan",
+	"defensa civil informa",
+	"equipo de quillart",
+	"soporte de quillart",
+];
+
+/** Domains whose links publish without review (government, universities, the city). */
+export const TRUSTED_LINK_DOMAINS = [
+	"barranquilla.gov.co",
+	"gov.co",
+	"edu.co",
+	"carnavaldebarranquilla.org",
+	"google.com",
+	"maps.app.goo.gl",
+];
+
+const URL_PATTERN = /\b(?:https?:\/\/|www\.)[^\s<>"]+/gi;
+
+function linkHost(url: string): string | null {
+	try {
+		const withScheme = url.startsWith("www.") ? `https://${url}` : url;
+		return new URL(withScheme).hostname.toLowerCase().replace(/^www\./, "");
+	} catch {
+		return null;
+	}
+}
+
+export function isTrustedLink(url: string): boolean {
+	const host = linkHost(url);
+	if (!host) return false;
+	return TRUSTED_LINK_DOMAINS.some(
+		(domain) => host === domain || host.endsWith(`.${domain}`),
+	);
+}
+
 /** "imbeciiiil" and "imbecil" match the same term; doubled letters still match. */
 function squeeze(text: string): string {
 	return text.replace(/(.)\1+/g, "$1");
@@ -183,7 +243,8 @@ export function applyModerationRules(input: ModerationInput): RuleFindings {
 			"Tu mensaje quedó en revisión porque tiene palabras ofensivas. Un moderador lo revisará pronto.";
 	}
 
-	const links = raw.match(/https?:\/\/\S+|www\.\S+/gi) ?? [];
+	const links = raw.match(URL_PATTERN) ?? [];
+	const untrustedLinks = links.filter((link) => !isTrustedLink(link));
 	const spamTerms = containsAny(text, SPAM_TERMS);
 	if (links.length > 2 || spamTerms.length > 0) {
 		labels.add("spam");
@@ -191,6 +252,28 @@ export function applyModerationRules(input: ModerationInput): RuleFindings {
 		verdict = stricterVerdict(verdict, "review");
 		reason ??=
 			"Tu mensaje quedó en revisión porque parece publicidad. Un moderador lo revisará pronto.";
+	} else if (untrustedLinks.length > 0) {
+		labels.add("spam");
+		signals.push(`${untrustedLinks.length} external link(s)`);
+		verdict = stricterVerdict(verdict, "review");
+		reason ??=
+			"Tu mensaje quedó en revisión porque tiene un enlace externo. Un moderador lo revisará pronto.";
+	}
+
+	if (containsAny(text, IMPERSONATION_TERMS).length > 0) {
+		labels.add("impersonation");
+		signals.push("speaks as an official authority");
+		verdict = stricterVerdict(verdict, "review");
+		reason ??=
+			"Tu mensaje quedó en revisión porque habla en nombre de una entidad oficial. Solo la ciudad publica avisos oficiales.";
+	}
+
+	if (containsAny(text, MISINFORMATION_TERMS).length > 0) {
+		labels.add("misinformation");
+		signals.push("chain-message style alarm");
+		verdict = stricterVerdict(verdict, "review");
+		reason ??=
+			"Tu mensaje quedó en revisión para confirmar la información antes de publicarla. Si alguien está en peligro, llama al 123.";
 	}
 
 	const letters = raw.replace(/[^\p{L}]/gu, "");

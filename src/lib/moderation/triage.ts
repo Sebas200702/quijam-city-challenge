@@ -34,7 +34,7 @@ export const TRIAGE_QUESTIONS = {
 			publish:
 				"Respectful and on topic: can be shown to everyone, even if it complains or criticizes",
 			review:
-				"Borderline: possible insult, advertising, misinformation or off topic; a human moderator should check it",
+				"Borderline: possible insult, advertising, unverified alarming claim, impersonation or off topic; a human moderator should check it",
 			reject:
 				"Clear harassment, hate, threats, sexual content or a scam; must not be published",
 		},
@@ -50,6 +50,10 @@ export const TRIAGE_QUESTIONS = {
 			sexual: "Sexual content",
 			spam: "Advertising or repeated promotional content",
 			scam: "Fraud, fake offers or requests for money",
+			misinformation:
+				"Unverified alarming claims, rumors or chain messages that could cause panic or harm",
+			impersonation:
+				"Pretends to speak for the city government, police, firefighters, the platform or another organization",
 			off_topic: "Unrelated to the city, its events, places or community",
 		},
 	},
@@ -100,6 +104,8 @@ const LABELS = [
 	"sexual",
 	"spam",
 	"scam",
+	"misinformation",
+	"impersonation",
 	"off_topic",
 ] as const;
 
