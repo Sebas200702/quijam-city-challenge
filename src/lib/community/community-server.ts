@@ -163,6 +163,156 @@ async function storedPointFor(
 	);
 }
 
+export function parseUpdateEventRequest(body: unknown): NewEventInput {
+	if (!isRecord(body) || !isRecord(body.input)) {
+		throw new CommunityError("Solicitud inválida.", 400);
+	}
+	return body.input as unknown as NewEventInput;
+}
+
+/**
+ * Updates an event strictly on behalf of its organizer (#92).
+ * - Enforces capacity >= registered_count.
+ * - Re-runs moderation triage + trust policy on any text or paid-status change;
+ *   if held, the event is retained until a city moderator reviews it.
+ * - Notifies every registered attendee if the date or place changed.
+ */
+export async function updateEventContent(
+	admin: SupabaseClient,
+	author: Author,
+	eventId: string,
+	input: NewEventInput,
+	jev: OpenJevClient | null,
+): Promise<PublishResult<CommunityEvent>> {
+	const { data: existingRow, error: fetchError } = await admin
+		.from("events")
+		.select(EVENT_COLUMNS)
+		.eq("id", eventId)
+		.neq("moderation_status", "removed")
+		.maybeSingle();
+	if (fetchError) throw new CommunityError(fetchError.message, 500);
+	if (!existingRow) {
+		throw new CommunityError("No encontramos este evento.", 404);
+	}
+
+	const existing = toEvent(existingRow);
+	if (existing.organizerId !== author.id) {
+		throw new CommunityError(
+			"Solo quien organiza puede editar el evento.",
+			403,
+		);
+	}
+	if (existing.status === "cancelled") {
+		throw new CommunityError("No puedes editar un evento cancelado.", 400);
+	}
+
+	const validationError = validateEventEditInput(
+		input,
+		existing.registeredCount,
+	);
+	if (validationError) {
+		throw new CommunityError(validationError, 400);
+	}
+
+	const changes = detectEventEditChanges(existing, input);
+	const needsTriage = changes.textChanged || changes.paidStatusChanged;
+
+	let moderationPatch: Record<string, unknown> = {};
+	let finalOutcome: PublishResult<CommunityEvent>["outcome"] =
+		existing.moderationStatus === "held" ? "held" : "published";
+	let finalMessage =
+		existing.moderationStatus === "held"
+			? "Cambios guardados. Tu evento sigue en revisión."
+			: "Cambios guardados en tu evento.";
+	let finalPriority: TriagePriority = existing.triagePriority;
+
+	if (needsTriage) {
+		const { count } = await admin
+			.from("events")
+			.select("id", { count: "exact", head: true })
+			.eq("organizer_id", author.id)
+			.eq("moderation_status", "published");
+		const decision = applyTrustPolicy(
+			await triageContent(
+				{ kind: "event", title: input.title, body: input.description },
+				jev,
+			),
+			{
+				kind: "event",
+				accountAgeHours:
+					(Date.now() - new Date(author.createdAt).getTime()) / 3_600_000,
+				publishedEvents: count ?? 0,
+				isVerifiedOrganizer: author.isVerifiedOrganizer,
+				isPaidEvent: !input.isFree,
+			},
+		);
+		if (decision.verdict === "reject") {
+			return publishResult<never>(decision, null);
+		}
+		moderationPatch = moderationColumns(decision);
+		const computed = publishResult(decision, null);
+		finalOutcome = computed.outcome;
+		finalMessage =
+			computed.outcome === "held"
+				? "Cambios guardados. El texto actualizado quedó en revisión hasta que la ciudad lo apruebe."
+				: "Cambios guardados y publicados en la agenda.";
+		finalPriority = computed.priority;
+	}
+
+	const { data: updatedRow, error: updateError } = await admin
+		.from("events")
+		.update({
+			title: input.title.trim(),
+			description: input.description.trim(),
+			category: input.category,
+			starts_at: input.startsAt,
+			ends_at: input.endsAt,
+			place_id: input.placeId,
+			location_text: input.placeId ? null : input.locationText?.trim() || null,
+			capacity: input.capacity,
+			is_free: input.isFree,
+			price_cop: input.isFree ? null : input.priceCop,
+			...moderationPatch,
+		})
+		.eq("id", eventId)
+		.select(EVENT_COLUMNS)
+		.single();
+	if (updateError) throw new CommunityError(updateError.message, 500);
+
+	const updated = toEvent(updatedRow);
+
+	// Notify registered attendees if date or place changed and the event is visible.
+	if (
+		(changes.dateChanged || changes.placeChanged) &&
+		updated.moderationStatus === "published"
+	) {
+		const { data: regs } = await admin
+			.from("event_registrations")
+			.select("user_id")
+			.eq("event_id", eventId);
+		const body = buildEventUpdateNoticeBody(updated.title, changes);
+		const noticeRows: NewUserNotificationRow[] = (regs ?? [])
+			.map((row) => String(row.user_id))
+			.filter((userId) => userId !== author.id)
+			.map((userId) => ({
+				user_id: userId,
+				kind: "event_updated",
+				title: `Cambio en evento: ${updated.title}`,
+				body,
+				href: `/agenda/${eventId}`,
+				event_id: eventId,
+			}));
+		await insertUserNotifications(admin, noticeRows);
+	}
+
+	return {
+		outcome: finalOutcome,
+		message: finalMessage,
+		priority: finalPriority,
+		record: updated,
+	};
+}
+
 export async function publishContent(
 	admin: SupabaseClient,
 	author: Author,

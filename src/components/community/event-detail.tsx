@@ -47,6 +47,7 @@ import {
 	PublishNotice,
 	SpotIllustration,
 } from "./community-ui";
+import { EditEventForm } from "./edit-event-form";
 import { LazyMiniMap } from "./lazy-maps";
 import { ReportButton } from "./report-button";
 import { ThreadCard } from "./thread-card";
@@ -598,6 +599,7 @@ function OrganizerPanel({
 			<p className="font-[family-name:var(--font-display)] text-2xl leading-tight font-bold">
 				{people}
 			</p>
+			{editNotice && <PublishNotice result={editNotice} />}
 			{cancelled ? (
 				<p className="q-p opacity-80">{t.agenda.youCancelled}</p>
 			) : (
