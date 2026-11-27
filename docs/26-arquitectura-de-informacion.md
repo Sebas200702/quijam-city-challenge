@@ -223,7 +223,7 @@ flowchart LR
     LOGIN --> MOD["/moderacion: retenido y reportado"]
 ```
 
-### 2.5 Presentador (pendiente, #41)
+### 2.5 Presentador (#41)
 
 **Pantalla de inicio:** panel con los disparadores agrupados por caso. Cada botón tiene una sola acción y muestra el último envío ("Enviado hace 4 s").
 
@@ -445,11 +445,13 @@ Cuando el canal sea privado (5.3), el cliente se suscribe con `config: { private
 5. Un usuario `city` también entra al panel.
 6. Sin internet: el panel emite por `BroadcastChannel` entre pestañas del mismo portátil (ya lo hace `connectCityEvents()` sin Supabase).
 
+**Nota de implementación (#41):** la llave va en `DEMO_PRESENTER_KEY` (mínimo 12 caracteres). La cookie se firma con HMAC usando la misma llave, así que cambiar la llave cierra todas las sesiones. La API `events.ts` publica con `httpSend` y la llave de servicio. Si el servidor no tiene Realtime (503), el panel publica por el canal local. El registro muestra "confirmado en N ms" cuando el panel recibe su propio evento de vuelta. El caso 1 guarda un reporte de ejemplo con `POST /api/reports` (taxi Malecón → Estadio a $60.000) y publica el `reportId`; sin Supabase usa un id local y lo dice.
+
 ### 5.6 Qué issue construye cada pieza
 
 | Issue | Estado | Archivos |
 |---|---|---|
-| #41 Presentador | Pendiente | `src/pages/presentador/index.astro`, `src/pages/presentador/entrar.astro`, `src/pages/api/presentador/session.ts`, `src/pages/api/presentador/events.ts`, `src/components/presenter/presenter-panel.tsx`; reutiliza `src/lib/city-events/*` |
+| #41 Presentador | Hecho (ver nota) | `src/pages/presentador/index.astro`, `src/pages/presentador/entrar.astro`, `src/pages/api/presentador/session.ts`, `src/pages/api/presentador/events.ts`, `src/components/presenter/presenter-panel.tsx`; reutiliza `src/lib/city-events/*` |
 | #56 (este, fase 2) | Pendiente | `src/lib/auth/auth-types.ts`, `src/lib/auth/role-guard.ts`, cambio en `src/middleware.ts`, `src/lib/supabase-server.ts`, migración de roles |
 | #42 Ensayo de escenarios | En `main` | `src/components/crowd-sim-panel.tsx`, `src/lib/crowd-sim/*` |
 | #43 QR del jurado | En `main` | `src/components/jury-qr-panel.tsx`, `src/components/visitor-presence-beacon.tsx`, `src/lib/presence/*` |
