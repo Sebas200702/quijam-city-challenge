@@ -21,7 +21,7 @@ describe("describeSelection", () => {
 			code: "STOP-MALECON-NORTE",
 		});
 		expect(detail).toMatchObject({
-			title: "Gran Malecon (Sector Puerta de Oro)",
+			title: "Gran Malecón (Sector Puerta de Oro)",
 			eyebrow: "Paradero",
 			status: { tone: "green", label: "Accesible" },
 			facts: [
@@ -73,6 +73,21 @@ describe("findPoint", () => {
 		expect(findPoint(CORRIDOR_SEED, "Fritos DOÑA")).toEqual({
 			kind: "business",
 			code: "BIZ-FRITOS-ROSA",
+		});
+	});
+
+	it("finds the accented seed names typed without accents", () => {
+		expect(findPoint(CORRIDOR_SEED, "estacion joaquin")).toEqual({
+			kind: "stop",
+			code: "STOP-MURILLO-SUR",
+		});
+		expect(findPoint(CORRIDOR_SEED, "caiman del rio")).toEqual({
+			kind: "stop",
+			code: "STOP-MALECON-SUR",
+		});
+		expect(findPoint(CORRIDOR_SEED, "cafe popular")).toEqual({
+			kind: "business",
+			code: "BIZ-CAFE-PAZ",
 		});
 	});
 

@@ -1,5 +1,7 @@
 import {
 	ArrowRight,
+	ChevronDown,
+	ChevronUp,
 	Clock,
 	Leaf,
 	Mic,
@@ -7,11 +9,16 @@ import {
 	Wallet,
 	WifiOff,
 } from "lucide-react";
+import { useId, useState } from "react";
 import type {
 	MapNextStep,
 	VisitorShellCopy,
 } from "../../lib/home-content-types";
+import { useT } from "../../lib/i18n/use-language";
 import type { PlanResponse } from "../../lib/routing/plan-route";
+
+/** Phones start with the card as a peek, so it never covers most of the map (U10). */
+const WIDE_QUERY = "(min-width: 640px)";
 
 const copFormatter = new Intl.NumberFormat("es-CO", {
 	maximumFractionDigits: 0,
@@ -48,13 +55,22 @@ export function NextStepCard({
 	onShowRoute,
 	askHref,
 }: NextStepCardProps) {
+	const t = useT().map.metro;
+	const moreId = useId();
+	// Peek on phones: title, time, fare and "Ver la ruta"; the rest when expanded.
+	const [expanded, setExpanded] = useState(
+		() => window.matchMedia(WIDE_QUERY).matches,
+	);
 	const route = plan?.route ?? null;
 	const loading = !route && !failed && plan === null;
 	const fare = (cop: number) =>
 		cop === 0 ? copy.free : `$${copFormatter.format(cop)}`;
 
 	return (
-		<div className="visitor-bottom" lang={lang}>
+		<div
+			className={`visitor-bottom${expanded ? "" : " visitor-bottom--peek"}`}
+			lang={lang}
+		>
 			<section
 				className="q-next-step"
 				aria-labelledby="visitor-next-title"
@@ -65,6 +81,22 @@ export function NextStepCard({
 						<span className="q-star" aria-hidden="true" />
 						{copy.nextStepEyebrow}
 					</p>
+					{route ? (
+						<button
+							type="button"
+							className="q-btn q-btn--ghost q-btn--icon visitor-peek-toggle"
+							aria-expanded={expanded}
+							aria-controls={moreId}
+							aria-label={expanded ? t.nextStepLess : t.nextStepMore}
+							onClick={() => setExpanded((open) => !open)}
+						>
+							{expanded ? (
+								<ChevronDown size={20} strokeWidth={1.75} aria-hidden="true" />
+							) : (
+								<ChevronUp size={20} strokeWidth={1.75} aria-hidden="true" />
+							)}
+						</button>
+					) : null}
 				</div>
 				{route ? (
 					<>
@@ -72,11 +104,11 @@ export function NextStepCard({
 							{copy.nextStepTitle(step.destinationName)}
 						</h2>
 						{/* The Decider explains in Spanish, the corridor's language. */}
-						<p className="q-next-step__why" lang="es">
+						<p className="q-next-step__why visitor-more" id={moreId} lang="es">
 							{plan?.explanation}
 						</p>
 						<dl className="q-next-step__facts">
-							<div>
+							<div className="visitor-more">
 								<dt>{copy.nextStepRouteLabel}</dt>
 								<dd className="visitor-fact">
 									<Route size={16} strokeWidth={1.75} aria-hidden="true" />
@@ -99,7 +131,7 @@ export function NextStepCard({
 							</div>
 						</dl>
 						{route.isGreen ? (
-							<span className="q-badge q-badge--optimal visitor-green">
+							<span className="q-badge q-badge--optimal visitor-green visitor-more">
 								<Leaf size={14} strokeWidth={1.75} aria-hidden="true" />
 								{copy.greenRoute}
 							</span>
@@ -141,7 +173,7 @@ export function NextStepCard({
 			</section>
 
 			{route ? (
-				<a className="q-prompt visitor-guide-bar" href={askHref}>
+				<a className="q-prompt visitor-guide-bar visitor-more" href={askHref}>
 					<span className="visitor-guide-bar__text">{copy.guidePrompt}</span>
 					<span
 						className="q-btn q-btn--secondary q-btn--icon"

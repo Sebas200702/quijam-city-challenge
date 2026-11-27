@@ -4,6 +4,7 @@ import {
 	ArrowLeft,
 	CalendarPlus,
 	Clock,
+	Map as MapIcon,
 	MapPin,
 	MessageSquarePlus,
 	Navigation,
@@ -15,11 +16,12 @@ import {
 	PLACE_KIND_LABELS,
 } from "../../lib/community/community-labels";
 import { useT } from "../../lib/i18n/use-language";
+import { mapHref } from "../../lib/map/map-url";
 import { AskQuillartButton } from "../assistant/ask-quillart-button";
 import { CommunityShell } from "./community-shell";
 import { EmptyState, Loaded, SpotIllustration } from "./community-ui";
 import { EventCard } from "./event-card";
-import { PlaceBadges, PlaceKindTile } from "./place-card";
+import { isOnAmbMap, PlaceBadges, PlaceKindTile } from "./place-card";
 import { ThreadCard } from "./thread-card";
 import { useLoad } from "./use-community";
 
@@ -117,8 +119,20 @@ export function PlaceDetail({
 										{t.places.directions}
 										<span className="sr-only">{t.places.opensNewTab}</span>
 									</a>
+									{isOnAmbMap(place) && (
+										<a
+											href={mapHref({ lugar: place.slug })}
+											className="q-btn q-btn--secondary"
+										>
+											<MapIcon size={18} aria-hidden="true" />
+											{t.places.viewOnMap}
+										</a>
+									)}
 									<AskQuillartButton prompt={t.places.askAbout(place.name)} />
 								</div>
+								{!isOnAmbMap(place) && (
+									<p className="q-sm q-muted">{t.places.outsideAmbNote}</p>
+								)}
 								<p className="q-p">{place.description}</p>
 								<dl className="q-card gap-3 p-4">
 									<div className="flex items-start gap-2">

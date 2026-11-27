@@ -1,18 +1,19 @@
 -- Simulated 2034 seed data for the pilot corridor:
 -- Estadio Metropolitano -> Troncal Murillo -> Centro -> Barrio Abajo -> Gran Malecon.
--- Idempotent: safe to re-run in Supabase SQL Editor.
+-- Idempotent: safe to re-run in Supabase SQL Editor. Re-running it also updates the
+-- names and texts of rows that already exist (accents fixed on 27 Nov 2026, docs/30 U34).
 
 insert into public.stops (
   code, name, zone, stop_type, latitude, longitude,
   is_accessible, has_qr, has_shade, has_hydration, has_recycling, has_host_duo, is_simulated
 ) values
   ('STOP-ESTADIO', 'Estadio Metropolitano (Acceso Norte)', 'estadio', 'host_hub', 10.9269, -74.8006, true, true, true, true, true, true, true),
-  ('STOP-MURILLO-SUR', 'Estacion Joaquin Barrios Polo (Troncal Murillo)', 'troncal_murillo', 'transmetro', 10.9415, -74.7960, true, true, true, false, true, false, true),
-  ('STOP-MURILLO-46', 'Estacion La Arenosa (Murillo con Cra 46)', 'troncal_murillo', 'transmetro', 10.9765, -74.7876, true, true, true, true, true, true, true),
+  ('STOP-MURILLO-SUR', 'Estación Joaquín Barrios Polo (Troncal Murillo)', 'troncal_murillo', 'transmetro', 10.9415, -74.7960, true, true, true, false, true, false, true),
+  ('STOP-MURILLO-46', 'Estación La Arenosa (Murillo con Cra 46)', 'troncal_murillo', 'transmetro', 10.9765, -74.7876, true, true, true, true, true, true, true),
   ('STOP-CENTRO', 'Paradero Plaza de la Paz (Centro)', 'centro', 'qr_point', 10.9878, -74.7889, true, true, true, true, true, true, true),
   ('STOP-BARRIO-ABAJO', 'Casa del Carnaval (Barrio Abajo)', 'barrio_abajo', 'host_hub', 10.9928, -74.7840, true, true, true, true, true, true, true),
-  ('STOP-MALECON-SUR', 'Gran Malecon (Sector Caiman del Rio)', 'gran_malecon', 'host_hub', 11.0038, -74.7775, true, true, true, true, true, true, true),
-  ('STOP-MALECON-NORTE', 'Gran Malecon (Sector Puerta de Oro)', 'gran_malecon', 'qr_point', 11.0115, -74.7865, true, true, false, true, true, false, true)
+  ('STOP-MALECON-SUR', 'Gran Malecón (Sector Caimán del Río)', 'gran_malecon', 'host_hub', 11.0038, -74.7775, true, true, true, true, true, true, true),
+  ('STOP-MALECON-NORTE', 'Gran Malecón (Sector Puerta de Oro)', 'gran_malecon', 'qr_point', 11.0115, -74.7865, true, true, false, true, true, false, true)
 on conflict (code) do update set
   name = excluded.name,
   is_accessible = excluded.is_accessible,
@@ -27,18 +28,19 @@ insert into public.flood_zones (
   is_channeled, risk_level, alert_active, advisory_es, advisory_en, is_simulated
 ) values
   ('ARR-MURILLO-46', 'Arroyo Carrera 46 con Murillo', 'troncal_murillo', 10.9752, -74.7879, 180, false, 'high', false,
-   'Evitar cruce vehicular y peatonal en lluvia fuerte; usar desvio por Troncal elevada.',
+   'Evitar cruce vehicular y peatonal en lluvia fuerte; usar desvío por Troncal elevada.',
    'Avoid crossing during heavy rain; take the elevated transit detour.', true),
   ('ARR-FELICIDAD', 'Arroyo La Felicidad (Centro)', 'centro', 10.9854, -74.7868, 200, true, 'moderate', false,
-   'Tramo canalizado con escorrentia en aguacero intenso; verificar accesibilidad.',
+   'Tramo canalizado con escorrentía en aguacero intenso; verificar accesibilidad.',
    'Channeled section with surface runoff in heavy rain; verify accessible route.', true),
   ('ARR-BARRIO-ABAJO', 'Arroyo Calle 48 (Borde Barrio Abajo)', 'barrio_abajo', 10.9912, -74.7855, 140, false, 'high', false,
    'Cruce no seguro en aguacero; anfitriones redirigen por carrera 54 accesible.',
    'Unsafe crossing in downpour; hosts redirect along accessible Carrera 54.', true),
-  ('ARR-VIA-40', 'Escorrentia Via 40 acceso Malecon', 'gran_malecon', 11.0052, -74.7808, 160, false, 'moderate', false,
-   'Acumulacion temporal en acceso peatonal hacia el Malecon.',
+  ('ARR-VIA-40', 'Escorrentía Vía 40 acceso Malecón', 'gran_malecon', 11.0052, -74.7808, 160, false, 'moderate', false,
+   'Acumulación temporal en acceso peatonal hacia el Malecón.',
    'Temporary water buildup near the Malecon pedestrian access.', true)
 on conflict (code) do update set
+  name = excluded.name,
   risk_level = excluded.risk_level,
   advisory_es = excluded.advisory_es,
   advisory_en = excluded.advisory_en,
@@ -98,32 +100,33 @@ insert into public.businesses (
   code, name, category, zone, stop_id, latitude, longitude,
   is_verified, is_open, commission_free, qr_token, description_es, description_en, is_simulated
 ) values
-  ('BIZ-FRITOS-ROSA', 'Fritos Dona Rosa (Barrio Abajo)', 'food_popular', 'barrio_abajo',
+  ('BIZ-FRITOS-ROSA', 'Fritos Doña Rosa (Barrio Abajo)', 'food_popular', 'barrio_abajo',
    (select id from public.stops where code = 'STOP-BARRIO-ABAJO'), 10.9931, -74.7836,
    true, true, true, 'QR-BA-FRITOS-01',
-   'Arepa de huevo y carimanola tradicional en Barrio Abajo. Negocio verificado sin comision.',
+   'Arepa de huevo y carimañola tradicional en Barrio Abajo. Negocio verificado sin comisión.',
    'Traditional arepa de huevo and carimanola in Barrio Abajo. Verified zero-commission vendor.', true),
-  ('BIZ-MASCARAS-BA', 'Taller de Mascaras del Carnaval', 'crafts', 'barrio_abajo',
+  ('BIZ-MASCARAS-BA', 'Taller de Máscaras del Carnaval', 'crafts', 'barrio_abajo',
    (select id from public.stops where code = 'STOP-BARRIO-ABAJO'), 10.9924, -74.7844,
    true, true, true, 'QR-BA-CRAFTS-02',
-   'Artesanos locales con demostracion de mascaras tradicionales y sello de visita.',
+   'Artesanos locales con demostración de máscaras tradicionales y sello de visita.',
    'Local artisans showcasing Carnival mask making with visitor stamp.', true),
-  ('BIZ-ECO-MALECON', 'Jornada Verde y Reciclaje Malecon', 'eco_event', 'gran_malecon',
+  ('BIZ-ECO-MALECON', 'Jornada Verde y Reciclaje Malecón', 'eco_event', 'gran_malecon',
    (select id from public.stops where code = 'STOP-MALECON-SUR'), 11.0042, -74.7779,
    true, true, true, 'QR-GM-ECO-03',
-   'Actividad ambiental con puntos de hidratacion y recompensas por reciclaje.',
+   'Actividad ambiental con puntos de hidratación y recompensas por reciclaje.',
    'Environmental event with hydration stations and recycling rewards.', true),
-  ('BIZ-CAFE-PAZ', 'Cafe Popular Plaza de la Paz', 'coffee', 'centro',
+  ('BIZ-CAFE-PAZ', 'Café Popular Plaza de la Paz', 'coffee', 'centro',
    (select id from public.stops where code = 'STOP-CENTRO'), 10.9881, -74.7885,
    true, true, true, 'QR-CE-CAFE-04',
-   'Cafe caribeno y punto de sombra cerca del paradero del Centro.',
+   'Café caribeño y punto de sombra cerca del paradero del Centro.',
    'Caribbean coffee and shaded rest point near the Centro stop.', true),
-  ('BIZ-JUGOS-ESTADIO', 'Refresqueria La 45 (Estadio)', 'food_popular', 'estadio',
+  ('BIZ-JUGOS-ESTADIO', 'Refresquería La 45 (Estadio)', 'food_popular', 'estadio',
    (select id from public.stops where code = 'STOP-ESTADIO'), 10.9274, -74.8001,
    true, false, true, 'QR-ES-FOOD-05',
-   'Jugos naturales y punto de hidratacion verificado en acceso al Estadio.',
+   'Jugos naturales y punto de hidratación verificado en acceso al Estadio.',
    'Fresh local juices and verified hydration stop by the Stadium.', true)
 on conflict (code) do update set
+  name = excluded.name,
   is_open = excluded.is_open,
   is_verified = excluded.is_verified,
   description_es = excluded.description_es,
@@ -135,10 +138,11 @@ insert into public.zone_visitor_counts (
 ) values
   ('estadio', 'Estadio Metropolitano', 4200, 6000, 'world_cup', true),
   ('troncal_murillo', 'Troncal Murillo', 1850, 3000, 'world_cup', true),
-  ('centro', 'Centro Historico', 1400, 2500, 'world_cup', true),
+  ('centro', 'Centro Histórico', 1400, 2500, 'world_cup', true),
   ('barrio_abajo', 'Barrio Abajo', 620, 1800, 'world_cup', true),
-  ('gran_malecon', 'Gran Malecon', 3100, 3500, 'world_cup', true)
+  ('gran_malecon', 'Gran Malecón', 3100, 3500, 'world_cup', true)
 on conflict (zone) do update set
+  zone_label = excluded.zone_label,
   active_visitors = excluded.active_visitors,
   capacity_threshold = excluded.capacity_threshold,
   city_mode = excluded.city_mode,
@@ -163,6 +167,6 @@ insert into public.overcharge_reports (
 select
   (select id from public.route_segments where code = 'SEG-MAL-EST-TAXI'),
   'estadio', 'taxi', 55000, 24000, 'DRV-SIM-104',
-  'Dato simulado en dia de partido.',
+  'Dato simulado en día de partido.',
   'in_review', true
 where (select count(*) from public.overcharge_reports) < 2;

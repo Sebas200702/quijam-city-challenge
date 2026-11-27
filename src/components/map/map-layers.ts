@@ -14,13 +14,23 @@ import type { CorridorData } from "../../lib/corridor/corridor-types";
 import type { MapMessages } from "../../lib/i18n/dictionaries/map";
 import { statusWord } from "./map-labels";
 import { pinIcon } from "./map-markers";
+import type { ClusterEntry } from "./pin-clusterer";
 
 export type LayerKey = "stops" | "floodZones" | "businesses";
 
-export interface CorridorLayers extends Record<LayerKey, L.LayerGroup> {
+/** Layer each kind of corridor point belongs to. */
+export const LAYER_OF: Record<Selection["kind"], LayerKey> = {
+	stop: "stops",
+	floodZone: "floodZones",
+	business: "businesses",
+};
+
+export interface CorridorLayers {
 	corridor: L.LayerGroup;
-	/** Every marker, by selectionKey(), so the map can highlight the selected one. */
-	markers: Map<string, L.Marker>;
+	/** The arroyo circles; their pins go through the clusterer like every other pin. */
+	floodAreas: L.LayerGroup;
+	/** Every pin, by selectionKey(), with its layer: the clusterer shows them. */
+	markers: Map<string, ClusterEntry>;
 }
 
 /** The corridor's two ends keep their name on the map; other pins show it when selected or near. */
@@ -117,7 +127,7 @@ export function relabelPins(
 	t: MapMessages,
 ): void {
 	for (const [key, { title, icon }] of pinsOf(data, t)) {
-		const item = layers.markers.get(key);
+		const item = layers.markers.get(key)?.marker;
 		if (!item) continue;
 		item.options.title = title;
 		item.setIcon(icon);
@@ -132,7 +142,7 @@ export function buildCorridorLayers(
 	onSelect: (selection: Selection) => void,
 	t: MapMessages,
 ): CorridorLayers {
-	const markers = new Map<string, L.Marker>();
+	const markers = new Map<string, ClusterEntry>();
 	const pins = pinsOf(data, t);
 	const marker = (selection: Selection, latLng: L.LatLngTuple) => {
 		const { title, icon } = pins.get(selectionKey(selection)) as Pin;
@@ -151,9 +161,28 @@ export function buildCorridorLayers(
 				originalEvent.preventDefault();
 				onSelect(selection);
 			});
-		markers.set(selectionKey(selection), item);
+		markers.set(selectionKey(selection), {
+			marker: item,
+			group: LAYER_OF[selection.kind],
+		});
 		return item;
 	};
+
+	for (const stop of data.stops) {
+		marker({ kind: "stop", code: stop.code }, [stop.latitude, stop.longitude]);
+	}
+	const floodAreas = data.floodZones.map((zone) => {
+		const { tone } = floodZoneStatus(zone);
+		const center: L.LatLngTuple = [zone.latitude, zone.longitude];
+		marker({ kind: "floodZone", code: zone.code }, center);
+		return floodCircle(center, zone.radius_meters, tone);
+	});
+	for (const business of data.businesses) {
+		marker({ kind: "business", code: business.code }, [
+			business.latitude,
+			business.longitude,
+		]);
+	}
 
 	const path = corridorLine(data.stops);
 	return {
@@ -165,32 +194,7 @@ export function buildCorridorLayers(
 			}),
 			L.polyline(path, { className: "corridor-route", interactive: false }),
 		]),
-		stops: L.layerGroup(
-			data.stops.map((stop) =>
-				marker({ kind: "stop", code: stop.code }, [
-					stop.latitude,
-					stop.longitude,
-				]),
-			),
-		),
-		floodZones: L.layerGroup(
-			data.floodZones.flatMap((zone) => {
-				const { tone } = floodZoneStatus(zone);
-				const center: L.LatLngTuple = [zone.latitude, zone.longitude];
-				return [
-					floodCircle(center, zone.radius_meters, tone),
-					marker({ kind: "floodZone", code: zone.code }, center),
-				];
-			}),
-		),
-		businesses: L.layerGroup(
-			data.businesses.map((business) =>
-				marker({ kind: "business", code: business.code }, [
-					business.latitude,
-					business.longitude,
-				]),
-			),
-		),
+		floodAreas: L.layerGroup(floodAreas),
 		markers,
 	};
 }

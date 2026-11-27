@@ -11,21 +11,34 @@ interface BottomNavProps {
 	aiHref?: string;
 }
 
+/**
+ * Sections without a tab of their own and the tab they live under. On phones the map
+ * is a card of the Quillart home (docs/26 §2), so /mapa and /reportar mark Quillart
+ * (docs/30, U24); the top bar names the section.
+ */
+const PARENT_TAB: Partial<Record<NavSection, NavSection>> = {
+	map: "home",
+	ai: "home",
+};
+
 /** Mobile tab bar (hidden on large screens, where TopNav takes over). */
 export function BottomNav({ current }: BottomNavProps) {
 	const t = useT();
+	const parent = PARENT_TAB[current];
 	const tab = (
 		section: NavSection,
 		href: string,
 		label: string,
 		icon: (strokeWidth: number) => ReactNode,
 	) => {
-		const on = current === section;
+		const page = current === section;
+		const on = page || parent === section;
 		return (
 			<a
 				className={`q-tab${on ? " is-on" : ""}`}
 				href={href}
-				aria-current={on ? "page" : undefined}
+				// The section itself is the page; its parent tab is only "where you are".
+				aria-current={page ? "page" : on ? "true" : undefined}
 			>
 				{icon(on ? 2 : 1.75)}
 				{label}

@@ -28,12 +28,45 @@
 .visitor-bottom > * {
 	pointer-events: auto;
 }
+/* Wide screens: right of the map controls' column (16 + 48 + 16 px), never under it (U11). */
 @media (min-width: 640px) {
 	.visitor-bottom {
 		left: auto;
-		right: 16px;
+		right: 80px;
 		bottom: 32px;
-		width: 400px;
+		width: min(400px, max(320px, calc(100% - 492px)));
+	}
+	.visitor-peek-toggle {
+		display: none;
+	}
+}
+
+/* Phones: the card starts as a peek (title, time, fare and "Ver la ruta") so it covers
+   about a quarter of the map, not half; the toggle shows the rest (U10). */
+.visitor-peek-toggle {
+	flex: none;
+	margin: -12px -12px -12px 0;
+}
+@media (max-width: 639px) {
+	.visitor-bottom--peek .q-next-step {
+		gap: 8px;
+		padding-top: 14px;
+	}
+	.visitor-bottom--peek .visitor-more {
+		display: none;
+	}
+	/* Labels stay for screen readers; the icons already say time and fare. */
+	.visitor-bottom--peek .q-next-step__facts dt {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip-path: inset(50%);
+		white-space: nowrap;
+	}
+	.visitor-bottom:not(.visitor-bottom--peek) .q-next-step {
+		max-height: calc(100dvh - 320px);
+		overflow-y: auto;
 	}
 }
 .visitor-fact {

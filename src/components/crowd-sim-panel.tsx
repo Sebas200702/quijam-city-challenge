@@ -23,10 +23,8 @@ import {
 import { CORRIDOR_SEED } from "../lib/corridor/corridor-seed";
 import { CrowdSim, SIM_ZONES } from "../lib/crowd-sim/crowd-sim";
 import { writeSimulatedCounts } from "../lib/crowd-sim/crowd-sim-store";
+import { createMetroMap, metroTileLayer } from "./map/metro-frame";
 
-const TILE_URL = "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
-const TILE_ATTRIBUTION =
-	'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>';
 const AGENTS = 2000;
 /** How often simulated counts are written to the database while running. */
 const WRITE_EVERY_MS = 5000;
@@ -169,13 +167,12 @@ export function CrowdSimPanel({ zones, canWrite }: CrowdSimPanelProps) {
 		const sim = simRef.current;
 		if (!container || !canvas || !sim) return;
 
-		const map = L.map(container, {
+		// Same frame as /mapa: only the Metropolitan Area, the rest masked (U09).
+		const map = createMetroMap(container, {
 			zoomControl: true,
 			attributionControl: true,
 		});
-		L.tileLayer(TILE_URL, { attribution: TILE_ATTRIBUTION, maxZoom: 19 }).addTo(
-			map,
-		);
+		metroTileLayer().addTo(map);
 		const path = corridorLine(CORRIDOR_SEED.stops);
 		const style = getComputedStyle(container);
 		const token = (name: string, fallback: string) =>

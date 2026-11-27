@@ -33,6 +33,10 @@ const es = {
 	oneUpcoming: "1 evento próximo",
 	manyUpcoming: (count: number) => `${count} eventos próximos`,
 	freeShort: "Gratis",
+	/** Places of the catalog outside the Barranquilla Metropolitan Area: listed, not on the map. */
+	outsideAmb: "Fuera del área metropolitana",
+	outsideAmbNote:
+		"Queda fuera del Área Metropolitana de Barranquilla, así que no aparece en el mapa de QUILLART.",
 	allPlaces: "Todos los lugares",
 	loadingPlace: "Cargando el lugar…",
 	notFoundTitle: "No encontramos este lugar",
@@ -107,6 +111,9 @@ const en: PlacesMessages = {
 	oneUpcoming: "1 upcoming event",
 	manyUpcoming: (count: number) => `${count} upcoming events`,
 	freeShort: "Free",
+	outsideAmb: "Outside the metropolitan area",
+	outsideAmbNote:
+		"It is outside the Barranquilla Metropolitan Area, so it does not appear on the QUILLART map.",
 	allPlaces: "All places",
 	loadingPlace: "Loading the place…",
 	notFoundTitle: "We couldn't find this place",
@@ -179,6 +186,9 @@ const pt: PlacesMessages = {
 	oneUpcoming: "1 evento próximo",
 	manyUpcoming: (count: number) => `${count} eventos próximos`,
 	freeShort: "Grátis",
+	outsideAmb: "Fora da área metropolitana",
+	outsideAmbNote:
+		"Fica fora da Área Metropolitana de Barranquilla, por isso não aparece no mapa do QUILLART.",
 	allPlaces: "Todos os lugares",
 	loadingPlace: "Carregando o lugar…",
 	notFoundTitle: "Não encontramos este lugar",
@@ -251,6 +261,9 @@ const fr: PlacesMessages = {
 	oneUpcoming: "1 événement à venir",
 	manyUpcoming: (count: number) => `${count} événements à venir`,
 	freeShort: "Gratuit",
+	outsideAmb: "Hors de l’aire métropolitaine",
+	outsideAmbNote:
+		"Ce lieu est hors de l’aire métropolitaine de Barranquilla : il n’apparaît pas sur la carte QUILLART.",
 	allPlaces: "Tous les lieux",
 	loadingPlace: "Chargement du lieu…",
 	notFoundTitle: "Nous n'avons pas trouvé ce lieu",

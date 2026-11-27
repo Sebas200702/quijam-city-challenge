@@ -40,6 +40,8 @@
   --map-road: #1C2B40;
   --map-road-major: #2E4463;
   --map-park: #11291F;
+  /* Mask over everything outside the Metropolitan Area */
+  --map-outside: #060B12;
   /* Elevation and glows */
   --shadow-card: 0 12px 32px #00000047;
   --shadow-modal: 0 28px 60px #00000080;
@@ -84,6 +86,7 @@
   --map-road: #FFFFFF;
   --map-road-major: #D3DAE3;
   --map-park: #DDEFD9;
+  --map-outside: #E3E6EA;
   --shadow-card: 0 1px 2px #0b131e0a, 0 12px 32px #0b131e12;
   --shadow-modal: 0 24px 56px #0b131e24;
   --glow-red: 0 0 0 6px #ce112626, 0 8px 20px #ce11262e;

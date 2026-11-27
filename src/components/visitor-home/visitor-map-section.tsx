@@ -7,7 +7,6 @@ import { MAP_NEXT_STEP } from "../../lib/home-content";
 import { APP_HOME_HREF } from "../home/nav-sections";
 import CorridorMap from "../map/corridor-map";
 import { useRoutePlan } from "../map/use-route-plan";
-import MatchTimeline from "../timeline/match-timeline";
 import { MapErrorBoundary } from "./map-error-boundary";
 import { MapErrorState } from "./map-error-state";
 import { NextStepCard } from "./next-step-card";
@@ -94,9 +93,9 @@ export default function VisitorMapSection({
 					<MapErrorState copy={copy} lang={language} askHref={askHref} />
 				}
 			>
+				{/* No match-day timeline here: visitors ignore `tiempo`; it lives in the city
+				    dashboard and the presenter panel (docs/26 §3, docs/30 U39). */}
 				<CorridorMap data={data} source={source} />
-				{/* Match-day timeline (#44): a reference scenario, synced over city-events. */}
-				<MatchTimeline variant="map" />
 				{nextStepOpen ? (
 					<NextStepCard
 						copy={copy}
