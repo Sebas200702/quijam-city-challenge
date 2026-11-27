@@ -1,8 +1,8 @@
 ---
-// Privacy policy (Ley 1581 de 2012, habeas data) and the public URL the Google
-// OAuth consent screen asks for. Every practice below comes from the repository
-// docs (22-seguridad-y-confianza, 27-comunidad-y-moderacion, 28-quillart-ai,
-// 11-modelo-datos, 02-decisiones). Spanish is the source text; the English
+// Privacy policy (Ley 1581 de 2012, habeas data; minimum content of Decreto 1377
+// de 2013, art. 13) and the public URL the Google OAuth consent screen asks for.
+// Every practice below comes from the repository (docs 22, 27, 28, 29, 11, 02;
+// supabase/migrations; src/pages/api). Spanish is the source text; the English
 // version follows it section by section. pt and fr are not translated yet.
 // Static page: no islands and no inline scripts of its own (CSP).
 import BaseLayout from "../layouts/base-layout.astro";
@@ -27,14 +27,18 @@ interface Policy {
 	sections: Section[];
 }
 
-// TODO(legal): replace with the official contact channel of the data controller.
-const CONTACT_EMAIL = "sebastorregroza6@gmail.com";
+// Legal identity of the data controller (Decreto 1377 de 2013, art. 13).
+const RESPONSABLE_NOMBRE = "Sebastian Torregroza";
+const RESPONSABLE_DIRECCION = "Barranquilla, Atlántico, Colombia";
+const RESPONSABLE_TELEFONO = "311 566 2871";
+/** Official channel for personal data requests. */
+const RESPONSABLE_CANAL = "privacidad@quillart.dev";
 
 const es: Policy = {
 	lang: "es",
 	eyebrow: "QUILLART · Quijam City Challenge",
 	title: "Política de privacidad",
-	lead: "Cómo tratamos tus datos personales en QUILLART, según la Ley 1581 de 2012 de protección de datos personales (habeas data). Pedimos lo mínimo necesario y puedes descargar o borrar lo tuyo desde tu perfil.",
+	lead: "Cómo tratamos tus datos personales en QUILLART, según la Ley 1581 de 2012 de protección de datos personales (habeas data) y el Decreto 1377 de 2013. Pedimos lo mínimo necesario y puedes descargar o borrar lo tuyo desde tu perfil.",
 	effective: "Vigente desde el 27 de noviembre de 2026.",
 	sections: [
 		{
@@ -42,10 +46,12 @@ const es: Policy = {
 			title: "1. Responsable del tratamiento",
 			blocks: [
 				{
-					p: "QUILLART, proyecto del Quijam City Challenge en Barranquilla, Colombia, es el responsable del tratamiento de los datos descritos en esta política.",
-				},
-				{
-					p: `Contacto para temas de datos personales: ${CONTACT_EMAIL}.`,
+					ul: [
+						`Responsable: ${RESPONSABLE_NOMBRE} (persona natural), en nombre del equipo QUILLART del Quijam City Challenge.`,
+						`Dirección: ${RESPONSABLE_DIRECCION}.`,
+						`Teléfono: ${RESPONSABLE_TELEFONO}.`,
+						`Canal oficial para solicitudes de datos personales: ${RESPONSABLE_CANAL}.`,
+					],
 				},
 			],
 		},
@@ -58,32 +64,35 @@ const es: Policy = {
 				},
 				{
 					ul: [
-						"Ubicación: se usa en tu teléfono para el mapa y las rutas, y no sale de él. Al servidor solo llegan conteos anónimos por zona.",
 						"Presencia en línea: para contar cuántas personas están conectadas usamos un identificador temporal que vive en la sesión de tu navegador, sin registro ni datos personales.",
 						"Preferencias: el idioma y el tema (claro u oscuro) se guardan solo en tu navegador.",
-						"Cuenta de la comunidad: correo y contraseña para entrar, nombre visible, barrio (opcional) y si estás de visita. Tu perfil público muestra solo el nombre visible y el barrio. Si eliges entrar con Google, Google nos confirma tu correo y tu nombre.",
+						"Cuenta de la comunidad: correo y contraseña para entrar, nombre visible, barrio (opcional) y si estás de visita. Si entras con Google, Google nos entrega tu correo y tu nombre.",
+						'Nombre visible: el que escribes al registrarte; si entras con Google, tu nombre de Google; si no hay ninguno, "Persona de la comunidad". Nunca se arma con tu correo. Las cuentas creadas antes del 28 de noviembre de 2026 pueden tener como nombre la parte del correo antes de la @: cámbialo en /perfil → Editar perfil.',
+						"Perfil público: cualquier persona, incluso sin sesión, puede leer estos campos de tu perfil: identificador interno, nombre visible, barrio, si estás de visita, si eres organizador verificado y la fecha de creación del perfil. Tu correo no es público.",
 						"Lo que publicas: eventos, conversaciones del foro, respuestas, reportes de contenido, inscripciones a eventos y apelaciones. Las inscripciones solo las ven tú y quien organiza el evento.",
-						"Reportes de cobro abusivo: son anónimos. Solo guardan zona, tramo, tarifas y, si quieres, el código QR del conductor. No piden nombre, teléfono ni ubicación.",
+						"Reportes de cobro abusivo: no piden nombre, teléfono ni ubicación. Guardan zona, tramo, tarifas, el código QR del conductor si lo pones y una nota opcional de texto libre (hasta 280 caracteres). La nota no pasa por el filtro de datos personales y la ve la ciudad: no escribas en ella datos tuyos ni de otras personas.",
 						"Visitas a negocios del barrio: solo se guarda el negocio y la hora, nada de quien visita.",
-						"Quillart AI: tus mensajes y un contexto mínimo (tu nombre visible y si estás de visita) se envían a Gemini a través de nuestro servidor para responderte. Nunca se envían tu correo, tu contraseña ni tu ubicación exacta. El audio de la voz lo procesa tu navegador; la aplicación solo recibe el texto.",
+						"Quillart AI (texto): tus mensajes y un contexto mínimo (tu nombre visible y si estás de visita) se envían a Gemini a través de nuestro servidor. Tus mensajes también van a OpenJev (Codiv), sin datos de cuenta, para elegir qué agente responde. Nunca enviamos tu correo, tu contraseña ni tu ubicación exacta.",
+						"Dictado por voz: usa el reconocimiento de voz de tu navegador. En Chrome, el navegador envía el audio a Google para convertirlo en texto; la aplicación solo recibe el texto.",
+						"Voz en vivo (beta, en el chat y en /prueba-guia): el audio del micrófono va directamente de tu navegador a Gemini Live (Google) mientras la usas.",
 						"Moderación: el texto que quieres publicar pasa por reglas automáticas y por OpenJev, sin autor ni datos de cuenta. Los teléfonos, correos y números de documento se rechazan y nunca se envían a OpenJev.",
-						"Protección contra abuso: usamos tu dirección IP para aplicar límites de uso en las API. Se guarda como un hash SHA-256 recortado, nunca en claro. Para evitar cuentas automáticas, el registro puede pedir una verificación de Cloudflare Turnstile.",
+						"Protección contra abuso: usamos tu dirección IP para aplicar límites de uso en las API. En nuestros límites de uso guardamos un hash; los proveedores (Supabase, Cloudflare) pueden registrar la IP en sus registros.",
 					],
 				},
 			],
 		},
 		{
 			id: "base-legal",
-			title: "3. Base legal",
+			title: "3. Base legal y autorización",
 			blocks: [
 				{
-					p: "Tratamos tus datos con tu autorización previa, expresa e informada, conforme a la Ley 1581 de 2012. La das al crear tu cuenta y al publicar contenido. Puedes revocarla en cualquier momento eliminando tu cuenta.",
+					p: "Tratamos tus datos con tu autorización previa, expresa e informada, conforme a la Ley 1581 de 2012. La das al crear tu cuenta, al aceptar esta política en el formulario de registro, y al publicar contenido. Puedes revocarla en cualquier momento eliminando tu cuenta.",
 				},
 			],
 		},
 		{
 			id: "encargados",
-			title: "4. Con quién se comparten",
+			title: "4. Con quién se comparten y transferencia internacional",
 			blocks: [
 				{
 					p: "Usamos estos proveedores como encargados del tratamiento, solo para las funciones indicadas:",
@@ -91,11 +100,13 @@ const es: Policy = {
 				{
 					ul: [
 						"Supabase: base de datos, autenticación de cuentas y actualizaciones en tiempo real.",
-						"Google (Gemini API): respuestas de Quillart AI, llamado desde nuestro servidor.",
-						"Google (inicio de sesión): solo si eliges entrar con tu cuenta de Google.",
+						"Google: Gemini API (respuestas de Quillart AI, desde nuestro servidor), Gemini Live (voz en vivo, desde tu navegador) e inicio de sesión con Google si lo eliges. El dictado por voz en Chrome también lo procesa Google.",
 						"Codiv (OpenJev): triaje de moderación y elección del agente de Quillart AI, sin datos de cuenta.",
-						"Cloudflare (Turnstile): verificación de que quien se registra es una persona.",
+						"Cloudflare: todo el tráfico del sitio pasa por su red; también la verificación Turnstile de que quien se registra es una persona.",
 					],
+				},
+				{
+					p: "Transferencia internacional: Supabase, Google y Cloudflare pueden tratar tus datos en servidores fuera de Colombia, y no hemos confirmado dónde están los servidores de Codiv. Al aceptar esta política autorizas esa transferencia o transmisión internacional, que se hace solo para las funciones descritas.",
 				},
 				{
 					p: "El portal de datos abiertos publica solo columnas de una lista blanca, sin perfiles, organizadores ni inscripciones.",
@@ -107,7 +118,7 @@ const es: Policy = {
 			title: "5. Cuánto tiempo los guardamos",
 			blocks: [
 				{
-					p: 'Los datos de tu cuenta y lo que publicas se conservan mientras tengas la cuenta. Cuando la eliminas se borran tus conversaciones, respuestas, reportes e inscripciones; tus eventos futuros se cancelan y los pasados quedan a nombre de "Cuenta eliminada". Los conteos anónimos y los reportes de cobro abusivo no te identifican.',
+					p: 'Los datos de tu cuenta y lo que publicas se conservan mientras tengas la cuenta. Cuando la eliminas se borran tus conversaciones, respuestas, reportes e inscripciones; tus eventos futuros se cancelan y los pasados quedan a nombre de "Cuenta eliminada". Los conteos anónimos no te identifican.',
 				},
 			],
 		},
@@ -116,30 +127,45 @@ const es: Policy = {
 			title: "6. Tus derechos",
 			blocks: [
 				{
-					p: "Como titular de los datos puedes conocer, actualizar, rectificar y suprimir tus datos, revocar la autorización y presentar quejas ante la Superintendencia de Industria y Comercio. Lo puedes hacer tú mismo desde tu perfil:",
+					p: "Como titular de los datos puedes conocer, actualizar, rectificar y suprimir tus datos, pedir prueba de la autorización, saber cómo se usan, revocar la autorización y presentar quejas ante la Superintendencia de Industria y Comercio. Lo principal lo haces tú mismo desde tu perfil:",
 				},
 				{
 					ul: [
-						"Actualizar o rectificar: edita tu nombre visible, tu barrio y si estás de visita.",
+						"Actualizar o rectificar: Editar perfil cambia tu nombre visible, tu barrio y si estás de visita.",
 						'Conocer: el botón "Descargar mis datos" te entrega un archivo JSON con tu perfil, tus inscripciones, los eventos que organizas, tus conversaciones, tus respuestas y tus reportes.',
 						'Suprimir: el botón "Eliminar mi cuenta" (escribiendo ELIMINAR para confirmar) borra tu cuenta como se describe en la sección 5.',
 						"Si un moderador retiró algo tuyo, puedes pedir una segunda revisión una vez.",
 					],
 				},
 				{ p: "Ir a tu perfil:", link: { href: "/perfil", label: "/perfil" } },
-				{ p: `Para cualquier otra solicitud: ${CONTACT_EMAIL}.` },
+			],
+		},
+		{
+			id: "procedimiento",
+			title: "7. Procedimiento para consultas y reclamos",
+			blocks: [
+				{
+					p: `Escríbenos al canal oficial, ${RESPONSABLE_CANAL}, con tu nombre, el correo de tu cuenta, lo que pides y, si es un reclamo, los hechos y documentos que lo apoyan.`,
+				},
+				{
+					ul: [
+						"Consultas (conocer tus datos): respondemos en máximo 10 días hábiles desde que la recibimos (Ley 1581, art. 14).",
+						"Reclamos (corregir, actualizar, suprimir o revocar): respondemos en máximo 15 días hábiles desde que lo recibimos completo (Ley 1581, art. 15).",
+						"Si no podemos responder a tiempo, te avisamos el motivo y la nueva fecha dentro de los plazos que permite la ley.",
+					],
+				},
 			],
 		},
 		{
 			id: "seguridad",
-			title: "7. Seguridad",
+			title: "8. Seguridad",
 			blocks: [
 				{
 					ul: [
 						"Reglas de acceso por fila en la base de datos: cada persona solo ve lo que le corresponde, y solo el servidor publica contenido después del triaje.",
 						"La llave de servicio vive solo en el servidor y la usan rutas que primero verifican tu sesión.",
 						"Cabeceras de seguridad y política de seguridad de contenido (CSP) en cada página.",
-						"Las direcciones IP se guardan como hash, nunca en claro.",
+						"En nuestros límites de uso la IP se guarda como hash.",
 						"Las publicaciones con teléfonos, correos o números de documento se rechazan.",
 					],
 				},
@@ -147,7 +173,7 @@ const es: Policy = {
 		},
 		{
 			id: "menores",
-			title: "8. Niñas, niños y adolescentes",
+			title: "9. Niñas, niños y adolescentes",
 			blocks: [
 				{
 					p: "QUILLART no pide la edad ni busca recoger datos de menores de edad. Si eres menor, crea una cuenta y publica solo con el acompañamiento de tu madre, padre o acudiente. Si sabes de una cuenta de un menor sin ese acompañamiento, puedes eliminarla desde el perfil o escribirnos.",
@@ -156,7 +182,7 @@ const es: Policy = {
 		},
 		{
 			id: "cambios",
-			title: "9. Cambios a esta política",
+			title: "10. Cambios a esta política",
 			blocks: [
 				{
 					p: "Si cambiamos esta política, publicamos la nueva versión en esta misma página y actualizamos la fecha de vigencia.",
@@ -169,8 +195,8 @@ const es: Policy = {
 const en: Policy = {
 	lang: "en",
 	eyebrow: "QUILLART · Quijam City Challenge",
-	title: "Privacy policy",
-	lead: "How QUILLART handles your personal data under Colombian Law 1581 of 2012 on personal data protection (habeas data). We ask for the minimum and you can download or delete your data from your profile.",
+	title: "Privacy policy (English)",
+	lead: "How QUILLART handles your personal data under Colombian Law 1581 of 2012 on personal data protection (habeas data) and Decree 1377 of 2013. We ask for the minimum and you can download or delete your data from your profile. The Spanish version above prevails.",
 	effective: "Effective from November 27, 2026.",
 	sections: [
 		{
@@ -178,9 +204,13 @@ const en: Policy = {
 			title: "1. Data controller",
 			blocks: [
 				{
-					p: "QUILLART, a Quijam City Challenge project in Barranquilla, Colombia, is the controller of the data described in this policy.",
+					ul: [
+						`Controller: ${RESPONSABLE_NOMBRE} (natural person), on behalf of the QUILLART team of the Quijam City Challenge.`,
+						`Address: ${RESPONSABLE_DIRECCION}.`,
+						`Phone: ${RESPONSABLE_TELEFONO}.`,
+						`Official channel for personal data requests: ${RESPONSABLE_CANAL}.`,
+					],
 				},
-				{ p: `Contact for personal data matters: ${CONTACT_EMAIL}.` },
 			],
 		},
 		{
@@ -192,32 +222,35 @@ const en: Policy = {
 				},
 				{
 					ul: [
-						"Location: used on your phone for the map and routes, and it never leaves it. Only anonymous counts per zone reach the server.",
 						"Online presence: to count how many people are connected we use a temporary identifier kept in your browser session, with no sign-up and no personal data.",
 						"Preferences: language and theme (light or dark) are stored only in your browser.",
-						"Community account: email and password to sign in, display name, neighborhood (optional) and whether you are visiting. Your public profile shows only your display name and neighborhood. If you choose to sign in with Google, Google confirms your email and name to us.",
+						"Community account: email and password to sign in, display name, neighborhood (optional) and whether you are visiting. If you sign in with Google, Google gives us your email and name.",
+						'Display name: the one you type when signing up; with Google, your Google name; if there is none, "Persona de la comunidad". It is never built from your email. Accounts created before November 28, 2026 may have the part of the email before the @ as their name: change it in /perfil → Edit profile.',
+						"Public profile: anyone, even without signing in, can read these profile fields: internal identifier, display name, neighborhood, whether you are visiting, whether you are a verified organizer and the profile creation date. Your email is not public.",
 						"What you post: events, forum threads, replies, content reports, event registrations and appeals. Registrations are visible only to you and the event organizer.",
-						"Overcharge reports: anonymous. They only store zone, segment, fares and, if you want, the driver's QR code. They do not ask for your name, phone or location.",
+						"Overcharge reports: they do not ask for your name, phone or location. They store zone, segment, fares, the driver's QR code if you add it and an optional free-text note (up to 280 characters). The note does not go through the personal data filter and the city can read it: do not write your or other people's personal data in it.",
 						"Visits to neighborhood businesses: only the business and the time are stored, nothing about the visitor.",
-						"Quillart AI: your messages and minimal context (your display name and whether you are visiting) are sent to Gemini through our server to answer you. Your email, password and exact location are never sent. Voice audio is processed by your browser; the app only receives the text.",
+						"Quillart AI (text): your messages and minimal context (your display name and whether you are visiting) are sent to Gemini through our server. Your messages also go to OpenJev (Codiv), without account data, to choose which agent answers. We never send your email, password or exact location.",
+						"Voice dictation: uses your browser's speech recognition. In Chrome, the browser sends the audio to Google to turn it into text; the app only receives the text.",
+						"Live voice (beta, in the chat and at /prueba-guia): microphone audio goes directly from your browser to Gemini Live (Google) while you use it.",
 						"Moderation: the text you want to post goes through automatic rules and OpenJev, without author or account data. Phone numbers, emails and ID numbers are rejected and never sent to OpenJev.",
-						"Abuse protection: we use your IP address to apply rate limits on the APIs. It is stored as a truncated SHA-256 hash, never in clear text. To prevent automated accounts, sign-up may ask for a Cloudflare Turnstile check.",
+						"Abuse protection: we use your IP address to apply rate limits on the APIs. Our rate limits store a hash; providers (Supabase, Cloudflare) may record the IP in their logs.",
 					],
 				},
 			],
 		},
 		{
 			id: "en-legal-basis",
-			title: "3. Legal basis",
+			title: "3. Legal basis and authorization",
 			blocks: [
 				{
-					p: "We process your data with your prior, express and informed authorization, under Law 1581 of 2012. You give it when you create your account and when you post content. You can revoke it at any time by deleting your account.",
+					p: "We process your data with your prior, express and informed authorization, under Law 1581 of 2012. You give it when you create your account, when you accept this policy in the sign-up form, and when you post content. You can revoke it at any time by deleting your account.",
 				},
 			],
 		},
 		{
 			id: "en-processors",
-			title: "4. Who we share it with",
+			title: "4. Who we share it with and international transfer",
 			blocks: [
 				{
 					p: "We use these providers as data processors, only for the functions listed:",
@@ -225,11 +258,13 @@ const en: Policy = {
 				{
 					ul: [
 						"Supabase: database, account authentication and real-time updates.",
-						"Google (Gemini API): Quillart AI answers, called from our server.",
-						"Google (sign-in): only if you choose to sign in with your Google account.",
+						"Google: Gemini API (Quillart AI answers, from our server), Gemini Live (live voice, from your browser) and Google sign-in if you choose it. Voice dictation in Chrome is also processed by Google.",
 						"Codiv (OpenJev): moderation triage and choosing the Quillart AI agent, without account data.",
-						"Cloudflare (Turnstile): checking that whoever signs up is a person.",
+						"Cloudflare: all site traffic goes through its network; also the Turnstile check that whoever signs up is a person.",
 					],
+				},
+				{
+					p: "International transfer: Supabase, Google and Cloudflare may process your data on servers outside Colombia, and we have not confirmed where Codiv's servers are. By accepting this policy you authorize that international transfer or transmission, made only for the functions described.",
 				},
 				{
 					p: "The open data portal publishes only allow-listed columns, with no profiles, organizers or registrations.",
@@ -241,7 +276,7 @@ const en: Policy = {
 			title: "5. How long we keep it",
 			blocks: [
 				{
-					p: 'Your account data and what you post are kept while you have the account. When you delete it, your threads, replies, reports and registrations are erased; your future events are cancelled and past ones are shown as "Deleted account". Anonymous counts and overcharge reports do not identify you.',
+					p: 'Your account data and what you post are kept while you have the account. When you delete it, your threads, replies, reports and registrations are erased; your future events are cancelled and past ones are shown as "Deleted account". Anonymous counts do not identify you.',
 				},
 			],
 		},
@@ -250,11 +285,11 @@ const en: Policy = {
 			title: "6. Your rights",
 			blocks: [
 				{
-					p: "As the data subject you can access, update, correct and delete your data, revoke your authorization and file complaints with the Superintendence of Industry and Commerce (SIC). You can do it yourself from your profile:",
+					p: "As the data subject you can access, update, correct and delete your data, ask for proof of your authorization, learn how it is used, revoke your authorization and file complaints with the Superintendence of Industry and Commerce (SIC). The main ones you can do yourself from your profile:",
 				},
 				{
 					ul: [
-						"Update or correct: edit your display name, neighborhood and whether you are visiting.",
+						"Update or correct: Edit profile changes your display name, neighborhood and whether you are visiting.",
 						'Access: the "Download my data" button gives you a JSON file with your profile, registrations, events you organize, threads, replies and reports.',
 						'Delete: the "Delete my account" button (typing ELIMINAR to confirm) deletes your account as described in section 5.',
 						"If a moderator removed something of yours, you can ask for a second review once.",
@@ -264,19 +299,34 @@ const en: Policy = {
 					p: "Go to your profile:",
 					link: { href: "/perfil", label: "/perfil" },
 				},
-				{ p: `For any other request: ${CONTACT_EMAIL}.` },
+			],
+		},
+		{
+			id: "en-procedure",
+			title: "7. Procedure for queries and claims",
+			blocks: [
+				{
+					p: `Write to the official channel, ${RESPONSABLE_CANAL}, with your name, your account email, what you are asking for and, for a claim, the facts and documents that support it.`,
+				},
+				{
+					ul: [
+						"Queries (access to your data): we answer within 10 business days of receiving it (Law 1581, art. 14).",
+						"Claims (correct, update, delete or revoke): we answer within 15 business days of receiving it complete (Law 1581, art. 15).",
+						"If we cannot answer in time, we tell you why and the new date, within the extensions the law allows.",
+					],
+				},
 			],
 		},
 		{
 			id: "en-security",
-			title: "7. Security",
+			title: "8. Security",
 			blocks: [
 				{
 					ul: [
 						"Row-level access rules in the database: each person only sees what belongs to them, and only the server publishes content after triage.",
 						"The service key lives only on the server and is used by routes that first verify your session.",
 						"Security headers and a Content Security Policy (CSP) on every page.",
-						"IP addresses are stored as hashes, never in clear text.",
+						"Our rate limits store the IP as a hash.",
 						"Posts with phone numbers, emails or ID numbers are rejected.",
 					],
 				},
@@ -284,7 +334,7 @@ const en: Policy = {
 		},
 		{
 			id: "en-minors",
-			title: "8. Children and adolescents",
+			title: "9. Children and adolescents",
 			blocks: [
 				{
 					p: "QUILLART does not ask for age and does not seek to collect data from minors. If you are a minor, create an account and post only with the support of your parent or guardian. If you know of a minor's account without that support, you can delete it from the profile or write to us.",
@@ -293,7 +343,7 @@ const en: Policy = {
 		},
 		{
 			id: "en-changes",
-			title: "9. Changes to this policy",
+			title: "10. Changes to this policy",
 			blocks: [
 				{
 					p: "If we change this policy, we publish the new version on this same page and update the effective date.",
@@ -303,17 +353,29 @@ const en: Policy = {
 	],
 };
 
-const policies = [es, en];
+// Only one h1 per page: the Spanish title. The English version starts at h2.
+const policies = [
+	{ policy: es, Title: "h1", Heading: "h2" },
+	{ policy: en, Title: "h2", Heading: "h3" },
+] as const;
 ---
 
 <BaseLayout title="Política de privacidad · QUILLART" theme="light">
 	<main class="mx-auto w-full max-w-2xl px-4 pt-6 pb-16 lg:py-10">
-		<nav class="mb-8 flex flex-wrap items-center justify-between gap-3" aria-label="Privacidad">
-			<a href="/" class="q-btn q-btn--ghost q-btn--sm">← QUILLART</a>
-			<a href="#en" class="q-sm underline" hreflang="en" lang="en">Read in English</a>
+		<nav
+			class="mb-8 flex flex-wrap items-center justify-between gap-3"
+			aria-label="Privacidad"
+		>
+			<a href="/" class="q-btn q-btn--ghost q-btn--sm min-h-11">← QUILLART</a>
+			<a
+				href="#en"
+				class="q-sm inline-flex min-h-11 items-center underline"
+				hreflang="en"
+				lang="en">Read in English</a
+			>
 		</nav>
 		{
-			policies.map((policy) => (
+			policies.map(({ policy, Title, Heading }) => (
 				<article
 					lang={policy.lang}
 					id={policy.lang}
@@ -322,9 +384,9 @@ const policies = [es, en];
 				>
 					<header class="q-stack mb-4">
 						<p class="q-eyebrow">{policy.eyebrow}</p>
-						<h1 id={`${policy.lang}-title`} class="q-h1">
+						<Title id={`${policy.lang}-title`} class="q-h1">
 							{policy.title}
-						</h1>
+						</Title>
 						<p class="q-lead">{policy.lead}</p>
 						<p class="q-sm q-muted">
 							<strong>{policy.effective}</strong>
@@ -336,9 +398,9 @@ const policies = [es, en];
 							aria-labelledby={`${section.id}-h`}
 							class="q-stack mt-6"
 						>
-							<h2 id={`${section.id}-h`} class="q-h3">
+							<Heading id={`${section.id}-h`} class="q-h3">
 								{section.title}
-							</h2>
+							</Heading>
 							{section.blocks.map((block) =>
 								"ul" in block ? (
 									<ul class="q-p list-disc space-y-2 pl-5 leading-relaxed">
@@ -349,7 +411,10 @@ const policies = [es, en];
 								) : "link" in block ? (
 									<p class="q-p leading-relaxed">
 										{block.p}{" "}
-										<a href={block.link.href} class="font-semibold underline">
+										<a
+											href={block.link.href}
+											class="inline-flex min-h-11 items-center font-semibold underline"
+										>
 											{block.link.label}
 										</a>
 									</p>

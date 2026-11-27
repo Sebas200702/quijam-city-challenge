@@ -102,7 +102,10 @@ export function VisitorMenuSheet({
 				</ul>
 			</nav>
 			<p className="q-sm visitor-note">
-				<a className="q-muted underline" href={PRIVACY_HREF}>
+				<a
+					className="q-muted inline-flex min-h-11 items-center underline"
+					href={PRIVACY_HREF}
+				>
 					{copy.privacyLink}
 				</a>
 			</p>
