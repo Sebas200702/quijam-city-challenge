@@ -2,7 +2,7 @@
 
 Issue #56. Va primero en la épica #57: los demás issues construyen sobre esta estructura. Aplica al pie de la letra las 10 reglas de UX de la épica y el canal `city-events`.
 
-Mockup navegable: (enlace pendiente)
+Mockup navegable (privado, pide acceso): <https://claude.ai/artifact/YWGGMKgDiVeaPgyXqwfkmQ>. 53 pantallas en las 5 superficies y los recorridos de los casos 1 a 3.
 
 ## 1. Las 5 superficies
 
