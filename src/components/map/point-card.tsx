@@ -62,7 +62,10 @@ export function PointCard({ layer, point, onClose }: PointCardProps) {
 			)}
 			{point.href && (
 				<div className="q-card__foot">
-					<a className="q-btn q-btn--primary q-btn--block lmb-go" href={point.href}>
+					<a
+						className="q-btn q-btn--primary q-btn--block lmb-go"
+						href={point.href}
+					>
 						{layer.openLabel(t)}
 						<ArrowRight size={18} strokeWidth={1.75} aria-hidden="true" />
 					</a>

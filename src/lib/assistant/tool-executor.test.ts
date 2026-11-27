@@ -220,6 +220,13 @@ describe("runTool: read tools", () => {
 			deps,
 		);
 		expect(bad.summary.error).toBeDefined();
+		// Internal but not an openable screen: an error, so the model can recover.
+		const portal = await runTool(
+			call("open_page", { path: "/vendedor?alta=X", label: "x" }),
+			store,
+			deps,
+		);
+		expect(portal.declined).toBe(true);
 		const good = await runTool(
 			call("open_page", { path: "/agenda", label: "Agenda" }),
 			store,
@@ -703,6 +710,30 @@ describe("runTool: UI tools and the slang glossary", () => {
 		expect(result.summary.done).toBeUndefined();
 		expect(result.summary.error).toMatch(/No encontramos «atlantida»/);
 		expect(result.display).toMatchObject({ kind: "notice", tone: "error" });
+	});
+
+	it("draws a route only to a destination the map can place", async () => {
+		const { store } = fakeStore(false);
+		const route = await runTool(
+			call("show_route", { destination: "Barrio Abajo" }),
+			store,
+			deps,
+		);
+		expect(route.summary).toEqual({
+			done: true,
+			screen: "/mapa",
+			destination: "barrio_abajo",
+			name: "Barrio Abajo",
+		});
+		// Unknown: declined, so the client runs the recovery round.
+		const unknown = await runTool(
+			call("show_route", { destination: "Atlántida" }),
+			store,
+			deps,
+		);
+		expect(unknown.declined).toBe(true);
+		expect(unknown.summary.done).toBeUndefined();
+		expect(unknown.summary.error).toMatch(/No conozco «Atlántida»/);
 	});
 
 	it("explains a slang word from the glossary", async () => {

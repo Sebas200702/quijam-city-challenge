@@ -117,10 +117,7 @@ export function VisitorSheet({
 						<X size={20} strokeWidth={1.75} aria-hidden="true" />
 					</button>
 				</div>
-				<div
-					className="q-sheet__body l-rise"
-					style={{ ["--i" as string]: 1 }}
-				>
+				<div className="q-sheet__body l-rise" style={{ ["--i" as string]: 1 }}>
 					{children}
 				</div>
 			</section>

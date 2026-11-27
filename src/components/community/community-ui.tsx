@@ -129,9 +129,7 @@ export function PageTitle({
 			/>
 			<div
 				className={`lq-canvas__body flex gap-4 lg:gap-10 ${
-					illustration
-						? "items-center"
-						: "flex-wrap items-end justify-between"
+					illustration ? "items-center" : "flex-wrap items-end justify-between"
 				}`}
 			>
 				<div className="flex min-w-0 flex-1 flex-col gap-3">
@@ -207,7 +205,9 @@ export function EmptyState({
 				</div>
 			)}
 			<p className="q-h3 lq-h2 relative z-[2]">{title}</p>
-			{children && <p className="q-p q-muted relative z-[2] mt-2">{children}</p>}
+			{children && (
+				<p className="q-p q-muted relative z-[2] mt-2">{children}</p>
+			)}
 			{action && (
 				<div className="relative z-[2] mt-4 flex justify-center">{action}</div>
 			)}

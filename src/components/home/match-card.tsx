@@ -3,7 +3,6 @@ import { useT } from "../../lib/i18n/use-language";
 import { Illustration } from "./illustration";
 import "../../styles/life-shell.css";
 
-
 interface MatchCardProps {
 	timeLabel: string;
 	title: string;

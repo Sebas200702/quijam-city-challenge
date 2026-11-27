@@ -5,6 +5,7 @@
 
 import {
 	cleanPrefill,
+	PREFILL_PARAMS,
 	prefillHref,
 	readPrefill,
 } from "../community/form-prefill";
@@ -15,9 +16,12 @@ import {
 	isPlaceKind,
 } from "../community/list-filters";
 import { PLACES } from "../community/places-catalog";
+import { CORRIDOR_SEED } from "../corridor/corridor-seed";
 import { isLanguage } from "../i18n/languages";
+import { type RouteCatalog, resolveRouteTarget } from "../map/route-target";
 import { isTheme } from "../theme";
-import { normalizeText } from "./assistant-text";
+import { DESTINATIONS, type DestinationKey } from "../trip/trip-planner";
+import { hasKeyword, matchPlace, normalizeText } from "./assistant-text";
 import type { AssistantToolArgs, AssistantToolCall } from "./assistant-types";
 import { DRAFT_FIELDS, screenThreadId } from "./screen-context";
 import type { ScreenContext, ScreenFormId } from "./screen-context-types";
@@ -68,7 +72,13 @@ export const UI_FOCUS_TARGETS: readonly UiFocusTarget[] = [
 	"report-form",
 ];
 
-/** Screens `ui.open` may open: the app's own sections, nothing else. */
+/**
+ * Screens `ui.open` may open: the same list the model is given
+ * (assistant-agents.ts OPENABLE_SCREENS). Role portals (/vendedor,
+ * /presentador, /anfitrion, /moderacion) stay out: their entry URLs write on
+ * load (claim a business, start a presenter session), and nothing reached
+ * through `ui.open` may write without the person's own click.
+ */
 export const OPENABLE_PATHS = [
 	"/inicio",
 	"/agenda",
@@ -81,14 +91,47 @@ export const OPENABLE_PATHS = [
 	"/jerga",
 	"/datos",
 	"/ciudad",
-	"/anfitrion",
-	"/vendedor",
-	"/presentador",
-	"/moderacion",
-	"/privacidad",
 ];
 
+/** Sections with one level of detail screens: an event, a thread, a place. */
+const DETAIL_SECTIONS = ["/agenda", "/foro", "/lugares"];
+
+/**
+ * The only query keys each screen may receive: its filters and its form
+ * prefill (the person still reviews and sends). Anything else, such as an
+ * OAuth `code` or an entry-tracking key, is refused, so no URL that acts on
+ * load can be reached through `ui.open`.
+ */
+const OPEN_QUERY_KEYS: Record<string, readonly string[]> = {
+	"/agenda": ["q", "categoria", "fecha", "cuando"],
+	"/agenda/nuevo": Object.values(PREFILL_PARAMS.event),
+	"/foro": [
+		"lugar",
+		"evento",
+		"nuevo",
+		...Object.values(PREFILL_PARAMS.thread),
+	],
+	"/lugares": ["q", "tipo"],
+	"/mapa": [
+		"destino",
+		"lugar",
+		"evento",
+		"conversacion",
+		"negocio",
+		"lat",
+		"lng",
+		"zoom",
+	],
+	"/reportar": Object.values(PREFILL_PARAMS.overcharge),
+};
+
+/** Query keys a detail screen ("/foro/abc") may receive. */
+const DETAIL_QUERY_KEYS: Record<string, readonly string[]> = {
+	"/foro": Object.values(PREFILL_PARAMS.reply),
+};
+
 const PATH_SHAPE = /^\/[a-z0-9\-/]*(\?[^#\s\\]*)?$/i;
+const DETAIL_SEGMENT = /^[a-z0-9][a-z0-9_-]{0,99}$/i;
 /** Route destinations the map resolves: named ones, stop codes, place slugs. */
 const ROUTE_KEY = /^[a-z0-9][a-z0-9_-]{0,79}$/i;
 
@@ -113,15 +156,38 @@ function inMetro(lat: unknown, lng: unknown): boolean {
 	);
 }
 
-/** A same-site path to one of the app's sections, or null. */
+/** Query keys `path` accepts, or null when the screen cannot be opened. */
+function openQueryKeys(path: string): readonly string[] | null {
+	const pathname = path.replace(/\/+$/, "");
+	if (OPENABLE_PATHS.includes(pathname)) return OPEN_QUERY_KEYS[pathname] ?? [];
+	if (Object.hasOwn(OPEN_QUERY_KEYS, pathname))
+		return OPEN_QUERY_KEYS[pathname];
+	const cut = pathname.lastIndexOf("/");
+	const section = pathname.slice(0, cut);
+	if (
+		!DETAIL_SECTIONS.includes(section) ||
+		!DETAIL_SEGMENT.test(pathname.slice(cut + 1))
+	) {
+		return null;
+	}
+	return DETAIL_QUERY_KEYS[section] ?? [];
+}
+
+/**
+ * A same-site path to one of the app's sections (or one of its detail
+ * screens), with only that screen's known query keys; null otherwise.
+ */
 export function safeOpenPath(value: unknown): string | null {
 	if (typeof value !== "string" || value.length > MAX_PATH) return null;
 	if (!PATH_SHAPE.test(value) || value.startsWith("//")) return null;
-	const pathname = value.split("?")[0];
-	const allowed = OPENABLE_PATHS.some(
-		(prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
-	);
-	return allowed ? value : null;
+	const [pathname, search = ""] = value.split("?");
+	const keys = openQueryKeys(pathname);
+	if (!keys) return null;
+	const params = new URLSearchParams(search);
+	for (const key of params.keys()) {
+		if (!keys.includes(key)) return null;
+	}
+	return value;
 }
 
 function sanitizePin(value: unknown): MapPin | null {
@@ -326,17 +392,64 @@ export function whenFromDaysAhead(
 	return daysAhead <= 6 ? "semana" : undefined;
 }
 
+/** What the map resolves routes against, as shipped with the app. */
+const ROUTE_CATALOG: RouteCatalog = {
+	stops: CORRIDOR_SEED.stops,
+	places: PLACES,
+	segments: CORRIDOR_SEED.segments,
+};
+
+const DESTINATION_KEYS = Object.keys(DESTINATIONS) as DestinationKey[];
+
+/** A route destination the map can draw: its key and the name it shows. */
+export interface RouteDestination {
+	key: string;
+	name: string;
+}
+
+/** Keys the map might know for `destination`, most precise first. */
+function routeCandidates(destination: string, text: string): string[] {
+	const words = text.replace(/ /g, "_");
+	const slug = text.replace(/ /g, "-");
+	const named = DESTINATION_KEYS.filter(
+		(key) =>
+			key === words || normalizeText(DESTINATIONS[key].name).trim() === text,
+	);
+	const byName = PLACES.find(
+		(place) => normalizeText(place.name).trim() === text,
+	);
+	const spoken = matchPlace(destination);
+	// "al centro", "el estadio": a named destination inside a longer phrase.
+	const inPhrase = DESTINATION_KEYS.filter((key) =>
+		hasKeyword(` ${text} `, key.replace(/_/g, " ")),
+	);
+	return [
+		...named,
+		// Stop codes are upper case ("stop-centro" → "STOP-CENTRO").
+		slug.toUpperCase(),
+		slug,
+		...(byName ? [byName.slug] : []),
+		...(spoken ? [spoken.slug] : []),
+		...inPhrase,
+	];
+}
+
 /**
- * The map's key for a route destination: named destinations, stop codes and
- * place slugs pass as they are; a place written by name ("Gran Malecón")
- * becomes its slug, anything else a slug-shaped guess the map may not place.
+ * The map's key for a route destination as a person or the model writes it
+ * ("Centro", "Barrio Abajo", "stop-centro", "Gran Malecón del Río", "el
+ * malecón"), checked with the map's own resolver (resolveRouteTarget, which
+ * is case-sensitive). Null when the map could not place it: the tool then
+ * says so instead of claiming a route it never drew.
  */
-export function routeKey(destination: string): string {
-	const key = destination.trim();
-	if (ROUTE_KEY.test(key)) return key;
-	const text = normalizeText(key);
-	const place = PLACES.find((item) => normalizeText(item.name) === text);
-	return place?.slug ?? text.trim().replace(/ /g, "-");
+export function routeDestination(destination: string): RouteDestination | null {
+	const text = normalizeText(destination).trim();
+	if (text === "") return null;
+	for (const key of routeCandidates(destination, text)) {
+		if (!ROUTE_KEY.test(key)) continue;
+		const target = resolveRouteTarget(key, ROUTE_CATALOG);
+		if (target) return { key, name: target.name };
+	}
+	return null;
 }
 
 function placePin(slug: string | undefined): MapPin | null {
@@ -435,11 +548,14 @@ function fromCall(
 		}
 		case "show_route": {
 			const args = call.args as AssistantToolArgs["show_route"];
+			// Only a destination the map can draw; the tool reports the rest.
+			const destination = routeDestination(args.destination);
+			if (!destination) return [];
 			return [
 				{
 					...source,
 					type: "map.showRoute",
-					destino: routeKey(args.destination),
+					destino: destination.key,
 					navigate: true,
 				},
 			];

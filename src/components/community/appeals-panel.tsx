@@ -43,7 +43,10 @@ export function AppealsPanel() {
 	}
 
 	return (
-		<section aria-labelledby="appeals-title" className="q-card l-rise gap-4 rounded-[28px_56px_28px_28px]! px-5 py-6 pr-7">
+		<section
+			aria-labelledby="appeals-title"
+			className="q-card l-rise gap-4 rounded-[28px_56px_28px_28px]! px-5 py-6 pr-7"
+		>
 			<div>
 				<h2 id="appeals-title" className="q-h3 lq-h2">
 					{a.title}

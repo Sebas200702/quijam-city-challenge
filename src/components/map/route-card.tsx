@@ -75,7 +75,10 @@ function StateArt({ src }: { src: string }) {
 	return (
 		<span
 			className="q-illus"
-			style={{ padding: "14px 18px 8px", borderRadius: "999px 999px 20px 20px" }}
+			style={{
+				padding: "14px 18px 8px",
+				borderRadius: "999px 999px 20px 20px",
+			}}
 			aria-hidden="true"
 		>
 			<img src={src} alt="" style={{ height: 88, width: "auto" }} />
@@ -144,10 +147,7 @@ function Legs({
 				const from = names.get(leg.originStopCode) ?? t.yourPoint;
 				return (
 					<li key={leg.code} className="flex items-center gap-3">
-						<span
-							className={`q-tile lm-leg ${mode.tile}`}
-							aria-hidden="true"
-						>
+						<span className={`q-tile lm-leg ${mode.tile}`} aria-hidden="true">
 							<Icon size={20} strokeWidth={STROKE} />
 						</span>
 						<span className="flex min-w-0 flex-1 flex-col">

@@ -254,6 +254,22 @@ describe("UI action dispatcher", () => {
 		expect(e.storage.data.has(PENDING_KEY)).toBe(false);
 	});
 
+	it("still applies language and theme that come after a back", () => {
+		const setTheme = vi.fn();
+		const e = env({
+			pathname: () => "/mapa",
+			setTheme,
+			getTheme: () => "light",
+		});
+		const bus = createUiBus(e);
+		const result = bus.dispatch([
+			{ type: "app.back" },
+			{ type: "app.theme", theme: "dark" },
+		]);
+		expect(setTheme).toHaveBeenCalledWith("dark");
+		expect(result.navigation?.back).toBe(true);
+	});
+
 	it("lets a screen opened earlier in the turn win over a later back", () => {
 		const e = env({ pathname: () => "/inicio" });
 		const bus = createUiBus(e);

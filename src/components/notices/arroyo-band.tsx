@@ -14,7 +14,10 @@ import "../../styles/life-shell-b.css";
 export function ArroyoBand({ alert }: { alert: ArroyoAlert }) {
 	return (
 		// The notice text is Spanish only for now: say so, so screen readers read it right (WCAG 3.1.2).
-		<div className="q-alert q-alert--alert q-notice-band lsb-notice lsb-notice--band" lang="es">
+		<div
+			className="q-alert q-alert--alert q-notice-band lsb-notice lsb-notice--band"
+			lang="es"
+		>
 			<span className="q-alert__icon" aria-hidden="true">
 				<CloudRain size={18} strokeWidth={1.75} />
 			</span>

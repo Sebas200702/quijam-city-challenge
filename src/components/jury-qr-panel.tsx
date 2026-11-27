@@ -409,7 +409,10 @@ export function JuryQrPanel({ summary, connectionState }: JuryQrPanelProps) {
 	}
 
 	return (
-		<section aria-labelledby="jury-qr-title" className="q-card lc-shape--corner">
+		<section
+			aria-labelledby="jury-qr-title"
+			className="q-card lc-shape--corner"
+		>
 			<div className="q-band q-band--green" aria-hidden="true" />
 			<div className="q-card__head flex-wrap">
 				<div>

@@ -134,7 +134,9 @@ export function PlaceDetail({
 										<p className="q-eyebrow">
 											{PLACE_KIND_LABELS[place.kind]} · {place.neighborhood}
 										</p>
-										<h1 className="q-h1 lq-title mt-1 break-words">{place.name}</h1>
+										<h1 className="q-h1 lq-title mt-1 break-words">
+											{place.name}
+										</h1>
 									</div>
 								</div>
 								<div className="flex flex-wrap gap-1.5">

@@ -526,7 +526,10 @@ export function OpenDataPortal({
 											<span className="q-dot" aria-hidden="true" />
 											Plataforma ciudadana
 										</p>
-										<h2 id="community-datasets" className="l-h2 mt-2 !text-[clamp(1.6rem,3.2vw,2.4rem)]">
+										<h2
+											id="community-datasets"
+											className="l-h2 mt-2 !text-[clamp(1.6rem,3.2vw,2.4rem)]"
+										>
 											Datos de la comunidad
 										</h2>
 									</div>
@@ -563,7 +566,10 @@ export function OpenDataPortal({
 											<span className="q-dot" aria-hidden="true" />
 											Corredor Estadio – Malecón
 										</p>
-										<h2 id="corridor-datasets" className="l-h2 mt-2 !text-[clamp(1.6rem,3.2vw,2.4rem)]">
+										<h2
+											id="corridor-datasets"
+											className="l-h2 mt-2 !text-[clamp(1.6rem,3.2vw,2.4rem)]"
+										>
 											Conjuntos del corredor piloto
 										</h2>
 									</div>

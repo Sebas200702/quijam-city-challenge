@@ -159,11 +159,7 @@
 /* ── Access cards (sign in, second factor) ── */
 .lc-gate.q-card {
 	border-radius: 48px 48px 28px 28px;
-	background: linear-gradient(
-		170deg,
-		var(--gold-soft),
-		var(--surface) 44%
-	);
+	background: linear-gradient(170deg, var(--gold-soft), var(--surface) 44%);
 }
 
 /* ── State panels (loading, empty, error) ── */

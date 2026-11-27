@@ -222,7 +222,15 @@ export function createUiBus(env: UiBusEnv): UiBus {
 					// and whatever came after it no longer has a screen to act on.
 					if (href) continue;
 					back = true;
-					break;
+					continue;
+				}
+				// After going back, only whole-app changes (language, theme) still apply.
+				if (
+					back &&
+					action.type !== "app.language" &&
+					action.type !== "app.theme"
+				) {
+					continue;
 				}
 				// Language and theme hold on every screen: apply them right away,
 				// even when this turn also opens another screen.
@@ -295,7 +303,23 @@ function browserEnv(): UiBusEnv {
 	return {
 		pathname: () => window.location.pathname.replace(/\/+$/, "") || "/",
 		navigate: (href) => window.location.assign(href),
-		back: () => window.history.back(),
+		back: () => {
+			// Only back inside Quillart: on the first page of a visit history.back()
+			// would leave the app (or do nothing), so open the home screen instead.
+			try {
+				const from = document.referrer ? new URL(document.referrer) : null;
+				if (
+					from?.origin === window.location.origin &&
+					window.history.length > 1
+				) {
+					window.history.back();
+					return;
+				}
+			} catch {
+				// An unreadable referrer: fall through to the home screen.
+			}
+			window.location.assign("/inicio");
+		},
 		focus: (id) => {
 			const element = document.getElementById(id);
 			if (!element) return false;

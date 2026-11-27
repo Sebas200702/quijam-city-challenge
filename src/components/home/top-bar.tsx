@@ -5,7 +5,6 @@ import { QuillartLogo } from "./quillart-logo";
 import { TopNav } from "./top-nav";
 import "../../styles/life-shell.css";
 
-
 interface TopBarProps {
 	current: NavSection;
 	aiHref: string;

@@ -5,7 +5,6 @@ import { TopNav } from "./top-nav";
 import { WeatherBadge } from "./weather-badge";
 import "../../styles/life-shell.css";
 
-
 interface HomeHeaderProps {
 	/** Only shown when it comes from a real weather source; never hard-coded. */
 	weatherLabel?: string | null;

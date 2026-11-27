@@ -91,46 +91,46 @@ export function EventCard({
 			aria-label={`${event.title}, ${formatEventDay(event.startsAt)}`}
 		>
 			<div className="ev-ticket__paper">
-			<DateBlock iso={event.startsAt} />
-			<div className="ev-ticket__body">
-				<div className="flex flex-wrap items-center gap-1.5">
-					<span className="q-eyebrow">
-						{EVENT_CATEGORY_LABELS[event.category]}
-					</span>
-					{event.moderationStatus === "held" && <HeldBadge />}
-					<VerifiedOrganizerBadge verified={event.organizerVerified} />
-					{registered && !cancelled && (
-						<span className="q-badge q-badge--optimal">
-							{t.agenda.registered}
+				<DateBlock iso={event.startsAt} />
+				<div className="ev-ticket__body">
+					<div className="flex flex-wrap items-center gap-1.5">
+						<span className="q-eyebrow">
+							{EVENT_CATEGORY_LABELS[event.category]}
 						</span>
-					)}
+						{event.moderationStatus === "held" && <HeldBadge />}
+						<VerifiedOrganizerBadge verified={event.organizerVerified} />
+						{registered && !cancelled && (
+							<span className="q-badge q-badge--optimal">
+								{t.agenda.registered}
+							</span>
+						)}
+					</div>
+					<h3 className={`ev-ticket__title ${cancelled ? "line-through" : ""}`}>
+						{event.title}
+					</h3>
+					<p className="q-sm q-muted flex items-center gap-1.5">
+						<CalendarClock size={14} aria-hidden="true" className="shrink-0" />
+						<span>
+							{formatEventDay(event.startsAt)} ·{" "}
+							{formatTimeRange(event.startsAt, event.endsAt)}
+						</span>
+					</p>
+					<p className="q-sm q-muted flex items-center gap-1.5">
+						<MapPin size={14} aria-hidden="true" className="shrink-0" />
+						<span className="truncate">{where}</span>
+					</p>
+					<div className="flex flex-wrap items-center gap-1.5 pt-1">
+						<span className={`q-badge q-badge--${spots.tone}`}>
+							<Users size={12} aria-hidden="true" />
+							{spots.text}
+						</span>
+						<span className="q-badge q-badge--neutral">
+							{event.isFree || !event.priceCop
+								? t.agenda.free
+								: formatCop(event.priceCop)}
+						</span>
+					</div>
 				</div>
-				<h3 className={`ev-ticket__title ${cancelled ? "line-through" : ""}`}>
-					{event.title}
-				</h3>
-				<p className="q-sm q-muted flex items-center gap-1.5">
-					<CalendarClock size={14} aria-hidden="true" className="shrink-0" />
-					<span>
-						{formatEventDay(event.startsAt)} ·{" "}
-						{formatTimeRange(event.startsAt, event.endsAt)}
-					</span>
-				</p>
-				<p className="q-sm q-muted flex items-center gap-1.5">
-					<MapPin size={14} aria-hidden="true" className="shrink-0" />
-					<span className="truncate">{where}</span>
-				</p>
-				<div className="flex flex-wrap items-center gap-1.5 pt-1">
-					<span className={`q-badge q-badge--${spots.tone}`}>
-						<Users size={12} aria-hidden="true" />
-						{spots.text}
-					</span>
-					<span className="q-badge q-badge--neutral">
-						{event.isFree || !event.priceCop
-							? t.agenda.free
-							: formatCop(event.priceCop)}
-					</span>
-				</div>
-			</div>
 			</div>
 		</a>
 	);

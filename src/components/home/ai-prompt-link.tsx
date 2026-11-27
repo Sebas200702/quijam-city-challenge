@@ -2,7 +2,6 @@ import { Mic } from "lucide-react";
 import { useT } from "../../lib/i18n/use-language";
 import "../../styles/life-shell.css";
 
-
 interface AiPromptLinkProps {
 	href: string;
 }

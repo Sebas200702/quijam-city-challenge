@@ -1,9 +1,15 @@
 import { describe, expect, it } from "vitest";
+import { PLACES } from "../community/places-catalog";
+import { CORRIDOR_SEED } from "../corridor/corridor-seed";
+import { resolveRouteTarget } from "../map/route-target";
+import { OPENABLE_SCREENS } from "./assistant-agents";
 import { answer } from "./assistant-server";
 import type { AssistantRequest, AssistantToolCall } from "./assistant-types";
 import { answerLocally } from "./local-agents";
 import type { ScreenContext } from "./screen-context-types";
 import {
+	OPENABLE_PATHS,
+	routeDestination,
 	safeOpenPath,
 	sanitizeUiAction,
 	sanitizeUiActions,
@@ -116,15 +122,13 @@ describe("sanitizeUiAction (whitelist)", () => {
 		expect(sanitizeUiAction({ type: "ui.focus", target: "body" })).toBeNull();
 	});
 
-	it("opens the city data screen and the other app sections", () => {
+	it("opens the city data screen and the detail screens", () => {
 		for (const path of [
 			"/ciudad",
-			"/anfitrion",
-			"/vendedor",
-			"/presentador",
-			"/moderacion",
-			"/privacidad",
 			"/agenda/nuevo",
+			"/agenda/",
+			"/lugares/gran-malecon",
+			"/foro/abc-123",
 		]) {
 			expect(safeOpenPath(path)).toBe(path);
 		}
@@ -133,6 +137,53 @@ describe("sanitizeUiAction (whitelist)", () => {
 			path: "/ciudad",
 		});
 		expect(safeOpenPath("/ciudadela")).toBeNull();
+		expect(safeOpenPath("/ciudad/otra")).toBeNull();
+		expect(safeOpenPath("/lugares/a/b")).toBeNull();
+	});
+
+	it("never opens a role portal: their entry URLs write on load", () => {
+		for (const path of [
+			"/vendedor",
+			"/vendedor/entrar?alta=0123456789abcdef0123456789abcdef0123",
+			"/presentador",
+			"/presentador/entrar?key=secret",
+			"/anfitrion",
+			"/moderacion",
+		]) {
+			expect(safeOpenPath(path)).toBeNull();
+			expect(sanitizeUiAction({ type: "ui.open", path })).toBeNull();
+		}
+	});
+
+	it("passes only each screen's own filter and prefill keys", () => {
+		for (const path of [
+			"/agenda?q=salsa&categoria=music&fecha=hoy",
+			"/lugares?tipo=park",
+			"/mapa?destino=estadio",
+			"/reportar?monto=8000&vehiculo=taxi",
+			"/agenda/nuevo?titulo=Cine&fecha=2026-12-05",
+			"/foro?nuevo=1&titulo=Hola",
+			"/foro/abc?respuesta=Gracias",
+		]) {
+			expect(safeOpenPath(path)).toBe(path);
+		}
+		for (const path of [
+			// An in-app redirect after sign-in could lead to a portal entry URL.
+			"/perfil?volver=/vendedor/entrar",
+			"/perfil?code=abc",
+			"/inicio?origen=qr",
+			"/agenda?alta=1",
+			"/lugares/gran-malecon?key=x",
+		]) {
+			expect(safeOpenPath(path)).toBeNull();
+		}
+	});
+
+	it("opens exactly the screens the model is told about", () => {
+		for (const path of OPENABLE_SCREENS) expect(safeOpenPath(path)).toBe(path);
+		for (const path of OPENABLE_PATHS) {
+			expect(OPENABLE_SCREENS as readonly string[]).toContain(path);
+		}
 	});
 
 	it("keeps whole-app controls only with valid values", () => {
@@ -420,9 +471,47 @@ describe("uiActionsForCalls (derived on the server)", () => {
 				"",
 			),
 		).toMatchObject([{ destino: "gran-malecon" }]);
+		// Named destinations as people write them become the map's own keys.
+		expect(
+			uiActionsForCalls([call("show_route", { destination: "Centro" })], ""),
+		).toMatchObject([{ destino: "centro" }]);
 		expect(
 			uiActionsForCalls([call("show_route", { destination: "¿?" })], ""),
 		).toEqual([]);
+		// The map could not place it: no action, the tool reports the failure.
+		expect(
+			uiActionsForCalls([call("show_route", { destination: "Atlántida" })], ""),
+		).toEqual([]);
+	});
+
+	it("normalizes route destinations to keys the map resolves", () => {
+		const catalog = {
+			stops: CORRIDOR_SEED.stops,
+			places: PLACES,
+			segments: CORRIDOR_SEED.segments,
+		};
+		const cases: [string, string][] = [
+			["Centro", "centro"],
+			["Estadio", "estadio"],
+			["Estadio Metropolitano", "estadio"],
+			["Barrio Abajo", "barrio_abajo"],
+			["barrio-abajo", "barrio_abajo"],
+			["al centro", "centro"],
+			["stop-centro", "STOP-CENTRO"],
+			["STOP-MALECON-NORTE", "STOP-MALECON-NORTE"],
+			["el Malecón", "gran-malecon"],
+			["Parque Washington", "parque-washington"],
+		];
+		for (const [asked, key] of cases) {
+			const found = routeDestination(asked);
+			expect(found?.key, asked).toBe(key);
+			// The same resolver the map runs places it.
+			expect(resolveRouteTarget(key, catalog), asked).not.toBeNull();
+		}
+		expect(routeDestination("Centro")?.name).toBe("Centro");
+		expect(routeDestination("")).toBeNull();
+		expect(routeDestination("Atlántida")).toBeNull();
+		expect(routeDestination("STOP-NOPE")).toBeNull();
 	});
 
 	it("turns language, theme, focus and back into whole-app actions", () => {

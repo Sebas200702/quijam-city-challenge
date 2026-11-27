@@ -39,6 +39,7 @@ import {
 	formatIndicators,
 	MODE_LABELS,
 } from "./city-data-format";
+import { routeDestination, safeOpenPath } from "./ui-actions";
 import {
 	UNTRUSTED_BODY_MAX,
 	UNTRUSTED_TITLE_MAX,
@@ -817,6 +818,10 @@ const HANDLERS: { [N in AssistantToolName]: Handler<N> } = {
 	async open_page(args) {
 		if (!isSafePath(args.path))
 			throw new ToolError("Ese enlace no es de Quillart.");
+		// The screen only opens through the same whitelist as the UI action: a
+		// path outside it is an error, so the model can recover with another one.
+		if (!safeOpenPath(args.path))
+			throw new ToolError("Esa pantalla no se puede abrir desde Quillart.");
 		// Kept as a button too: it is the way in when the screen cannot open itself.
 		return {
 			summary: { shown: args.path },
@@ -849,9 +854,20 @@ const HANDLERS: { [N in AssistantToolName]: Handler<N> } = {
 	},
 
 	async show_route(args) {
-		const destination = args.destination?.trim();
-		if (!destination) throw new ToolError("Dime a dónde quieres ir.");
-		return uiDone({ screen: "/mapa", destination });
+		const asked = args.destination?.trim();
+		if (!asked) throw new ToolError("Dime a dónde quieres ir.");
+		// Same resolution as the map action (ui-actions.ts): a destination the
+		// map cannot place draws nothing, so the model must not say it did.
+		const destination = routeDestination(asked);
+		if (!destination)
+			throw new ToolError(
+				`No conozco «${asked}» en el mapa. Usa estadio, barrio_abajo, centro, un código de parada o un lugar del catálogo.`,
+			);
+		return uiDone({
+			screen: "/mapa",
+			destination: destination.key,
+			name: destination.name,
+		});
 	},
 
 	async set_language(args) {

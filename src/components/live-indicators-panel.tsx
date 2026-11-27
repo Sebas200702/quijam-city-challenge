@@ -153,7 +153,10 @@ export function LiveIndicatorsPanel({
 						<span className="q-dot" aria-hidden="true" />
 						Programa QUILLART · 5 dimensiones
 					</p>
-					<h2 id="live-indicators-title" className="l-h2 mt-2 !text-[clamp(1.6rem,3.2vw,2.4rem)]">
+					<h2
+						id="live-indicators-title"
+						className="l-h2 mt-2 !text-[clamp(1.6rem,3.2vw,2.4rem)]"
+					>
 						Indicadores en vivo
 					</h2>
 				</div>
@@ -223,7 +226,10 @@ export function LiveIndicatorsPanel({
 					{indicators.map((indicator, index) => {
 						const Icon = DIMENSION_ICONS[indicator.dimension];
 						return (
-							<article key={indicator.dimension} className="q-card l-rise h-full overflow-hidden rounded-[28px_56px_28px_28px] transition-transform duration-200 hover:-translate-y-1">
+							<article
+								key={indicator.dimension}
+								className="q-card l-rise h-full overflow-hidden rounded-[28px_56px_28px_28px] transition-transform duration-200 hover:-translate-y-1"
+							>
 								<div
 									className={`q-band q-band--${indicator.tone}`}
 									aria-hidden="true"

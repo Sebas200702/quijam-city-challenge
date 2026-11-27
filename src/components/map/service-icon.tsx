@@ -88,7 +88,9 @@ export function ServiceTag({ service }: { service: ServiceKey }) {
 	const t = useT();
 	const Icon = SERVICE_ICONS[service];
 	return (
-		<li className={`corridor-tag mc-tag lmb-tag mc-tag--${SERVICE_TONES[service]}`}>
+		<li
+			className={`corridor-tag mc-tag lmb-tag mc-tag--${SERVICE_TONES[service]}`}
+		>
 			<Icon size={14} strokeWidth={1.75} aria-hidden="true" />
 			{t.map.serviceLabels[service]}
 		</li>

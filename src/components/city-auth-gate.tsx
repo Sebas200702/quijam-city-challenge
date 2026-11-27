@@ -180,8 +180,16 @@ function WrongRoleCard({
 			className="q-card lc-gate l-rise mx-auto mt-6 w-full max-w-[460px] sm:mt-10"
 			aria-labelledby="city-auth-role-title"
 		>
-			<span className="l-geo l-geo--diamond l-geo--green right-6 top-5" style={{ ["--i" as string]: 0 }} aria-hidden="true" />
-			<span className="l-geo l-geo--plus l-geo--gold right-14 top-4 max-sm:hidden" style={{ ["--i" as string]: 1 }} aria-hidden="true" />
+			<span
+				className="l-geo l-geo--diamond l-geo--green right-6 top-5"
+				style={{ ["--i" as string]: 0 }}
+				aria-hidden="true"
+			/>
+			<span
+				className="l-geo l-geo--plus l-geo--gold right-14 top-4 max-sm:hidden"
+				style={{ ["--i" as string]: 1 }}
+				aria-hidden="true"
+			/>
 			<div className="q-band q-band--gold" aria-hidden="true" />
 			<div className="q-card__head items-center">
 				<span
@@ -280,8 +288,16 @@ export function CityAuthGate({
 			className="q-card lc-gate l-rise mx-auto mt-6 w-full max-w-[460px] sm:mt-10"
 			aria-labelledby="city-auth-title"
 		>
-			<span className="l-geo l-geo--diamond l-geo--green right-6 top-5" style={{ ["--i" as string]: 0 }} aria-hidden="true" />
-			<span className="l-geo l-geo--plus l-geo--gold right-14 top-4 max-sm:hidden" style={{ ["--i" as string]: 1 }} aria-hidden="true" />
+			<span
+				className="l-geo l-geo--diamond l-geo--green right-6 top-5"
+				style={{ ["--i" as string]: 0 }}
+				aria-hidden="true"
+			/>
+			<span
+				className="l-geo l-geo--plus l-geo--gold right-14 top-4 max-sm:hidden"
+				style={{ ["--i" as string]: 1 }}
+				aria-hidden="true"
+			/>
 			<div className="q-flag" aria-hidden="true">
 				<i />
 				<i />

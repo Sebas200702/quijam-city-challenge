@@ -185,10 +185,7 @@ function HostShift() {
 			)}
 
 			{!assignment && available && (
-				<section
-					className="q-state r-panel r-shape-leaf l-rise"
-					role="status"
-				>
+				<section className="q-state r-panel r-shape-leaf l-rise" role="status">
 					<span
 						className="q-tile q-tile--gold l-ico l-ico--circle"
 						aria-hidden="true"
