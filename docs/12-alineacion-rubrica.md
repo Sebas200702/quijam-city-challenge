@@ -100,7 +100,7 @@ Orden del pitch (diap. 30): problema, propuesta, programa, prototipo, impacto. V
 | Elemento | Estado |
 |---|---|
 | Guion del video | Parcial (pendiente #18) |
-| PowerPoint | Vacío |
+| PowerPoint | Parcial: v1 en [presentacion/](presentacion/README.md) |
 | Video | Vacío |
 
 ### Actualización 27 nov 2026: plataforma ciudadana real
