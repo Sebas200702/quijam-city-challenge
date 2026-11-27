@@ -355,8 +355,7 @@ export function useAssistant() {
 				setDraft(null);
 				setLoading(false);
 				setError({
-					message:
-						"Uy, no pude conectarme ahora mismo. Revisa tu conexión e inténtalo otra vez.",
+					message: dictionaries[getLanguage()].chat.connectionError,
 					retry: () => void converse(history, rounds),
 				});
 				return;

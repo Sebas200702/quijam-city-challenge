@@ -115,21 +115,36 @@ function DisplayView({
 			);
 		}
 		case "notice":
-			return (
-				<div className="space-y-2">
-					<p
-						role="status"
-						className={`rounded-[var(--radius-md)] px-4 py-3 text-sm ${NOTICE_TONES[display.tone]}`}
-					>
-						{display.text}
-					</p>
-					{toolName === "plan_route" && (
-						<a className="q-btn q-btn--secondary q-btn--sm" href="/mapa">
+			// The route is one card with the map link, not a green notice (audit U26).
+			if (toolName === "plan_route" && display.tone === "ok") {
+				return (
+					<div className="q-next-step">
+						<p className="q-next-step__eyebrow">
+							<span className="q-star" aria-hidden="true" />
+							{t.chat.routeEyebrow}
+						</p>
+						{/* Tool texts and the Guide reply are Spanish only (audit U21). */}
+						<p lang="es" className="q-next-step__why whitespace-pre-line">
+							{display.text}
+						</p>
+						<a
+							className="q-btn q-btn--secondary q-btn--sm min-h-11 self-start"
+							href="/mapa"
+						>
 							<MapIcon size={16} aria-hidden="true" />
 							{t.chat.viewRoute}
 						</a>
-					)}
-				</div>
+					</div>
+				);
+			}
+			return (
+				<p
+					lang="es"
+					role="status"
+					className={`rounded-[var(--radius-md)] px-4 py-3 text-sm ${NOTICE_TONES[display.tone]}`}
+				>
+					{display.text}
+				</p>
 			);
 		default:
 			return null;
@@ -161,6 +176,10 @@ function MessageView({ message }: { message: AssistantMessage }) {
 	}
 	if (message.role === "assistant") {
 		if (!message.text.trim()) return null;
+		// "Te armo la ruta…" before the route card: the wrap-up after it is the
+		// one bubble of a route answer (audit U26).
+		if (message.toolCalls.some((call) => call.name === "plan_route"))
+			return null;
 		return (
 			<div className="q-msg q-msg--ai">
 				<AiAvatar />
@@ -429,7 +448,7 @@ export function AssistantChat({
 					{composer}
 					{voice.error && <ErrorNote message={voice.error} />}
 					{liveStatus}
-					<div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] lg:mx-0 lg:flex-wrap lg:overflow-visible lg:px-0 [&::-webkit-scrollbar]:hidden">
+					<div className="q-scroll-fade q-scroll-fade--wrap-lg -mx-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] lg:mx-0 lg:flex-wrap lg:overflow-visible lg:px-0 [&::-webkit-scrollbar]:hidden">
 						{chips.map((chip) => (
 							<button
 								key={chip}
@@ -508,7 +527,11 @@ export function AssistantChat({
 						{voice.error && <ErrorNote message={voice.error} />}
 						{liveStatus}
 						{chips.length > 0 && !loading && (
-							<div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 lg:mx-0 lg:flex-wrap lg:px-0">
+							// Follow-up suggestions come from the server in Spanish only (audit U21).
+							<div
+								lang="es"
+								className="q-scroll-fade q-scroll-fade--wrap-lg -mx-4 flex gap-2 overflow-x-auto px-4 pb-1 lg:mx-0 lg:flex-wrap lg:px-0"
+							>
 								{chips.map((chip) => (
 									<button
 										key={chip}

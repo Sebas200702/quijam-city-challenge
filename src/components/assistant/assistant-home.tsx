@@ -1,4 +1,4 @@
-// The app home: Quillart AI first, with today's events and the sections below
+// The app home: Quillart AI first, with the next events and the sections below
 // while the conversation is still empty.
 
 import {
@@ -75,9 +75,12 @@ function TodayStrip() {
 		<section aria-labelledby="today-title" className="space-y-3">
 			<div className="flex items-center justify-between gap-2">
 				<h2 id="today-title" className="q-h2">
-					{t.home.todayTitle}
+					{t.home.upcomingTitle}
 				</h2>
-				<a className="q-sm font-semibold text-[var(--ink)]" href="/agenda">
+				<a
+					className="q-sm inline-flex min-h-11 items-center font-semibold text-[var(--ink)]"
+					href="/agenda"
+				>
 					{t.home.seeAgenda}
 				</a>
 			</div>
