@@ -30,6 +30,19 @@
 	width: 100%;
 	height: 100%;
 	overflow: hidden;
+	/* Its own stack: Leaflet's panes and the map cards stay under the page's dock. */
+	isolation: isolate;
+}
+/* Wide screens: the dock floats over the bottom of the map, so the column and the
+   sheet end above it. */
+@media (min-width: 1024px) {
+	.corridor-app .corridor-panel {
+		bottom: 112px;
+	}
+	.corridor-app .corridor-app__detail {
+		bottom: 112px;
+		max-height: calc(100% - 128px);
+	}
 }
 .corridor-app__map {
 	position: absolute;
@@ -890,5 +903,105 @@
 @media (min-width: 640px) {
 	.route-card__guide {
 		display: none;
+	}
+}
+.route-card__close {
+	margin: -8px -8px -8px auto;
+}
+
+/* ── Phones: the map is full-bleed between the top bar and the dock ──
+   The dock is the search and ask entry, so the separate search bar steps aside. One row of
+   layer chips floats on top, the reference tag sits small at the bottom left next to the
+   attribution, and the map buttons run up the right edge from the bottom. A route sheet
+   appears only when one was asked for. */
+@media (max-width: 639px) {
+	.corridor-panel {
+		top: 8px;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		gap: 8px;
+	}
+	.corridor-panel > .mc-search,
+	.corridor-panel > .mc-miss-region {
+		display: none;
+	}
+	.corridor-chips {
+		margin: 0;
+		padding: 2px 12px;
+	}
+	.corridor-chips.q-scroll-fade {
+		padding-inline-end: 2.5rem;
+	}
+	.corridor-note-region {
+		margin: 0 12px;
+	}
+	.corridor-panel > .mc-meta {
+		position: absolute;
+		left: 6px;
+		bottom: 3px;
+		gap: 4px;
+	}
+	.corridor-panel > .mc-meta .q-sim-tag {
+		height: 18px;
+		padding: 0 6px;
+		gap: 4px;
+		font-size: 10px;
+		box-shadow: inset 0 0 0 1px var(--line);
+	}
+	.corridor-panel > .mc-meta .mc-offline {
+		height: 18px;
+		font-size: 10px;
+	}
+	.corridor-maptags {
+		top: 64px;
+	}
+	.corridor-status--note {
+		top: 64px;
+	}
+	.corridor-controls {
+		top: auto;
+		right: 12px;
+		bottom: 28px;
+	}
+	.corridor-legend {
+		top: auto;
+		bottom: 0;
+		max-height: calc(100dvh - 320px);
+	}
+	/* A sheet at the bottom (route, stop, place): the buttons step aside; pinch still zooms. */
+	.corridor-app:has(.corridor-app__detail > *) .corridor-controls,
+	.corridor-app:has(.corridor-app__detail > *) .mc-meta {
+		display: none;
+	}
+	.corridor-app__detail {
+		left: 8px;
+		right: 8px;
+		bottom: 8px;
+		max-height: 45%;
+	}
+	.route-card .q-next-step__why {
+		display: -webkit-box;
+		-webkit-box-orient: vertical;
+		-webkit-line-clamp: 2;
+		line-clamp: 2;
+		overflow: hidden;
+	}
+	/* Compact route sheet: the decision (where, how long, how much) first; changing the
+	   trip comes after it, then the sticky action. */
+	.route-card {
+		gap: 10px;
+		padding: 14px 16px 16px;
+	}
+	.route-card > .route-card__fields,
+	.route-card > .route-card__toggle {
+		order: 2;
+	}
+	.route-card > .sticky {
+		order: 3;
+	}
+	.leaflet-container .leaflet-control-attribution {
+		font-size: 10px;
+		line-height: 14px;
 	}
 }

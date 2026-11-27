@@ -15,6 +15,7 @@ import {
 	Ticket,
 	TramFront,
 	WifiOff,
+	X,
 } from "lucide-react";
 import { type ReactNode, useEffect, useState } from "react";
 import type { CorridorStop } from "../../lib/corridor/corridor-types";
@@ -64,6 +65,8 @@ interface RouteCardProps {
 	onOpenGuide: () => void;
 	/** Starts guidance on the chosen route. When set it becomes the primary action. */
 	onStart?: () => void;
+	/** Dismisses the route sheet (and its line on the map). */
+	onClose?: () => void;
 }
 
 /** Small decorative illustration for a state block. */
@@ -176,6 +179,7 @@ export function RouteCard({
 	alert,
 	onOpenGuide,
 	onStart,
+	onClose,
 }: RouteCardProps) {
 	const t = useT().map;
 	const fare = makeFare(t);
@@ -452,6 +456,17 @@ export function RouteCard({
 						)}
 						{badge}
 					</span>
+				) : null}
+				{onClose ? (
+					<button
+						type="button"
+						className="q-btn q-btn--ghost q-btn--icon route-card__close"
+						aria-label={t.closeRoute}
+						title={t.closeRoute}
+						onClick={onClose}
+					>
+						<X size={20} strokeWidth={STROKE} aria-hidden="true" />
+					</button>
 				) : null}
 			</div>
 
