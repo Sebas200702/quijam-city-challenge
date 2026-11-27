@@ -9,7 +9,7 @@ import { homeContent } from "../lib/home-content";
 const { aiHref } = homeContent;
 ---
 
-<BaseLayout title="Quillart AI · Barranquilla" theme="light">
+<BaseLayout title="Quillart AI · Barranquilla" theme="light" dock={false}>
 	{/* Quillart AI is the entry point: the conversation comes first. `?q=` starts it with a question. */}
 	<div class="mx-auto flex min-h-[calc(100dvh-3px)] w-full max-w-md flex-col lg:max-w-6xl">
 		{/* The header sits outside <main> so it is the page's banner landmark. */}

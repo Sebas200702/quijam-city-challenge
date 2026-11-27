@@ -17,6 +17,7 @@ import {
 } from "../../lib/community/community-labels";
 import { useT } from "../../lib/i18n/use-language";
 import { mapHref } from "../../lib/map/map-url";
+import { usePublishScreen } from "../agent-dock/use-screen-context";
 import { AskQuillartButton } from "../assistant/ask-quillart-button";
 import { CommunityShell } from "./community-shell";
 import { EmptyState, Loaded, SpotIllustration } from "./community-ui";
@@ -58,6 +59,21 @@ export function PlaceDetail({
 		},
 		[slug],
 		["events", "forum"],
+	);
+	const shown = state.status === "ready" ? state.data : null;
+	usePublishScreen(
+		shown
+			? {
+					route: "/lugares/[slug]",
+					title: shown.place.name,
+					entity: {
+						kind: "place",
+						id: shown.place.slug,
+						name: shown.place.name,
+					},
+					zone: shown.place.neighborhood,
+				}
+			: null,
 	);
 
 	return (

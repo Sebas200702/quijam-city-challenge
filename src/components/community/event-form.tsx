@@ -1,7 +1,14 @@
 // Form to publish a community event; the moderation triage decides what happens next.
+// It can be filled without an account (the account is asked for on publishing,
+// keeping what was written) and arrive prefilled by Quillart AI or by the URL
+// (`?titulo=&descripcion=&categoria=&fecha=&hora=&lugar=`, U14).
 
 import { ArrowLeft, LogIn } from "lucide-react";
 import { type SyntheticEvent, useEffect, useState } from "react";
+import { readPrefill } from "../../lib/community/form-prefill";
+import { AgentMark } from "../agent-dock/agent-mark";
+import { usePublishScreen } from "../agent-dock/use-screen-context";
+import { useUiAction } from "../agent-dock/use-ui-action";
 import { askHref } from "../../lib/assistant/assistant-labels";
 import { EVENT_CATEGORY_LABELS } from "../../lib/community/community-labels";
 import {
@@ -54,21 +61,74 @@ interface FormValues {
 	price: string;
 }
 
-function initialValues(): FormValues {
-	const params = new URLSearchParams(window.location.search);
+/** What was written before signing in, kept for this tab only. */
+const DRAFT_KEY = "quillart-event-draft";
+
+function savedDraft(): Partial<FormValues> {
+	try {
+		const raw = sessionStorage.getItem(DRAFT_KEY);
+		return raw ? (JSON.parse(raw) as Partial<FormValues>) : {};
+	} catch {
+		return {};
+	}
+}
+
+function saveDraft(values: FormValues | null) {
+	try {
+		if (values) sessionStorage.setItem(DRAFT_KEY, JSON.stringify(values));
+		else sessionStorage.removeItem(DRAFT_KEY);
+	} catch {
+		// Storage blocked: the form still works, the draft just is not kept.
+	}
+}
+
+/** Prefilled fields (URL or agent) on top of the form values. */
+function withPrefill(
+	values: FormValues,
+	fields: Record<string, string>,
+): FormValues {
 	return {
+		...values,
+		...(fields.title ? { title: fields.title } : {}),
+		...(fields.description ? { description: fields.description } : {}),
+		...(fields.category && fields.category in EVENT_CATEGORY_LABELS
+			? { category: fields.category as EventCategory }
+			: {}),
+		...(fields.date ? { date: fields.date } : {}),
+		...(fields.startTime ? { startTime: fields.startTime } : {}),
+		// A catalog place id or slug; resolved against the list once it loads.
+		...(fields.place ? { placeId: fields.place } : {}),
+		...(fields.locationText
+			? { locationText: fields.locationText, placeId: OTHER_PLACE }
+			: {}),
+		...(fields.capacity ? { capacity: fields.capacity } : {}),
+		// `costo=0` is a free event; any other amount is the entry price.
+		...(fields.price
+			? fields.price === "0"
+				? { isFree: true, price: "" }
+				: { isFree: false, price: fields.price }
+			: {}),
+	};
+}
+
+function initialValues(): FormValues {
+	const empty: FormValues = {
 		title: "",
 		description: "",
 		category: "community",
 		date: "",
 		startTime: "",
 		endTime: "",
-		placeId: params.get("lugar") ?? OTHER_PLACE,
+		placeId: OTHER_PLACE,
 		locationText: "",
 		capacity: "",
 		isFree: true,
 		price: "",
 	};
+	return withPrefill(
+		{ ...empty, ...savedDraft() },
+		readPrefill("event", window.location.search),
+	);
 }
 
 /** Control that shows the problem of `field`, so the form can focus it. */
@@ -77,6 +137,18 @@ function controlId(field: EventInputField, values: FormValues): string {
 	if (field === "place") return "event-location";
 	return `event-${field}`;
 }
+/** Form fields the agent filled, to mark them in gold. */
+const PREFILL_INPUTS: Record<string, keyof FormValues> = {
+	title: "title",
+	description: "description",
+	category: "category",
+	date: "date",
+	startTime: "startTime",
+	place: "placeId",
+	locationText: "locationText",
+	capacity: "capacity",
+	price: "price",
+};
 
 function toInput(values: FormValues): NewEventInput {
 	const startsAt = bogotaLocalToIso(`${values.date}T${values.startTime}`);
@@ -123,27 +195,21 @@ export default function EventForm({ aiHref }: EventFormProps) {
 			</PageTitle>
 			{session.loading ? (
 				<Loading />
-			) : session.profile ? (
-				<EventFormBody />
 			) : (
-				<div className="q-card space-y-3 p-5">
-					<p className="q-h3">{t.agenda.signInTitle}</p>
-					<p className="q-p q-muted">{t.agenda.signInText}</p>
-					<a href={signInHref()} className="q-btn q-btn--primary self-start">
-						<LogIn size={18} aria-hidden="true" />
-						{t.agenda.signIn}
-					</a>
-				</div>
+				<EventFormBody signedIn={session.profile !== null} />
 			)}
 		</CommunityShell>
 	);
 }
 
-function EventFormBody() {
+function EventFormBody({ signedIn }: { signedIn: boolean }) {
 	const t = useT();
 	const store = useStore();
 	const { state: placesState } = useLoad((s) => s.listPlaces(), []);
 	const [values, setValues] = useState<FormValues>(initialValues);
+	const [agentFilled, setAgentFilled] = useState<Set<keyof FormValues>>(
+		() => new Set(),
+	);
 	const [error, setError] = useState<string | null>(null);
 	const [issue, setIssue] = useState<EventInputIssue | null>(null);
 	const [submitting, setSubmitting] = useState(false);
@@ -151,18 +217,60 @@ function EventFormBody() {
 		null,
 	);
 
-	// A `?lugar=` id that is not in the catalog falls back to a free-text address.
+	// A `?lugar=` id or slug resolves to the catalog place; anything else
+	// falls back to a free-text address.
 	useEffect(() => {
 		if (placesState.status !== "ready") return;
-		setValues((current) =>
-			current.placeId &&
-			!placesState.data.some((place) => place.id === current.placeId)
-				? { ...current, placeId: OTHER_PLACE }
-				: current,
-		);
+		setValues((current) => {
+			if (!current.placeId) return current;
+			const place = placesState.data.find(
+				(item) => item.id === current.placeId || item.slug === current.placeId,
+			);
+			if (place?.id === current.placeId) return current;
+			return { ...current, placeId: place?.id ?? OTHER_PLACE };
+		});
 	}, [placesState]);
 
+	usePublishScreen({
+		route: "/agenda/nuevo",
+		title: t.agenda.formTitle,
+		draft: {
+			form: "event",
+			fields: {
+				title: values.title,
+				description: values.description,
+				category: values.category,
+				date: values.date,
+				startTime: values.startTime,
+				locationText: values.locationText,
+			},
+		},
+	});
+
+	// Quillart AI fills the form on screen; the person reviews and publishes.
+	useUiAction("form.prefill", (action) => {
+		if (action.form !== "event") return null;
+		const before = values;
+		const beforeFilled = agentFilled;
+		setValues(withPrefill(values, action.fields));
+		const filled = new Set(
+			Object.keys(action.fields).flatMap((key) =>
+				PREFILL_INPUTS[key] ? [PREFILL_INPUTS[key]] : [],
+			),
+		);
+		setAgentFilled(filled);
+		return {
+			labels: [t.dock.formFilled(filled.size)],
+			undo: () => {
+				setValues(before);
+				setAgentFilled(beforeFilled);
+			},
+		};
+	});
+
 	const today = isoToBogotaLocal(new Date().toISOString()).slice(0, 10);
+	const mark = (key: keyof FormValues) =>
+		agentFilled.has(key) ? " q-agent-filled" : "";
 
 	function set<K extends keyof FormValues>(key: K, value: FormValues[K]) {
 		setValues((current) => ({ ...current, [key]: value }));
@@ -185,6 +293,12 @@ function EventFormBody() {
 		event.preventDefault();
 		setError(null);
 		setResult(null);
+		if (!signedIn) {
+			// Ask for the account only now, keeping what was written (U14).
+			saveDraft(values);
+			window.location.assign(signInHref());
+			return;
+		}
 		const input = toInput(values);
 		const invalid = eventInputIssue(input);
 		if (invalid) {
@@ -193,7 +307,9 @@ function EventFormBody() {
 		}
 		setSubmitting(true);
 		try {
-			setResult(await store.createEvent(input));
+			const published = await store.createEvent(input);
+			setResult(published);
+			if (published.outcome !== "rejected") saveDraft(null);
 		} catch (err) {
 			setError(errorText(err, t.agenda.publishError));
 		} finally {
@@ -220,7 +336,13 @@ function EventFormBody() {
 	}
 
 	return (
-		<form onSubmit={handleSubmit} className="q-card space-y-5 p-5" noValidate>
+		<form
+			id="event-form"
+			onSubmit={handleSubmit}
+			className="q-card space-y-5 p-5"
+			noValidate
+		>
+			{agentFilled.size > 0 && <AgentMark text={t.dock.filledByAgent} />}
 			<Field
 				id="event-title"
 				error={errorFor("event-title")}
@@ -228,7 +350,7 @@ function EventFormBody() {
 			>
 				<input
 					id="event-title"
-					className={inputClass}
+					className={`${inputClass}${mark("title")}`}
 					value={values.title}
 					onChange={(e) => set("title", e.target.value)}
 					maxLength={120}
@@ -244,7 +366,7 @@ function EventFormBody() {
 			>
 				<textarea
 					id="event-description"
-					className={textareaClass}
+					className={`${textareaClass}${mark("description")}`}
 					value={values.description}
 					onChange={(e) => set("description", e.target.value)}
 					placeholder={t.agenda.descriptionPlaceholder}
@@ -255,7 +377,7 @@ function EventFormBody() {
 			<Field id="event-category" label={t.agenda.category}>
 				<select
 					id="event-category"
-					className={inputClass}
+					className={`${inputClass}${mark("category")}`}
 					value={values.category}
 					onChange={(e) => set("category", e.target.value as EventCategory)}
 				>
@@ -276,7 +398,7 @@ function EventFormBody() {
 					<input
 						id="event-date"
 						type="date"
-						className={inputClass}
+						className={`${inputClass}${mark("date")}`}
 						value={values.date}
 						min={today}
 						onChange={(e) => set("date", e.target.value)}
@@ -291,7 +413,7 @@ function EventFormBody() {
 					<input
 						id="event-start"
 						type="time"
-						className={inputClass}
+						className={`${inputClass}${mark("startTime")}`}
 						value={values.startTime}
 						onChange={(e) => set("startTime", e.target.value)}
 						required
@@ -318,7 +440,7 @@ function EventFormBody() {
 					<Field id="event-place" label={t.agenda.fieldPlace}>
 						<select
 							id="event-place"
-							className={inputClass}
+							className={`${inputClass}${mark("placeId")}`}
 							value={values.placeId}
 							onChange={(e) => set("placeId", e.target.value)}
 						>
@@ -342,7 +464,7 @@ function EventFormBody() {
 				>
 					<input
 						id="event-location"
-						className={inputClass}
+						className={`${inputClass}${mark("locationText")}`}
 						value={values.locationText}
 						onChange={(e) => set("locationText", e.target.value)}
 						autoComplete="street-address"
@@ -421,9 +543,16 @@ function EventFormBody() {
 					className="q-btn q-btn--primary q-btn--block"
 					disabled={submitting}
 				>
-					{submitting ? t.agenda.publishing : t.agenda.publishEvent}
+					{!signedIn && <LogIn size={18} aria-hidden="true" />}
+					{submitting
+						? t.agenda.publishing
+						: signedIn
+							? t.agenda.publishEvent
+							: t.agenda.signInTitle}
 				</button>
-				<p className="q-sm q-muted text-center">{t.agenda.moderationNote}</p>
+				<p className="q-sm q-muted text-center">
+					{signedIn ? t.agenda.moderationNote : t.agenda.signInText}
+				</p>
 			</div>
 			<p className="q-sm q-muted text-center">
 				{t.agenda.askQuillartPrefix}{" "}

@@ -3,6 +3,7 @@
 
 import { agenda } from "./dictionaries/agenda";
 import { cityMfa } from "./dictionaries/city-mfa";
+import { dock } from "./dictionaries/dock";
 import { forum } from "./dictionaries/forum";
 import { guide } from "./dictionaries/guide";
 import { host } from "./dictionaries/host";
@@ -89,6 +90,7 @@ export type Messages = BaseMessages & {
 	shared: (typeof shared)[Language];
 	timeline: (typeof timeline)[Language];
 	cityMfa: (typeof cityMfa)[Language];
+	dock: (typeof dock)[Language];
 };
 
 const en: BaseMessages = {
@@ -270,6 +272,7 @@ function build(language: Language): Messages {
 		shared: shared[language],
 		timeline: timeline[language],
 		cityMfa: cityMfa[language],
+		dock: dock[language],
 	};
 }
 

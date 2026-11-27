@@ -26,6 +26,6 @@ const state: PreviewState =
 	requested && STATES.includes(requested) ? requested : "normal";
 ---
 
-<BaseLayout translated={false} title="Secciones del Centro de Mando · QUILLART" theme="dark">
+<BaseLayout translated={false} title="Secciones del Centro de Mando · QUILLART" theme="dark" dock={false}>
 	<CitySectionsPreview client:load state={state} />
 </BaseLayout>

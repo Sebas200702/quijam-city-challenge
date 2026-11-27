@@ -38,8 +38,7 @@ import { onMapFocus } from "../../lib/map/map-focus";
 import { parseMapUrl } from "../../lib/map/map-url";
 import type { VisitorContext } from "../../lib/notices/notice-types";
 import { prefersReducedMotion } from "../../lib/reduced-motion";
-import { DESTINATIONS, type DestinationKey } from "../../lib/trip/trip-planner";
-import { GuidePanel } from "../guide/guide-panel";
+import { openDock } from "../agent-dock/dock-control";
 import { NoticeSlot } from "../notices/notice-slot";
 import "./corridor-map.css";
 import { HostArrivalNotice } from "../host/host-arrival-notice";
@@ -69,6 +68,7 @@ import { useFloodCountdown } from "./use-flood-countdown";
 import { useFloodNotice } from "./use-flood-notice";
 import { useLiveBusinesses } from "./use-live-businesses";
 import { usePointLayers } from "./use-point-layers";
+import { useMapUiActions } from "./use-map-ui-actions";
 import { type RouteQuery, useRoutePlan } from "./use-route-plan";
 
 const FALLBACK_CENTER: L.LatLngTuple = [10.97, -74.79];
@@ -168,10 +168,6 @@ export default function CorridorMap({ data, source }: CorridorMapProps) {
 		};
 		return labels[group] ?? group;
 	};
-	const [guideOpen, setGuideOpen] = useState(false);
-	const guideRef = useRef<HTMLDivElement>(null);
-	/** What had focus when the Guide opened, to give it back on close. */
-	const guideOpenerRef = useRef<HTMLElement | null>(null);
 	const [legendOpen, setLegendOpen] = useState(false);
 	const [near, setNear] = useState(false);
 	const [tiles, setTiles] = useState<TileStatus>("loading");
@@ -211,7 +207,7 @@ export default function CorridorMap({ data, source }: CorridorMapProps) {
 	const coolCount = useMemo(() => coolPoints(data.stops).length, [data.stops]);
 
 	const stops = useMemo(() => orderedStops(data.stops), [data.stops]);
-	const { state: city, lastEvent, publish } = useCityState();
+	const { state: city, lastEvent } = useCityState();
 	const flood = useFloodCountdown(lastEvent, data.floodZones);
 	const crowdByZone = useMemo(() => crowdByZoneFrom(city), [city]);
 	const [query, setQuery] = useState<RouteQuery>({
@@ -226,8 +222,6 @@ export default function CorridorMap({ data, source }: CorridorMapProps) {
 	);
 	// "You are here": the trip's origin stands in for the visitor's position (no GPS in the pilot).
 	const origin = data.stops.find((stop) => stop.code === query.origin) ?? null;
-	const destination =
-		data.stops.find((stop) => stop.code === query.destination) ?? null;
 	// The arroyo modal only opens when it touches this route or the visitor's zone (docs/20, 3.1).
 	const route = plan?.route ?? null;
 	const visitor = useMemo<VisitorContext | undefined>(() => {
@@ -446,6 +440,14 @@ export default function CorridorMap({ data, source }: CorridorMapProps) {
 		[],
 	);
 
+	// Quillart AI: what the map shows, and the agent's map actions (audit v2, U05).
+	useMapUiActions({
+		mapRef,
+		query,
+		setQuery,
+		selected: selected?.code ?? null,
+	});
+
 	useHeatLayer(mapRef, data, heatOn, t);
 
 	useEffect(() => {
@@ -547,37 +549,10 @@ export default function CorridorMap({ data, source }: CorridorMapProps) {
 		}
 	}, [flood.blocked, data.floodZones, t]);
 
-	// Focus follows the Guide: into its heading on open, back to what opened it on close
-	// (or to a visible "Ask" button when that one is gone), unless something else took it.
-	const guideWasOpen = useRef(false);
-	useEffect(() => {
-		const guide = guideRef.current;
-		if (guideOpen) {
-			guide?.querySelector<HTMLElement>("h2[tabindex]")?.focus();
-		} else if (guideWasOpen.current) {
-			const active = document.activeElement;
-			const lost =
-				!active || active === document.body || guide?.contains(active);
-			if (lost) {
-				const visible = (el: HTMLElement | null | undefined) =>
-					el?.isConnected && el.getClientRects().length > 0 ? el : null;
-				const root = guide?.closest(".corridor-app");
-				(
-					visible(guideOpenerRef.current) ??
-					visible(root?.querySelector<HTMLElement>(".corridor-guide-button")) ??
-					visible(root?.querySelector<HTMLElement>(".route-card__guide button"))
-				)?.focus();
-			}
-		}
-		guideWasOpen.current = guideOpen;
-	}, [guideOpen]);
-
+	// One assistant (U04): the map's "ask" buttons open the Quillart AI dock,
+	// whose Mobility agent replaced the map Guide.
 	const openGuide = () => {
-		guideOpenerRef.current =
-			document.activeElement instanceof HTMLElement
-				? document.activeElement
-				: null;
-		setGuideOpen(true);
+		openDock();
 	};
 
 	const toggleLayer = (key: string) => {
@@ -622,12 +597,6 @@ export default function CorridorMap({ data, source }: CorridorMapProps) {
 			return true;
 		}
 		return false;
-	};
-
-	/** From the Guide's trip card: hide the Guide (it keeps its conversation) and show the destination. */
-	const showDestination = (destination: DestinationKey) => {
-		setGuideOpen(false);
-		focusPoint({ kind: "stop", code: DESTINATIONS[destination].stopCode });
 	};
 
 	/** Centres the map on the visitor; without a position, on the whole corridor. */
@@ -727,27 +696,7 @@ export default function CorridorMap({ data, source }: CorridorMapProps) {
 						<p className="corridor-note">
 							<MapPinOff size={18} strokeWidth={1.75} aria-hidden="true" />
 							<span className="corridor-note__text">{mapNote}</span>
-							<button
-								type="button"
-								className="corridor-note__close"
-								aria-label={t.metro.dismissNote}
-								onClick={() => setMapNote(null)}
-							>
-								<X size={18} strokeWidth={1.75} aria-hidden="true" />
-							</button>
-						</p>
-					)}
-				</div>
-				<button
-					type="button"
-					className="q-btn q-btn--secondary corridor-guide-button"
-					aria-expanded={guideOpen}
-					onClick={openGuide}
-				>
-					<MessageCircle size={20} strokeWidth={1.75} aria-hidden="true" />
-					{t.askGuide}
-				</button>
-				<div className="corridor-panel__stops">
+							<div className="corridor-panel__stops">
 					<StopList
 						stops={stops}
 						selectedCode={selected?.kind === "stop" ? selected.code : null}
@@ -806,54 +755,38 @@ export default function CorridorMap({ data, source }: CorridorMapProps) {
 			</div>
 
 			<div className="corridor-app__detail">
-				{/* Hidden, not unmounted, so the conversation survives "Ver en el mapa". */}
-				<div ref={guideRef} hidden={!guideOpen}>
-					<GuidePanel
-						onShowOnMap={showDestination}
-						onClose={() => setGuideOpen(false)}
-						routeQuestion={
-							origin && destination
-								? t.askRoutePrompt(origin.name, destination.name)
-								: undefined
-						}
-						onReportSaved={(reportId) =>
-							void publish({ type: "cobro_abusivo", reportId })
-						}
+				{selectedPoint ? (
+					<PointCard
+						layer={selectedPoint.layer}
+						point={selectedPoint.point}
+						onClose={() => setPointSelected(null)}
 					/>
-				</div>
-				{!guideOpen &&
-					(selectedPoint ? (
-						<PointCard
-							layer={selectedPoint.layer}
-							point={selectedPoint.point}
-							onClose={() => setPointSelected(null)}
-						/>
-					) : detail ? (
-						<DetailCard
-							detail={detail}
-							source={source}
-							onClose={() => setSelected(null)}
-							onOpenGuide={openGuide}
-						>
-							{selectedBusiness && (
-								<BusinessExtras
-									code={selectedBusiness.code}
-									isOpen={selectedBusiness.is_open}
-								/>
-							)}
-						</DetailCard>
-					) : (
-						<RouteCard
-							stops={stops}
-							query={query}
-							onQueryChange={setQuery}
-							plan={plan}
-							loading={loading}
-							error={error}
-							alert={floodNotice.band}
-							onOpenGuide={openGuide}
-						/>
-					))}
+				) : detail ? (
+					<DetailCard
+						detail={detail}
+						source={source}
+						onClose={() => setSelected(null)}
+						onOpenGuide={openGuide}
+					>
+						{selectedBusiness && (
+							<BusinessExtras
+								code={selectedBusiness.code}
+								isOpen={selectedBusiness.is_open}
+							/>
+						)}
+					</DetailCard>
+				) : (
+					<RouteCard
+						stops={stops}
+						query={query}
+						onQueryChange={setQuery}
+						plan={plan}
+						loading={loading}
+						error={error}
+						alert={floodNotice.band}
+						onOpenGuide={openGuide}
+					/>
+				)}
 			</div>
 
 			{/* Notices and the arroyo modal live at the root, above the card, the Guide and the
@@ -864,7 +797,6 @@ export default function CorridorMap({ data, source }: CorridorMapProps) {
 					onAction={(_notice, actionId) => {
 						// "Cambiar ruta": the Decider already re-planned without the arroyo; show it.
 						if (actionId !== "change-route") return;
-						setGuideOpen(false);
 						setSelected(null);
 					}}
 				/>

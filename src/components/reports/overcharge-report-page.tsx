@@ -17,6 +17,7 @@ import {
 	useState,
 } from "react";
 import { formatCop } from "../../lib/city-dashboard-utils";
+import { readPrefill } from "../../lib/community/form-prefill";
 import { useCityState } from "../../lib/city-events/use-city-state";
 import { useT } from "../../lib/i18n/use-language";
 import {
@@ -37,6 +38,9 @@ import {
 	readPendingReports,
 } from "../../lib/reports/overcharge-routes";
 import { sendPendingReports } from "../../lib/reports/pending-report-sync";
+import { AgentMark } from "../agent-dock/agent-mark";
+import { usePublishScreen } from "../agent-dock/use-screen-context";
+import { useUiAction } from "../agent-dock/use-ui-action";
 import { ReportIllustration } from "./report-illustration";
 
 type FormStatus =
@@ -84,6 +88,7 @@ export function OverchargeReportPage({
 	initialSegmentCode,
 }: OverchargeReportPageProps) {
 	const t = useT().reports;
+	const dockText = useT().dock;
 	const id = useId();
 	const { publish } = useCityState();
 
@@ -106,6 +111,58 @@ export function OverchargeReportPage({
 	const [charged, setCharged] = useState("");
 	const [driverCode, setDriverCode] = useState("");
 	const [notes, setNotes] = useState("");
+	const [byAgent, setByAgent] = useState(false);
+
+	// `?monto=&vehiculo=&nota=` (U17): the route answer or Quillart AI can
+	// leave the report half written; the person checks it and sends it.
+	// Read after hydration: the server renders the empty form.
+	useEffect(() => {
+		const prefill = readPrefill("overcharge", window.location.search);
+		if (prefill.vehicle) setVehicle(prefill.vehicle as ReportTransportMode);
+		if (prefill.amount) setCharged(prefill.amount);
+		if (prefill.driverCode) setDriverCode(prefill.driverCode);
+		if (prefill.notes) setNotes(prefill.notes);
+	}, []);
+
+	usePublishScreen({
+		route: "/reportar",
+		title: t.pageTitle.split("·")[0].trim(),
+		draft: {
+			form: "overcharge",
+			fields: { segment: segmentCode, amount: charged, vehicle, notes },
+		},
+	});
+
+	useUiAction("form.prefill", (action) => {
+		if (action.form !== "overcharge") return null;
+		const before = { segmentCode, vehicle, charged, driverCode, notes };
+		const {
+			segment,
+			amount,
+			vehicle: mode,
+			driverCode: code,
+			notes: note,
+		} = action.fields;
+		if (segment && routes.some((route) => route.segmentCode === segment)) {
+			setSegmentCode(segment);
+		}
+		if (mode) setVehicle(mode as ReportTransportMode);
+		if (amount) setCharged(amount);
+		if (code) setDriverCode(code);
+		if (note) setNotes(note);
+		setByAgent(true);
+		return {
+			labels: [dockText.formFilled(Object.keys(action.fields).length)],
+			undo: () => {
+				setSegmentCode(before.segmentCode);
+				setVehicle(before.vehicle);
+				setCharged(before.charged);
+				setDriverCode(before.driverCode);
+				setNotes(before.notes);
+				setByAgent(false);
+			},
+		};
+	});
 	const [status, setStatus] = useState<FormStatus>({ kind: "idle" });
 	const [isOnline, setIsOnline] = useState(true);
 	const [pendingCount, setPendingCount] = useState(0);
@@ -460,10 +517,12 @@ export function OverchargeReportPage({
 					</div>
 
 					<form
+						id="report-form"
 						className="q-card__body space-y-5"
 						onSubmit={handleSubmit}
 						noValidate
 					>
+						{byAgent && <AgentMark text={dockText.filledByAgent} />}
 						<label className="block space-y-1.5" htmlFor={`${id}-route`}>
 							<span className="q-sm font-semibold text-[var(--ink)]">
 								{t.form.route}

@@ -14,7 +14,11 @@ import type {
 	Profile,
 	PublishResult,
 } from "../../lib/community/community-types";
+import { readPrefill } from "../../lib/community/form-prefill";
 import { useT } from "../../lib/i18n/use-language";
+import { AgentMark } from "../agent-dock/agent-mark";
+import { usePublishScreen } from "../agent-dock/use-screen-context";
+import { useUiAction } from "../agent-dock/use-ui-action";
 import { CommunityShell } from "./community-shell";
 import {
 	EmptyState,
@@ -53,6 +57,16 @@ export default function ThreadPage({
 		},
 		[threadId, session.profile?.id],
 		["forum"],
+	);
+	const shown = state.status === "ready" ? state.data.thread : null;
+	usePublishScreen(
+		shown
+			? {
+					route: "/foro/[id]",
+					title: shown.title,
+					entity: { kind: "thread", id: shown.id, name: shown.title },
+				}
+			: null,
 	);
 
 	return (
@@ -261,10 +275,29 @@ function ReplyComposer({
 }) {
 	const t = useT();
 	const store = useStore();
-	const [body, setBody] = useState("");
+	// `?respuesta=` (U16) or Quillart AI can leave the reply written.
+	const [body, setBody] = useState(
+		() => readPrefill("reply", window.location.search).body ?? "",
+	);
+	const [byAgent, setByAgent] = useState(false);
 	const [busy, setBusy] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [notice, setNotice] = useState<PublishResult<ForumPost> | null>(null);
+
+	useUiAction("form.prefill", (action) => {
+		// Only this conversation's reply: never text meant for another thread.
+		if (action.form !== "reply" || action.threadId !== threadId) return null;
+		const before = body;
+		setBody(action.fields.body ?? "");
+		setByAgent(true);
+		return {
+			labels: [t.dock.formFilled(1)],
+			undo: () => {
+				setBody(before);
+				setByAgent(false);
+			},
+		};
+	});
 
 	async function submit(formEvent: SyntheticEvent<HTMLFormElement>) {
 		formEvent.preventDefault();
@@ -293,13 +326,19 @@ function ReplyComposer({
 	}
 
 	return (
-		<form onSubmit={submit} className="q-card space-y-3 px-5 py-5" noValidate>
+		<form
+			id="reply-form"
+			onSubmit={submit}
+			className="q-card space-y-3 px-5 py-5"
+			noValidate
+		>
 			<label htmlFor="reply-body" className="q-eyebrow block">
 				{t.forum.thread.yourReply}
 			</label>
+			{byAgent && <AgentMark text={t.dock.filledByAgent} />}
 			<textarea
 				id="reply-body"
-				className={textareaClass}
+				className={`${textareaClass}${byAgent ? " q-agent-filled" : ""}`}
 				value={body}
 				maxLength={5000}
 				placeholder={t.forum.thread.replyPlaceholder}
