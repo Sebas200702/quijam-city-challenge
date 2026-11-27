@@ -505,7 +505,10 @@ export function OverchargeReportPage({
 							</div>
 						</div>
 
-						<fieldset className="m-0 border-0 p-0 space-y-2">
+						<fieldset
+							className="m-0 border-0 p-0 space-y-2"
+							aria-describedby={`${id}-vehicle-hint`}
+						>
 							<legend className="q-sm font-semibold text-[var(--ink)]">
 								{t.form.vehicleLegend}
 							</legend>
@@ -524,6 +527,9 @@ export function OverchargeReportPage({
 									</button>
 								))}
 							</div>
+							<p id={`${id}-vehicle-hint`} className="q-sm q-muted">
+								{t.form.informalHint}
+							</p>
 						</fieldset>
 
 						<div className="space-y-2">
