@@ -1,0 +1,1173 @@
+---
+// Delivery pitch deck (7 minutes). Built on the QUILLART design system:
+// tokens, q-* components and unDraw illustrations from the app itself.
+// Controls: → / Space next, ← back, N speaker notes, F fullscreen, Home/End.
+import QRCode from "qrcode";
+import "../styles/global.css";
+
+// A real QR for the "Puntos QUILLART" slide: it opens the conversation with the place's question.
+const qrUrl = new URL(
+	`/inicio?q=${encodeURIComponent("¿Qué hay cerca de aquí?")}`,
+	Astro.url.origin,
+).href;
+const qrSvg = await QRCode.toString(qrUrl, {
+	type: "svg",
+	margin: 0,
+	color: { dark: "#0B131E", light: "#FFFFFF" },
+});
+---
+
+<!doctype html>
+<html lang="es" data-theme="light">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="robots" content="noindex" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link
+			rel="stylesheet"
+			href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap"
+		/>
+		<title>QUILLART · Presentación</title>
+	</head>
+	<body class="q-root deck" data-act="intro">
+		<!-- Ambient glow follows the act colour: red = problem, gold = proposal, green = legacy. -->
+		<div class="ambient" aria-hidden="true"></div>
+
+		<!-- Connection graph: scattered dots in the problem, linked in the proposal, lit at the close. -->
+		<svg class="graph" id="graph" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true"></svg>
+
+		<div class="viewport">
+			<main class="stage" id="stage">
+				<!-- ═════════ 1 · PORTADA ═════════ -->
+				<section class="slide s-cover" data-act="intro" data-graph="scatter" data-strong data-time="0:15">
+					<div class="cover__text">
+						<p class="q-eyebrow rise" style="--i:0">City Challenge · Barranquilla 2034</p>
+						<h1 class="cover__title rise" style="--i:1">2034.<br />El mundo llega.</h1>
+						<p class="cover__lead rise" style="--i:2">¿Nos encuentra <span class="hl-gold">conectados</span>?</p>
+						<div class="q-logo cover__logo rise" style="--i:3">
+							<span class="q-logo__tile"><span class="q-star"></span></span>
+							<span class="q-logo__text">
+								<span class="q-logo__word">QUILLART</span>
+								<span class="q-logo__sub">El intérprete de la ciudad</span>
+							</span>
+						</div>
+					</div>
+					<div class="cover__mark" aria-hidden="true">
+						<div class="q-flagmark build"><i><i><span class="q-star q-star--pulse big-star"></span></i></i></div>
+					</div>
+					<div class="note">
+						Buenos días. Es 2034 y el mundo llega a Barranquilla. La pregunta que nos hicimos no es si tenemos estadio. Es otra: cuando el mundo llegue, ¿nos va a encontrar conectados?
+					</div>
+				</section>
+
+				<!-- ═════════ 2 · PROBLEMA: YA VIVIMOS EL MUNDIAL ═════════ -->
+				<section class="slide s-carnaval" data-act="problema" data-graph="scatter" data-time="0:25">
+					<p class="q-eyebrow rise" style="--i:0"><span class="dot dot--red"></span>01 · El problema</p>
+					<h2 class="title rise" style="--i:1">Barranquilla ya vive su Mundial.<br /><span class="muted">Cada Carnaval.</span></h2>
+					<div class="carnaval__kpi rise" style="--i:2">
+						<span class="kpi-giant q-num" data-count="820000" data-prefix="+">0</span>
+						<span class="kpi-giant__label">visitantes en el Carnaval 2026</span>
+					</div>
+					<div class="carnaval__row">
+						<div class="q-kpi rise" style="--i:3">
+							<span class="q-kpi__label">Dejaron</span>
+							<span class="q-kpi__value">+$840.000 <small>millones</small></span>
+						</div>
+						<div class="q-kpi rise" style="--i:4">
+							<span class="q-kpi__label">Ocupación hotelera</span>
+							<span class="q-kpi__value">+90 <small>%</small></span>
+						</div>
+					</div>
+					<p class="punch" data-step="1">Cada año, el mismo ensayo.<br /><strong>Y los mismos problemas.</strong></p>
+					<p class="source">Fuente: balance de la Alcaldía de Barranquilla, citado por Forbes Colombia (19 feb 2026).</p>
+					<div class="note">
+						No hay que imaginar el Mundial: Barranquilla ya lo vive cada año. En el Carnaval de 2026 llegaron más de 820.000 visitantes. [clic] Y cada año se repiten los mismos problemas.
+					</div>
+				</section>
+
+				<!-- ═════════ 3 · PROBLEMA: CIUDAD DESCONECTADA ═════════ -->
+				<section class="slide s-broken" data-act="problema" data-graph="scatter" data-time="0:35">
+					<p class="q-eyebrow rise" style="--i:0"><span class="dot dot--red"></span>01 · El problema</p>
+					<h2 class="title rise" style="--i:1">Una ciudad <span class="hl-red">desconectada</span>.</h2>
+					<div class="broken">
+						<article class="q-card broken__card" data-step="1">
+							<div class="q-band q-band--red"></div>
+							<div class="q-illus broken__illus"><img src="/illustrations/the-search.svg" alt="" /></div>
+							<div class="q-card__body">
+								<h3 class="q-h2">El vecino no se entera</h3>
+								<p class="q-p q-muted">Lo que pasa en su barrio vive en chats, cadenas y rumores.</p>
+							</div>
+							<span class="cut" aria-hidden="true"></span>
+						</article>
+						<article class="q-card broken__card" data-step="2">
+							<div class="q-band q-band--red"></div>
+							<div class="q-illus broken__illus"><img src="/illustrations/undraw-location-search.svg" alt="" /></div>
+							<div class="q-card__body">
+								<h3 class="q-h2">El visitante llega solo</h3>
+								<p class="q-p q-muted">No sabe a dónde ir ni a quién preguntar. Su gasto no llega al barrio.</p>
+							</div>
+							<span class="cut" aria-hidden="true"></span>
+						</article>
+						<article class="q-card broken__card" data-step="3">
+							<div class="q-band q-band--red"></div>
+							<div class="q-illus broken__illus"><img src="/illustrations/alert.svg" alt="" /></div>
+							<div class="q-card__body">
+								<h3 class="q-h2">La ciudad no escucha</h3>
+								<p class="q-p q-muted"><strong class="q-num ink">$35.000</strong> por una carrera de 2 a 3 km. <strong class="q-num ink">134</strong> muertes por arroyos en casi un siglo, sin alerta pública.</p>
+							</div>
+							<span class="cut" aria-hidden="true"></span>
+						</article>
+					</div>
+					<p class="punch punch--center" data-step="4">En 2034, el rumor y la estafa corren <strong>más rápido que la ciudad</strong>.</p>
+					<p class="source">Fuentes: Blu Radio (feb 2026); Observatorio de Arroyos y Distrito, citados por El Heraldo.</p>
+					<div class="note">
+						El problema de fondo es que somos una ciudad desconectada. [clic] El vecino no se entera de lo que pasa en su propio barrio: todo vive en chats y rumores. [clic] El visitante llega solo y su plata se queda lejos de los barrios. [clic] Y la ciudad no escucha: a la gente le cobran 35.000 pesos por una carrera corta y nadie lo registra, y los arroyos han cobrado 134 vidas sin una alerta pública. [clic] En 2034, con el mundo encima, el rumor y la estafa van a correr más rápido que la ciudad.
+					</div>
+				</section>
+
+				<!-- ═════════ 4 · PROPUESTA ═════════ -->
+				<section class="slide s-proposal" data-act="propuesta" data-graph="" data-strong data-time="0:30">
+					<p class="q-eyebrow rise" style="--i:0"><span class="dot dot--gold"></span>02 · La propuesta</p>
+					<h2 class="title title--xl rise" style="--i:1">No copiamos la ciudad.<br /><span class="hl-gold">La conectamos.</span></h2>
+					<div class="links">
+						<div class="link link--gold" data-step="1" data-graph-on="p2p">
+							<span class="link__ends"><i></i><b></b><i></i></span>
+							<h3 class="q-h2">Persona ↔ persona</h3>
+							<p class="q-p q-muted">Vecinos y visitantes se encuentran en eventos y conversaciones.</p>
+						</div>
+						<div class="link link--green" data-step="2" data-graph-on="p2e">
+							<span class="link__ends"><i></i><b></b><i class="sq"></i></span>
+							<h3 class="q-h2">Persona ↔ entorno</h3>
+							<p class="q-p q-muted">Actividades, espacios públicos y naturaleza de la ciudad.</p>
+						</div>
+						<div class="link link--red" data-step="3" data-graph-on="p2c">
+							<span class="link__ends"><i></i><b></b><span class="q-star"></span></span>
+							<h3 class="q-h2">Persona ↔ ciudad</h3>
+							<p class="q-p q-muted">Lo que la gente reporta llega a la Alcaldía, y la ciudad responde.</p>
+						</div>
+					</div>
+					<blockquote class="quote" data-step="4">“QUILLART hace que Barranquilla se entienda, para el que llega y para el que vive aquí, y hace que la ciudad, por fin, escuche a su gente.”</blockquote>
+					<div class="note">
+						Nuestra respuesta es QUILLART, el intérprete de la ciudad. No es un gemelo digital: no copiamos la ciudad, la conectamos. En tres direcciones. [clic] Persona con persona: vecinos y visitantes que se encuentran. [clic] Persona con su entorno: lo que hay para hacer, los espacios públicos, la naturaleza. [clic] Y persona con la ciudad: lo que la gente ve y reporta le llega a la Alcaldía. [clic] Otras propuestas informan al visitante. Nosotros conectamos a la gente entre sí y con la ciudad, y moderamos para que se pueda confiar. Lo resumimos en una frase.
+					</div>
+				</section>
+
+				<!-- ═════════ 5 · PROGRAMA: QUILLART AI ═════════ -->
+				<section class="slide s-ai" data-act="programa" data-graph="p2p p2e p2c" data-time="0:25">
+					<p class="q-eyebrow rise" style="--i:0"><span class="dot dot--gold"></span>03 · El programa</p>
+					<h2 class="title rise" style="--i:1">Una conversación es la puerta.</h2>
+					<div class="orch">
+						<div class="orch__in rise" style="--i:2">
+							<div class="q-prompt orch__prompt"><span class="q-star q-star--think orch__star"></span><span>¿Qué hay este sábado cerca del Malecón?</span></div>
+							<p class="q-sm q-subtle">Voz o texto · la voz es solo el canal</p>
+						</div>
+						<div class="orch__wire rise" style="--i:3"><i class="pulse"></i></div>
+						<div class="orch__hub rise" style="--i:3">
+							<span class="q-star big-star q-star--think"></span>
+							<span class="orch__hublabel">Orquestador</span>
+						</div>
+						<div class="orch__agents">
+							<span class="agent is-pick" data-step="1"><img src="/illustrations/events-calendar.svg" alt="" />Agenda</span>
+							<span class="agent" data-step="1"><img src="/illustrations/online-community.svg" alt="" />Comunidad</span>
+							<span class="agent" data-step="1"><img src="/illustrations/among-nature.svg" alt="" />Lugares y naturaleza</span>
+							<span class="agent" data-step="1"><img src="/illustrations/transport.svg" alt="" />Movilidad</span>
+							<span class="agent" data-step="1"><img src="/illustrations/alert.svg" alt="" />Reportes a la ciudad</span>
+							<span class="agent" data-step="1"><img src="/illustrations/mobile-profile.svg" alt="" />Tu cuenta</span>
+						</div>
+					</div>
+					<div class="rules" data-step="2">
+						<span class="q-badge q-badge--event">6 agentes especializados</span>
+						<span class="q-badge q-badge--optimal">Cada uno, solo sus herramientas</span>
+						<span class="q-badge q-badge--alert">Nada se ejecuta sin confirmar</span>
+					</div>
+					<div class="note">
+						Hoy, para saber qué hacer en Barranquilla hay que saltar entre diez chats y tres apps. Con QUILLART la puerta es una sola: Quillart AI, una conversación. Se habla o se escribe. [clic] Detrás hay un orquestador que pasa cada mensaje a uno de seis agentes especializados: Agenda, Comunidad, Lugares y naturaleza, Movilidad, Reportes a la ciudad y Tu cuenta. [clic] Cada agente solo puede usar sus propias herramientas, y ninguna acción se ejecuta sin que la persona la confirme viendo el texto exacto.
+					</div>
+				</section>
+
+				<!-- ═════════ 6 · PROGRAMA: COMUNIDAD ═════════ -->
+				<section class="slide s-community" data-act="programa" data-graph="p2p p2e" data-time="0:15">
+					<p class="q-eyebrow rise" style="--i:0"><span class="dot dot--gold"></span>03 · El programa</p>
+					<h2 class="title rise" style="--i:1">Una comunidad real.</h2>
+					<div class="trio">
+						<article class="q-card feature" data-step="1">
+							<div class="q-illus"><img src="/illustrations/events-calendar.svg" alt="" /></div>
+							<div class="q-card__body">
+								<span class="q-badge q-badge--event">Agenda</span>
+								<h3 class="q-h2">Cualquiera publica. Otros se inscriben.</h3>
+								<p class="q-p q-muted">Eventos con cupos, de la gente y para la gente.</p>
+							</div>
+						</article>
+						<article class="q-card feature" data-step="2">
+							<div class="q-illus"><img src="/illustrations/public-discussion.svg" alt="" /></div>
+							<div class="q-card__body">
+								<span class="q-badge q-badge--event">Foros</span>
+								<h3 class="q-h2">Por barrio y por tema.</h3>
+								<p class="q-p q-muted">Ligados a lugares y eventos reales.</p>
+							</div>
+						</article>
+						<article class="q-card feature" data-step="3">
+							<div class="q-illus"><img src="/illustrations/among-nature.svg" alt="" /></div>
+							<div class="q-card__body">
+								<span class="q-badge q-badge--optimal">Lugares y naturaleza</span>
+								<h3 class="q-h2">La ciudad para descubrir.</h3>
+								<p class="q-p q-muted">Espacios públicos reales de Barranquilla.</p>
+							</div>
+						</article>
+					</div>
+					<div class="rules" data-step="4">
+						<span class="q-badge q-badge--neutral">Se mira sin cuenta</span>
+						<span class="q-badge q-badge--neutral">La cuenta solo para participar</span>
+						<span class="q-badge q-badge--neutral">El mapa es una sección más</span>
+					</div>
+					<div class="note">
+						Hoy los planes del barrio viven en un grupo de WhatsApp que nadie de afuera ve. Detrás de nuestra conversación hay una comunidad real. [clic] Cualquier persona publica sus eventos y otras se inscriben, con cupos. [clic] Hay foros por barrio y por tema. [clic] Y una sección de lugares y naturaleza con espacios reales de la ciudad. [clic] Todo se puede mirar sin cuenta; la cuenta solo se pide para participar.
+					</div>
+				</section>
+
+				<!-- ═════════ 7 · PROGRAMA: CONFIANZA ═════════ -->
+				<section class="slide s-trust" data-act="programa" data-graph="p2p p2e p2c" data-time="0:25">
+					<p class="q-eyebrow rise" style="--i:0"><span class="dot dot--gold"></span>03 · El programa</p>
+					<h2 class="title rise" style="--i:1">Comunidad, <span class="hl-gold">con confianza</span>.</h2>
+					<div class="triage rise" style="--i:2">
+						<div class="triage__step"><span class="triage__ic">✎</span>Publicación</div>
+						<div class="triage__step"><span class="triage__ic">1</span>Reglas fijas</div>
+						<div class="triage__step"><span class="triage__ic">2</span>OpenJev</div>
+						<div class="triage__step"><span class="triage__ic">3</span>Persona de la ciudad<small>solo lo dudoso</small></div>
+						<div class="triage__step triage__step--ok"><span class="triage__ic">✓</span>Publicado</div>
+						<i class="triage__token" aria-hidden="true"></i>
+					</div>
+					<div class="trust">
+						<div class="q-alert q-alert--alert" data-step="1"><span class="q-alert__icon">!</span><div class="q-alert__body"><p class="q-alert__title">Detecta información falsa, suplantación y estafas</p></div></div>
+						<div class="q-alert q-alert--info" data-step="2"><span class="q-alert__icon">i</span><div class="q-alert__body"><p class="q-alert__title">Un reporte de riesgo dice “sin confirmar” hasta que la ciudad lo confirma</p></div></div>
+						<div class="q-alert q-alert--info" data-step="3"><span class="q-alert__icon">3</span><div class="q-alert__body"><p class="q-alert__title">Cualquiera reporta contenido: con tres reportes, se oculta</p></div></div>
+						<div class="q-alert q-alert--safe" data-step="4"><span class="q-alert__icon">✓</span><div class="q-alert__body"><p class="q-alert__title">Ley 1581: cada persona descarga o elimina sus datos</p></div></div>
+					</div>
+					<p class="punch punch--center" data-step="5">Lo que un grupo de chat <strong>no puede hacer</strong>.</p>
+					<div class="note">
+						Una comunidad abierta en un megaevento es un riesgo, y por eso nada se publica sin triaje: primero reglas fijas, después OpenJev, y lo dudoso lo decide una persona de la ciudad. [clic] Detecta información falsa, suplantación de autoridades y estafas. [clic] Un reporte de riesgo aparece "sin confirmar" hasta que la ciudad lo confirma. [clic] Cualquiera puede reportar contenido. [clic] Y cumplimos la Ley 1581: cada persona descarga o elimina sus datos. [clic] Esto es lo que un grupo de chat no puede hacer.
+					</div>
+				</section>
+
+				<!-- ═════════ 8 · PROGRAMA: PUNTOS QUILLART (versatilidad física) ═════════ -->
+				<section class="slide s-points" data-act="programa" data-graph="p2p p2e p2c" data-time="0:30">
+					<p class="q-eyebrow rise" style="--i:0"><span class="dot dot--gold"></span>03 · El programa <span class="q-sim-tag tag-ill">Propuesta</span></p>
+					<h2 class="title rise" style="--i:1">La ciudad ya tiene los puntos.<br /><span class="muted">Les damos voz.</span></h2>
+					<div class="points">
+						<div class="points__col points__col--l">
+							<div class="spot" data-step="1"><img src="/illustrations/transport.svg" alt="" /><div><b>Paradero y estación</b><span>“¿Cómo llego al estadio?”</span></div></div>
+							<div class="spot" data-step="2"><img src="/illustrations/directions.svg" alt="" /><div><b>Taxi verificado</b><span>“¿Cuánto debe costar esta carrera?”</span></div></div>
+							<div class="spot" data-step="3"><img src="/illustrations/through-the-park.svg" alt="" /><div><b>Parque y naturaleza</b><span>“¿Qué hay aquí?” · reporta un problema</span></div></div>
+						</div>
+						<div class="points__qr rise" style="--i:2">
+							<div class="qr" set:html={qrSvg} />
+							<div class="qr__label"><span class="q-star"></span>Punto QUILLART</div>
+							<p class="q-sm q-muted">Abre la conversación con la pregunta del lugar. Sin instalar nada.</p>
+								<span class="q-badge q-badge--solid q-badge--event qr__cta">Escanéelo ahora</span>
+						</div>
+						<div class="points__col points__col--r">
+							<div class="spot" data-step="4"><img src="/illustrations/food.svg" alt="" /><div><b>Negocio de barrio</b><span>Abierto ahora · sello verificado</span></div></div>
+							<div class="spot" data-step="5"><img src="/illustrations/walking-together.svg" alt="" /><div><b>Punto de anfitriones</b><span>Una persona te acompaña</span></div></div>
+							<div class="spot" data-step="6"><img src="/illustrations/events-calendar.svg" alt="" /><div><b>Plaza o evento</b><span>“Inscríbeme en este evento”</span></div></div>
+						</div>
+					</div>
+					<div class="rules" data-step="7">
+						<span class="q-badge q-badge--optimal">Sin tótems ni obra civil</span>
+						<span class="q-badge q-badge--optimal">Sobre infraestructura que ya existe</span>
+						<span class="q-badge q-badge--event">Piloto: 40 a 60 placas y 50 negocios · $8 a $25 millones</span>
+					</div>
+					<div class="note">
+						Hoy el visitante que se baja en un paradero no tiene a quién preguntar. QUILLART no vive solo en el celular. La ciudad ya tiene los puntos: les damos voz con un QR, sobre infraestructura que ya existe. [clic] En un paradero, el QR pregunta cómo llegar. [clic] En un taxi verificado, cuánto debe costar la carrera. [clic] En un parque, qué hay ahí, y permite reportar un problema. [clic] En un negocio de barrio, muestra que está abierto y verificado. [clic] En el punto de anfitriones, una persona te acompaña. [clic] Y en una plaza, te inscribe al evento. Es el mismo sistema, y cada lugar abre su propia pregunta. [clic] Sin tótems ni obra civil: el piloto son de 40 a 60 placas y 50 negocios, entre 8 y 25 millones de pesos. [Señalar el QR] Y este QR es real: escanéenlo ahora con su celular. [Si no hay red, seguir sin comentarlo.]
+					</div>
+				</section>
+
+				<!-- ═════════ 9 · PROGRAMA: SOSTENIBILIDAD EN EL NEGOCIO COTIDIANO ═════════ -->
+				<section class="slide s-shop" data-act="programa" data-graph="p2p p2e" data-time="0:30">
+					<p class="q-eyebrow rise" style="--i:0"><span class="dot dot--green"></span>03 · El programa</p>
+					<h2 class="title rise" style="--i:1">Sostenibilidad en lo <span class="hl-green">cotidiano</span>.<br /><span class="muted">Empieza en la esquina.</span></h2>
+					<div class="shop">
+						<article class="shopcard rise" style="--i:2" data-theme="light">
+							<div class="q-illus shopcard__illus"><img src="/illustrations/food.svg" alt="" /></div>
+							<div class="shopcard__body">
+								<div class="shopcard__badges">
+									<span class="q-badge q-badge--optimal open-pulse">● Abierto ahora</span>
+									<span class="q-badge q-badge--event">Sello verificado</span>
+								</div>
+								<h3 class="q-h2">Fritos de Marta</h3>
+								<p class="q-sm q-muted">Barrio Abajo</p>
+								<dl class="shopcard__facts">
+									<div><dt>A pie</dt><dd class="q-num">4 min</dd></div>
+									<div><dt>Comisión</dt><dd class="q-num">0 %</dd></div>
+									<div><dt>En la ruta</dt><dd>Sombra y reciclaje</dd></div>
+								</dl>
+								<span class="q-sim-tag">Escena ilustrativa</span>
+							</div>
+						</article>
+						<div class="pillars">
+							<div class="pillar pillar--green" data-step="1">
+								<span class="pillar__tag">Ambiental</span>
+								<p>Viajes cortos a pie hacia el negocio del barrio, con sombra y puntos de reciclaje en la ruta.</p>
+								<small>En el sur, la superficie llega a estar hasta <b class="q-num">5 °C</b> más caliente que en el norte.</small>
+							</div>
+							<div class="pillar pillar--gold" data-step="2">
+								<span class="pillar__tag">Económica</span>
+								<p>Comisión cero: el gasto se queda en el barrio. El sello verificado es el primer paso hacia la formalización.</p>
+								<small><b class="q-num">49,0 %</b> de informalidad laboral en Barranquilla A.M.</small>
+							</div>
+							<div class="pillar pillar--ink" data-step="3">
+								<span class="pillar__tag">Social</span>
+								<p>El comité de barrio decide cuántos visitantes recibe y a qué horas. Solo se recomiendan negocios del propio barrio.</p>
+							</div>
+						</div>
+					</div>
+					<p class="source">Fuentes: DANE, GEIH jul – sep 2026; Núñez, Hoyos y Arellana, <i>Urban Climate</i> 52 (2023).</p>
+					<div class="note">
+						Hoy el gasto del visitante se queda en las cadenas y las plataformas que cobran comisión. La sostenibilidad no empieza en una obra grande: empieza en el negocio de la esquina. Marta vende fritos en Barrio Abajo, marca su negocio abierto con su QR y aparece verificado. [clic] Ambiental: viajes cortos a pie, con sombra y reciclaje en la ruta, en una ciudad donde el sur llega a estar 5 grados más caliente. [clic] Económica: comisión cero, el gasto se queda en el barrio, y el sello es el primer paso hacia la formalización, en una ciudad con 49 % de informalidad. [clic] Social: el comité de barrio decide cuántos visitantes recibe.
+					</div>
+				</section>
+
+				<!-- ═════════ 10 · PROTOTIPO: TRES PERSONAS ═════════ -->
+				<section class="slide s-people" data-act="prototipo" data-graph="" data-time="0:15">
+					<p class="q-eyebrow rise" style="--i:0"><span class="dot dot--gold"></span>04 · El prototipo <span class="q-sim-tag tag-ill">Escena ilustrativa</span></p>
+					<h2 class="title rise" style="--i:1">Una noche. Tres personas.<br /><span class="muted">Cinco dimensiones.</span></h2>
+					<div class="people">
+						<article class="person person--gold" data-step="1" data-graph-on="p2p">
+							<div class="q-illus"><img src="/illustrations/neighbors.svg" alt="" /></div>
+							<h3 class="q-h2">Marta</h3>
+							<p class="q-p q-muted">Vende fritos en Barrio Abajo. Organiza una rueda de cumbia.</p>
+							<span class="q-badge q-badge--event">Persona ↔ persona</span>
+						</article>
+						<article class="person person--green" data-step="2" data-graph-on="p2e">
+							<div class="q-illus"><img src="/illustrations/walking.svg" alt="" /></div>
+							<h3 class="q-h2">Lucas</h3>
+							<p class="q-p q-muted">Visitante de Brasil. Llega solo y quiere un plan.</p>
+							<span class="q-badge q-badge--optimal">Persona ↔ entorno</span>
+						</article>
+						<article class="person person--red" data-step="3" data-graph-on="p2c">
+							<div class="q-illus"><img src="/illustrations/for-review.svg" alt="" /></div>
+							<h3 class="q-h2">Sofía</h3>
+							<p class="q-p q-muted">Trabaja en la Alcaldía. Escucha lo que la gente reporta.</p>
+							<span class="q-badge q-badge--alert">Persona ↔ ciudad</span>
+						</article>
+					</div>
+					<div class="dims" data-step="4">
+						<span class="dim">Economía</span><span class="dim">Ciudadanía</span><span class="dim">Sostenibilidad</span><span class="dim">Ciudad inteligente</span><span class="dim">Territorio</span>
+					</div>
+					<div class="note">
+						Veámoslo con una historia: una noche, tres personas. [clic] Marta, que vende fritos en Barrio Abajo, organiza una rueda de cumbia. [clic] Lucas, un visitante de Brasil, llega solo y busca un plan. [clic] Sofía trabaja en la Alcaldía. [clic] En esta historia trabajan las cinco dimensiones a la vez.
+					</div>
+				</section>
+
+				<!-- ═════════ 9 · DEMO: MARTA ═════════ -->
+				<section class="slide s-demo" data-act="prototipo" data-graph="p2p" data-time="0:25">
+					<div class="demo__side">
+						<p class="q-eyebrow rise" style="--i:0"><span class="dot dot--gold"></span>04 · El prototipo</p>
+						<h2 class="title rise" style="--i:1">Marta publica.</h2>
+						<p class="q-lead rise" style="--i:2">Le pide a Quillart AI que publique su evento. Confirma, pasa el triaje y queda en la agenda.</p>
+						<div class="demo__tags rise" style="--i:3">
+							<span class="q-badge q-badge--event">Persona ↔ persona</span>
+							<span class="dim dim--sm">Economía</span><span class="dim dim--sm">Ciudadanía</span>
+						</div>
+					</div>
+					<div class="phone" data-theme="light">
+						<div class="phone__bar"><span class="q-logo__tile phone__tile"><span class="q-star"></span></span><b>Quillart AI</b><span class="q-sim-tag">Escena ilustrativa</span></div>
+						<div class="phone__chat">
+							<div class="q-msg q-msg--user" data-step="1"><div class="q-msg__col"><div class="q-bubble">Quiero publicar una rueda de cumbia el sábado en la plaza del barrio. 40 cupos.</div></div></div>
+							<div class="q-msg q-msg--ai" data-step="2"><div class="q-msg__col"><span class="q-msg__who">Agente de Agenda</span>
+								<div class="q-card confirm"><div class="q-card__body">
+									<p class="q-eyebrow">Confirma antes de publicar</p>
+									<h4 class="q-h2">Rueda de cumbia</h4>
+									<p class="q-sm q-muted">Sábado · 7:00 p. m. · Barrio Abajo · 40 cupos</p>
+									<div class="confirm__btns"><span class="q-btn q-btn--primary q-btn--sm press">Confirmar</span><span class="q-btn q-btn--secondary q-btn--sm">Editar</span></div>
+								</div></div>
+							</div></div>
+							<div class="q-thinking" data-step="3"><span class="q-star q-star--think"></span>Revisando: reglas fijas y OpenJev<span class="q-thinking__dots"><i></i><i></i><i></i></span></div>
+							<div class="q-alert q-alert--safe" data-step="4"><span class="q-alert__icon">✓</span><div class="q-alert__body"><p class="q-alert__title">Publicado en la agenda</p><p class="q-alert__text">Pasó el triaje. Ya pueden inscribirse.</p></div></div>
+						</div>
+					</div>
+					<div class="note">
+						Marta abre Quillart y escribe: quiero publicar una rueda de cumbia el sábado, con 40 cupos. [clic] El agente de Agenda arma el evento y le muestra el texto exacto para confirmar. [clic] Al confirmar, pasa por el triaje. [clic] Publicado. Persona con persona: economía de barrio y ciudadanía.
+					</div>
+				</section>
+
+				<!-- ═════════ 10 · DEMO: LUCAS ═════════ -->
+				<section class="slide s-demo" data-act="prototipo" data-graph="p2p p2e" data-time="0:35">
+					<div class="demo__side">
+						<p class="q-eyebrow rise" style="--i:0"><span class="dot dot--green"></span>04 · El prototipo</p>
+						<h2 class="title rise" style="--i:1">Lucas encuentra el plan.</h2>
+						<p class="q-lead rise" style="--i:2">Escanea el QR del paradero y pregunta qué hacer. Quillart AI lo lleva caminando al evento de Marta y a los negocios del barrio.</p>
+						<div class="demo__tags rise" style="--i:3">
+							<span class="q-badge q-badge--optimal">Persona ↔ entorno</span>
+							<span class="dim dim--sm">Sostenibilidad</span><span class="dim dim--sm">Territorio</span>
+						</div>
+					</div>
+					<div class="phone" data-theme="light">
+						<div class="phone__bar"><span class="q-logo__tile phone__tile"><span class="q-star"></span></span><b>Quillart AI</b><span class="q-sim-tag">Escena ilustrativa</span></div>
+						<div class="phone__chat">
+							<div class="scan" data-step="1"><span class="scan__qr" aria-hidden="true"></span>Escaneaste el QR · Paradero Gran Malecón</div>
+							<div class="q-msg q-msg--user" data-step="2"><div class="q-msg__col"><div class="q-bubble">¿Qué hago este sábado en la noche cerca de aquí?</div></div></div>
+							<div class="q-msg q-msg--ai" data-step="3"><div class="q-msg__col"><span class="q-msg__who">Agente de Agenda</span>
+								<div class="q-card evt"><div class="q-illus evt__illus"><img src="/illustrations/celebration.svg" alt="" /></div><div class="evt__body"><span class="q-badge q-badge--event">Sábado · 7:00 p. m.</span><h4 class="q-h3">Rueda de cumbia · Barrio Abajo</h4><p class="q-sm q-muted">Organiza Marta · <b class="q-num cupos">40</b> cupos</p></div></div>
+							</div></div>
+							<div class="q-msg q-msg--ai" data-step="4"><div class="q-msg__col"><span class="q-msg__who">Agente de Lugares y naturaleza</span><div class="q-bubble">Llegas a pie por el Malecón. En el camino hay negocios del barrio abiertos, como Fritos de Marta <span class="q-badge q-badge--event">Verificado</span></div></div></div>
+							<div class="q-msg q-msg--user" data-step="5"><div class="q-msg__col"><div class="q-bubble">Inscríbeme.</div></div></div>
+							<div class="q-alert q-alert--safe" data-step="6"><span class="q-alert__icon">✓</span><div class="q-alert__body"><p class="q-alert__title">Confirmado: estás inscrito</p><p class="q-alert__text">Quedan 39 cupos.</p></div></div>
+						</div>
+					</div>
+					<div class="note">
+						Lucas no tiene la app. [clic] Escanea el QR del paradero del Malecón [clic] y pregunta qué hacer el sábado. [clic] Quillart le muestra el evento de Marta. [clic] El agente de Lugares lo lleva a pie y, en el camino, le muestra los negocios del barrio, como los fritos de Marta. [clic] Lucas pide que lo inscriban [clic] y, después de confirmar, queda inscrito. Persona con entorno: sostenibilidad y territorio. El visitante ya no es un turista, es un invitado del barrio.
+					</div>
+				</section>
+
+				<!-- ═════════ 11 · DEMO: SOFÍA ═════════ -->
+				<section class="slide s-demo" data-act="prototipo" data-graph="p2p p2e p2c" data-time="0:25">
+					<div class="demo__side">
+						<p class="q-eyebrow rise" style="--i:0"><span class="dot dot--red"></span>04 · El prototipo</p>
+						<h2 class="title rise" style="--i:1">La ciudad escucha.</h2>
+						<p class="q-lead rise" style="--i:2">De camino a la plaza, Marta ve un arroyo crecido y avisa. Sofía lo confirma desde la cola de la ciudad.</p>
+						<div class="demo__tags rise" style="--i:3">
+							<span class="q-badge q-badge--alert">Persona ↔ ciudad</span>
+							<span class="dim dim--sm">Ciudad inteligente</span>
+						</div>
+						<p class="punch" data-step="5">Los tres se encuentran<br /><strong>en la plaza.</strong></p>
+					</div>
+					<div class="demo__pair">
+						<div class="phone phone--sm" data-theme="light">
+							<div class="phone__bar"><span class="q-logo__tile phone__tile"><span class="q-star"></span></span><b>Marta</b></div>
+							<div class="phone__chat">
+								<div class="q-msg q-msg--user" data-step="1"><div class="q-msg__col"><div class="q-bubble">El arroyo de la 21 está crecido.</div></div></div>
+								<div class="q-msg q-msg--ai" data-step="2"><div class="q-msg__col"><span class="q-msg__who">Agente de Reportes a la ciudad</span><div class="q-bubble">Aviso enviado a la ciudad. <span class="q-badge q-badge--high">Sin confirmar</span></div></div></div>
+							</div>
+						</div>
+						<div class="queue" data-theme="light" data-step="3">
+							<div class="queue__head"><b>/moderacion</b><span class="q-sm q-muted">Cola de la ciudad · Sofía</span></div>
+							<div class="queue__row">
+								<span class="q-alert__icon queue__ic">!</span>
+								<div class="queue__txt"><b>Arroyo crecido · calle 21</b><span class="q-sm q-muted">Reporte ciudadano</span></div>
+								<span class="q-badge q-badge--high st st--wait">Sin confirmar</span>
+								<span class="q-badge q-badge--solid q-badge--alert st st--ok">Confirmado</span>
+							</div>
+							<div class="queue__row queue__row--ok">
+								<span class="q-alert__icon queue__ic queue__ic--ok">✓</span>
+								<div class="queue__txt"><b>Rueda de cumbia</b><span class="q-sm q-muted">Evento · pasó el triaje</span></div>
+								<span class="q-badge q-badge--optimal">Publicado</span>
+							</div>
+							<span class="q-btn q-btn--primary q-btn--sm queue__btn" data-step="4">Confirmar reporte</span>
+						</div>
+					</div>
+					<div class="note">
+						De camino a la plaza, Marta ve que el arroyo de la 21 está crecido y lo dice. [clic] El agente de Reportes lo envía a la ciudad, marcado "sin confirmar". [clic] Sofía lo recibe en la cola de moderación, junto con el evento que ya pasó el triaje. [clic] Lo confirma, y ahora todos ven la alerta. Esta vez la ciudad corrió más rápido que el rumor. [clic] Y esa noche los tres se encuentran en la plaza. Así se ve una ciudad conectada.
+					</div>
+				</section>
+
+				<!-- ═════════ EVOLUCIÓN: TRES SPRINTS (rubric: evolución y uso del feedback) ═════════ -->
+				<section class="slide s-sprints" data-act="prototipo" data-graph="p2p p2e p2c" data-time="0:20">
+					<p class="q-eyebrow rise" style="--i:0"><span class="dot dot--gold"></span>04 · El prototipo</p>
+					<h2 class="title rise" style="--i:1">Lo que el jurado <span class="hl-gold">nos enseñó</span>.</h2>
+					<div class="sprints">
+						<div class="sprint" data-step="1">
+							<span class="sprint__n q-num">Sprint 1 · Comprender</span>
+							<b>Diagnóstico</b>
+							<p>El Carnaval como ensayo y el árbol de causas de una ciudad desconectada.</p>
+						</div>
+						<span class="sprint__arrow" data-step="2" aria-hidden="true">→</span>
+						<div class="sprint sprint--red" data-step="2">
+							<span class="sprint__n q-num">Sprint 2 · Construir</span>
+							<b>Nos dijeron</b>
+							<p class="sprint__quote">“Esto parece un gemelo digital.”</p>
+							<ul class="sprint__list sprint__list--old"><li>Sistema nervioso urbano</li><li>Centro de Mando</li></ul>
+						</div>
+						<span class="sprint__arrow" data-step="3" aria-hidden="true">→</span>
+						<div class="sprint sprint--green" data-step="3">
+							<span class="sprint__n q-num">Sprint 3 · Validar</span>
+							<b>Lo cambiamos</b>
+							<p>Del monitoreo a la conexión. La demo empieza en el celular del visitante.</p>
+							<ul class="sprint__list sprint__list--new"><li>El intérprete de la ciudad</li><li>Lo que la ciudad aprende</li><li>Comunidad con confianza</li></ul>
+						</div>
+					</div>
+					<p class="punch punch--center" data-step="4">Escuchar es el producto. <strong>Empezamos por escucharlos a ustedes.</strong></p>
+					<div class="note">
+						Este proyecto cambió en el camino, y eso es lo que más nos enorgullece. [clic] En el primer sprint hicimos el diagnóstico: el Carnaval como ensayo y las causas de una ciudad desconectada. [clic] En el segundo, ustedes nos dijeron: "esto parece un gemelo digital". Tenían razón: hablábamos de sistema nervioso y de centro de mando, una ciudad que se vigila. [clic] En el tercero lo cambiamos todo: pasamos del monitoreo a la conexión, y la demo ahora empieza en el celular del visitante. [clic] Si nuestro producto es escuchar, teníamos que empezar por escucharlos a ustedes.
+					</div>
+				</section>
+
+				<!-- ═════════ 12 · QUÉ FUNCIONA HOY ═════════ -->
+				<section class="slide s-works" data-act="prototipo" data-graph="p2p p2e p2c" data-time="0:15">
+					<p class="q-eyebrow rise" style="--i:0"><span class="dot dot--green"></span>04 · El prototipo</p>
+					<h2 class="title rise" style="--i:1">Esto ya funciona.</h2>
+					<ul class="checks">
+						<li style="--i:0">Quillart AI con 6 agentes, voz y confirmación</li>
+						<li style="--i:1">Agenda con cupos e inscripciones</li>
+						<li style="--i:2">Foros por barrio y por tema</li>
+						<li style="--i:3">Lugares y naturaleza</li>
+						<li style="--i:4">Triaje: reglas fijas, OpenJev y revisión humana</li>
+						<li style="--i:5">Reportes a la ciudad y cola de moderación</li>
+						<li style="--i:6">Rutas del corredor y tarifa justa</li>
+						<li style="--i:7">Descarga y eliminación de datos (Ley 1581)</li>
+					</ul>
+					<div class="level rise" style="--i:8">
+						<span class="level__label">Nivel del prototipo</span>
+						<ol class="level__steps">
+							<li class="is-done">Conceptual</li>
+							<li class="is-done">Demostrativo</li>
+							<li class="is-now">Funcional</li>
+							<li class="is-next">Validado</li>
+						</ol>
+					</div>
+					<p class="stack rise" style="--i:9">Astro · React · Supabase · Gemini · OpenJev &nbsp;·&nbsp; construido en tres sprints</p>
+					<div class="note">
+						Esto no es un concepto: funciona hoy. Conversación con seis agentes, agenda con cupos, foros, lugares, triaje con OpenJev y revisión humana, reportes a la ciudad y protección de datos. En la escala del reto estamos en nivel funcional, y el siguiente paso es validarlo con personas reales. [Si ya se validó con 5 personas externas: decir "validado con cinco personas" y marcar Validado en el deck.]
+					</div>
+				</section>
+
+				<!-- ═════════ 13 · LEGADO: 5 LECCIONES ═════════ -->
+				<section class="slide s-lessons" data-act="legado" data-graph="p2p p2e p2c" data-lit data-time="0:25">
+					<p class="q-eyebrow rise" style="--i:0"><span class="dot dot--green"></span>05 · Impacto y legado</p>
+					<h2 class="title rise" style="--i:1">Las cinco lecciones, <span class="hl-green">resueltas</span>.</h2>
+					<ol class="lessons">
+						<li data-step="1"><span class="lessons__n q-num">1</span><div><b>Piensen el después</b><span>La red de personas y los datos se quedan. No hay elefante blanco que mantener.</span></div><i class="tick">✓</i></li>
+						<li data-step="2"><span class="lessons__n q-num">2</span><div><b>Prioricen lo cotidiano</b><span>Agenda, foros y reportes sirven cada semana, no solo en junio de 2034.</span></div><i class="tick">✓</i></li>
+						<li data-step="3"><span class="lessons__n q-num">3</span><div><b>Presupuesten con realismo</b><span>Costos en rangos, con 20 a 35 % de reserva, y QR en infraestructura que ya existe.</span></div><i class="tick">✓</i></li>
+						<li data-step="4"><span class="lessons__n q-num">4</span><div><b>Incluyan a todos</b><span>Se mira sin cuenta, se habla con la voz y los negocios de barrio no pagan comisión.</span></div><i class="tick">✓</i></li>
+						<li data-step="5"><span class="lessons__n q-num">5</span><div><b>Cumplan a tiempo</b><span>Cada Carnaval es un ensayo, empezando por el piloto de 2027.</span></div><i class="tick">✓</i></li>
+					</ol>
+					<div class="note">
+						El organizador nos dejó cinco lecciones de otras sedes. Las resolvemos una por una. [clic] Pensar el después: lo que queda es una red de personas, no un estadio vacío. [clic] Priorizar lo cotidiano: esto se usa cada semana. [clic] Presupuestar con realismo: rangos con reserva. [clic] Incluir a todos: sin cuenta para mirar, con voz y sin comisión. [clic] Cumplir a tiempo: cada Carnaval es un ensayo, empezando en 2027.
+					</div>
+				</section>
+
+				<!-- ═════════ 14 · VIABILIDAD ═════════ -->
+				<section class="slide s-viable" data-act="legado" data-graph="p2p p2e p2c" data-lit data-time="0:15">
+					<p class="q-eyebrow rise" style="--i:0"><span class="dot dot--green"></span>05 · Impacto y legado</p>
+					<h2 class="title rise" style="--i:1">Viable y sostenible.</h2>
+					<div class="road rise" style="--i:2">
+						<div class="road__line"><i></i></div>
+						<div class="road__pt" style="--p:0"><b class="q-num">2027</b><span>Piloto en el Carnaval</span></div>
+						<div class="road__pt" style="--p:1"><b class="q-num">2029</b><span>Área metropolitana</span></div>
+						<div class="road__pt" style="--p:2"><b class="q-num">2032</b><span>Ensayo general</span></div>
+						<div class="road__pt road__pt--gold" style="--p:3"><b class="q-num">2034</b><span>Mundial</span></div>
+						<div class="road__pt road__pt--green" style="--p:4"><b class="q-num">2035+</b><span>Legado permanente</span></div>
+					</div>
+					<div class="viable">
+						<div class="q-kpi" data-step="1">
+							<span class="q-kpi__label">Piloto · año 1 · COP</span>
+							<span class="q-kpi__value">$94 – $317 <small>millones</small></span>
+							<span class="q-sm q-muted">En rangos, con reserva del 20 al 35 %: los megaeventos cuestan en promedio 172 % más.</span>
+						</div>
+						<div class="q-kpi" data-step="2">
+							<span class="q-kpi__label">Comisión a negocios de barrio</span>
+							<span class="q-kpi__value q-num" style="color:var(--green-text)">0 <small>%</small></span>
+							<span class="q-sm q-muted">Se financia con patrocinio y operación institucional.</span>
+						</div>
+						<div class="q-kpi" data-step="3">
+							<span class="q-kpi__label">Aliados propuestos</span>
+							<span class="allies">Alcaldía · Área Metropolitana · Universidades · Cámara de Comercio · Cotelco · Comités de barrio</span>
+						</div>
+					</div>
+					<p class="source">Fuentes: tabla de costos del equipo (docs/16); Flyvbjerg, Budzier y Lunn (2021). Los aliados son una propuesta, todavía sin acuerdos.</p>
+					<div class="note">
+						El camino empieza en 2027 con un piloto en el Carnaval y llega a 2034 ya probado. Después de 2035 queda como plataforma permanente. [clic] El piloto cuesta entre 94 y 317 millones de pesos, en rangos y con reserva, porque los megaeventos cuestan en promedio 172 % más. [clic] Los negocios de barrio no pagan comisión. [clic] Y lo sostienen aliados que ya existen: la Alcaldía, el Área Metropolitana, las universidades y los comités de barrio.
+					</div>
+				</section>
+
+				<!-- ═════════ 15 · CIERRE ═════════ -->
+				<section class="slide s-close" data-act="cierre" data-graph="p2p p2e p2c" data-lit data-strong data-time="0:15">
+					<p class="close__q rise" style="--i:0">“¿Qué le queda a su gente cuando se apagan las luces?”</p>
+					<h2 class="close__a" data-step="1">Quedan <span class="hl-gold">conectados</span>.</h2>
+					<p class="close__line" data-step="2">En 2034, Barranquilla no recibe turistas: <strong>recibe invitados</strong>.</p>
+					<div class="close__foot" data-step="3">
+						<div class="q-logo">
+							<span class="q-logo__tile"><span class="q-star"></span></span>
+							<span class="q-logo__text"><span class="q-logo__word">QUILLART</span><span class="q-logo__sub">El intérprete de la ciudad</span></span>
+						</div>
+						<p class="team">Sebastián Torregroza · Santiago Torregroza · Esteban Meléndez · Angel David Castro · Mateo Cantillo</p>
+					</div>
+					<div class="note">
+						El organizador nos preguntó qué le queda a la gente cuando se apagan las luces. [clic] Nuestra respuesta: quedan conectados, y más rápidos que el rumor y la estafa. [clic] En 2034, Barranquilla no recibe turistas: recibe invitados. [clic] Somos QUILLART. Gracias.
+					</div>
+				</section>
+			</main>
+		</div>
+
+		<!-- Act transition: the 8-point star turns like the "Quillart is thinking" indicator. -->
+		<div class="actfx" id="actfx" aria-hidden="true">
+			<div class="actfx__rings"><i></i><i></i><i></i></div>
+			<span class="q-star actfx__star"></span>
+			<p class="actfx__label" id="actfx-label"></p>
+		</div>
+
+		<nav class="hud" aria-label="Progreso">
+			<div class="hud__bar" id="bar"></div>
+			<span class="hud__count q-num" id="count"></span>
+		</nav>
+
+		<aside class="notes" id="notes" hidden>
+			<div class="notes__head">
+				<span class="q-num" id="notes-slide"></span>
+				<span class="q-num notes__clock" id="clock">0:00</span>
+				<span class="q-num q-subtle" id="notes-target"></span>
+			</div>
+			<p id="notes-text"></p>
+			<p class="q-sm q-subtle">→ / Espacio: siguiente · ←: atrás · N: notas · F: pantalla completa · R: reiniciar reloj</p>
+		</aside>
+
+		<style is:global>
+			/* ── Deck shell ── */
+			html, body.deck { height: 100%; overflow: hidden; }
+			body.deck { --act: var(--gold); --act-soft: var(--gold-soft); --act-text: var(--gold-text); background: var(--bg); cursor: default; user-select: none; }
+			body.deck[data-act="intro"], body.deck[data-act="cierre"] { --act: var(--gold); --act-soft: var(--gold-soft); --act-text: var(--gold-text); }
+			body.deck[data-act="problema"] { --act: var(--red); --act-soft: var(--red-soft); --act-text: var(--red-text); }
+			body.deck[data-act="legado"] { --act: var(--green); --act-soft: var(--green-soft); --act-text: var(--green-text); }
+
+			.ambient { position: fixed; inset: -20%; pointer-events: none; background:
+				radial-gradient(40% 45% at 18% 20%, color-mix(in srgb, var(--act) 22%, transparent), transparent 70%),
+				radial-gradient(35% 40% at 85% 85%, color-mix(in srgb, var(--act) 14%, transparent), transparent 70%);
+				transition: background 1.2s ease; animation: drift 18s ease-in-out infinite alternate; }
+			@keyframes drift { to { transform: translate(3%, -2%) scale(1.05); } }
+
+			.viewport { position: fixed; inset: 0; overflow: hidden; }
+			.stage { position: absolute; left: 50%; top: 50%; width: 1600px; height: 900px; transform-origin: center; }
+
+			/* ── Slides and transitions ── */
+			.slide { position: absolute; inset: 0; padding: 88px 112px 96px; display: flex; flex-direction: column; gap: 28px;
+				opacity: 0; visibility: hidden; transform: translateX(80px) scale(.98);
+				transition: opacity .6s cubic-bezier(.2,.7,.2,1), transform .8s cubic-bezier(.2,.7,.2,1), visibility 0s linear .8s; }
+			.slide.is-past { transform: translateX(-80px) scale(.98); }
+			.slide.is-active { opacity: 1; visibility: visible; transform: none; transition-delay: .12s, .12s, 0s; }
+
+			.rise { opacity: 0; transform: translateY(28px); transition: opacity .7s ease, transform .8s cubic-bezier(.2,.7,.2,1); }
+			.is-active .rise { opacity: 1; transform: none; transition-delay: calc(.3s + var(--i, 0) * .12s); }
+
+			[data-step] { opacity: 0; transform: translateY(22px) scale(.98); transition: opacity .55s ease, transform .65s cubic-bezier(.2,.8,.2,1.2); }
+			[data-step].on { opacity: 1; transform: none; }
+
+			/* ── Type ── */
+			.title { margin: 0; font-family: var(--font-display); font-size: 68px; line-height: 1.04; font-weight: 700; letter-spacing: -0.025em; color: var(--ink); }
+			.title--xl { font-size: 92px; }
+			.muted { color: var(--ink-muted); }
+			.ink { color: var(--ink); }
+			.hl-gold { color: var(--gold-text); }
+			.hl-red { color: var(--red-text); }
+			.hl-green { color: var(--green-text); }
+			.deck .q-eyebrow { display: flex; align-items: center; gap: 10px; font-size: 15px; color: var(--act-text); transition: color 1s; }
+			.dot { width: 10px; height: 10px; border-radius: 50%; }
+			.dot--red { background: var(--red); } .dot--gold { background: var(--gold); } .dot--green { background: var(--green); }
+			.punch { margin: 0; font-family: var(--font-display); font-size: 36px; line-height: 1.2; color: var(--ink-muted); }
+			.punch strong { color: var(--ink); }
+			.punch--center { text-align: center; margin-top: auto; }
+			.source { position: absolute; left: 112px; bottom: 44px; margin: 0; font-size: 13px; color: var(--ink-subtle); }
+			.deck .q-sim-tag { display: inline-flex; align-items: center; height: 22px; padding: 0 10px; border-radius: var(--radius-pill); background: var(--line); color: var(--ink-muted); font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
+			.tag-ill { margin-left: 8px; }
+			.big-star { width: 64px; height: 64px; }
+
+			/* ── 1 · Cover ── */
+			.s-cover { flex-direction: row; align-items: center; gap: 80px; }
+			.cover__text { flex: 1; display: flex; flex-direction: column; gap: 24px; }
+			.cover__title { margin: 0; font-family: var(--font-display); font-size: 128px; line-height: .98; letter-spacing: -0.035em; font-weight: 700; }
+			.cover__lead { margin: 0; font-family: var(--font-display); font-size: 44px; color: var(--ink-muted); }
+			.cover__logo { margin-top: 24px; }
+			.cover__logo .q-logo__tile { width: 56px; height: 56px; border-radius: 18px; }
+			.cover__logo .q-logo__word { font-size: 28px; }
+			.cover__logo .q-logo__sub { font-size: 15px; }
+			.cover__mark { width: 520px; flex: none; }
+			.q-flagmark.build, .q-flagmark.build > i, .q-flagmark.build > i > i { transform: scale(0); transition: transform 1s cubic-bezier(.2,.9,.2,1.15); }
+			.is-active .q-flagmark.build { transform: none; transition-delay: .4s; }
+			.is-active .q-flagmark.build > i { transform: none; transition-delay: .7s; }
+			.is-active .q-flagmark.build > i > i { transform: none; transition-delay: 1s; }
+			.q-flagmark.build .big-star { width: 96px; height: 96px; }
+
+			/* ── 2 · Carnaval ── */
+			.carnaval__kpi { display: flex; flex-direction: column; gap: 4px; margin-top: 12px; }
+			.kpi-giant { font-family: var(--font-display); font-size: 168px; line-height: 1; font-weight: 700; letter-spacing: -0.04em; color: var(--red-text); font-variant-numeric: tabular-nums; }
+			.kpi-giant__label { font-size: 26px; color: var(--ink-muted); }
+			.carnaval__row { display: flex; gap: 20px; }
+			.carnaval__row .q-kpi { min-width: 340px; }
+
+			/* ── 3 · Broken links ── */
+			.broken { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; }
+			.broken__card { overflow: visible; }
+			.broken__illus { margin: 16px 24px 0; height: 170px; }
+			.broken__illus img { max-height: 138px; width: auto; }
+			.broken__card .q-card__body p { font-size: 17px; line-height: 25px; }
+			.cut { position: absolute; right: -24px; top: 50%; width: 20px; height: 3px; background: repeating-linear-gradient(90deg, var(--red) 0 5px, transparent 5px 10px); opacity: .9; }
+			.broken__card:last-child .cut { display: none; }
+			.broken__card.on { animation: shake .5s .5s ease; }
+			@keyframes shake { 30% { transform: translateX(-4px) rotate(-.4deg); } 60% { transform: translateX(4px) rotate(.4deg); } }
+
+			/* ── 4 · Proposal ── */
+			.links { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 8px; }
+			.link { background: color-mix(in srgb, var(--surface) 94%, transparent); border-radius: var(--radius-lg); padding: 24px; display: flex; flex-direction: column; gap: 10px; box-shadow: var(--shadow-card); }
+			.link--gold { --c: var(--gold); } .link--green { --c: var(--green); } .link--red { --c: var(--red); }
+			.link.on { box-shadow: var(--shadow-card), 0 0 0 1px color-mix(in srgb, var(--c) 50%, transparent); }
+			.link__ends { display: flex; align-items: center; gap: 0; height: 28px; color: var(--c); }
+			.link__ends i { width: 22px; height: 22px; border-radius: 50%; background: var(--c); flex: none; }
+			.link__ends i.sq { border-radius: 6px; }
+			.link__ends .q-star { width: 28px; height: 28px; }
+			.link__ends b { height: 3px; flex: 0 0 0; background: var(--c); transition: flex-basis .8s .3s cubic-bezier(.2,.8,.2,1); }
+			.link.on .link__ends b { flex-basis: 120px; }
+			.quote { margin: auto 0 0; font-family: var(--font-display); font-size: 30px; line-height: 1.3; color: var(--ink-muted); max-width: 1200px; border-left: 0; }
+
+			/* ── 5 · Orchestrator ── */
+			.orch { display: grid; grid-template-columns: 430px 120px 180px 1fr; align-items: center; gap: 0; margin-top: 24px; }
+			.orch__in { display: flex; flex-direction: column; gap: 12px; }
+			.orch__prompt { padding: 16px 22px; font-size: 18px; color: var(--ink); gap: 14px; }
+			.orch__star { color: var(--gold); }
+			.orch__wire { position: relative; height: 3px; background: var(--line); overflow: hidden; }
+			.pulse { position: absolute; top: -3px; left: -20%; width: 40px; height: 9px; border-radius: 9px; background: var(--gold); box-shadow: var(--glow-gold); animation: travel 2s linear infinite; }
+			@keyframes travel { to { left: 110%; } }
+			.orch__hub { width: 180px; height: 180px; border-radius: 50%; background: var(--surface-raised); display: grid; place-items: center; align-content: center; gap: 12px; box-shadow: var(--glow-gold); color: var(--gold); }
+			.orch__hublabel { font-family: var(--font-display); font-weight: 600; color: var(--ink); font-size: 18px; }
+			.orch__agents { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; padding-left: 56px; position: relative; }
+			.orch__agents::before { content: ''; position: absolute; left: 0; top: 50%; width: 56px; height: 3px; background: var(--gold); }
+			.agent { display: flex; align-items: center; gap: 12px; padding: 10px 18px 10px 10px; border-radius: var(--radius-pill); background: var(--surface); box-shadow: var(--shadow-card); font-weight: 600; font-size: 17px; }
+			.agent img { width: 46px; height: 46px; object-fit: contain; border-radius: 50%; background: var(--illus); padding: 5px; }
+			.agent:nth-child(2) { transition-delay: .08s; } .agent:nth-child(3) { transition-delay: .16s; } .agent:nth-child(4) { transition-delay: .24s; } .agent:nth-child(5) { transition-delay: .32s; } .agent:nth-child(6) { transition-delay: .4s; }
+			.agent.is-pick.on { box-shadow: var(--glow-gold); background: var(--gold-soft); color: var(--gold-text); animation: pick 2.4s 1s ease-in-out infinite; }
+			@keyframes pick { 50% { transform: scale(1.04); } }
+			.rules { display: flex; gap: 12px; flex-wrap: wrap; margin-top: auto; }
+			.rules .q-badge { height: 40px; padding: 0 18px; font-size: 14px; }
+
+			/* ── 6 · Community ── */
+			.trio { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; }
+			.feature .q-illus { margin: 20px 20px 0; height: 210px; }
+			.feature .q-illus img { max-height: 176px; width: auto; }
+			.feature .q-card__body { gap: 10px; }
+			.feature .q-card__body .q-badge { align-self: flex-start; }
+			.feature .q-h2 { font-size: 24px; line-height: 30px; }
+			.feature p { font-size: 17px; }
+
+			/* ── 7 · Trust ── */
+			.triage { position: relative; display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; margin-top: 8px; }
+			.triage::before { content: ''; position: absolute; left: 6%; right: 6%; top: 34px; height: 3px; background: var(--line); }
+			.triage__step { position: relative; display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; font-weight: 600; font-size: 17px; }
+			.triage__step small { font-weight: 400; font-size: 13px; color: var(--ink-subtle); }
+			.triage__ic { width: 68px; height: 68px; border-radius: 50%; display: grid; place-items: center; background: var(--surface-raised); box-shadow: var(--shadow-card); font-family: var(--font-display); font-size: 24px; color: var(--gold-text); }
+			.triage__step--ok .triage__ic { background: var(--green); color: var(--on-green); box-shadow: var(--glow-green); }
+			.triage__token { position: absolute; top: 26px; left: 6%; width: 18px; height: 18px; border-radius: 50%; background: var(--gold); box-shadow: var(--glow-gold); animation: token 4s cubic-bezier(.6,0,.4,1) infinite; }
+			@keyframes token { 0% { left: 8%; opacity: 0; } 8% { opacity: 1; } 25% { left: 29%; } 45% { left: 49%; } 65% { left: 69%; } 85% { left: 89%; background: var(--green); } 100% { left: 89%; opacity: 0; background: var(--green); } }
+			.trust { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 12px; }
+			.trust .q-alert { padding: 18px 20px; }
+			.trust .q-alert__title { font-size: 18px; line-height: 26px; }
+			.trust .q-alert__icon { width: 40px; height: 40px; font-size: 18px; }
+
+			/* ── Puntos QUILLART ── */
+			.points { display: grid; grid-template-columns: 1fr 300px 1fr; gap: 64px; align-items: center; }
+			.points__col { display: flex; flex-direction: column; gap: 18px; }
+			.spot { position: relative; display: flex; align-items: center; gap: 16px; padding: 12px 20px 12px 12px; border-radius: var(--radius-pill); background: var(--surface); box-shadow: var(--shadow-card); }
+			.spot img { width: 64px; height: 64px; flex: none; object-fit: contain; border-radius: 50%; background: var(--illus); padding: 7px; }
+			.spot div { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+			.spot b { font-family: var(--font-display); font-size: 20px; }
+			.spot span { font-size: 16px; color: var(--ink-muted); }
+			.spot::after { content: ''; position: absolute; top: 50%; height: 3px; width: 0; background: var(--gold); transition: width .6s .35s cubic-bezier(.2,.8,.2,1); }
+			.points__col--l .spot::after { left: 100%; }
+			.points__col--r .spot::after { right: 100%; }
+			.spot.on::after { width: 64px; }
+			.spot.on { box-shadow: var(--shadow-card), 0 0 0 1px color-mix(in srgb, var(--gold) 45%, transparent); }
+			.points__qr { display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; padding: 24px; border-radius: var(--radius-xl); background: var(--surface-raised); box-shadow: var(--glow-gold); }
+			.qr { width: 200px; height: 200px; padding: 14px; border-radius: 18px; background: #fff; }
+			.qr svg { display: block; width: 100%; height: 100%; }
+			.qr__label { display: flex; align-items: center; gap: 8px; font-family: var(--font-display); font-weight: 700; font-size: 20px; color: var(--gold-text); }
+			.qr__label .q-star { width: 20px; height: 20px; }
+			.qr__cta { height: 36px; padding: 0 18px; font-size: 15px; }
+			.is-active .points__qr { animation: qrbeat 3s 1.2s ease-in-out infinite; }
+			@keyframes qrbeat { 50% { transform: scale(1.03); } }
+
+			/* ── Negocio cotidiano ── */
+			.shop { display: grid; grid-template-columns: 420px 1fr; gap: 40px; align-items: stretch; }
+			.shopcard { border-radius: var(--radius-xl); background: var(--surface); color: var(--ink); overflow: hidden; box-shadow: var(--shadow-modal); display: flex; flex-direction: column; }
+			.shopcard__illus { border-radius: 0; height: 190px; }
+			.shopcard__illus img { max-height: 158px; width: auto; }
+			.shopcard__body { padding: 20px 24px 24px; display: flex; flex-direction: column; gap: 8px; }
+			.shopcard__badges { display: flex; gap: 8px; }
+			.shopcard__facts { display: grid; grid-template-columns: auto auto 1fr; gap: 12px; margin: 8px 0 4px; }
+			.shopcard__facts div { display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; border-radius: var(--radius-md); background: var(--bg); }
+			.shopcard__facts dt { font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-subtle); }
+			.shopcard__facts dd { margin: 0; font-weight: 700; font-size: 17px; }
+			.shopcard .q-sim-tag { align-self: flex-start; }
+			.is-active .open-pulse { animation: openp 1.8s 1s ease-in-out infinite; }
+			@keyframes openp { 50% { box-shadow: var(--glow-green); } }
+			.pillars { display: flex; flex-direction: column; gap: 16px; }
+			.pillar { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 6px; padding: 18px 24px; border-radius: var(--radius-lg); background: var(--surface); box-shadow: var(--shadow-card); }
+			.pillar p { margin: 0; font-size: 20px; line-height: 28px; }
+			.pillar small { font-size: 15px; color: var(--ink-muted); }
+			.pillar small b { color: var(--ink); }
+			.pillar__tag { align-self: flex-start; font-size: 12px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; padding: 4px 12px; border-radius: var(--radius-pill); }
+			.pillar--green { box-shadow: var(--shadow-card), inset 4px 0 0 var(--green); } .pillar--green .pillar__tag { background: var(--green-soft); color: var(--green-text); }
+			.pillar--gold { box-shadow: var(--shadow-card), inset 4px 0 0 var(--gold); } .pillar--gold .pillar__tag { background: var(--gold-soft); color: var(--gold-text); }
+			.pillar--ink { box-shadow: var(--shadow-card), inset 4px 0 0 var(--line-control); } .pillar--ink .pillar__tag { background: var(--line); color: var(--ink); }
+
+			/* QR scan step in Lucas's demo */
+			.scan { align-self: center; display: flex; align-items: center; gap: 10px; padding: 8px 14px; border-radius: var(--radius-pill); background: var(--gold-soft); color: var(--gold-text); font-size: 13px; font-weight: 600; }
+			.scan__qr { width: 22px; height: 22px; border-radius: 4px; background:
+				conic-gradient(from 0deg, var(--ink) 25%, transparent 0 50%, var(--ink) 0 75%, transparent 0) 0 0 / 8px 8px; }
+			.scan.on .scan__qr { animation: scanfl .9s .3s ease 2; }
+			@keyframes scanfl { 50% { box-shadow: 0 0 0 6px color-mix(in srgb, var(--gold) 40%, transparent); } }
+
+			/* ── 8 · People ── */
+			.people { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; }
+			.person { background: var(--surface); border-radius: var(--radius-lg); padding: 20px 20px 24px; display: flex; flex-direction: column; gap: 10px; box-shadow: var(--shadow-card); }
+			.person .q-illus { height: 200px; margin-bottom: 6px; }
+			.person .q-illus img { max-height: 168px; width: auto; }
+			.person .q-h2 { font-size: 30px; line-height: 36px; }
+			.person p { font-size: 17px; }
+			.person .q-badge { align-self: flex-start; }
+			.person--gold.on { box-shadow: var(--glow-gold); } .person--green.on { box-shadow: var(--glow-green); } .person--red.on { box-shadow: var(--glow-red); }
+			.dims { display: flex; gap: 12px; flex-wrap: wrap; margin-top: auto; }
+			.dim { display: inline-flex; align-items: center; height: 44px; padding: 0 20px; border-radius: var(--radius-pill); background: var(--surface-raised); font-weight: 600; font-size: 17px; box-shadow: inset 0 0 0 1px var(--line); }
+			.dims.on .dim { animation: popin .5s both cubic-bezier(.2,.8,.2,1.3); }
+			.dims .dim:nth-child(2) { animation-delay: .1s; } .dims .dim:nth-child(3) { animation-delay: .2s; } .dims .dim:nth-child(4) { animation-delay: .3s; } .dims .dim:nth-child(5) { animation-delay: .4s; }
+			@keyframes popin { from { opacity: 0; transform: scale(.6); } }
+			.dim--sm { height: 32px; padding: 0 14px; font-size: 14px; }
+
+			/* ── 9–11 · Demo ── */
+			.s-demo { flex-direction: row; align-items: center; gap: 72px; }
+			.demo__side { flex: 1; display: flex; flex-direction: column; gap: 22px; }
+			.demo__side .q-lead { font-size: 22px; line-height: 32px; max-width: 520px; }
+			.demo__tags { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+			.phone { width: 460px; height: 760px; flex: none; border-radius: 48px; background: var(--bg); color: var(--ink); font-family: var(--font-sans); padding: 14px; box-shadow: 0 0 0 10px #0B131E, var(--shadow-modal); display: flex; flex-direction: column; overflow: hidden; }
+			.phone--sm { width: 400px; height: 400px; }
+			.phone__bar { display: flex; align-items: center; gap: 10px; padding: 12px 12px 14px; border-bottom: 1px solid var(--line); font-size: 16px; }
+			.phone__bar .q-sim-tag { margin-left: auto; }
+			.phone__tile { width: 32px; height: 32px; border-radius: 10px; }
+			.phone__tile .q-star { width: 16px; height: 16px; }
+			.phone__chat { flex: 1; display: flex; flex-direction: column; gap: 14px; padding: 18px 6px; justify-content: flex-end; }
+			.phone .q-msg__col { max-width: 88%; }
+			.phone .q-bubble { font-size: 15px; }
+			.confirm { box-shadow: var(--shadow-card), inset 0 0 0 1px var(--line); }
+			.confirm .q-card__body { padding: 16px; gap: 8px; }
+			.confirm__btns { display: flex; gap: 8px; margin-top: 4px; }
+			.on .press { animation: press .6s 1.2s ease both; }
+			@keyframes press { 40% { transform: scale(.92); box-shadow: var(--glow-gold); } }
+			.evt { flex-direction: row; align-items: center; gap: 12px; padding: 10px; }
+			.evt__illus { width: 84px; height: 84px; padding: 8px; flex: none; border-radius: 14px; }
+			.evt__body { display: flex; flex-direction: column; gap: 6px; }
+			.evt__body .q-badge { align-self: flex-start; }
+			.demo__pair { display: flex; gap: 28px; align-items: center; }
+			.queue { width: 440px; border-radius: var(--radius-lg); background: var(--surface); color: var(--ink); padding: 20px; display: flex; flex-direction: column; gap: 12px; box-shadow: var(--shadow-modal); }
+			.queue__head { display: flex; justify-content: space-between; align-items: baseline; font-family: var(--font-display); }
+			.queue__row { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: var(--radius-md); background: var(--bg); position: relative; }
+			.queue__ic { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: var(--red); color: var(--on-red); flex: none; font-weight: 700; }
+			.queue__ic--ok { background: var(--green); color: var(--on-green); }
+			.queue__txt { flex: 1; display: flex; flex-direction: column; font-size: 15px; }
+			.st { position: absolute; right: 12px; transition: opacity .4s, transform .5s cubic-bezier(.2,.8,.2,1.3); }
+			.st--ok { opacity: 0; transform: scale(.6); }
+			.queue.confirmed .st--wait { opacity: 0; transform: scale(.6); }
+			.queue.confirmed .st--ok { opacity: 1; transform: none; }
+			.queue.confirmed .queue__row:first-of-type { box-shadow: var(--glow-red); }
+			.queue__btn { align-self: flex-end; }
+
+			/* ── 12 · Works today ── */
+			.checks { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 32px 48px; margin-top: 24px; }
+			.checks li { display: flex; align-items: center; gap: 18px; font-size: 28px; font-weight: 500; opacity: 0; transform: translateX(-20px); transition: opacity .5s, transform .6s cubic-bezier(.2,.8,.2,1); }
+			.checks li::before { content: '✓'; width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; flex: none; background: var(--green); color: var(--on-green); font-weight: 700; font-size: 18px; }
+			.is-active .checks li { opacity: 1; transform: none; transition-delay: calc(.5s + var(--i) * .11s); }
+			.stack { margin: 18px 0 0; color: var(--ink-subtle); font-size: 17px; }
+
+			/* Prototype level, on the scale the organizer defined (conceptual → validado). */
+			.level { margin-top: auto; display: flex; align-items: center; gap: 24px; }
+			.level__label { font-family: var(--font-display); font-weight: 700; font-size: 15px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-subtle); }
+			.level__steps { list-style: none; margin: 0; padding: 0; display: flex; gap: 8px; }
+			.level__steps li { height: 40px; padding: 0 18px; display: grid; place-items: center; border-radius: 999px; font-size: 16px; font-weight: 600; background: var(--surface); color: var(--ink-subtle); box-shadow: var(--shadow-card); }
+			.level__steps .is-done { color: var(--green-text); background: var(--green-soft); box-shadow: none; }
+			.level__steps .is-now { color: var(--on-green); background: var(--green); box-shadow: var(--glow-green, none); }
+			.level__steps .is-next { border: 2px dashed var(--line); background: transparent; box-shadow: none; }
+
+			/* ── Evolution across sprints ── */
+			.sprints { display: flex; align-items: stretch; gap: 20px; margin-top: 28px; }
+			.sprint { flex: 1; display: flex; flex-direction: column; gap: 10px; padding: 26px 28px; border-radius: var(--radius-xl); background: var(--surface); box-shadow: var(--shadow-card); }
+			.sprint__n { font-size: 14px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-subtle); }
+			.sprint b { font-family: var(--font-display); font-size: 30px; line-height: 1.1; }
+			.sprint p { margin: 0; font-size: 19px; line-height: 1.4; color: var(--ink-muted); }
+			.sprint--red { box-shadow: var(--shadow-card), inset 0 4px 0 var(--red); }
+			.sprint--green { box-shadow: var(--shadow-card), inset 0 4px 0 var(--green); }
+			.sprint__quote { font-family: var(--font-display); font-size: 26px !important; color: var(--red-text) !important; }
+			.sprint__list { list-style: none; margin: auto 0 0; padding: 0; display: flex; flex-direction: column; gap: 6px; font-size: 17px; }
+			.sprint__list--old li { color: var(--ink-subtle); text-decoration: line-through; text-decoration-color: var(--red); text-decoration-thickness: 2px; }
+			.sprint__list--new li { color: var(--green-text); font-weight: 600; }
+			.sprint__list--new li::before { content: '✓ '; }
+			.sprint__arrow { align-self: center; font-size: 32px; color: var(--ink-subtle); }
+
+			/* ── 13 · Lessons ── */
+			.lessons { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+			.lessons li { display: flex; align-items: center; gap: 22px; padding: 14px 22px; border-radius: var(--radius-lg); background: var(--surface); box-shadow: var(--shadow-card); }
+			.lessons__n { width: 48px; height: 48px; border-radius: 14px; display: grid; place-items: center; background: var(--surface-raised); font-size: 22px; font-weight: 700; flex: none; }
+			.lessons li div { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+			.lessons b { font-family: var(--font-display); font-size: 22px; text-transform: uppercase; letter-spacing: .03em; }
+			.lessons span { font-size: 18px; color: var(--ink-muted); }
+			.tick { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; font-style: normal; font-weight: 700; font-size: 20px; background: var(--green); color: var(--on-green); transform: scale(0); transition: transform .5s .35s cubic-bezier(.2,.9,.2,1.5); }
+			.lessons li.on .tick { transform: scale(1); }
+			.lessons li.on { box-shadow: var(--shadow-card), inset 4px 0 0 var(--green); }
+
+			/* ── 14 · Viability ── */
+			.road { position: relative; height: 110px; margin-top: 8px; }
+			.road__line { position: absolute; left: 0; right: 0; top: 18px; height: 4px; background: var(--line); border-radius: 4px; overflow: hidden; }
+			.road__line i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--gold), var(--green)); transition: width 2s .6s cubic-bezier(.4,0,.2,1); }
+			.is-active .road__line i { width: 100%; }
+			.road__pt { position: absolute; top: 0; left: calc(var(--p) * 24.5%); display: flex; flex-direction: column; gap: 6px; padding-top: 0; }
+			.road__pt::before { content: ''; width: 40px; height: 40px; border-radius: 50%; background: var(--surface-raised); box-shadow: inset 0 0 0 3px var(--line-control); }
+			.road__pt--gold::before { background: var(--gold); box-shadow: var(--glow-gold); }
+			.road__pt--green::before { background: var(--green); box-shadow: var(--glow-green); }
+			.road__pt b { font-size: 26px; }
+			.road__pt span { color: var(--ink-muted); font-size: 16px; }
+			.road__pt:last-child { left: auto; right: 0; align-items: flex-end; }
+			.road__pt:last-child::before { align-self: flex-end; }
+			.viable { display: grid; grid-template-columns: 1.3fr .8fr 1.2fr; gap: 20px; margin-top: 12px; }
+			.viable .q-kpi { padding: 24px; gap: 10px; }
+			.allies { font-size: 20px; line-height: 30px; font-weight: 600; }
+
+			/* ── 15 · Close ── */
+			.s-close { align-items: center; justify-content: center; text-align: center; gap: 36px; }
+			.close__q { margin: 0; font-family: var(--font-display); font-size: 34px; color: var(--ink-muted); font-style: italic; }
+			.close__a { margin: 0; font-family: var(--font-display); font-size: 150px; line-height: 1; font-weight: 700; letter-spacing: -0.04em; }
+			.close__line { margin: 0; font-size: 32px; color: var(--ink-muted); }
+			.close__line strong { color: var(--ink); }
+			.close__foot { display: flex; flex-direction: column; align-items: center; gap: 16px; margin-top: 20px; }
+			.team { margin: 0; color: var(--ink-subtle); font-size: 16px; }
+
+			/* ── Connection graph ── */
+			.graph { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; opacity: .3; transition: opacity 1.2s ease; }
+			body.strong .graph { opacity: .7; }
+			.graph .n { transition: opacity 1s, r .8s; opacity: .7; }
+			.graph .n--p { fill: var(--ink-muted); }
+			.graph .n--e { fill: var(--green); }
+			.graph .n--c { fill: var(--red); }
+			.graph .e { fill: none; stroke-width: 2; stroke-dasharray: 1; stroke-dashoffset: 1; transition: stroke-dashoffset 1.4s cubic-bezier(.4,0,.2,1), opacity 1s; opacity: 0; }
+			.graph .e--p2p { stroke: var(--gold); }
+			.graph .e--p2e { stroke: var(--green); }
+			.graph .e--p2c { stroke: var(--red); stroke-width: 1.5; }
+			body.g-p2p .graph .e--p2p, body.g-p2e .graph .e--p2e, body.g-p2c .graph .e--p2c { stroke-dashoffset: 0; opacity: .85; }
+			body.g-p2p .graph .n--p { fill: var(--gold); opacity: 1; }
+			body.g-scatter .graph .n--p { animation: float 6s ease-in-out infinite alternate; }
+			body.lit .graph .n { filter: drop-shadow(0 0 6px currentColor); }
+			body.lit .graph .n--p { color: var(--gold); }
+			@keyframes float { to { transform: translate(var(--dx), var(--dy)); } }
+
+			/* ── Act transition ── */
+			.actfx { position: fixed; inset: 0; display: grid; place-items: center; pointer-events: none; opacity: 0; z-index: 20; }
+			.actfx.go { animation: fxfade 1.3s ease both; }
+			.actfx__rings { position: absolute; width: 360px; aspect-ratio: 3/2; display: grid; place-items: center; }
+			.actfx__rings i { position: absolute; inset: 0; border-radius: 40px; border: 3px solid var(--red); }
+			.actfx__rings i:nth-child(2) { inset: 14%; border-color: var(--gold); }
+			.actfx__rings i:nth-child(3) { inset: 28%; border-color: var(--green); }
+			.actfx.go .actfx__rings i { animation: ring 1.3s cubic-bezier(.2,.7,.2,1) both; }
+			.actfx.go .actfx__rings i:nth-child(2) { animation-delay: .08s; }
+			.actfx.go .actfx__rings i:nth-child(3) { animation-delay: .16s; }
+			.actfx__star { width: 72px; height: 72px; color: var(--act); }
+			.actfx.go .actfx__star { animation: q-spin 1.1s cubic-bezier(.65,0,.35,1) both; }
+			.actfx__label { position: absolute; top: calc(50% + 70px); margin: 0; font-family: var(--font-display); font-weight: 600; font-size: 22px; letter-spacing: .12em; text-transform: uppercase; color: var(--act-text); }
+			@keyframes fxfade { 0% { opacity: 0; } 15% { opacity: 1; } 70% { opacity: 1; } 100% { opacity: 0; } }
+			@keyframes ring { from { transform: scale(.2); opacity: 1; } to { transform: scale(3.2); opacity: 0; } }
+
+			/* ── HUD and notes ── */
+			.hud { position: fixed; left: 0; right: 0; bottom: 0; height: 4px; z-index: 10; }
+			.hud__bar { height: 100%; width: 0; background: linear-gradient(90deg, var(--red), var(--gold) 50%, var(--green)); transition: width .8s cubic-bezier(.2,.7,.2,1); }
+			.hud__count { position: fixed; right: 20px; bottom: 14px; font-size: 13px; color: var(--ink-subtle); }
+			.notes { position: fixed; left: 16px; right: 16px; bottom: 16px; z-index: 30; max-width: 900px; margin: 0 auto; padding: 18px 22px; border-radius: var(--radius-lg); background: color-mix(in srgb, var(--surface-raised) 96%, transparent); box-shadow: var(--shadow-modal); display: flex; flex-direction: column; gap: 10px; user-select: text; }
+			.notes[hidden] { display: none; }
+			.notes__head { display: flex; gap: 16px; align-items: baseline; font-weight: 600; }
+			.notes__clock { color: var(--gold-text); font-size: 20px; }
+			.notes p { margin: 0; font-size: 17px; line-height: 26px; }
+			.note { display: none; }
+
+			@media (prefers-reduced-motion: reduce) {
+				.deck *, .deck *::before, .deck *::after { animation: none !important; transition-duration: .01s !important; transition-delay: 0s !important; }
+				.actfx { display: none; }
+			}
+		</style>
+
+		<script is:inline>
+			(() => {
+				const stage = document.getElementById("stage");
+				const slides = Array.from(stage.querySelectorAll(".slide"));
+				const body = document.body;
+				const graph = document.getElementById("graph");
+				const ACT_LABEL = { problema: "01 · El problema", propuesta: "02 · La propuesta", programa: "03 · El programa", prototipo: "04 · El prototipo", legado: "05 · Impacto y legado", cierre: "" };
+				const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+				// Fit the 1600×900 stage to any screen.
+				const fit = () => {
+					const s = Math.min(window.innerWidth / 1600, window.innerHeight / 900);
+					stage.style.transform = `translate(-50%, -50%) scale(${s})`;
+				};
+				window.addEventListener("resize", fit);
+				fit();
+
+				// ── Connection graph (seeded, so it looks the same every time) ──
+				let seed = 7;
+				const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+				const NS = "http://www.w3.org/2000/svg";
+				const people = [];
+				for (let i = 0; i < 26; i++) {
+					const x = 60 + rnd() * 1480;
+					const y = 50 + rnd() * 800;
+					people.push({ x, y });
+				}
+				const places = [[260, 640], [720, 160], [1180, 700], [1420, 260], [480, 300]].map(([x, y]) => ({ x, y }));
+				const city = { x: 1260, y: 470 };
+				const edges = [];
+				const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+				people.forEach((p, i) => {
+					const near = people
+						.map((q, j) => ({ j, d: dist(p, q) }))
+						.filter((o) => o.j > i)
+						.sort((a, b) => a.d - b.d)
+						.slice(0, 2);
+					near.forEach((o) => { if (o.d < 420) edges.push(["p2p", p, people[o.j]]); });
+					const pl = places.slice().sort((a, b) => dist(p, a) - dist(p, b))[0];
+					if (i % 2 === 0) edges.push(["p2e", p, pl]);
+					if (i % 3 === 0) edges.push(["p2c", p, city]);
+				});
+				places.forEach((pl) => edges.push(["p2c", pl, city]));
+				edges.forEach(([kind, a, b], k) => {
+					const path = document.createElementNS(NS, "path");
+					const mx = (a.x + b.x) / 2 + (rnd() - 0.5) * 80;
+					const my = (a.y + b.y) / 2 + (rnd() - 0.5) * 80;
+					path.setAttribute("d", `M${a.x},${a.y} Q${mx},${my} ${b.x},${b.y}`);
+					path.setAttribute("pathLength", "1");
+					path.setAttribute("class", `e e--${kind}`);
+					path.style.transitionDelay = `${(k % 12) * 0.07}s`;
+					graph.appendChild(path);
+				});
+				const dot = (p, cls, r) => {
+					const c = document.createElementNS(NS, "circle");
+					c.setAttribute("cx", p.x);
+					c.setAttribute("cy", p.y);
+					c.setAttribute("r", r);
+					c.setAttribute("class", `n ${cls}`);
+					c.style.setProperty("--dx", `${(rnd() - 0.5) * 30}px`);
+					c.style.setProperty("--dy", `${(rnd() - 0.5) * 30}px`);
+					c.style.animationDelay = `${-rnd() * 6}s`;
+					graph.appendChild(c);
+				};
+				people.forEach((p) => dot(p, "n--p", 6));
+				places.forEach((p) => dot(p, "n--e", 9));
+				const star = document.createElementNS(NS, "polygon");
+				const pts = [];
+				for (let i = 0; i < 16; i++) {
+					const r = i % 2 === 0 ? 26 : 11;
+					const a = (Math.PI / 8) * i - Math.PI / 2;
+					pts.push(`${city.x + r * Math.cos(a)},${city.y + r * Math.sin(a)}`);
+				}
+				star.setAttribute("points", pts.join(" "));
+				star.setAttribute("class", "n n--c");
+				graph.appendChild(star);
+
+				// ── Navigation state ──
+				let idx = 0;
+				let step = 0;
+				let act = null;
+				const stepsOf = (s) => Array.from(s.querySelectorAll("[data-step]"));
+				const maxStep = (s) => stepsOf(s).reduce((m, e) => Math.max(m, Number(e.dataset.step)), 0);
+
+				const countUp = (el) => {
+					if (el.dataset.done) return;
+					el.dataset.done = "1";
+					const to = Number(el.dataset.count);
+					const pre = el.dataset.prefix || "";
+					const fmt = (n) => pre + Math.round(n).toLocaleString("es-CO");
+					if (reduced) { el.textContent = fmt(to); return; }
+					const t0 = performance.now();
+					const dur = 1800;
+					const tick = (t) => {
+						const k = Math.min(1, (t - t0) / dur);
+						el.textContent = fmt(to * (1 - Math.pow(1 - k, 4)));
+						if (k < 1) requestAnimationFrame(tick);
+					};
+					requestAnimationFrame(tick);
+				};
+
+				const playAct = (name) => {
+					if (reduced || !ACT_LABEL[name] && name !== "cierre") return;
+					const fx = document.getElementById("actfx");
+					document.getElementById("actfx-label").textContent = ACT_LABEL[name] || "";
+					fx.classList.remove("go");
+					void fx.offsetWidth;
+					fx.classList.add("go");
+				};
+
+				const render = (fromNav) => {
+					const s = slides[idx];
+					slides.forEach((el, i) => {
+						el.classList.toggle("is-active", i === idx);
+						el.classList.toggle("is-past", i < idx);
+						if (i !== idx) el.querySelectorAll("[data-count]").forEach((c) => { delete c.dataset.done; c.textContent = "0"; });
+					});
+					const graphOn = new Set((s.dataset.graph || "").split(" ").filter(Boolean));
+					stepsOf(s).forEach((e) => {
+						const on = Number(e.dataset.step) <= step;
+						e.classList.toggle("on", on);
+						if (on && e.dataset.graphOn) graphOn.add(e.dataset.graphOn);
+					});
+					// Demo 3: the city confirms the report on its step.
+					s.querySelectorAll(".queue").forEach((q) => q.classList.toggle("confirmed", step >= 4));
+					// Demo 2: one seat fewer once Lucas is registered.
+					s.querySelectorAll(".cupos").forEach((c) => { c.textContent = step >= 6 ? "39" : "40"; });
+
+					body.className = body.className.replace(/\bg-\S+/g, "").trim();
+					graphOn.forEach((g) => body.classList.add(`g-${g}`));
+					body.classList.toggle("strong", s.hasAttribute("data-strong"));
+					body.classList.toggle("lit", s.hasAttribute("data-lit"));
+
+					const newAct = s.dataset.act;
+					if (newAct !== act) {
+						if (act !== null && fromNav === "fwd") playAct(newAct);
+						act = newAct;
+						body.dataset.act = newAct;
+					}
+					s.querySelectorAll("[data-count]").forEach(countUp);
+
+					document.getElementById("bar").style.width = `${((idx + 1) / slides.length) * 100}%`;
+					document.getElementById("count").textContent = `${idx + 1} / ${slides.length}`;
+					document.getElementById("notes-slide").textContent = `Diapositiva ${idx + 1} / ${slides.length}`;
+					document.getElementById("notes-target").textContent = `objetivo ${s.dataset.time || ""}`;
+					document.getElementById("notes-text").textContent = s.querySelector(".note")?.textContent.trim() || "";
+					history.replaceState(null, "", `#${idx + 1}`);
+				};
+
+				let started = null;
+				const next = () => {
+					if (started === null) started = Date.now();
+					if (step < maxStep(slides[idx])) { step++; render(); return; }
+					if (idx < slides.length - 1) { idx++; step = 0; render("fwd"); }
+				};
+				const prev = () => {
+					if (step > 0) { step--; render(); return; }
+					if (idx > 0) { idx--; step = maxStep(slides[idx]); render("back"); }
+				};
+				const go = (i) => { idx = Math.max(0, Math.min(slides.length - 1, i)); step = 0; render("jump"); };
+
+				window.addEventListener("keydown", (e) => {
+					if (e.metaKey || e.ctrlKey || e.altKey) return;
+					const k = e.key;
+					if (["ArrowRight", "ArrowDown", "PageDown", " ", "Enter"].includes(k)) { e.preventDefault(); next(); }
+					else if (["ArrowLeft", "ArrowUp", "PageUp", "Backspace"].includes(k)) { e.preventDefault(); prev(); }
+					else if (k === "Home") go(0);
+					else if (k === "End") go(slides.length - 1);
+					else if (k === "n" || k === "N") { const n = document.getElementById("notes"); n.hidden = !n.hidden; }
+					else if (k === "f" || k === "F") { if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen?.(); }
+					else if (k === "r" || k === "R") started = Date.now();
+				});
+				window.addEventListener("click", (e) => {
+					if (e.target.closest(".notes")) return;
+					if (e.clientX < window.innerWidth / 3) prev(); else next();
+				});
+
+				// Speaker clock.
+				setInterval(() => {
+					if (started === null) return;
+					const s = Math.floor((Date.now() - started) / 1000);
+					const el = document.getElementById("clock");
+					el.textContent = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+					el.style.color = s > 420 ? "var(--red-text)" : "";
+				}, 500);
+
+				const fromHash = Number(location.hash.slice(1));
+				if (fromHash >= 1 && fromHash <= slides.length) idx = fromHash - 1;
+				render();
+			})();
+		</script>
+	</body>
+</html>
