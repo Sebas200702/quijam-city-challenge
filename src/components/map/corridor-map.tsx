@@ -137,6 +137,18 @@ export default function CorridorMap({
 	const [theme, setTheme] = useState<Theme>(() =>
 		document.documentElement.dataset.theme === "dark" ? "dark" : "light",
 	);
+	// The theme can also change from the secondary menu: follow the page attribute.
+	useEffect(() => {
+		const root = document.documentElement;
+		const observer = new MutationObserver(() =>
+			setTheme(root.dataset.theme === "dark" ? "dark" : "light"),
+		);
+		observer.observe(root, {
+			attributes: true,
+			attributeFilter: ["data-theme"],
+		});
+		return () => observer.disconnect();
+	}, []);
 	const pointNames = useMemo(
 		() => searchablePoints(data).map((point) => point.name),
 		[data],

@@ -11,7 +11,12 @@ export interface MapNextStep {
 }
 
 /** Entries of the secondary menu (rule 2: everything that is not a main section). */
-export type VisitorMenuItemId = "passport" | "slang" | "data" | "language";
+export type VisitorMenuItemId =
+	| "passport"
+	| "slang"
+	| "data"
+	| "language"
+	| "theme";
 
 /** Every string the visitor shell shows, in one language. */
 export interface VisitorShellCopy {
@@ -23,6 +28,8 @@ export interface VisitorShellCopy {
 	menuTitle: string;
 	menuItems: Record<VisitorMenuItemId, { title: string; hint: string }>;
 	languageHint: (languageName: string) => string;
+	/** Hint of the theme item: the current theme and what the tap does. */
+	themeHint: (dark: boolean) => string;
 	menuOfflineNote: string;
 	nextStepEyebrow: string;
 	nextStepTitle: (destination: string) => string;

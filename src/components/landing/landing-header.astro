@@ -1,7 +1,6 @@
 ---
 // Top bar of the landing: brand, main sections and the way into Quillart AI.
-import { LanguageSwitcher } from "../home/language-switcher";
-import { ThemeToggle } from "../home/theme-toggle";
+import { SecondaryMenu } from "../visitor-home/secondary-menu";
 
 const links = [
 	{ href: "/agenda", label: "Agenda", key: "agenda" },
@@ -34,8 +33,7 @@ const links = [
 			}
 		</ul>
 	</nav>
-	<LanguageSwitcher client:load />
-	<ThemeToggle client:load />
+	<SecondaryMenu client:load />
 	<a href="/inicio" class="q-btn q-btn--primary q-btn--sm min-h-11">
 		<span data-i18n="landing.header.openAi">Abrir Quillart AI</span>
 	</a>
