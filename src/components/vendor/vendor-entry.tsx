@@ -11,6 +11,7 @@ import {
 	vendorClient,
 } from "../../lib/vendor/vendor-service";
 import { CaptchaField } from "../community/captcha-field";
+import { ConsentNote } from "../community/consent-note";
 import { useCaptcha } from "../community/use-captcha";
 
 const ICON = { size: 20, strokeWidth: 1.75, "aria-hidden": true } as const;
@@ -220,10 +221,14 @@ export default function VendorEntry() {
 								{notice}
 							</p>
 						)}
+						{mode === "signup" && <ConsentNote id="vendor-signup-consent" />}
 						<button
 							type="submit"
 							className="q-btn q-btn--primary q-btn--block"
 							disabled={busy || client === undefined}
+							aria-describedby={
+								mode === "signup" ? "vendor-signup-consent" : undefined
+							}
 						>
 							{mode === "signin" ? <LogIn {...ICON} /> : <UserPlus {...ICON} />}
 							{busy

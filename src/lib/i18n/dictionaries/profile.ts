@@ -27,6 +27,9 @@ const es = {
 	googleRedirecting: "Abriendo Google…",
 	googleFailed: "No pudimos abrir Google. Intenta de nuevo o usa tu correo.",
 	emailDivider: "o con tu correo",
+	consentBefore: "Al crear tu cuenta aceptas la",
+	consentLink: "política de privacidad",
+	consentAfter: "y el tratamiento de tus datos según la Ley 1581 de 2012.",
 	almostDone: "¡Casi listo! Te enviamos un correo a",
 	almostDoneRest:
 		"Abre el enlace para confirmar tu cuenta y después entra con tu correo y contraseña.",
@@ -137,6 +140,10 @@ const en: ProfileMessages = {
 	googleRedirecting: "Opening Google…",
 	googleFailed: "We couldn't open Google. Try again or use your email.",
 	emailDivider: "or with your email",
+	consentBefore: "By creating your account you accept the",
+	consentLink: "privacy policy",
+	consentAfter:
+		"and the processing of your data under Colombian Law 1581 of 2012.",
 	almostDone: "Almost done! We sent an email to",
 	almostDoneRest:
 		"Open the link to confirm your account, then sign in with your email and password.",
@@ -246,6 +253,10 @@ const pt: ProfileMessages = {
 	googleFailed:
 		"Não conseguimos abrir o Google. Tente novamente ou use seu e-mail.",
 	emailDivider: "ou com seu e-mail",
+	consentBefore: "Ao criar sua conta você aceita a",
+	consentLink: "política de privacidade",
+	consentAfter:
+		"e o tratamento dos seus dados conforme a Lei 1581 de 2012 da Colômbia.",
 	almostDone: "Quase pronto! Enviamos um e-mail para",
 	almostDoneRest:
 		"Abra o link para confirmar sua conta e depois entre com seu e-mail e senha.",
@@ -355,6 +366,10 @@ const fr: ProfileMessages = {
 	googleFailed:
 		"Impossible d'ouvrir Google. Réessayez ou utilisez votre e-mail.",
 	emailDivider: "ou avec votre e-mail",
+	consentBefore: "En créant votre compte, vous acceptez la",
+	consentLink: "politique de confidentialité",
+	consentAfter:
+		"et le traitement de vos données conformément à la loi colombienne 1581 de 2012.",
 	almostDone: "Presque terminé ! Nous avons envoyé un e-mail à",
 	almostDoneRest:
 		"Ouvrez le lien pour confirmer votre compte, puis connectez-vous avec votre e-mail et votre mot de passe.",

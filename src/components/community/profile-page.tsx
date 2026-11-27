@@ -27,6 +27,7 @@ import {
 	Loading,
 	PageTitle,
 } from "./community-ui";
+import { ConsentNote } from "./consent-note";
 import { EventCard } from "./event-card";
 import { GoogleSignInButton } from "./google-sign-in-button";
 import { MyDataPanel } from "./my-data-panel";
@@ -61,16 +62,19 @@ function SubmitButton({
 	busy,
 	label,
 	busyLabel,
+	describedBy,
 }: {
 	busy: boolean;
 	label: string;
 	busyLabel: string;
+	describedBy?: string;
 }) {
 	return (
 		<button
 			type="submit"
 			disabled={busy}
 			aria-busy={busy}
+			aria-describedby={describedBy}
 			className="q-btn q-btn--primary q-btn--block mt-2"
 		>
 			{busy && <span className="q-star q-star--think" aria-hidden="true" />}
@@ -315,10 +319,12 @@ function SignUpForm() {
 			<PrivacyNote />
 			<CaptchaField captcha={captcha} />
 			{error && <ErrorNote message={error} />}
+			<ConsentNote id="signup-consent" />
 			<SubmitButton
 				busy={busy}
 				label={t.profile.signUp}
 				busyLabel={t.profile.signingUp}
+				describedBy="signup-consent"
 			/>
 		</form>
 	);
