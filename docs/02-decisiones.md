@@ -223,3 +223,11 @@ Issue #91.
 - **Bandeja privada con RLS y cascada (Ley 1581):** se crea `public.user_notifications` (`20261128000008_user_notifications.sql`) registrada en `supabase_realtime`, con lectura/actualización/borrado restringidos al propio usuario e inserciones únicamente desde el servidor (service role) o triggers `security definer` (`trg_events_notify_cancelled` al cancelar un evento). Al eliminar la cuenta se borran en cascada.
 - **Presupuesto de interrupciones (regla 4 de #57):** ningún recordatorio de evento ni aviso de moderación abre modal ni pide permiso al cargar. Dentro de la app aparece como máximo una tarjeta discreta (`EventNotifier`) y la bandeja completa en `/perfil#mis-avisos` (`NotificationsPanel`); las notificaciones web reutilizan `AppNotification` con `requireInteraction: false` y el usuario puede desactivar ambos canales en cualquier momento.
 - **Recordatorios del día anterior sin cron externo:** los eventos inscritos que comienzan en las próximas 24 horas generan recordatorios deterministas por día (`buildUpcomingEventReminders`) deduplicados localmente.
+
+## Editar eventos con nuevo triaje (27 nov 2026)
+
+Issue #92.
+
+- **Sin `UPDATE` directo desde el cliente:** se mantiene la política de base de datos que solo permite al cliente actualizar `status` para cancelar. Toda edición de título, descripción, fecha, lugar, cupos o entrada pasa por `PATCH /api/community/events/[id]` con llave de servicio (`updateEventContent`), verificando autoría y bloqueando cupos menores a `registered_count`.
+- **Re-triaje obligatorio en cambios de texto o cobro:** si cambia título, descripción o condición de pago, el servidor vuelve a ejecutar `triageContent` + `applyTrustPolicy`; si el veredicto es `reject` no sobrescribe el evento (`422`), y si es `hold` lo retiene (`moderation_status = 'held'`) hasta decisión de la ciudad en `/moderacion`.
+- **Aviso automático a inscritos:** cuando cambia la fecha o el lugar de un evento publicado, el servidor inserta avisos `event_updated` en `user_notifications` para todas las personas inscritas.
