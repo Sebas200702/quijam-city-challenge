@@ -73,6 +73,7 @@ import { type RouteQuery, useRoutePlan } from "./use-route-plan";
 
 const FALLBACK_CENTER: L.LatLngTuple = [10.97, -74.79];
 const WIDE_SCREEN_PX = 640;
+const WIDE_QUERY = `(min-width: ${WIDE_SCREEN_PX}px)`;
 /** From this zoom on, every pin shows its name and status word, not only the selected one. */
 const NEAR_ZOOM = 16;
 /** Same key the layout's inline script reads to apply the theme before paint. */
@@ -111,11 +112,15 @@ interface CorridorMapProps {
 function overlayPadding(map: L.Map) {
 	const size = map.getSize();
 	const wide = size.x >= WIDE_SCREEN_PX;
-	// Phones: search, chips and tags on top; the card takes up to half the height at the bottom.
+	// Phones: one row of chips on top; at the bottom, the open sheet (if any).
+	const sheet = map
+		.getContainer()
+		.parentElement?.querySelector<HTMLElement>(".corridor-app__detail");
+	const sheetHeight = sheet?.offsetHeight ?? 0;
 	return {
-		paddingTopLeft: L.point(wide ? [430, 24] : [24, 180]),
+		paddingTopLeft: L.point(wide ? [430, 24] : [16, 72]),
 		paddingBottomRight: L.point(
-			wide ? [80, 24] : [72, Math.round(size.y / 2) + 32],
+			wide ? [80, 24] : [72, sheetHeight > 0 ? sheetHeight + 32 : 24],
 		),
 	};
 }
@@ -219,6 +224,11 @@ export default function CorridorMap({ data, source }: CorridorMapProps) {
 		query,
 		flood.blocked,
 		crowdByZone,
+	);
+	// The route sheet: open on wide screens (the planner beside the stop list); on phones
+	// only when the visitor asks for a route, so the map gets the whole screen.
+	const [routeOpen, setRouteOpen] = useState(
+		() => window.matchMedia(WIDE_QUERY).matches,
 	);
 	// "You are here": the trip's origin stands in for the visitor's position (no GPS in the pilot).
 	const origin = data.stops.find((stop) => stop.code === query.origin) ?? null;
@@ -444,7 +454,10 @@ export default function CorridorMap({ data, source }: CorridorMapProps) {
 	useMapUiActions({
 		mapRef,
 		query,
-		setQuery,
+		setQuery: (next) => {
+			setQuery(next);
+			setRouteOpen(true);
+		},
 		selected: selected?.code ?? null,
 	});
 
@@ -492,7 +505,7 @@ export default function CorridorMap({ data, source }: CorridorMapProps) {
 		if (!layer) return;
 		layer.clearLayers();
 		const route = plan?.route;
-		if (!route) return;
+		if (!route || !routeOpen) return;
 		const byCode = new Map(data.stops.map((stop) => [stop.code, stop]));
 		const path = route.stopCodes.flatMap((code) => {
 			const stop = byCode.get(code);
@@ -501,7 +514,7 @@ export default function CorridorMap({ data, source }: CorridorMapProps) {
 		const variant =
 			query.accessibleMode && route.accessible ? "accessible" : "active";
 		for (const line of routeLine(path, variant)) line.addTo(layer);
-	}, [plan, data.stops, query.accessibleMode]);
+	}, [plan, data.stops, query.accessibleMode, routeOpen]);
 
 	useEffect(() => {
 		const layer = userLayerRef.current;
@@ -786,7 +799,7 @@ export default function CorridorMap({ data, source }: CorridorMapProps) {
 							/>
 						)}
 					</DetailCard>
-				) : (
+				) : routeOpen ? (
 					<RouteCard
 						stops={stops}
 						query={query}
@@ -796,7 +809,10 @@ export default function CorridorMap({ data, source }: CorridorMapProps) {
 						error={error}
 						alert={floodNotice.band}
 						onOpenGuide={openGuide}
+						onClose={() => setRouteOpen(false)}
 					/>
+				) : (
+					floodNotice.band
 				)}
 			</div>
 

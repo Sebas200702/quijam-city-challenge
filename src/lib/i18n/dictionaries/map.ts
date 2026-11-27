@@ -56,6 +56,7 @@ const es = {
 	safeRoute: "Buscar una ruta segura",
 	commission: "Comisión",
 	close: "Cerrar detalle",
+	closeRoute: "Cerrar la ruta",
 	open: "Abierto ahora",
 	closed: "Cerrado",
 	closedWhy:
@@ -247,7 +248,7 @@ const es = {
 	offlineSaved: (age: number) =>
 		`Sin conexión: ruta guardada ${age === 0 ? "hace un momento" : `hace ${age} min`}. Puedes seguirla igual.`,
 	updateFailed: "No pudimos actualizar la ruta.",
-	nextStep: "Tu siguiente paso",
+	nextStep: "Tu ruta",
 	recalculated: "Ruta recalculada",
 	youAreAt: "Estás en",
 	youGoTo: "Vas a",
@@ -323,6 +324,7 @@ const en: MapMessages = {
 	safeRoute: "Find a safe route",
 	commission: "Commission",
 	close: "Close details",
+	closeRoute: "Close the route",
 	open: "Open now",
 	closed: "Closed",
 	closedWhy:
@@ -507,7 +509,7 @@ const en: MapMessages = {
 	offlineSaved: (age: number) =>
 		`Offline: route saved ${age === 0 ? "a moment ago" : `${age} min ago`}. You can still follow it.`,
 	updateFailed: "We could not update the route.",
-	nextStep: "Your next step",
+	nextStep: "Your route",
 	recalculated: "Route recalculated",
 	youAreAt: "You are at",
 	youGoTo: "You go to",
@@ -579,6 +581,7 @@ const pt: MapMessages = {
 	safeRoute: "Buscar uma rota segura",
 	commission: "Comissão",
 	close: "Fechar detalhes",
+	closeRoute: "Fechar a rota",
 	open: "Aberto agora",
 	closed: "Fechado",
 	closedWhy:
@@ -764,7 +767,7 @@ const pt: MapMessages = {
 	offlineSaved: (age: number) =>
 		`Sem conexão: rota salva ${age === 0 ? "agora há pouco" : `há ${age} min`}. Você pode segui-la mesmo assim.`,
 	updateFailed: "Não conseguimos atualizar a rota.",
-	nextStep: "Seu próximo passo",
+	nextStep: "Sua rota",
 	recalculated: "Rota recalculada",
 	youAreAt: "Você está em",
 	youGoTo: "Você vai para",
@@ -841,6 +844,7 @@ const fr: MapMessages = {
 	safeRoute: "Chercher un itinéraire sûr",
 	commission: "Commission",
 	close: "Fermer les détails",
+	closeRoute: "Fermer l’itinéraire",
 	open: "Ouvert maintenant",
 	closed: "Fermé",
 	closedWhy:
@@ -1027,7 +1031,7 @@ const fr: MapMessages = {
 	offlineSaved: (age: number) =>
 		`Hors ligne : itinéraire enregistré ${age === 0 ? "à l’instant" : `il y a ${age} min`}. Vous pouvez le suivre quand même.`,
 	updateFailed: "Impossible de mettre à jour l’itinéraire.",
-	nextStep: "Votre prochaine étape",
+	nextStep: "Votre itinéraire",
 	recalculated: "Itinéraire recalculé",
 	youAreAt: "Vous êtes à",
 	youGoTo: "Vous allez à",
