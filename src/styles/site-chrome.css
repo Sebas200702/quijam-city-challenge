@@ -147,3 +147,10 @@
 		text-decoration: underline;
 	}
 }
+
+/* On phones the section chip replaces the wordmark: both do not fit beside the menu. */
+@media (max-width: 1023px) {
+	.l-header__bar:has(.site-header__title) .q-logo__text {
+		display: none;
+	}
+}

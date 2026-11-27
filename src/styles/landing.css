@@ -2546,3 +2546,11 @@ html.l-motion .l-geo--ring,
 html.l-motion .l-geo--plus {
 	animation: l-twinkle 5s ease-in-out calc(var(--i, 0) * -0.9s) infinite;
 }
+
+/* On phones confetti stays only where the layout reserves room for it (the
+   landing hero and the picture panels); elsewhere it would sit on the text. */
+@media (max-width: 1023px) {
+	.l-geo:not(.l-hero .l-geo, .l-round-art .l-geo) {
+		display: none;
+	}
+}
