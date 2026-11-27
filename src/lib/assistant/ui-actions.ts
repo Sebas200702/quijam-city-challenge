@@ -320,6 +320,8 @@ function eventFormFields(
 		...(time ? { startTime: time.slice(0, 5) } : {}),
 		...(args.place_slug ? { place: args.place_slug } : {}),
 		...(args.location_text ? { locationText: args.location_text } : {}),
+		...(args.capacity ? { capacity: String(args.capacity) } : {}),
+		...(args.price_cop ? { price: String(args.price_cop) } : {}),
 	};
 }
 
@@ -369,6 +371,8 @@ function fromCall(
 					zoom: 16,
 					label: pin.label,
 					lugar: args.place_slug,
+					// "Llévame al Malecón": the person wants to go, so open the map there (U05).
+					...(call.name === "get_directions" ? { navigate: true } : {}),
 				},
 			];
 		}

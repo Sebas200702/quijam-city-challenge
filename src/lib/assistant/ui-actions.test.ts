@@ -231,6 +231,41 @@ describe("uiActionsForCalls (derived on the server)", () => {
 		]);
 	});
 
+	it("opens the map on the place when the person asks how to get there", () => {
+		const actions = uiActionsForCalls(
+			[call("get_directions", { place_slug: "gran-malecon" })],
+			"llévame al Malecón",
+		);
+		const fly = actions.find((action) => action.type === "map.flyTo");
+		expect(fly).toMatchObject({ lugar: "gran-malecon", navigate: true });
+		expect(fly && uiActionHref(fly)).toBe("/mapa?lugar=gran-malecon");
+		const place = uiActionsForCalls(
+			[call("get_place", { place_slug: "gran-malecon" })],
+			"",
+		).find((action) => action.type === "map.flyTo");
+		expect(place?.navigate).toBeUndefined();
+	});
+
+	it("prefills capacity and price of an event draft", () => {
+		const [prefill] = uiActionsForCalls(
+			[
+				call("create_event", {
+					title: "Noche de salsa",
+					description: "Noche de salsa en el Malecón",
+					category: "music",
+					starts_at_local: "2026-12-05T20:00",
+					capacity: 40,
+					price_cop: 15000,
+				}),
+			],
+			"",
+		);
+		expect(prefill).toMatchObject({
+			type: "form.prefill",
+			fields: { capacity: "40", price: "15000" },
+		});
+	});
+
 	it("drops a pin and flies to a catalog place", () => {
 		const actions = uiActionsForCalls(
 			[call("get_place", { place_slug: "gran-malecon" })],
