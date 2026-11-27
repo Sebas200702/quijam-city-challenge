@@ -82,9 +82,67 @@ export interface AssistantToolArgs {
 	get_open_data: { dataset?: OpenDataSlug };
 	/** City data: the five program indicators, from public sources only. */
 	get_city_indicators: Record<string, never>;
+	/** Barranquilla slang glossary (/jerga): meaning and example of a word. */
+	lookup_slang: { term?: string };
+
+	// --- App control (UI tools) ----------------------------------------------
+	// They only change what the person sees (never write data) and run right
+	// away, without a confirmation card: the server turns each one into
+	// whitelisted UI actions (ui-actions.ts) and the browser applies them.
+
+	/** Filters the agenda on screen (opens /agenda when it is not open). */
+	filter_agenda: {
+		query?: string;
+		category?: EventCategory;
+		when?: "hoy" | "finde" | "semana";
+	};
+	/** Filters the places list on screen (opens /lugares when needed). */
+	filter_places: { query?: string; kind?: PlaceKind };
+	/** Centres the map on a catalog place and drops its pin (opens /mapa). */
+	show_on_map: { place_slug: string };
+	/** Draws a route on the map to a corridor destination, stop code or place slug. */
+	show_route: { destination: string };
+	/** Changes the interface language of the whole app. */
+	set_language: { language: Language };
+	/** Switches the app between light and dark mode. */
+	set_theme: { theme: "light" | "dark" };
+	/** Scrolls to and highlights a part of the screen. */
+	focus_on: {
+		target:
+			| "agenda-results"
+			| "places-results"
+			| "event-actions"
+			| "event-form"
+			| "thread-form"
+			| "reply-form"
+			| "report-form";
+	};
+	/** Goes back to the previous screen. */
+	go_back: Record<string, never>;
 }
 
 export type AssistantToolName = keyof AssistantToolArgs;
+
+/**
+ * Tools that only drive the app's screen (navigate, filter, map, language,
+ * theme, focus). They never write data, need no confirmation and need no new
+ * model round: their effect is the UI action itself.
+ */
+export const UI_TOOLS: readonly AssistantToolName[] = [
+	"open_page",
+	"filter_agenda",
+	"filter_places",
+	"show_on_map",
+	"show_route",
+	"set_language",
+	"set_theme",
+	"focus_on",
+	"go_back",
+];
+
+export function isUiTool(name: AssistantToolName): boolean {
+	return UI_TOOLS.includes(name);
+}
 
 export const ACTION_TOOLS: readonly AssistantToolName[] = [
 	"register_for_event",
