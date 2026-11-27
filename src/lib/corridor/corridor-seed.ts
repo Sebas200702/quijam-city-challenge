@@ -56,7 +56,7 @@ export const CORRIDOR_SEED: CorridorData = {
 		},
 		{
 			code: "STOP-MURILLO-SUR",
-			name: "Estacion Joaquin Barrios Polo (Troncal Murillo)",
+			name: "Estación Joaquín Barrios Polo (Troncal Murillo)",
 			zone: "troncal_murillo",
 			stop_type: "transmetro",
 			latitude: 10.9415,
@@ -70,7 +70,7 @@ export const CORRIDOR_SEED: CorridorData = {
 		},
 		{
 			code: "STOP-MURILLO-46",
-			name: "Estacion La Arenosa (Murillo con Cra 46)",
+			name: "Estación La Arenosa (Murillo con Cra 46)",
 			zone: "troncal_murillo",
 			stop_type: "transmetro",
 			latitude: 10.9765,
@@ -112,7 +112,7 @@ export const CORRIDOR_SEED: CorridorData = {
 		},
 		{
 			code: "STOP-MALECON-SUR",
-			name: "Gran Malecon (Sector Caiman del Rio)",
+			name: "Gran Malecón (Sector Caimán del Río)",
 			zone: "gran_malecon",
 			stop_type: "host_hub",
 			latitude: 11.0038,
@@ -126,7 +126,7 @@ export const CORRIDOR_SEED: CorridorData = {
 		},
 		{
 			code: "STOP-MALECON-NORTE",
-			name: "Gran Malecon (Sector Puerta de Oro)",
+			name: "Gran Malecón (Sector Puerta de Oro)",
 			zone: "gran_malecon",
 			stop_type: "qr_point",
 			latitude: 11.0115,
@@ -150,7 +150,7 @@ export const CORRIDOR_SEED: CorridorData = {
 			risk_level: "high",
 			alert_active: false,
 			advisory_es:
-				"Evitar cruce vehicular y peatonal en lluvia fuerte; usar desvio por Troncal elevada.",
+				"Evitar cruce vehicular y peatonal en lluvia fuerte; usar desvío por Troncal elevada.",
 			is_simulated: true,
 		},
 		{
@@ -163,7 +163,7 @@ export const CORRIDOR_SEED: CorridorData = {
 			risk_level: "moderate",
 			alert_active: false,
 			advisory_es:
-				"Tramo canalizado con escorrentia en aguacero intenso; verificar accesibilidad.",
+				"Tramo canalizado con escorrentía en aguacero intenso; verificar accesibilidad.",
 			is_simulated: true,
 		},
 		{
@@ -181,21 +181,21 @@ export const CORRIDOR_SEED: CorridorData = {
 		},
 		{
 			code: "ARR-VIA-40",
-			name: "Escorrentia Via 40 acceso Malecon",
+			name: "Escorrentía Vía 40 acceso Malecón",
 			zone: "gran_malecon",
 			latitude: 11.0052,
 			longitude: -74.7808,
 			radius_meters: 160,
 			risk_level: "moderate",
 			alert_active: false,
-			advisory_es: "Acumulacion temporal en acceso peatonal hacia el Malecon.",
+			advisory_es: "Acumulación temporal en acceso peatonal hacia el Malecón.",
 			is_simulated: true,
 		},
 	],
 	businesses: [
 		{
 			code: "BIZ-FRITOS-ROSA",
-			name: "Fritos Dona Rosa (Barrio Abajo)",
+			name: "Fritos Doña Rosa (Barrio Abajo)",
 			category: "food_popular",
 			zone: "barrio_abajo",
 			latitude: 10.9931,
@@ -204,12 +204,12 @@ export const CORRIDOR_SEED: CorridorData = {
 			is_open: true,
 			commission_free: true,
 			description_es:
-				"Arepa de huevo y carimanola tradicional en Barrio Abajo. Negocio verificado sin comision.",
+				"Arepa de huevo y carimañola tradicional en Barrio Abajo. Negocio verificado sin comisión.",
 			is_simulated: true,
 		},
 		{
 			code: "BIZ-MASCARAS-BA",
-			name: "Taller de Mascaras del Carnaval",
+			name: "Taller de Máscaras del Carnaval",
 			category: "crafts",
 			zone: "barrio_abajo",
 			latitude: 10.9924,
@@ -218,12 +218,12 @@ export const CORRIDOR_SEED: CorridorData = {
 			is_open: true,
 			commission_free: true,
 			description_es:
-				"Artesanos locales con demostracion de mascaras tradicionales y sello de visita.",
+				"Artesanos locales con demostración de máscaras tradicionales y sello de visita.",
 			is_simulated: true,
 		},
 		{
 			code: "BIZ-ECO-MALECON",
-			name: "Jornada Verde y Reciclaje Malecon",
+			name: "Jornada Verde y Reciclaje Malecón",
 			category: "eco_event",
 			zone: "gran_malecon",
 			latitude: 11.0042,
@@ -232,12 +232,12 @@ export const CORRIDOR_SEED: CorridorData = {
 			is_open: true,
 			commission_free: true,
 			description_es:
-				"Actividad ambiental con puntos de hidratacion y recompensas por reciclaje.",
+				"Actividad ambiental con puntos de hidratación y recompensas por reciclaje.",
 			is_simulated: true,
 		},
 		{
 			code: "BIZ-CAFE-PAZ",
-			name: "Cafe Popular Plaza de la Paz",
+			name: "Café Popular Plaza de la Paz",
 			category: "coffee",
 			zone: "centro",
 			latitude: 10.9881,
@@ -246,12 +246,12 @@ export const CORRIDOR_SEED: CorridorData = {
 			is_open: true,
 			commission_free: true,
 			description_es:
-				"Cafe caribeno y punto de sombra cerca del paradero del Centro.",
+				"Café caribeño y punto de sombra cerca del paradero del Centro.",
 			is_simulated: true,
 		},
 		{
 			code: "BIZ-JUGOS-ESTADIO",
-			name: "Refresqueria La 45 (Estadio)",
+			name: "Refresquería La 45 (Estadio)",
 			category: "food_popular",
 			zone: "estadio",
 			latitude: 10.9274,
@@ -260,7 +260,7 @@ export const CORRIDOR_SEED: CorridorData = {
 			is_open: false,
 			commission_free: true,
 			description_es:
-				"Jugos naturales y punto de hidratacion verificado en acceso al Estadio.",
+				"Jugos naturales y punto de hidratación verificado en acceso al Estadio.",
 			is_simulated: true,
 		},
 	],

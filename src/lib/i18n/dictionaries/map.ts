@@ -6,17 +6,17 @@
 import type { Language } from "../languages";
 
 const es = {
-	pageTitle: "Mapa del corredor · QUILLART",
+	pageTitle: "Mapa del área metropolitana · QUILLART",
 	/** BCP 47 locale for numbers and times. */
 	locale: "es-CO",
-	searchForm: "Buscar en el corredor",
-	searchLabel: "Buscar un paradero, arroyo o negocio",
+	searchForm: "Buscar en el mapa",
+	searchLabel: "Buscar un lugar, paradero, arroyo o negocio",
 	searchPlaceholder: "¿Para dónde vas?",
 	searchButton: "Buscar",
 	themeToDark: "Usar tema oscuro",
 	themeToLight: "Usar tema claro",
-	searchMiss: (query: string) => `No encontramos «${query}» en el corredor.`,
-	searchTry: "Prueba con Estadio, Malecón o Barrio Abajo.",
+	searchMiss: (query: string) => `No encontramos «${query}» en el mapa.`,
+	searchTry: "Prueba con Estadio, Malecón o Puerto Colombia.",
 	layers: "Capas del mapa",
 	layerStops: "Paraderos",
 	layerFlood: "Arroyos",
@@ -56,6 +56,7 @@ const es = {
 	safeRoute: "Buscar una ruta segura",
 	commission: "Comisión",
 	close: "Cerrar detalle",
+	closeRoute: "Cerrar la ruta",
 	open: "Abierto ahora",
 	closed: "Cerrado",
 	closedWhy:
@@ -134,7 +135,7 @@ const es = {
 		Cerrado: "Cerrado",
 	},
 	// Map: pins, controls, legend and base-map states.
-	mapAria: "Mapa del corredor",
+	mapAria: "Mapa del Área Metropolitana de Barranquilla",
 	skipToPanel: "Saltar al buscador y la ruta",
 	accessibleMode: "Modo accesible",
 	/** The current route, handed to the Mobility agent as a ready-made question. */
@@ -155,6 +156,24 @@ const es = {
 		risk: "Arroyo con riesgo",
 		business: "Negocio abierto",
 		user: "Estás aquí",
+		outside: "Fuera del área metropolitana (no se muestra)",
+	},
+	// Metro-area map: point layers, groups of pins and links into the map.
+	metro: {
+		layerPlaces: "Lugares",
+		pinPlace: (name: string) => `Lugar: ${name}`,
+		openPlace: "Ver el lugar",
+		pointEyebrow: "En el mapa",
+		clusterPart: (label: string, count: number) => `${label} ${count}`,
+		cluster: (count: number, parts: string) =>
+			`${count} puntos juntos (${parts}). Acercar`,
+		focusMissing: "No encontramos ese punto en el mapa.",
+		focusOutside:
+			"Ese punto queda fuera del área metropolitana y no aparece en el mapa.",
+		/** Peek of the next-step card on phones (U10). */
+		nextStepMore: "Ver más del siguiente paso",
+		nextStepLess: "Ver menos del siguiente paso",
+		dismissNote: "Cerrar aviso",
 	},
 	userHere: "Estás aquí",
 	userHereAt: (name: string) => `Estás aquí: ${name}`,
@@ -229,7 +248,7 @@ const es = {
 	offlineSaved: (age: number) =>
 		`Sin conexión: ruta guardada ${age === 0 ? "hace un momento" : `hace ${age} min`}. Puedes seguirla igual.`,
 	updateFailed: "No pudimos actualizar la ruta.",
-	nextStep: "Tu siguiente paso",
+	nextStep: "Tu ruta",
 	recalculated: "Ruta recalculada",
 	youAreAt: "Estás en",
 	youGoTo: "Vas a",
@@ -257,17 +276,16 @@ const es = {
 export type MapMessages = typeof es;
 
 const en: MapMessages = {
-	pageTitle: "Corridor map · QUILLART",
+	pageTitle: "Metropolitan area map · QUILLART",
 	locale: "en-US",
-	searchForm: "Search the corridor",
-	searchLabel: "Search for a stop, arroyo or business",
+	searchForm: "Search the map",
+	searchLabel: "Search for a place, stop, arroyo or business",
 	searchPlaceholder: "Where are you going?",
 	searchButton: "Search",
 	themeToDark: "Use dark theme",
 	themeToLight: "Use light theme",
-	searchMiss: (query: string) =>
-		`We could not find “${query}” on the corridor.`,
-	searchTry: "Try Estadio, Malecón or Barrio Abajo.",
+	searchMiss: (query: string) => `We could not find “${query}” on the map.`,
+	searchTry: "Try Estadio, Malecón or Puerto Colombia.",
 	layers: "Map layers",
 	layerStops: "Stops",
 	layerFlood: "Arroyos",
@@ -306,6 +324,7 @@ const en: MapMessages = {
 	safeRoute: "Find a safe route",
 	commission: "Commission",
 	close: "Close details",
+	closeRoute: "Close the route",
 	open: "Open now",
 	closed: "Closed",
 	closedWhy:
@@ -382,7 +401,7 @@ const en: MapMessages = {
 		Abierto: "Open",
 		Cerrado: "Closed",
 	},
-	mapAria: "Corridor map",
+	mapAria: "Map of the Barranquilla Metropolitan Area",
 	skipToPanel: "Skip to search and route",
 	accessibleMode: "Accessible mode",
 	askRoutePrompt: (from, to) => `How do I get from ${from} to ${to}?`,
@@ -401,6 +420,22 @@ const en: MapMessages = {
 		risk: "Arroyo at risk",
 		business: "Open business",
 		user: "You are here",
+		outside: "Outside the metropolitan area (not shown)",
+	},
+	metro: {
+		layerPlaces: "Places",
+		pinPlace: (name: string) => `Place: ${name}`,
+		openPlace: "See the place",
+		pointEyebrow: "On the map",
+		clusterPart: (label: string, count: number) => `${label} ${count}`,
+		cluster: (count: number, parts: string) =>
+			`${count} points together (${parts}). Zoom in`,
+		focusMissing: "We could not find that point on the map.",
+		focusOutside:
+			"That point is outside the metropolitan area and is not shown on the map.",
+		nextStepMore: "Show more of the next step",
+		nextStepLess: "Show less of the next step",
+		dismissNote: "Close notice",
 	},
 	userHere: "You are here",
 	userHereAt: (name: string) => `You are here: ${name}`,
@@ -474,7 +509,7 @@ const en: MapMessages = {
 	offlineSaved: (age: number) =>
 		`Offline: route saved ${age === 0 ? "a moment ago" : `${age} min ago`}. You can still follow it.`,
 	updateFailed: "We could not update the route.",
-	nextStep: "Your next step",
+	nextStep: "Your route",
 	recalculated: "Route recalculated",
 	youAreAt: "You are at",
 	youGoTo: "You go to",
@@ -497,16 +532,16 @@ const en: MapMessages = {
 };
 
 const pt: MapMessages = {
-	pageTitle: "Mapa do corredor · QUILLART",
+	pageTitle: "Mapa da área metropolitana · QUILLART",
 	locale: "pt-BR",
-	searchForm: "Buscar no corredor",
-	searchLabel: "Buscar uma parada, arroio ou comércio",
+	searchForm: "Buscar no mapa",
+	searchLabel: "Buscar um lugar, parada, arroio ou comércio",
 	searchPlaceholder: "Para onde você vai?",
 	searchButton: "Buscar",
 	themeToDark: "Usar tema escuro",
 	themeToLight: "Usar tema claro",
-	searchMiss: (query: string) => `Não encontramos «${query}» no corredor.`,
-	searchTry: "Tente Estadio, Malecón ou Barrio Abajo.",
+	searchMiss: (query: string) => `Não encontramos «${query}» no mapa.`,
+	searchTry: "Tente Estadio, Malecón ou Puerto Colombia.",
 	layers: "Camadas do mapa",
 	layerStops: "Paradas",
 	layerFlood: "Arroios",
@@ -546,6 +581,7 @@ const pt: MapMessages = {
 	safeRoute: "Buscar uma rota segura",
 	commission: "Comissão",
 	close: "Fechar detalhes",
+	closeRoute: "Fechar a rota",
 	open: "Aberto agora",
 	closed: "Fechado",
 	closedWhy:
@@ -623,7 +659,7 @@ const pt: MapMessages = {
 		Abierto: "Aberto",
 		Cerrado: "Fechado",
 	},
-	mapAria: "Mapa do corredor",
+	mapAria: "Mapa da Área Metropolitana de Barranquilla",
 	skipToPanel: "Ir para a busca e a rota",
 	accessibleMode: "Modo acessível",
 	askRoutePrompt: (from, to) => `Como chego de ${from} a ${to}?`,
@@ -642,6 +678,22 @@ const pt: MapMessages = {
 		risk: "Arroio com risco",
 		business: "Comércio aberto",
 		user: "Você está aqui",
+		outside: "Fora da área metropolitana (não aparece)",
+	},
+	metro: {
+		layerPlaces: "Lugares",
+		pinPlace: (name: string) => `Lugar: ${name}`,
+		openPlace: "Ver o lugar",
+		pointEyebrow: "No mapa",
+		clusterPart: (label: string, count: number) => `${label} ${count}`,
+		cluster: (count: number, parts: string) =>
+			`${count} pontos juntos (${parts}). Aproximar`,
+		focusMissing: "Não encontramos esse ponto no mapa.",
+		focusOutside:
+			"Esse ponto fica fora da área metropolitana e não aparece no mapa.",
+		nextStepMore: "Ver mais do próximo passo",
+		nextStepLess: "Ver menos do próximo passo",
+		dismissNote: "Fechar aviso",
 	},
 	userHere: "Você está aqui",
 	userHereAt: (name: string) => `Você está aqui: ${name}`,
@@ -715,7 +767,7 @@ const pt: MapMessages = {
 	offlineSaved: (age: number) =>
 		`Sem conexão: rota salva ${age === 0 ? "agora há pouco" : `há ${age} min`}. Você pode segui-la mesmo assim.`,
 	updateFailed: "Não conseguimos atualizar a rota.",
-	nextStep: "Seu próximo passo",
+	nextStep: "Sua rota",
 	recalculated: "Rota recalculada",
 	youAreAt: "Você está em",
 	youGoTo: "Você vai para",
@@ -739,17 +791,17 @@ const pt: MapMessages = {
 };
 
 const fr: MapMessages = {
-	pageTitle: "Carte du corridor · QUILLART",
+	pageTitle: "Carte de l’aire métropolitaine · QUILLART",
 	locale: "fr-FR",
-	searchForm: "Rechercher dans le corridor",
-	searchLabel: "Rechercher un arrêt, un ruisseau ou un commerce",
+	searchForm: "Rechercher sur la carte",
+	searchLabel: "Rechercher un lieu, un arrêt, un ruisseau ou un commerce",
 	searchPlaceholder: "Où allez-vous ?",
 	searchButton: "Rechercher",
 	themeToDark: "Utiliser le thème sombre",
 	themeToLight: "Utiliser le thème clair",
 	searchMiss: (query: string) =>
-		`Nous n’avons pas trouvé « ${query} » dans le corridor.`,
-	searchTry: "Essayez Estadio, Malecón ou Barrio Abajo.",
+		`Nous n’avons pas trouvé « ${query} » sur la carte.`,
+	searchTry: "Essayez Estadio, Malecón ou Puerto Colombia.",
 	layers: "Couches de la carte",
 	layerStops: "Arrêts",
 	layerFlood: "Ruisseaux",
@@ -792,6 +844,7 @@ const fr: MapMessages = {
 	safeRoute: "Chercher un itinéraire sûr",
 	commission: "Commission",
 	close: "Fermer les détails",
+	closeRoute: "Fermer l’itinéraire",
 	open: "Ouvert maintenant",
 	closed: "Fermé",
 	closedWhy:
@@ -869,7 +922,7 @@ const fr: MapMessages = {
 		Abierto: "Ouvert",
 		Cerrado: "Fermé",
 	},
-	mapAria: "Carte du corridor",
+	mapAria: "Carte de l’aire métropolitaine de Barranquilla",
 	skipToPanel: "Aller à la recherche et à l’itinéraire",
 	accessibleMode: "Mode accessible",
 	askRoutePrompt: (from, to) => `Comment aller de ${from} à ${to} ?`,
@@ -888,6 +941,22 @@ const fr: MapMessages = {
 		risk: "Ruisseau à risque",
 		business: "Commerce ouvert",
 		user: "Vous êtes ici",
+		outside: "Hors de l’aire métropolitaine (non affiché)",
+	},
+	metro: {
+		layerPlaces: "Lieux",
+		pinPlace: (name: string) => `Lieu : ${name}`,
+		openPlace: "Voir le lieu",
+		pointEyebrow: "Sur la carte",
+		clusterPart: (label: string, count: number) => `${label} ${count}`,
+		cluster: (count: number, parts: string) =>
+			`${count} points regroupés (${parts}). Zoomer`,
+		focusMissing: "Nous n’avons pas trouvé ce point sur la carte.",
+		focusOutside:
+			"Ce point est hors de l’aire métropolitaine et n’apparaît pas sur la carte.",
+		nextStepMore: "Voir plus sur la prochaine étape",
+		nextStepLess: "Voir moins sur la prochaine étape",
+		dismissNote: "Fermer l’avis",
 	},
 	userHere: "Vous êtes ici",
 	userHereAt: (name: string) => `Vous êtes ici : ${name}`,
@@ -962,7 +1031,7 @@ const fr: MapMessages = {
 	offlineSaved: (age: number) =>
 		`Hors ligne : itinéraire enregistré ${age === 0 ? "à l’instant" : `il y a ${age} min`}. Vous pouvez le suivre quand même.`,
 	updateFailed: "Impossible de mettre à jour l’itinéraire.",
-	nextStep: "Votre prochaine étape",
+	nextStep: "Votre itinéraire",
 	recalculated: "Itinéraire recalculé",
 	youAreAt: "Vous êtes à",
 	youGoTo: "Vous allez à",

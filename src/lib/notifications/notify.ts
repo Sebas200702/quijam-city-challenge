@@ -3,6 +3,7 @@
 // src/lib/offline/service-worker.ts). Permission is only asked from a button
 // the person taps next to a safety alert, never on load (epic #57, rule 4).
 
+import { getLanguage } from "../i18n/use-language";
 import { type AppNotification, notificationOptions } from "./app-notification";
 
 export type NotificationPermissionState =
@@ -34,10 +35,7 @@ export async function showAppNotification(
 	if (dedupeKey && shown.has(dedupeKey)) return false;
 	// Marked before awaiting, so two quick updates never notify twice.
 	if (dedupeKey) shown.add(dedupeKey);
-	const options = notificationOptions(
-		notification,
-		document.documentElement.lang,
-	);
+	const options = notificationOptions(notification, getLanguage());
 	try {
 		const registration =
 			"serviceWorker" in navigator

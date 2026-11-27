@@ -44,8 +44,26 @@ export function useSession(): SessionState {
 
 export type LoadState<T> =
 	| { status: "loading" }
-	| { status: "error"; message: string }
+	| { status: "error"; message: string; retry?: () => void }
 	| { status: "ready"; data: T };
+
+/** Messages from the network or the database that mean nothing to people. */
+const TECHNICAL_ERROR =
+	/fetch|network|load failed|jwt|pgrst|violates|duplicate key|syntax error|unexpected token|timeout|\b[45]\d\d\b/i;
+
+/**
+ * A thrown error as a sentence for people: without a connection it says so,
+ * and technical messages (network, database) become `fallback`. Messages the
+ * app writes itself (validation, moderation, sign-in) pass through.
+ */
+export function errorText(error: unknown, fallback: string): string {
+	if (typeof navigator !== "undefined" && navigator.onLine === false)
+		return messages[getLanguage()].shared.ui.offlineText;
+	if (!(error instanceof Error) || !error.message) return fallback;
+	if (error instanceof TypeError || TECHNICAL_ERROR.test(error.message))
+		return fallback;
+	return error.message;
+}
 
 /**
  * Runs `load` on mount and whenever `deps` change; reloads quietly when one of
@@ -80,7 +98,7 @@ export function useLoad<T>(
 		return () => {
 			active = false;
 		};
-	}, [store, version, ...deps]);
+	}, [store, version, reload, ...deps]);
 
 	const topicKey = topics.join(",");
 	// biome-ignore lint/correctness/useExhaustiveDependencies: topicKey stands for topics.

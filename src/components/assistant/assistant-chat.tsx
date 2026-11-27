@@ -9,6 +9,7 @@ import {
 	MicOff,
 	RotateCcw,
 	SendHorizontal,
+	Square,
 	Volume2,
 	VolumeX,
 } from "lucide-react";
@@ -29,6 +30,7 @@ import type {
 import { voiceInput } from "../../lib/guide/live-status";
 import { useLanguage, useT } from "../../lib/i18n/use-language";
 import { scrollBehavior } from "../../lib/reduced-motion";
+import { onDockRequest } from "../agent-dock/dock-control";
 import {
 	ErrorNote,
 	PublishNotice,
@@ -39,6 +41,7 @@ import { ThreadCard } from "../community/thread-card";
 import { ActionConfirmCard } from "./action-confirm-card";
 import { LIVE_VOICE_TEXT } from "./live-voice-text";
 import { PlaceResultCard } from "./place-result-card";
+import { useAnswerAnnouncement } from "./use-answer-announcement";
 import { useAssistant } from "./use-assistant";
 import { useLiveVoice } from "./use-live-voice";
 import { speak, useVoiceConduit } from "./voice-conduit";
@@ -115,28 +118,43 @@ function DisplayView({
 			);
 		}
 		case "notice":
-			return (
-				<div className="space-y-2">
-					<p
-						role="status"
-						className={`rounded-[var(--radius-md)] px-4 py-3 text-sm ${NOTICE_TONES[display.tone]}`}
-					>
-						{display.text}
-					</p>
-					{toolName === "plan_route" && (
-						<a className="q-btn q-btn--secondary q-btn--sm" href="/mapa">
+			// The route is one card with the map link, not a green notice (audit U26).
+			if (toolName === "plan_route" && display.tone === "ok") {
+				return (
+					<div className="q-next-step">
+						<p className="q-next-step__eyebrow">
+							<span className="q-star" aria-hidden="true" />
+							{t.chat.routeEyebrow}
+						</p>
+						{/* Tool texts and the Guide reply are Spanish only (audit U21). */}
+						<p lang="es" className="q-next-step__why whitespace-pre-line">
+							{display.text}
+						</p>
+						<a
+							className="q-btn q-btn--secondary q-btn--sm min-h-11 self-start"
+							href="/mapa"
+						>
 							<MapIcon size={16} aria-hidden="true" />
 							{t.chat.viewRoute}
 						</a>
-					)}
-				</div>
+					</div>
+				);
+			}
+			return (
+				<p
+					lang="es"
+					role="status"
+					className={`rounded-[var(--radius-md)] px-4 py-3 text-sm ${NOTICE_TONES[display.tone]}`}
+				>
+					{display.text}
+				</p>
 			);
 		default:
 			return null;
 	}
 }
 
-function AiAvatar({ thinking = false }: { thinking?: boolean }) {
+export function AiAvatar({ thinking = false }: { thinking?: boolean }) {
 	return (
 		<span className="q-avatar" aria-hidden="true">
 			<span
@@ -147,7 +165,17 @@ function AiAvatar({ thinking = false }: { thinking?: boolean }) {
 	);
 }
 
-function MessageView({ message }: { message: AssistantMessage }) {
+/**
+ * One turn of the log. `onScreen` lists tool calls whose result the screen
+ * itself already shows (a filtered list, pins): their cards are not repeated.
+ */
+export function MessageView({
+	message,
+	onScreen,
+}: {
+	message: AssistantMessage;
+	onScreen?: ReadonlySet<string>;
+}) {
 	if (message.role === "user") {
 		return (
 			<div className="q-msg q-msg--user">
@@ -161,6 +189,10 @@ function MessageView({ message }: { message: AssistantMessage }) {
 	}
 	if (message.role === "assistant") {
 		if (!message.text.trim()) return null;
+		// "Te armo la ruta…" before the route card: the wrap-up after it is the
+		// one bubble of a route answer (audit U26).
+		if (message.toolCalls.some((call) => call.name === "plan_route"))
+			return null;
 		return (
 			<div className="q-msg q-msg--ai">
 				<AiAvatar />
@@ -173,7 +205,9 @@ function MessageView({ message }: { message: AssistantMessage }) {
 			</div>
 		);
 	}
-	const shown = message.results.filter((result) => result.display);
+	const shown = message.results.filter(
+		(result) => result.display && !onScreen?.has(result.callId),
+	);
 	if (shown.length === 0) return null;
 	return (
 		<div className="space-y-3 pl-10">
@@ -218,6 +252,13 @@ export function AssistantChat({
 		sessionLoading,
 		send,
 	} = assistant;
+	const announcement = useAnswerAnnouncement({
+		messages,
+		loading,
+		pendingCount: pending.length,
+		stopped: assistant.stopped,
+	});
+	const waitHintId = useId();
 	const [draft, setDraft] = useState("");
 	const voice = useVoiceConduit((text) => void send(text));
 	const live = useLiveVoice(assistant);
@@ -245,6 +286,15 @@ export function AssistantChat({
 		);
 		void send(question);
 	}, [sessionLoading, send]);
+
+	// /inicio is the dock opened full screen: "Pregúntale a Quillart" buttons land here.
+	useEffect(
+		() =>
+			onDockRequest(({ ask }) => {
+				if (ask) void send(ask);
+			}),
+		[send],
+	);
 
 	// Read new answers aloud when the person turned it on.
 	useEffect(() => {
@@ -338,6 +388,7 @@ export function AssistantChat({
 				autoComplete="off"
 				enterKeyHint="send"
 				maxLength={1000}
+				aria-describedby={loading ? waitHintId : undefined}
 			/>
 			{input === "speech" && (
 				<button
@@ -357,16 +408,33 @@ export function AssistantChat({
 					</span>
 				</button>
 			)}
-			<button
-				type="submit"
-				className="q-btn q-btn--primary q-btn--icon"
-				disabled={loading || voice.listening || !draft.trim()}
-			>
-				<SendHorizontal size={20} aria-hidden="true" />
-				<span className="q-sr">{t.chat.send}</span>
-			</button>
+			{loading ? (
+				// U20: the answer can be stopped; the text being typed is kept.
+				<button
+					type="button"
+					className="q-btn q-btn--secondary q-btn--icon"
+					onClick={assistant.stop}
+				>
+					<Square size={18} aria-hidden="true" />
+					<span className="q-sr">{t.dock.stop}</span>
+				</button>
+			) : (
+				<button
+					type="submit"
+					className="q-btn q-btn--primary q-btn--icon"
+					disabled={voice.listening || !draft.trim()}
+				>
+					<SendHorizontal size={20} aria-hidden="true" />
+					<span className="q-sr">{t.chat.send}</span>
+				</button>
+			)}
 		</form>
 	);
+	const waitHint = loading ? (
+		<p id={waitHintId} className="q-sm q-muted">
+			{t.dock.waitForAnswer}
+		</p>
+	) : null;
 
 	return (
 		<section
@@ -429,7 +497,7 @@ export function AssistantChat({
 					{composer}
 					{voice.error && <ErrorNote message={voice.error} />}
 					{liveStatus}
-					<div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] lg:mx-0 lg:flex-wrap lg:overflow-visible lg:px-0 [&::-webkit-scrollbar]:hidden">
+					<div className="q-scroll-fade q-scroll-fade--wrap-lg -mx-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] lg:mx-0 lg:flex-wrap lg:overflow-visible lg:px-0 [&::-webkit-scrollbar]:hidden">
 						{chips.map((chip) => (
 							<button
 								key={chip}
@@ -445,14 +513,19 @@ export function AssistantChat({
 				</div>
 			) : (
 				<>
-					<div className="flex flex-col gap-4" aria-live="polite">
+					{/* Not a live region (U20): the status line below says what is new. */}
+					<div className="flex flex-col gap-4">
 						{messages.map((message, index) => (
 							<MessageView
 								// biome-ignore lint/suspicious/noArrayIndexKey: the log only grows.
 								key={index}
 								message={message}
+								onScreen={assistant.onScreen}
 							/>
 						))}
+						{assistant.resumed && signedIn && (
+							<p className="q-sm q-muted pl-10">{t.dock.resumed}</p>
+						)}
 						{pending.map((action) => (
 							<div key={action.call.id} className="pl-10">
 								<ActionConfirmCard
@@ -508,7 +581,11 @@ export function AssistantChat({
 						{voice.error && <ErrorNote message={voice.error} />}
 						{liveStatus}
 						{chips.length > 0 && !loading && (
-							<div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 lg:mx-0 lg:flex-wrap lg:px-0">
+							// Follow-up suggestions come from the server in Spanish only (audit U21).
+							<div
+								lang="es"
+								className="q-scroll-fade q-scroll-fade--wrap-lg -mx-4 flex gap-2 overflow-x-auto px-4 pb-1 lg:mx-0 lg:flex-wrap lg:px-0"
+							>
 								{chips.map((chip) => (
 									<button
 										key={chip}
@@ -522,9 +599,13 @@ export function AssistantChat({
 							</div>
 						)}
 						{composer}
+						{waitHint}
 					</div>
 				</>
 			)}
+			<p role="status" className="q-sr">
+				{announcement}
+			</p>
 		</section>
 	);
 }

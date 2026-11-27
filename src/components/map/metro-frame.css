@@ -1,0 +1,55 @@
+/* Metro-area frame (metro-frame.ts): opaque mask outside the AMB, its edge, the
+   municipal borders and names. Colours come from the theme tokens. */
+
+.metro-mask-pane {
+	z-index: 350;
+}
+.metro-label-pane {
+	z-index: 450;
+	pointer-events: none;
+}
+
+/* Nothing outside the AMB shows through: no sea, river or streets. */
+.leaflet-container .metro-mask {
+	fill: var(--map-outside);
+	fill-opacity: 1;
+	stroke: none;
+}
+.leaflet-container .metro-edge {
+	fill: none;
+	stroke: var(--ink-muted);
+	stroke-width: 2;
+	stroke-opacity: 1;
+}
+.leaflet-container .metro-border {
+	fill: none;
+	stroke: var(--line-control);
+	stroke-width: 1.5;
+	stroke-opacity: 0.9;
+	stroke-dasharray: 5 4;
+}
+
+.metro-label {
+	background: none;
+	border: 0;
+}
+.metro-label__text {
+	position: absolute;
+	transform: translate(-50%, -50%);
+	font-family: var(--font-sans);
+	font-size: 11px;
+	line-height: 14px;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	white-space: nowrap;
+	color: var(--ink-muted);
+	text-shadow:
+		0 0 3px var(--map-land),
+		0 0 3px var(--map-land),
+		0 0 6px var(--map-land);
+}
+/* Close to the street the names would cover pins and street names. */
+.metro-map--street .metro-label-pane {
+	display: none;
+}

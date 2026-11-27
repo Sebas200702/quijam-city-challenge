@@ -65,9 +65,11 @@ const es = {
 		eyebrow: "Tarifa de referencia · Reporte anónimo",
 		title: "Reportar cobro abusivo",
 		route: "Trayecto del corredor",
-		referenceFare: "Tarifa oficial de referencia",
+		referenceFare: "Tarifa de referencia",
 		fairRange: (min: string, max: string) => `Rango justo: ${min} – ${max}`,
 		vehicleLegend: "¿En qué ibas?",
+		informalHint:
+			"Informal: mototaxi, bicitaxi o carro particular que cobra el pasaje.",
 		amountLabel: "Monto cobrado (COP)",
 		amountPlaceholder: "Ej. 55000",
 		overchargeEstimate: (delta: string) => `Sobrecobro estimado: +${delta}`,
@@ -153,9 +155,11 @@ const en: ReportsMessages = {
 		eyebrow: "Reference fare · Anonymous report",
 		title: "Report an overcharge",
 		route: "Corridor route",
-		referenceFare: "Official reference fare",
+		referenceFare: "Reference fare",
 		fairRange: (min: string, max: string) => `Fair range: ${min} – ${max}`,
 		vehicleLegend: "What were you riding?",
+		informalHint:
+			"Informal: motorbike taxi, pedicab or private car charging a fare.",
 		amountLabel: "Amount charged (COP)",
 		amountPlaceholder: "E.g. 55000",
 		overchargeEstimate: (delta: string) => `Estimated overcharge: +${delta}`,
@@ -238,9 +242,11 @@ const pt: ReportsMessages = {
 		eyebrow: "Tarifa de referência · Denúncia anônima",
 		title: "Denunciar cobrança abusiva",
 		route: "Trajeto do corredor",
-		referenceFare: "Tarifa oficial de referência",
+		referenceFare: "Tarifa de referência",
 		fairRange: (min: string, max: string) => `Faixa justa: ${min} – ${max}`,
 		vehicleLegend: "Em que você estava?",
+		informalHint:
+			"Informal: mototáxi, bicitáxi ou carro particular que cobra a passagem.",
 		amountLabel: "Valor cobrado (COP)",
 		amountPlaceholder: "Ex. 55000",
 		overchargeEstimate: (delta: string) =>
@@ -326,10 +332,12 @@ const fr: ReportsMessages = {
 		eyebrow: "Tarif de référence · Signalement anonyme",
 		title: "Signaler un tarif abusif",
 		route: "Trajet du corridor",
-		referenceFare: "Tarif officiel de référence",
+		referenceFare: "Tarif de référence",
 		fairRange: (min: string, max: string) =>
 			`Fourchette juste : ${min} – ${max}`,
 		vehicleLegend: "Quel moyen de transport ?",
+		informalHint:
+			"Informel : moto-taxi, vélo-taxi ou voiture particulière qui fait payer le trajet.",
 		amountLabel: "Montant facturé (COP)",
 		amountPlaceholder: "Ex. 55000",
 		overchargeEstimate: (delta: string) => `Surfacturation estimée : +${delta}`,

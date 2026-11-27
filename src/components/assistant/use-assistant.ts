@@ -22,8 +22,23 @@ import type {
 } from "../../lib/assistant/assistant-types";
 import { isActionTool } from "../../lib/assistant/assistant-types";
 import { answerOffline } from "../../lib/assistant/offline-answer";
+import {
+	clearPendingAction,
+	loadPendingAction,
+	localStore,
+	savePendingAction,
+} from "../../lib/assistant/pending-action-store";
+import {
+	isScreenShared,
+	screenContext,
+} from "../../lib/assistant/screen-context-store";
 import { declinedResult, runTool } from "../../lib/assistant/tool-executor";
+import { type UiNavigation, uiBus } from "../../lib/assistant/ui-action-bus";
 import { withOfflineGuide } from "../../lib/guide/guide-offline";
+import {
+	type ConduitResult,
+	conduitResultOf,
+} from "../../lib/guide/live-conduit";
 import { messages as dictionaries } from "../../lib/i18n/messages";
 import { getLanguage } from "../../lib/i18n/use-language";
 import { useSession, useStore } from "../community/use-community";
@@ -97,18 +112,31 @@ interface Saved {
 	batch: OpenBatch | null;
 }
 
+function isSaved(value: unknown): value is Saved {
+	return Array.isArray((value as Partial<Saved> | null)?.messages);
+}
+
 function loadSaved(): Saved | null {
 	try {
 		const raw = sessionStorage.getItem(SAVED_KEY);
-		if (!raw) return null;
-		const saved = JSON.parse(raw) as Saved;
-		return Array.isArray(saved.messages) ? saved : null;
+		const saved: unknown = raw ? JSON.parse(raw) : null;
+		if (isSaved(saved)) return saved;
 	} catch {
-		return null;
+		// Fall through to the device copy.
 	}
+	// Signed in from another tab (an e-mail link): the waiting action is kept
+	// on the device for a short while (U02).
+	const pending = loadPendingAction<Saved>(localStore());
+	return isSaved(pending) ? pending : null;
 }
 
 function save(value: Saved): void {
+	// Only while an action waits is a copy kept beyond this tab.
+	if (value.batch && value.batch.remaining.length > 0) {
+		savePendingAction(localStore(), value);
+	} else {
+		clearPendingAction(localStore());
+	}
 	try {
 		sessionStorage.setItem(SAVED_KEY, JSON.stringify(value));
 	} catch {
@@ -173,6 +201,16 @@ export function useAssistant() {
 	const [error, setError] = useState<AssistantError | null>(null);
 	const [suggestions, setSuggestions] = useState<string[]>([]);
 	const [draft, setDraft] = useState<AssistantDraft | null>(null);
+	/** Tool calls whose result is already visible on the screen itself. */
+	const [onScreen, setOnScreen] = useState<ReadonlySet<string>>(
+		() => new Set(),
+	);
+	const navigation = useRef<UiNavigation | null>(null);
+	const abort = useRef<AbortController | null>(null);
+	/** True right after the person stopped an answer. */
+	const [stopped, setStopped] = useState(false);
+	/** A waiting action came back from storage (after signing in, U02). */
+	const [resumed, setResumed] = useState(false);
 	const batch = useRef<OpenBatch | null>(null);
 	const busy = useRef(false);
 	const profileRef = useRef(profile);
@@ -246,7 +284,11 @@ export function useAssistant() {
 			call,
 			agent,
 			running: false,
-			grounded: isActionGrounded(call, history, [referrerPath()]),
+			// The page the person came from or has open is their own choice.
+			grounded: isActionGrounded(call, history, [
+				referrerPath(),
+				screenContext.get().entity?.id,
+			]),
 			edit: (text) => editAction(call.id, text),
 		}),
 		[editAction],
@@ -278,6 +320,8 @@ export function useAssistant() {
 			const known: AssistantMessage[] =
 				results.length > 0 ? [...history, { role: "tool", results }] : history;
 			setPending(remaining.map((call) => toPending(call, agent, known)));
+			// Back from signing in, the card is the first thing to see (U02).
+			if (remaining.length > 0) setResumed(true);
 		}
 	}, [toPending]);
 
@@ -296,6 +340,8 @@ export function useAssistant() {
 			isVisitor: current?.isVisitor ?? null,
 			fromPath: referrerPath(),
 			language: getLanguage(),
+			// The person can stop sharing the screen from the dock.
+			...(isScreenShared() ? { screen: screenContext.get() } : {}),
 		};
 	}, []);
 
@@ -305,6 +351,8 @@ export function useAssistant() {
 				messages: forWire(history),
 				context: currentContext(),
 			};
+			const controller = new AbortController();
+			abort.current = controller;
 			let response: Response;
 			try {
 				response = await fetch("/api/assistant", {
@@ -314,8 +362,10 @@ export function useAssistant() {
 						Accept: `${ASSISTANT_STREAM_TYPE}, application/json`,
 					},
 					body: JSON.stringify(body),
+					signal: controller.signal,
 				});
-			} catch {
+			} catch (error) {
+				if (controller.signal.aborted) throw error;
 				// No network: the local agents answer on the phone (#47).
 				const { assistantOffline, assistantNoActions } =
 					dictionaries[getLanguage()].offline;
@@ -342,11 +392,31 @@ export function useAssistant() {
 		[currentContext],
 	);
 
+	/**
+	 * Ends a loop. When the agent asked for another screen (a route on the
+	 * map), it opens now, with the whole conversation saved, so the dock there
+	 * picks it up where it was.
+	 */
+	const finish = useCallback((history: AssistantMessage[]) => {
+		busy.current = false;
+		setLoading(false);
+		const next = navigation.current;
+		navigation.current = null;
+		if (!next) return;
+		save({ messages: history, batch: batch.current });
+		uiBus().follow(next);
+	}, []);
+
+	/** Runs the loop; resolves with the final conversation, or null if it failed. */
 	const converse = useCallback(
-		async (history: AssistantMessage[], rounds: number): Promise<void> => {
+		async (
+			history: AssistantMessage[],
+			rounds: number,
+		): Promise<AssistantMessage[] | null> => {
 			busy.current = true;
 			setLoading(true);
 			setError(null);
+			setStopped(false);
 			let response: AssistantResponse;
 			try {
 				response = await request(history);
@@ -354,12 +424,17 @@ export function useAssistant() {
 				busy.current = false;
 				setDraft(null);
 				setLoading(false);
+				// "Detener" (U20): the person stopped it; nothing failed.
+				if (abort.current?.signal.aborted) {
+					abort.current = null;
+					setStopped(true);
+					return null;
+				}
 				setError({
-					message:
-						"Uy, no pude conectarme ahora mismo. Revisa tu conexión e inténtalo otra vez.",
+					message: dictionaries[getLanguage()].chat.connectionError,
 					retry: () => void converse(history, rounds),
 				});
-				return;
+				return null;
 			}
 			const turn: AssistantMessage = {
 				role: "assistant",
@@ -369,8 +444,18 @@ export function useAssistant() {
 			};
 			let next = [...history, turn];
 			setDraft(null);
-			setMessages(next);
+			commit(next);
 			setSuggestions(response.suggestions ?? []);
+
+			// The agent changes the screen the person is on (whitelisted again here).
+			const shown = uiBus().dispatch(response.uiActions ?? []);
+			const fromCalls = shown.changes.flatMap((change) =>
+				change.action.fromCall ? [change.action.fromCall] : [],
+			);
+			if (fromCalls.length > 0) {
+				setOnScreen((current) => new Set([...current, ...fromCalls]));
+			}
+			if (shown.navigation) navigation.current = shown.navigation;
 
 			const reads = response.toolCalls.filter(
 				(call) => !isActionTool(call.name),
@@ -397,31 +482,29 @@ export function useAssistant() {
 				};
 				if (results.length > 0) {
 					// Show the read results now; they are sent with the actions' outcome.
-					setMessages([...next, { role: "tool", results }]);
+					commit([...next, { role: "tool", results }]);
 				}
 				const known: AssistantMessage[] =
 					results.length > 0 ? [...next, { role: "tool", results }] : next;
 				setPending(
 					actions.map((call) => toPending(call, response.agent, known)),
 				);
-				busy.current = false;
-				setLoading(false);
-				return;
+				finish(known);
+				return known;
 			}
 
 			if (results.length > 0) {
 				next = [...next, { role: "tool", results }];
-				setMessages(next);
+				commit(next);
 				const onlyLinks = reads.every((call) => call.name === "open_page");
 				if (!onlyLinks && rounds < MAX_ROUNDS) {
-					await converse(next, rounds + 1);
-					return;
+					return converse(next, rounds + 1);
 				}
 			}
-			busy.current = false;
-			setLoading(false);
+			finish(next);
+			return next;
 		},
-		[request, store, toPending],
+		[commit, request, store, toPending, finish],
 	);
 
 	/** Answers one pending action; when none is left, the loop continues. */
@@ -584,12 +667,16 @@ export function useAssistant() {
 		[settle],
 	);
 
-	const send = useCallback(
-		async (text: string) => {
+	/**
+	 * Adds the person's message to the conversation and returns it, or null
+	 * (nothing sent) while an answer is still coming or an action runs.
+	 */
+	const begin = useCallback(
+		(text: string): AssistantMessage[] | null => {
 			const clean = text.trim();
 			// Wait for a confirmed action to finish: it may already have happened.
-			if (!clean || busy.current || runningIds.current.size > 0) return;
-			let history = messages;
+			if (!clean || busy.current || runningIds.current.size > 0) return null;
+			let history = messagesRef.current;
 			const open = batch.current;
 			if (open) {
 				// A new message means "not now" for the actions still waiting.
@@ -605,12 +692,44 @@ export function useAssistant() {
 				...history,
 				{ role: "user", text: clean },
 			];
-			setMessages(next);
+			commit(next);
 			setSuggestions([]);
-			await converse(next, 0);
+			return next;
 		},
-		[converse, messages],
+		[commit],
 	);
+
+	/** Sends a message; false (nothing sent) while an answer is still coming. */
+	const send = useCallback(
+		async (text: string): Promise<boolean> => {
+			const next = begin(text);
+			if (!next) return false;
+			void converse(next, 0);
+			return true;
+		},
+		[begin, converse],
+	);
+
+	/**
+	 * The Gemini Live conduit: sends the request exactly like a typed message
+	 * (orchestrator, uiActions, confirmation cards) and waits for the answer.
+	 * Null when nothing was sent or the answer failed.
+	 */
+	const ask = useCallback(
+		async (text: string): Promise<ConduitResult | null> => {
+			const next = begin(text);
+			if (!next) return null;
+			const final = await converse(next, 0);
+			if (!final) return null;
+			return conduitResultOf(final.slice(next.length), batch.current);
+		},
+		[begin, converse],
+	);
+
+	/** "Detener" (U20): cancels the answer being written. */
+	const stop = useCallback(() => {
+		abort.current?.abort();
+	}, []);
 
 	/** Starts over with an empty conversation. */
 	const reset = useCallback(() => {
@@ -626,14 +745,19 @@ export function useAssistant() {
 
 	return {
 		messages,
+		onScreen,
 		draft,
 		pending,
 		loading,
+		stopped,
+		resumed: resumed && pending.length > 0,
 		error,
 		suggestions,
 		signedIn: profile !== null,
 		sessionLoading,
 		send,
+		ask,
+		stop,
 		confirm,
 		cancel,
 		reset,

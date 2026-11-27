@@ -6,6 +6,7 @@ import {
 	Droplet,
 	LocateFixed,
 	MapPinned,
+	MapPinOff,
 	MessageCircle,
 	Minus,
 	Plus,
@@ -24,7 +25,6 @@ import {
 	findPoint,
 	orderedStops,
 	type Selection,
-	type SelectionKind,
 	searchablePoints,
 	selectionKey,
 } from "../../lib/corridor/corridor-selection";
@@ -34,10 +34,11 @@ import type {
 } from "../../lib/corridor/corridor-types";
 import { coolPoints } from "../../lib/corridor/heat-reference";
 import { useT } from "../../lib/i18n/use-language";
+import { onMapFocus } from "../../lib/map/map-focus";
+import { parseMapUrl } from "../../lib/map/map-url";
 import type { VisitorContext } from "../../lib/notices/notice-types";
 import { prefersReducedMotion } from "../../lib/reduced-motion";
-import { DESTINATIONS, type DestinationKey } from "../../lib/trip/trip-planner";
-import { GuidePanel } from "../guide/guide-panel";
+import { openDock } from "../agent-dock/dock-control";
 import { NoticeSlot } from "../notices/notice-slot";
 import "./corridor-map.css";
 import { HostArrivalNotice } from "../host/host-arrival-notice";
@@ -46,38 +47,57 @@ import { DetailCard } from "./detail-card";
 import { useHeatLayer } from "./heat-layer";
 import { HeatChip, HeatLegend, HeatNote } from "./heat-ui";
 import { MapHeader, type Theme } from "./map-header";
+import { pointKey } from "./map-layer-registry";
 import {
 	buildCorridorLayers,
 	type CorridorLayers,
 	FLOOD_HATCH_ID,
 	floodCircle,
+	LAYER_OF,
 	type LayerKey,
 	relabelPins,
 	routeLine,
 } from "./map-layers";
 import { pinIcon, setMarkerSelected, userIcon } from "./map-markers";
+import { createMetroMap, metroTileLayer } from "./metro-frame";
+import { type ClusterEntry, PinClusterer } from "./pin-clusterer";
+import { PointCard } from "./point-card";
 import { RouteCard } from "./route-card";
 import { StopList } from "./stop-list";
 import { useFloodCountdown } from "./use-flood-countdown";
 import { useFloodNotice } from "./use-flood-notice";
 import { useLiveBusinesses } from "./use-live-businesses";
+import { useMapUiActions } from "./use-map-ui-actions";
+import { usePointLayers } from "./use-point-layers";
 import { type RouteQuery, useRoutePlan } from "./use-route-plan";
 
-// Standard OpenStreetMap tiles: no API key. The dark theme darkens them in CSS.
-const TILE_URL = "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
-const TILE_ATTRIBUTION =
-	'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>';
 const FALLBACK_CENTER: L.LatLngTuple = [10.97, -74.79];
 const WIDE_SCREEN_PX = 640;
+const WIDE_QUERY = `(min-width: ${WIDE_SCREEN_PX}px)`;
 /** From this zoom on, every pin shows its name and status word, not only the selected one. */
 const NEAR_ZOOM = 16;
 /** Same key the layout's inline script reads to apply the theme before paint. */
 const THEME_STORAGE_KEY = "quillart-theme";
 
-const LAYER_OF: Record<SelectionKind, LayerKey> = {
-	stop: "stops",
-	floodZone: "floodZones",
-	business: "businesses",
+/** A point of a registered layer (places…), by layer key and point id. */
+interface PointSelection {
+	layer: string;
+	id: string;
+}
+
+/** Same rule as findPoint: lower case, no accents, so "malecon" finds "Malecón". */
+const normalize = (text: string) =>
+	text
+		.normalize("NFD")
+		.replace(/\p{Diacritic}/gu, "")
+		.toLowerCase()
+		.trim();
+
+/** The corridor layers, in chip order. */
+const LAYER_OF_KEYS: Record<LayerKey, true> = {
+	stops: true,
+	floodZones: true,
+	businesses: true,
 };
 
 /** What the base map is doing: the pins and lines come with the page, the tiles from the network. */
@@ -92,11 +112,15 @@ interface CorridorMapProps {
 function overlayPadding(map: L.Map) {
 	const size = map.getSize();
 	const wide = size.x >= WIDE_SCREEN_PX;
-	// Phones: search, chips and tags on top; the card takes up to half the height at the bottom.
+	// Phones: one row of chips on top; at the bottom, the open sheet (if any).
+	const sheet = map
+		.getContainer()
+		.parentElement?.querySelector<HTMLElement>(".corridor-app__detail");
+	const sheetHeight = sheet?.offsetHeight ?? 0;
 	return {
-		paddingTopLeft: L.point(wide ? [430, 24] : [24, 180]),
+		paddingTopLeft: L.point(wide ? [430, 24] : [16, 72]),
 		paddingBottomRight: L.point(
-			wide ? [80, 24] : [72, Math.round(size.y / 2) + 32],
+			wide ? [80, 24] : [72, sheetHeight > 0 ? sheetHeight + 32 : 24],
 		),
 	};
 }
@@ -120,7 +144,8 @@ function fitCorridor(map: L.Map, data: CorridorData) {
 }
 
 export default function CorridorMap({ data, source }: CorridorMapProps) {
-	const t = useT().map;
+	const messages = useT();
+	const t = messages.map;
 	// The map's effects read the language through a ref, so a change relabels the pins
 	// without building the map again.
 	const tRef = useRef(t);
@@ -128,11 +153,26 @@ export default function CorridorMap({ data, source }: CorridorMapProps) {
 	const containerRef = useRef<HTMLElement>(null);
 	const mapRef = useRef<L.Map | null>(null);
 	const layersRef = useRef<CorridorLayers | null>(null);
+	const clustererRef = useRef<PinClusterer | null>(null);
 	const [selected, setSelected] = useState<Selection | null>(null);
-	const [guideOpen, setGuideOpen] = useState(false);
-	const guideRef = useRef<HTMLDivElement>(null);
-	/** What had focus when the Guide opened, to give it back on close. */
-	const guideOpenerRef = useRef<HTMLElement | null>(null);
+	/** A place (or another registered point) instead of a corridor point. */
+	const [pointSelected, setPointSelected] = useState<PointSelection | null>(
+		null,
+	);
+	/** Why a link could not show its point (outside the AMB, or unknown). */
+	const [mapNote, setMapNote] = useState<string | null>(null);
+	const pointLayers = usePointLayers(messages);
+	const layerLabelRef = useRef((group: string) => group);
+	layerLabelRef.current = (group: string) => {
+		const point = pointLayers.find(({ layer }) => layer.key === group);
+		if (point) return point.layer.label(messages);
+		const labels: Record<string, string> = {
+			stops: t.layerStops,
+			floodZones: t.layerFlood,
+			businesses: t.layerBusinesses,
+		};
+		return labels[group] ?? group;
+	};
 	const [legendOpen, setLegendOpen] = useState(false);
 	const [near, setNear] = useState(false);
 	const [tiles, setTiles] = useState<TileStatus>("loading");
@@ -155,10 +195,14 @@ export default function CorridorMap({ data, source }: CorridorMapProps) {
 		return () => observer.disconnect();
 	}, []);
 	const pointNames = useMemo(
-		() => searchablePoints(data).map((point) => point.name),
-		[data],
+		() => [
+			...searchablePoints(data).map((point) => point.name),
+			...pointLayers.flatMap(({ points }) => points.map((point) => point.name)),
+		],
+		[data, pointLayers],
 	);
-	const [visible, setVisible] = useState<Record<LayerKey, boolean>>({
+	/** Layers by key; point layers that are missing here are on. */
+	const [visible, setVisible] = useState<Record<string, boolean>>({
 		stops: true,
 		floodZones: true,
 		businesses: true,
@@ -168,7 +212,7 @@ export default function CorridorMap({ data, source }: CorridorMapProps) {
 	const coolCount = useMemo(() => coolPoints(data.stops).length, [data.stops]);
 
 	const stops = useMemo(() => orderedStops(data.stops), [data.stops]);
-	const { state: city, lastEvent, publish } = useCityState();
+	const { state: city, lastEvent } = useCityState();
 	const flood = useFloodCountdown(lastEvent, data.floodZones);
 	const crowdByZone = useMemo(() => crowdByZoneFrom(city), [city]);
 	const [query, setQuery] = useState<RouteQuery>({
@@ -181,10 +225,13 @@ export default function CorridorMap({ data, source }: CorridorMapProps) {
 		flood.blocked,
 		crowdByZone,
 	);
+	// The route sheet: open on wide screens (the planner beside the stop list); on phones
+	// only when the visitor asks for a route, so the map gets the whole screen.
+	const [routeOpen, setRouteOpen] = useState(
+		() => window.matchMedia(WIDE_QUERY).matches,
+	);
 	// "You are here": the trip's origin stands in for the visitor's position (no GPS in the pilot).
 	const origin = data.stops.find((stop) => stop.code === query.origin) ?? null;
-	const destination =
-		data.stops.find((stop) => stop.code === query.destination) ?? null;
 	// The arroyo modal only opens when it touches this route or the visitor's zone (docs/20, 3.1).
 	const route = plan?.route ?? null;
 	const visitor = useMemo<VisitorContext | undefined>(() => {
@@ -214,9 +261,25 @@ export default function CorridorMap({ data, source }: CorridorMapProps) {
 				null)
 			: null;
 
+	const selectedPoint = useMemo(() => {
+		if (!pointSelected) return null;
+		const loaded = pointLayers.find(
+			(item) => item.layer.key === pointSelected.layer,
+		);
+		const point = loaded?.points.find((item) => item.id === pointSelected.id);
+		return loaded && point ? { layer: loaded.layer, point } : null;
+	}, [pointLayers, pointSelected]);
+	const selectedKey = selected
+		? selectionKey(selected)
+		: pointSelected
+			? pointKey(pointSelected.layer, pointSelected.id)
+			: null;
+	const selectedKeyRef = useRef(selectedKey);
+	selectedKeyRef.current = selectedKey;
+
 	// /mapa?negocio=<code> (the vendor's "Cómo te ven") opens that business's card.
 	useEffect(() => {
-		const code = new URLSearchParams(window.location.search).get("negocio");
+		const code = parseMapUrl(window.location.search).negocio;
 		if (code && data.businesses.some((business) => business.code === code)) {
 			setSelected({ kind: "business", code });
 		}
@@ -225,21 +288,12 @@ export default function CorridorMap({ data, source }: CorridorMapProps) {
 	useEffect(() => {
 		const container = containerRef.current;
 		if (!container) return;
-		const still = prefersReducedMotion();
-		const map = L.map(container, {
-			zoomControl: false,
-			zoomAnimation: !still,
-			fadeAnimation: !still,
-			markerZoomAnimation: !still,
-		});
+		// Only the Metropolitan Area shows: the rest is masked and out of reach (U09).
+		const map = createMetroMap(container, { zoomControl: false });
 		// Tiles that load at least once mean the map works; errors alone mean it did not.
 		let anyTile = false;
-		const tileLayer = L.tileLayer(TILE_URL, {
-			attribution: TILE_ATTRIBUTION,
-			maxZoom: 19,
-			// CORS tiles, so the service worker can keep them for offline use (#47).
-			crossOrigin: true,
-		})
+		// CORS tiles, so the service worker can keep them for offline use (#47).
+		const tileLayer = metroTileLayer({ crossOrigin: true })
 			.on("tileload", () => {
 				anyTile = true;
 			})
@@ -254,27 +308,158 @@ export default function CorridorMap({ data, source }: CorridorMapProps) {
 		const layers = buildCorridorLayers(
 			data,
 			(selection) => {
+				setPointSelected(null);
 				setSelected(selection);
-				const marker = layersRef.current?.markers.get(selectionKey(selection));
+				const marker = layersRef.current?.markers.get(
+					selectionKey(selection),
+				)?.marker;
 				if (marker) map.panInside(marker.getLatLng(), overlayPadding(map));
 			},
 			tRef.current,
 		);
 		layers.corridor.addTo(map);
 		fitCorridor(map, data);
+		// Pins that would cover each other become one numbered circle (U32).
+		const clusterer = new PinClusterer(map, {
+			toneOf: (group) =>
+				group === "businesses"
+					? "gold"
+					: group === "floodZones"
+						? "gold"
+						: "green",
+			describe: (count, groups) => {
+				const copy = tRef.current;
+				const parts = Object.entries(groups)
+					.map(([group, n]) =>
+						copy.metro.clusterPart(layerLabelRef.current(group), n),
+					)
+					.join(", ");
+				return copy.metro.cluster(count, parts);
+			},
+			zoomTo: (center, zoom) => flyToVisible(map, center, zoom),
+			// Leaflet rebuilds a pin's element when it comes back: mark the selection again.
+			onRender: () => {
+				for (const [key, entry] of clusterer.keys()) {
+					setMarkerSelected(entry.marker, key === selectedKeyRef.current);
+				}
+			},
+		});
+		clusterer.set(layers.markers);
 		mapRef.current = map;
 		layersRef.current = layers;
+		clustererRef.current = clusterer;
 		planLayerRef.current = L.layerGroup().addTo(map);
 		floodLayerRef.current = L.layerGroup().addTo(map);
 		userLayerRef.current = L.layerGroup().addTo(map);
 		setNear(map.getZoom() >= NEAR_ZOOM);
 		return () => {
+			clusterer.destroy();
 			map.remove();
 			mapRef.current = null;
 			layersRef.current = null;
+			clustererRef.current = null;
 			tileLayerRef.current = null;
 		};
 	}, [data]);
+
+	// The registered point layers (places…): one pin per point, through the clusterer.
+	useEffect(() => {
+		const clusterer = clustererRef.current;
+		if (!clusterer) return;
+		const entries = pointLayers.flatMap(({ layer, points }) =>
+			points.map((point) => {
+				const title = layer.pinTitle(messages, point);
+				const select = () => {
+					setSelected(null);
+					setPointSelected({ layer: layer.key, id: point.id });
+				};
+				const marker = L.marker([point.lat, point.lng], {
+					icon: pinIcon({
+						tone: layer.tone,
+						glyph: layer.glyph,
+						label: point.name,
+					}),
+					title,
+				})
+					.on("add", () =>
+						marker.getElement()?.setAttribute("aria-label", title),
+					)
+					.on("click", select)
+					.on("keydown", (event) => {
+						const { originalEvent } = event as L.LeafletKeyboardEvent;
+						if (originalEvent.key !== "Enter" && originalEvent.key !== " ")
+							return;
+						originalEvent.preventDefault();
+						select();
+					});
+				return [
+					pointKey(layer.key, point.id),
+					{ marker, group: layer.key },
+				] satisfies [string, ClusterEntry];
+			}),
+		);
+		clusterer.set(entries);
+	}, [pointLayers, messages]);
+
+	// Links into the map: /mapa?lugar=<slug> (and any layer's own parameter) selects and
+	// centres the point; ?lat=&lng=&zoom= centres a spot. Each one is handled once.
+	const handledLinkRef = useRef(new Set<string>());
+	useEffect(() => {
+		const map = mapRef.current;
+		if (!map) return;
+		const url = parseMapUrl(window.location.search);
+		const handled = handledLinkRef.current;
+		if (url.camera && !handled.has("camera")) {
+			handled.add("camera");
+			const { lat, lng, zoom } = url.camera;
+			flyToVisible(map, L.latLng(lat, lng), zoom ?? 16);
+		}
+		for (const { layer, points, outside, status } of pointLayers) {
+			const id = layer.urlParam ? url[layer.urlParam] : undefined;
+			if (!id || handled.has(layer.key) || status === "loading") continue;
+			handled.add(layer.key);
+			const point = points.find((item) => item.id === id);
+			if (point) {
+				setSelected(null);
+				setPointSelected({ layer: layer.key, id });
+				flyToVisible(map, L.latLng(point.lat, point.lng), 16);
+			} else {
+				setMapNote(
+					outside.has(id) ? t.metro.focusOutside : t.metro.focusMissing,
+				);
+			}
+		}
+	}, [pointLayers, t]);
+
+	// focusMap() from anywhere on the page (the agent dock, a list) moves this map.
+	useEffect(
+		() =>
+			onMapFocus((request) => {
+				const map = mapRef.current;
+				if (!map) return;
+				if (request.select) {
+					setSelected(null);
+					setPointSelected(request.select);
+				}
+				flyToVisible(
+					map,
+					L.latLng(request.lat, request.lng),
+					request.zoom ?? 16,
+				);
+			}),
+		[],
+	);
+
+	// Quillart AI: what the map shows, and the agent's map actions (audit v2, U05).
+	useMapUiActions({
+		mapRef,
+		query,
+		setQuery: (next) => {
+			setQuery(next);
+			setRouteOpen(true);
+		},
+		selected: selected?.code ?? null,
+	});
 
 	useHeatLayer(mapRef, data, heatOn, t);
 
@@ -295,22 +480,24 @@ export default function CorridorMap({ data, source }: CorridorMapProps) {
 		if (layers) relabelPins(layers, live, tRef.current);
 	}, [t, live]);
 
-	// Show or hide each layer, then mark the selected marker again: Leaflet
-	// rebuilds a marker's element when its layer comes back (and when a new language relabels it).
-	// biome-ignore lint/correctness/useExhaustiveDependencies: `t` re-marks the pin after relabelPins replaced its icon.
+	// Show or hide each layer, then let the clusterer redraw and mark the selected pin
+	// again: Leaflet rebuilds a marker's element when it comes back (and when a new
+	// language relabels it).
+	// biome-ignore lint/correctness/useExhaustiveDependencies: `t` and `live` re-mark the pin after relabelPins replaced its icon.
 	useEffect(() => {
 		const map = mapRef.current;
 		const layers = layersRef.current;
-		if (!map || !layers) return;
-		for (const key of Object.keys(visible) as LayerKey[]) {
-			if (visible[key]) layers[key].addTo(map);
-			else layers[key].remove();
-		}
-		const selectedKey = selected ? selectionKey(selected) : null;
-		for (const [key, marker] of layers.markers) {
-			setMarkerSelected(marker, key === selectedKey);
-		}
-	}, [visible, selected, t, live]);
+		const clusterer = clustererRef.current;
+		if (!map || !layers || !clusterer) return;
+		if (visible.floodZones) layers.floodAreas.addTo(map);
+		else layers.floodAreas.remove();
+		const groups = [
+			...(Object.keys(LAYER_OF_KEYS) as LayerKey[]),
+			...pointLayers.map(({ layer }) => layer.key),
+		].filter((key) => visible[key] !== false);
+		clusterer.setPinned(selectedKey);
+		clusterer.setVisibleGroups(groups);
+	}, [visible, selectedKey, pointLayers, t, live]);
 
 	// Draws the route the Decider chose: gold on a dark edge (green edge when it is the accessible one).
 	useEffect(() => {
@@ -318,7 +505,7 @@ export default function CorridorMap({ data, source }: CorridorMapProps) {
 		if (!layer) return;
 		layer.clearLayers();
 		const route = plan?.route;
-		if (!route) return;
+		if (!route || !routeOpen) return;
 		const byCode = new Map(data.stops.map((stop) => [stop.code, stop]));
 		const path = route.stopCodes.flatMap((code) => {
 			const stop = byCode.get(code);
@@ -327,7 +514,7 @@ export default function CorridorMap({ data, source }: CorridorMapProps) {
 		const variant =
 			query.accessibleMode && route.accessible ? "accessible" : "active";
 		for (const line of routeLine(path, variant)) line.addTo(layer);
-	}, [plan, data.stops, query.accessibleMode]);
+	}, [plan, data.stops, query.accessibleMode, routeOpen]);
 
 	useEffect(() => {
 		const layer = userLayerRef.current;
@@ -375,66 +562,54 @@ export default function CorridorMap({ data, source }: CorridorMapProps) {
 		}
 	}, [flood.blocked, data.floodZones, t]);
 
-	// Focus follows the Guide: into its heading on open, back to what opened it on close
-	// (or to a visible "Ask" button when that one is gone), unless something else took it.
-	const guideWasOpen = useRef(false);
-	useEffect(() => {
-		const guide = guideRef.current;
-		if (guideOpen) {
-			guide?.querySelector<HTMLElement>("h2[tabindex]")?.focus();
-		} else if (guideWasOpen.current) {
-			const active = document.activeElement;
-			const lost =
-				!active || active === document.body || guide?.contains(active);
-			if (lost) {
-				const visible = (el: HTMLElement | null | undefined) =>
-					el?.isConnected && el.getClientRects().length > 0 ? el : null;
-				const root = guide?.closest(".corridor-app");
-				(
-					visible(guideOpenerRef.current) ??
-					visible(root?.querySelector<HTMLElement>(".corridor-guide-button")) ??
-					visible(root?.querySelector<HTMLElement>(".route-card__guide button"))
-				)?.focus();
-			}
-		}
-		guideWasOpen.current = guideOpen;
-	}, [guideOpen]);
-
+	// One assistant (U04): the map's "ask" buttons open the Quillart AI dock,
+	// whose Mobility agent replaced the map Guide.
 	const openGuide = () => {
-		guideOpenerRef.current =
-			document.activeElement instanceof HTMLElement
-				? document.activeElement
-				: null;
-		setGuideOpen(true);
+		openDock();
 	};
 
-	const toggleLayer = (key: LayerKey) => {
-		setVisible((current) => ({ ...current, [key]: !current[key] }));
+	const toggleLayer = (key: string) => {
+		const on = visible[key] !== false;
+		setVisible((current) => ({ ...current, [key]: !on }));
 		// A hidden layer cannot keep the selected point.
-		if (selected && LAYER_OF[selected.kind] === key && visible[key]) {
-			setSelected(null);
-		}
+		if (on && selected && LAYER_OF[selected.kind] === key) setSelected(null);
+		if (on && pointSelected?.layer === key) setPointSelected(null);
 	};
 
 	/** Selects a point from the list or the search: shows its layer and flies to it. */
 	const focusPoint = (selection: Selection) => {
+		setPointSelected(null);
 		setSelected(selection);
 		setVisible((current) => ({ ...current, [LAYER_OF[selection.kind]]: true }));
 		const map = mapRef.current;
-		const marker = layersRef.current?.markers.get(selectionKey(selection));
+		const marker = layersRef.current?.markers.get(
+			selectionKey(selection),
+		)?.marker;
 		if (map && marker) flyToVisible(map, marker.getLatLng(), 16);
 	};
 
 	const search = (query: string) => {
 		const match = findPoint(data, query);
-		if (match) focusPoint(match);
-		return match !== null;
-	};
-
-	/** From the Guide's trip card: hide the Guide (it keeps its conversation) and show the destination. */
-	const showDestination = (destination: DestinationKey) => {
-		setGuideOpen(false);
-		focusPoint({ kind: "stop", code: DESTINATIONS[destination].stopCode });
+		if (match) {
+			focusPoint(match);
+			return true;
+		}
+		// Then the point layers (places…), with the same accent-free match.
+		const wanted = normalize(query);
+		if (!wanted) return false;
+		for (const { layer, points } of pointLayers) {
+			const point = points.find((item) =>
+				normalize(item.name).includes(wanted),
+			);
+			if (!point) continue;
+			setSelected(null);
+			setPointSelected({ layer: layer.key, id: point.id });
+			setVisible((current) => ({ ...current, [layer.key]: true }));
+			const map = mapRef.current;
+			if (map) flyToVisible(map, L.latLng(point.lat, point.lng), 16);
+			return true;
+		}
+		return false;
 	};
 
 	/** Centres the map on the visitor; without a position, on the whole corridor. */
@@ -506,8 +681,20 @@ export default function CorridorMap({ data, source }: CorridorMapProps) {
 						stops: data.stops.length,
 						floodZones: data.floodZones.length,
 						businesses: data.businesses.length,
+						...Object.fromEntries(
+							pointLayers.map(({ layer, points }) => [
+								layer.key,
+								points.length,
+							]),
+						),
 					}}
 					onToggle={toggleLayer}
+					pointLayers={pointLayers.map(({ layer }) => ({
+						key: layer.key,
+						label: layer.label(messages),
+						tone: layer.tone,
+						Icon: layer.Icon,
+					}))}
 					source={source}
 				>
 					<HeatChip
@@ -516,15 +703,23 @@ export default function CorridorMap({ data, source }: CorridorMapProps) {
 						onToggle={() => setHeatOn((on) => !on)}
 					/>
 				</MapHeader>
-				<button
-					type="button"
-					className="q-btn q-btn--primary corridor-guide-button"
-					aria-expanded={guideOpen}
-					onClick={openGuide}
-				>
-					<MessageCircle size={20} strokeWidth={1.75} aria-hidden="true" />
-					{t.askGuide}
-				</button>
+				{/* Always mounted, so screen readers hear why a link showed nothing. */}
+				<div className="corridor-note-region" role="status">
+					{mapNote && (
+						<p className="corridor-note">
+							<MapPinOff size={18} strokeWidth={1.75} aria-hidden="true" />
+							<span className="corridor-note__text">{mapNote}</span>
+							<button
+								type="button"
+								className="corridor-note__close"
+								aria-label={t.metro.dismissNote}
+								onClick={() => setMapNote(null)}
+							>
+								<X size={18} strokeWidth={1.75} aria-hidden="true" />
+							</button>
+						</p>
+					)}
+				</div>
 				<div className="corridor-panel__stops">
 					<StopList
 						stops={stops}
@@ -584,48 +779,41 @@ export default function CorridorMap({ data, source }: CorridorMapProps) {
 			</div>
 
 			<div className="corridor-app__detail">
-				{/* Hidden, not unmounted, so the conversation survives "Ver en el mapa". */}
-				<div ref={guideRef} hidden={!guideOpen}>
-					<GuidePanel
-						onShowOnMap={showDestination}
-						onClose={() => setGuideOpen(false)}
-						routeQuestion={
-							origin && destination
-								? t.askRoutePrompt(origin.name, destination.name)
-								: undefined
-						}
-						onReportSaved={(reportId) =>
-							void publish({ type: "cobro_abusivo", reportId })
-						}
+				{selectedPoint ? (
+					<PointCard
+						layer={selectedPoint.layer}
+						point={selectedPoint.point}
+						onClose={() => setPointSelected(null)}
 					/>
-				</div>
-				{!guideOpen &&
-					(detail ? (
-						<DetailCard
-							detail={detail}
-							source={source}
-							onClose={() => setSelected(null)}
-							onOpenGuide={openGuide}
-						>
-							{selectedBusiness && (
-								<BusinessExtras
-									code={selectedBusiness.code}
-									isOpen={selectedBusiness.is_open}
-								/>
-							)}
-						</DetailCard>
-					) : (
-						<RouteCard
-							stops={stops}
-							query={query}
-							onQueryChange={setQuery}
-							plan={plan}
-							loading={loading}
-							error={error}
-							alert={floodNotice.band}
-							onOpenGuide={openGuide}
-						/>
-					))}
+				) : detail ? (
+					<DetailCard
+						detail={detail}
+						source={source}
+						onClose={() => setSelected(null)}
+						onOpenGuide={openGuide}
+					>
+						{selectedBusiness && (
+							<BusinessExtras
+								code={selectedBusiness.code}
+								isOpen={selectedBusiness.is_open}
+							/>
+						)}
+					</DetailCard>
+				) : routeOpen ? (
+					<RouteCard
+						stops={stops}
+						query={query}
+						onQueryChange={setQuery}
+						plan={plan}
+						loading={loading}
+						error={error}
+						alert={floodNotice.band}
+						onOpenGuide={openGuide}
+						onClose={() => setRouteOpen(false)}
+					/>
+				) : (
+					floodNotice.band
+				)}
 			</div>
 
 			{/* Notices and the arroyo modal live at the root, above the card, the Guide and the
@@ -636,7 +824,6 @@ export default function CorridorMap({ data, source }: CorridorMapProps) {
 					onAction={(_notice, actionId) => {
 						// "Cambiar ruta": the Decider already re-planned without the arroyo; show it.
 						if (actionId !== "change-route") return;
-						setGuideOpen(false);
 						setSelected(null);
 					}}
 				/>
@@ -680,6 +867,7 @@ const LEGEND_ITEMS = [
 	{ key: "risk", swatch: "risk", Icon: Droplet },
 	{ key: "business", swatch: "business" },
 	{ key: "user", swatch: "user" },
+	{ key: "outside", swatch: "outside" },
 ] as const;
 
 /** What each line, colour and pin means, always with a word next to it. */

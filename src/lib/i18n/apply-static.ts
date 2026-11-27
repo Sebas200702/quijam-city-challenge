@@ -11,7 +11,11 @@
 // piece in its own element with its own key.
 
 import { messages } from "./messages";
-import { getLanguage, subscribeLanguage } from "./use-language";
+import {
+	getLanguage,
+	subscribeLanguage,
+	syncDocumentLanguage,
+} from "./use-language";
 
 function lookup(source: unknown, path: string): string | undefined {
 	let value: unknown = source;
@@ -43,7 +47,7 @@ export function applyStaticText(root: ParentNode = document): void {
 /** Applies the language now and every time it changes. */
 export function initStaticText(): void {
 	// The language may come from the browser (nothing saved yet): mirror it on <html lang>.
-	document.documentElement.lang = getLanguage();
+	syncDocumentLanguage(getLanguage());
 	applyStaticText();
 	subscribeLanguage(() => applyStaticText());
 }

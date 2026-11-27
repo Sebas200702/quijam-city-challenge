@@ -15,10 +15,10 @@ describe("overcharge-routes", () => {
 		);
 		expect(
 			formatRouteLabel(
-				"Gran Malecon (Sector Caiman del Rio)",
+				"Gran Malecón (Sector Caimán del Río)",
 				"Estadio Metropolitano (Acceso Norte)",
 			),
-		).toBe("Gran Malecon → Estadio Metropolitano");
+		).toBe("Gran Malecón → Estadio Metropolitano");
 	});
 
 	it("maps corridor transport modes to visitor report vehicle modes", () => {

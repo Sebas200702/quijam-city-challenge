@@ -8,10 +8,20 @@ import type {
 	ForumCategory,
 	PlaceKind,
 } from "../community/community-types";
+import { PLACES } from "../community/places-catalog";
 import { detectDestination } from "../guide/guide-local";
 import type { Language } from "../i18n/languages";
 import { messages as dictionaries } from "../i18n/messages";
 import { type AgentTurn, PROFILE_PATH } from "./assistant-agents";
+import {
+	capacityFromText,
+	dateFromText,
+	priceFromText,
+	quotedTitle,
+	timeFromText,
+	titleFromBody,
+	withoutQuotes,
+} from "./event-text";
 import { hasAnyKeyword, matchPlace, normalizeText } from "./assistant-text";
 import {
 	type AssistantAgentId,
@@ -24,6 +34,7 @@ import {
 import { LOCAL_COPY, localCopy } from "./local-copy";
 import type { LocalCopy } from "./local-copy-types";
 import { latestUserText } from "./orchestrator";
+import { screenEventId, screenPlaceSlug } from "./screen-context";
 
 const BOGOTA_OFFSET_MS = -5 * 60 * 60 * 1000;
 
@@ -211,6 +222,14 @@ function pickEventId(text: string, ids: string[]): string | null {
 	return ids.length === 1 ? ids[0] : null;
 }
 
+/** The place the text names, or the one open on the screen ("¿qué hay aquí?"). */
+function placeFor(text: string, context: AssistantContext) {
+	const named = matchPlace(text);
+	if (named) return named;
+	const slug = screenPlaceSlug(context.screen);
+	return slug ? (PLACES.find((place) => place.slug === slug) ?? null) : null;
+}
+
 function signInTurn(copy: LocalCopy, reason: string): AgentTurn {
 	return {
 		text: copy.signIn(reason),
@@ -253,6 +272,98 @@ const CREATE_EVENT_WORDS = [
 	"anunciar",
 ];
 
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+function capitalize(text: string): string {
+	return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
+/** A colon that introduces the event, not the one inside "6:30 pm". */
+const INTRO_COLON = /(?<!\d):(?!\d)/;
+
+/**
+ * What the person said about the event they want to publish, as a
+ * create_event draft: title (a quoted name wins), description (their words),
+ * category, start time when they gave a day and an hour, capacity, price and
+ * the place.
+ */
+export function eventDraftFromText(
+	text: string,
+	context: AssistantContext,
+): Partial<AssistantToolArgs["create_event"]> & {
+	title: string;
+	description: string;
+	category: EventCategory;
+} {
+	const clean = text.trim().replace(/\s+/g, " ");
+	const quoted = quotedTitle(clean);
+	const colon = INTRO_COLON.exec(clean)?.index ?? -1;
+	const quoteAt = quoted ? clean.indexOf(quoted) : -1;
+	const body = (
+		colon >= 0 && (quoteAt < 0 || quoteAt > colon)
+			? clean.slice(colon + 1)
+			: clean.replace(
+					/^.*?\b(evento|plan|actividad|event)\b(\s+(de|llamad[oa]|titulad[oa]|que se llama))?/i,
+					"",
+				)
+	).trim();
+	// "Quiero publicar un evento" alone: nothing to fill yet.
+	const description = capitalize(withoutQuotes(body)).slice(0, 2000);
+	const title = capitalize(quoted ?? titleFromBody(withoutQuotes(body))).slice(
+		0,
+		120,
+	);
+	const normalized = normalizeText(clean);
+	const category = firstMatch(normalized, EVENT_CATEGORY_WORDS) ?? "community";
+	const draft: ReturnType<typeof eventDraftFromText> = {
+		title,
+		description,
+		category,
+	};
+	// The quoted name says nothing about when: "Fiesta del sábado" may be on Friday.
+	const details = quoted ? clean.replace(quoted, " ") : clean;
+	const whenText = details.replace(/\bde la ma[nñ]ana\b/gi, " ");
+	const time = timeFromText(details);
+	const days = daysAheadFrom(whenText, context.now);
+	const date = dateFromText(whenText, context.now);
+	if (time && (date || days !== null)) {
+		const now = Date.parse(context.now);
+		const today = new Date(
+			(Number.isNaN(now) ? Date.now() : now) + BOGOTA_OFFSET_MS,
+		);
+		const day =
+			date ??
+			new Date(today.getTime() + (days ?? 0) * DAY_MS)
+				.toISOString()
+				.slice(0, 10);
+		draft.starts_at_local = `${day}T${time}`;
+	}
+	const capacity = capacityFromText(details);
+	if (capacity !== null) draft.capacity = capacity;
+	const price = priceFromText(details);
+	if (price !== null) draft.price_cop = price;
+	const place = placeFor(clean, context);
+	if (place) draft.place_slug = place.slug;
+	return draft;
+}
+
+/** The event form, filled with what could be understood (U14). */
+function eventFormPath(draft: ReturnType<typeof eventDraftFromText>): string {
+	if (!draft.title) return "/agenda/nuevo";
+	const params = new URLSearchParams({
+		titulo: draft.title,
+		categoria: draft.category,
+	});
+	// Short enough for a link; a long text is better written in the form.
+	if (draft.description.length <= 160) {
+		params.set("descripcion", draft.description);
+	}
+	if (draft.place_slug) params.set("lugar", draft.place_slug);
+	if (draft.capacity) params.set("cupos", String(draft.capacity));
+	if (draft.price_cop) params.set("costo", String(draft.price_cop));
+	return `/agenda/nuevo?${params.toString()}`;
+}
+
 function agendaTurn(
 	text: string,
 	messages: AssistantMessage[],
@@ -265,15 +376,29 @@ function agendaTurn(
 		hasAnyKeyword(normalized, CREATE_EVENT_WORDS) &&
 		hasAnyKeyword(normalized, ["evento*", "plan", "actividad*", "event"])
 	) {
-		if (!context.signedIn) {
-			return signInTurn(copy, copy.reasons.createEvent);
+		// Signed in or not, the draft is kept: without an account the card
+		// asks to sign in and comes back ready to confirm (U02).
+		const draft = eventDraftFromText(text, context);
+		if (draft.title && draft.starts_at_local) {
+			return {
+				text: "Te armé el evento con lo que me dijiste: revisa el texto exacto y confírmalo abajo. Se publica al confirmar; si el sistema detecta algo, pasa a revisión.",
+				toolCalls: [
+					{
+						name: "create_event",
+						args: draft as AssistantToolArgs["create_event"],
+					},
+				],
+			};
 		}
 		return {
-			text: copy.createEvent,
+			text: "Te dejé el formulario lleno con lo que me dijiste; complétalo con la fecha y la hora y publícalo.",
 			toolCalls: [
 				{
 					name: "open_page",
-					args: { path: "/agenda/nuevo", label: copy.createEventLabel },
+					args: {
+						path: eventFormPath(draft),
+						label: copy.createEventLabel,
+					},
 				},
 			],
 		};
@@ -281,10 +406,10 @@ function agendaTurn(
 
 	const wantsOut = hasAnyKeyword(normalized, UNREGISTER_WORDS);
 	if (wantsOut || hasAnyKeyword(normalized, REGISTER_WORDS)) {
-		const eventId = pickEventId(text, recentEventIds(messages));
-		if (!context.signedIn) {
-			return signInTurn(copy, copy.reasons.register);
-		}
+		// "Inscríbeme" on an event's screen means that event.
+		const eventId =
+			pickEventId(text, recentEventIds(messages)) ??
+			screenEventId(context.screen);
 		if (eventId) {
 			return wantsOut
 				? {
@@ -313,7 +438,7 @@ function agendaTurn(
 	if (daysAhead !== null) args.days_ahead = daysAhead;
 	const category = firstMatch(normalized, EVENT_CATEGORY_WORDS);
 	if (category) args.category = category;
-	const place = matchPlace(text);
+	const place = placeFor(text, context);
 	if (place) args.place_slug = place.slug;
 	const label = category
 		? dictionaries[context.language ?? "es"].shared.eventCategories[category]
@@ -341,9 +466,6 @@ function communityTurn(text: string, context: AssistantContext): AgentTurn {
 			"new thread",
 		])
 	) {
-		if (!context.signedIn) {
-			return signInTurn(copy, copy.reasons.forum);
-		}
 		return {
 			text: copy.newThread,
 			toolCalls: [
@@ -357,7 +479,7 @@ function communityTurn(text: string, context: AssistantContext): AgentTurn {
 	const args: AssistantToolArgs["list_threads"] = {};
 	const category = firstMatch(normalized, FORUM_CATEGORY_WORDS);
 	if (category) args.category = category;
-	const place = matchPlace(text);
+	const place = placeFor(text, context);
 	if (place) args.place_slug = place.slug;
 	return {
 		text: copy.listThreads,
@@ -378,11 +500,21 @@ const DIRECTIONS_WORDS = [
 	"como chegar",
 	"comment aller",
 	"itineraire",
+	"llevame",
+	"lleveme",
+	"llevarme",
+	"llevanos",
+	"take me",
+	"quiero ir",
+	"quiero llegar",
+	"ruta*",
+	"route*",
 ];
 
-function placesTurn(text: string, copy: LocalCopy): AgentTurn {
+function placesTurn(text: string, context: AssistantContext): AgentTurn {
+	const copy = localCopy(context.language);
 	const normalized = normalizeText(text);
-	const place = matchPlace(text);
+	const place = placeFor(text, context);
 	if (place) {
 		if (hasAnyKeyword(normalized, DIRECTIONS_WORDS)) {
 			return {
@@ -404,7 +536,8 @@ function placesTurn(text: string, copy: LocalCopy): AgentTurn {
 	};
 }
 
-function mobilityTurn(text: string, copy: LocalCopy): AgentTurn {
+function mobilityTurn(text: string, context: AssistantContext): AgentTurn {
+	const copy = localCopy(context.language);
 	const destination = detectDestination(text);
 	if (destination) {
 		return {
@@ -412,7 +545,7 @@ function mobilityTurn(text: string, copy: LocalCopy): AgentTurn {
 			toolCalls: [{ name: "plan_route", args: { destination } }],
 		};
 	}
-	const place = matchPlace(text);
+	const place = placeFor(text, context);
 	if (place) {
 		return {
 			text: copy.directionsTo(place.name),
@@ -454,15 +587,50 @@ export const EMERGENCY_TEXT = LOCAL_COPY.es.emergency;
 
 const MAX_REPORT_LENGTH = 1000;
 
+const OVERCHARGE_WORDS = [
+	"me cobraron",
+	"cobro de mas",
+	"cobrar de mas",
+	"cobro abusivo",
+	"overcharg*",
+];
+
+/** "Me cobraron 25.000 en un taxi" → the fare report form, already filled (U17). */
+export function overchargeReportPath(text: string): string {
+	const normalized = normalizeText(text);
+	const params = new URLSearchParams();
+	const amount = /(\d{1,3}(?:[.,\s]\d{3})+|\d{4,6})/.exec(text)?.[1];
+	if (amount) params.set("monto", amount.replace(/\D/g, ""));
+	if (hasAnyKeyword(normalized, ["taxi*"])) params.set("vehiculo", "taxi");
+	else if (hasAnyKeyword(normalized, ["bus", "buseta*", "transmetro"])) {
+		params.set("vehiculo", "bus");
+	}
+	const search = params.toString();
+	return `/reportar${search ? `?${search}` : ""}`;
+}
+
 function cityReportsTurn(text: string, context: AssistantContext): AgentTurn {
 	const copy = localCopy(context.language);
-	const emergency = hasAnyKeyword(normalizeText(text), EMERGENCY_WORDS);
+	const normalizedText = normalizeText(text);
+	const emergency = hasAnyKeyword(normalizedText, EMERGENCY_WORDS);
 	const prefix = emergency ? `${copy.emergency} ` : "";
-	if (!context.signedIn) {
-		const turn = signInTurn(copy, copy.reasons.report);
-		return { ...turn, text: `${prefix}${turn.text}` };
+	if (!emergency && hasAnyKeyword(normalizedText, OVERCHARGE_WORDS)) {
+		// Fares have their own form (no account needed): open it filled.
+		return {
+			text: "Te dejé el reporte de cobro casi listo: revisa el tramo y el monto y envíalo.",
+			toolCalls: [
+				{
+					name: "open_page",
+					args: {
+						path: overchargeReportPath(text),
+						label: "Reportar el cobro",
+					},
+				},
+			],
+		};
 	}
-	const place = matchPlace(text);
+	// Without an account the report stays ready: the card asks to sign in (U02).
+	const place = placeFor(text, context);
 	return {
 		text: `${prefix}${copy.reportReady}`,
 		toolCalls: [
@@ -644,9 +812,9 @@ export function answerLocally(
 		case "community":
 			return communityTurn(text, context);
 		case "places":
-			return placesTurn(text, localCopy(context.language));
+			return placesTurn(text, context);
 		case "mobility":
-			return mobilityTurn(text, localCopy(context.language));
+			return mobilityTurn(text, context);
 		case "city_reports":
 			return cityReportsTurn(text, context);
 		case "account":

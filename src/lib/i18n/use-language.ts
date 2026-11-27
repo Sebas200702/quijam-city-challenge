@@ -34,6 +34,15 @@ export function getLanguage(): Language {
 	return current;
 }
 
+/**
+ * Mirrors the language on `<html lang>`, except on pages marked as Spanish-only
+ * (`data-lang-fixed`, see the `translated` prop of the base layout).
+ */
+export function syncDocumentLanguage(language: Language): void {
+	const root = document.documentElement;
+	if (!root.hasAttribute("data-lang-fixed")) root.lang = language;
+}
+
 /** Saves the choice on this device and tells every island (ours and the visitor shell). */
 export function setLanguage(next: Language): void {
 	saveLanguage(next);
@@ -46,7 +55,7 @@ function subscribe(listener: () => void): () => void {
 		const announced = (event as CustomEvent<{ language?: unknown }> | undefined)
 			?.detail?.language;
 		current = isLanguage(announced) ? announced : resolve();
-		document.documentElement.lang = current;
+		syncDocumentLanguage(current);
 		listener();
 	};
 	const onStorage = (event: StorageEvent) => {

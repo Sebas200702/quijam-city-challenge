@@ -91,6 +91,8 @@ export const AGENTS: Record<AssistantAgentId, AgentDefinition> = {
 			"To register, use the event_id from a previous tool result. If the person says 'the second one', pick it from the last results in order.",
 			"To publish an event you need title, description, category and start time; ask briefly for what is missing, or offer open_page '/agenda/nuevo' to fill the form.",
 			"starts_at_local is Barranquilla local time 'YYYY-MM-DDTHH:mm'.",
+			"When the person quotes the event name, use it verbatim as title. Put the number of spots ('50 cupos', 'para 50 personas', 'cupo de 50') in capacity and an entry price in price_cop (omit it when free).",
+			"Do not promise a review before publishing: say it publishes on confirm and may go to review if moderation flags it.",
 		],
 		suggestions: [
 			"¿Qué planes hay este fin de semana?",
@@ -165,6 +167,7 @@ export const AGENTS: Record<AssistantAgentId, AgentDefinition> = {
 			"If anyone may be in danger right now, FIRST tell the person to call Línea 123 (emergencies), then offer the report.",
 			"Call report_issue with a clear description in the person's own words (what, where, since when); add place_slug when it is a catalog place.",
 			"Do not promise when the city will fix it; reports are triaged and followed up.",
+			"If a taxi or bus charged more than the fare, do not use report_issue: call open_page with '/reportar?monto=<amount in pesos, digits only>&vehiculo=taxi' (or 'bus') so the fare report form opens filled for the person to check and send.",
 		],
 		suggestions: [
 			"Reportar un arroyo crecido",
@@ -387,9 +390,15 @@ export const TOOL_SCHEMAS: { [N in AssistantToolName]: ToolSchema } = {
 			},
 			capacity: {
 				type: "integer",
-				description: "Maximum attendees",
+				description: "Maximum attendees ('50 cupos', 'para 50 personas')",
 				minimum: 1,
 				maximum: 100000,
+			},
+			price_cop: {
+				type: "integer",
+				description: "Entry price in Colombian pesos; omit when free",
+				minimum: 1,
+				maximum: 10000000,
 			},
 		},
 		required: ["title", "description", "category", "starts_at_local"],

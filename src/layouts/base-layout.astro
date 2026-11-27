@@ -1,4 +1,6 @@
 ---
+import AgentDock from "../components/agent-dock/agent-dock";
+import type { ScreenRole } from "../lib/assistant/screen-context-types";
 import "../styles/global.css";
 
 interface Props {
@@ -7,13 +9,33 @@ interface Props {
 	titleKey?: string;
 	/** Default theme before the saved choice (applied by the inline script) loads. */
 	theme?: "light" | "dark";
+	/**
+	 * False for pages still written only in Spanish: `<html lang>` then stays "es"
+	 * whatever language the visitor chose (WCAG 3.1.1). Translated parts inside
+	 * set their own `lang`.
+	 */
+	translated?: boolean;
+	/**
+	 * The Quillart AI dock for this surface (audit v2, U03), or false for pages
+	 * that are the conversation themselves (/inicio) or are not app screens.
+	 */
+	dock?: ScreenRole | false;
+	/** Full-screen pages (the map) make room for the dock themselves. */
+	dockOverlay?: boolean;
 }
 
-const { title, titleKey, theme = "light" } = Astro.props;
+const {
+	title,
+	titleKey,
+	theme = "light",
+	translated = true,
+	dock = "visitor",
+	dockOverlay = false,
+} = Astro.props;
 ---
 
 <!doctype html>
-<html lang="es" data-theme={theme}>
+<html lang="es" data-theme={theme} data-lang-fixed={translated ? undefined : ""}>
 	<head>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -41,20 +63,26 @@ const { title, titleKey, theme = "light" } = Astro.props;
 					document.documentElement.dataset.theme = theme;
 				}
 			} catch {}
-			// Same for the interface language (the page itself is served in Spanish).
+			// Same for the interface language (the page itself is served in Spanish),
+			// unless the page is only in Spanish.
 			try {
 				const lang = localStorage.getItem("quillart-lang");
-				if (["es", "en", "pt", "fr"].includes(lang)) {
+				const fixed = document.documentElement.hasAttribute("data-lang-fixed");
+				if (!fixed && ["es", "en", "pt", "fr"].includes(lang)) {
 					document.documentElement.lang = lang;
 				}
 			} catch {}
 		</script>
 	</head>
-	<body class="q-root min-h-dvh bg-bg text-ink antialiased">
+	<body
+		class="q-root min-h-dvh bg-bg text-ink antialiased"
+		data-dock={dockOverlay ? "overlay" : undefined}
+	>
 		<div class="q-flag q-flag--thin" aria-hidden="true">
 			<i></i><i></i><i></i>
 		</div>
 		<slot />
+		{dock && <AgentDock client:only="react" role={dock} />}
 		<script>
 			import { initStaticText } from "../lib/i18n/apply-static";
 			import { registerServiceWorker } from "../lib/offline/register-service-worker";

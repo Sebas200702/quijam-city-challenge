@@ -5,14 +5,18 @@ import type {
 	AssistantContext,
 	AssistantMessage,
 } from "../assistant/assistant-types";
-import { systemInstructionFor } from "../assistant/gemini-agent";
+import { contextFacts, systemInstructionFor } from "../assistant/gemini-agent";
 import { DEFAULT_AGENT, routeMessage } from "../assistant/orchestrator";
 import {
+	LIVE_CONDUIT_INSTRUCTION,
 	LIVE_VOICE_RULES,
 	liveAgentSetup,
+	liveConduitAgent,
+	liveConduitSetup,
 	parseLiveTokenRequest,
 	pickLiveAgent,
 } from "./live-agent";
+import { ASK_QUILLART_DECLARATION, ASK_QUILLART_TOOL } from "./live-conduit";
 
 const context: AssistantContext = {
 	now: "2026-11-27T15:00:00.000Z",
@@ -37,6 +41,47 @@ describe("liveAgentSetup", () => {
 		);
 		expect(setup.systemInstruction).toContain(LIVE_VOICE_RULES);
 		expect(LIVE_VOICE_RULES).toMatch(/confirm/i);
+	});
+});
+
+describe("liveConduitSetup", () => {
+	it("declares only ask_quillart, never an agent's own tools", () => {
+		const setup = liveConduitSetup(context);
+		expect(setup.tools).toEqual([
+			{ functionDeclarations: [ASK_QUILLART_DECLARATION] },
+		]);
+		const names = setup.tools.flatMap(
+			(tool) => tool.functionDeclarations?.map((item) => item.name) ?? [],
+		);
+		expect(names).toEqual([ASK_QUILLART_TOOL]);
+	});
+
+	it("is the conduit instruction plus the person's context", () => {
+		const setup = liveConduitSetup({ ...context, language: "en" });
+		expect(setup.systemInstruction).toContain(LIVE_CONDUIT_INSTRUCTION);
+		expect(setup.systemInstruction).toContain(
+			contextFacts({ ...context, language: "en" }),
+		);
+		expect(setup.systemInstruction).toContain("English");
+	});
+
+	it("tells Live to relay every request, never refuse by role, and wait for the card", () => {
+		expect(LIVE_CONDUIT_INSTRUCTION).toContain(ASK_QUILLART_TOOL);
+		expect(LIVE_CONDUIT_INSTRUCTION).toMatch(/self-contained/);
+		expect(LIVE_CONDUIT_INSTRUCTION).toMatch(/never say you cannot/i);
+		expect(LIVE_CONDUIT_INSTRUCTION).toMatch(/confirm/i);
+		expect(LIVE_CONDUIT_INSTRUCTION).toMatch(/language/i);
+	});
+});
+
+describe("liveConduitAgent", () => {
+	it("keeps the last agent, or the orchestrator's default", () => {
+		expect(
+			liveConduitAgent({ messages: [], context, lastAgent: "mobility" }),
+		).toBe("mobility");
+		expect(liveConduitAgent({ messages: [], context, lastAgent: null })).toBe(
+			DEFAULT_AGENT,
+		);
 	});
 });
 

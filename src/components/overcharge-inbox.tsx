@@ -131,6 +131,7 @@ export function OverchargeInbox({
 	return (
 		<section
 			className="q-card"
+			lang={language}
 			aria-labelledby="overcharge-inbox-title"
 			aria-live="polite"
 		>

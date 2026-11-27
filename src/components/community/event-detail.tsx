@@ -33,6 +33,7 @@ import type {
 	Profile,
 } from "../../lib/community/community-types";
 import { useT } from "../../lib/i18n/use-language";
+import { usePublishScreen } from "../agent-dock/use-screen-context";
 import { AskQuillartButton } from "../assistant/ask-quillart-button";
 import { CommunityShell } from "./community-shell";
 import {
@@ -45,7 +46,13 @@ import {
 import { ReportButton } from "./report-button";
 import { ThreadCard } from "./thread-card";
 import { VerifiedOrganizerBadge } from "./trust-badges";
-import { signInHref, useLoad, useSession, useStore } from "./use-community";
+import {
+	errorText,
+	signInHref,
+	useLoad,
+	useSession,
+	useStore,
+} from "./use-community";
 
 export interface EventDetailProps {
 	id: string;
@@ -75,6 +82,21 @@ export default function EventDetail({ id, aiHref }: EventDetailProps) {
 		},
 		[id, profile?.id],
 		["events", "forum"],
+	);
+	const shown = state.status === "ready" ? state.data : null;
+	usePublishScreen(
+		shown
+			? {
+					route: "/agenda/[id]",
+					title: shown.event.title,
+					entity: {
+						kind: "event",
+						id: shown.event.id,
+						name: shown.event.title,
+					},
+					...(shown.place ? { zone: shown.place.neighborhood } : {}),
+				}
+			: null,
 	);
 
 	return (
@@ -140,10 +162,10 @@ function EventView({
 	return (
 		<>
 			<article className="q-card space-y-4 p-5 lg:p-8">
-				<div className="q-illus py-5">
+				<div className="q-illus py-3 sm:py-5">
 					<SpotIllustration
 						src={EVENT_ILLUSTRATIONS[event.category]}
-						className="h-36! lg:h-56!"
+						className="h-20! sm:h-36! lg:h-56!"
 					/>
 				</div>
 				<div className="flex flex-wrap items-center gap-2">
@@ -369,7 +391,7 @@ function RegistrationPanel({
 			else await store.register(event.id);
 			onChange();
 		} catch (err) {
-			setError(err instanceof Error ? err.message : t.agenda.saveError);
+			setError(errorText(err, t.agenda.saveError));
 		} finally {
 			setBusy(false);
 		}
@@ -377,8 +399,11 @@ function RegistrationPanel({
 
 	if (sessionLoading) return null;
 
+	// When the panel holds the screen's main action, it stays in reach on phones.
+	let primary = false;
 	let content: ReactNode;
 	if (!signedIn) {
+		primary = !blocker;
 		content = blocker ? (
 			<p className="q-p q-muted">{blocker}</p>
 		) : (
@@ -418,6 +443,7 @@ function RegistrationPanel({
 			</>
 		);
 	} else if (canJoinWaitlist(event)) {
+		primary = true;
 		content = (
 			<>
 				<p className="q-p q-muted">{t.agenda.waitlistHint}</p>
@@ -434,6 +460,7 @@ function RegistrationPanel({
 	} else if (blocker) {
 		content = <p className="q-p q-muted">{blocker}</p>;
 	} else {
+		primary = true;
 		content = (
 			<button
 				type="button"
@@ -448,7 +475,11 @@ function RegistrationPanel({
 
 	return (
 		<section
-			className="q-card space-y-3 p-5"
+			className={`q-card space-y-3 p-5 ${
+				primary
+					? "max-lg:sticky! max-lg:bottom-[4.5rem] max-lg:z-20 max-lg:shadow-[var(--shadow-modal)]!"
+					: ""
+			}`}
 			aria-label={t.agenda.registrationLabel}
 		>
 			{content}
@@ -479,7 +510,7 @@ function OrganizerPanel({
 			await store.cancelEvent(event.id);
 			onChange();
 		} catch (err) {
-			setError(err instanceof Error ? err.message : t.agenda.cancelEventError);
+			setError(errorText(err, t.agenda.cancelEventError));
 		} finally {
 			setBusy(false);
 		}

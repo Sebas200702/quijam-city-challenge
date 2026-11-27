@@ -107,8 +107,11 @@ const es = {
 	moderation: {
 		eyebrow: "Alcaldía",
 		title: "Moderación",
+		dashboard: "Tablero",
+		cityNav: "Secciones de la ciudad",
+		signOut: "Salir",
 		intro:
-			"La revisión es un triaje automático: primero reglas fijas, luego OpenJev. Lo dudoso llega aquí y una persona decide.",
+			"La revisión es un triaje automático: primero reglas fijas, luego un análisis automático del texto. Lo dudoso llega aquí y una persona decide.",
 		signInTitle: "Entra con tu cuenta de la ciudad",
 		signIn: "Entrar",
 		signInHint: "La cola de moderación es solo para el equipo de la Alcaldía.",
@@ -175,7 +178,7 @@ const es = {
 		},
 		sources: {
 			rules: "Reglas",
-			openjev: "OpenJev",
+			openjev: "Revisión automática",
 			moderator: "Moderador",
 		},
 	},
@@ -286,8 +289,11 @@ const en: ForumMessages = {
 	moderation: {
 		eyebrow: "City Hall",
 		title: "Moderation",
+		dashboard: "Dashboard",
+		cityNav: "City sections",
+		signOut: "Sign out",
 		intro:
-			"Review is an automatic triage: fixed rules first, then OpenJev. Anything doubtful lands here and a person decides.",
+			"Review is an automatic triage: fixed rules first, then an automatic text check. Anything doubtful lands here and a person decides.",
 		signInTitle: "Sign in with your city account",
 		signIn: "Sign in",
 		signInHint: "The moderation queue is only for the City Hall team.",
@@ -351,7 +357,7 @@ const en: ForumMessages = {
 		},
 		sources: {
 			rules: "Rules",
-			openjev: "OpenJev",
+			openjev: "Automatic review",
 			moderator: "Moderator",
 		},
 	},
@@ -462,8 +468,11 @@ const pt: ForumMessages = {
 	moderation: {
 		eyebrow: "Prefeitura",
 		title: "Moderação",
+		dashboard: "Painel",
+		cityNav: "Seções da cidade",
+		signOut: "Sair",
 		intro:
-			"A revisão é uma triagem automática: primeiro regras fixas, depois o OpenJev. O que gerar dúvida chega aqui e uma pessoa decide.",
+			"A revisão é uma triagem automática: primeiro regras fixas, depois uma análise automática do texto. O que gerar dúvida chega aqui e uma pessoa decide.",
 		signInTitle: "Entre com sua conta da cidade",
 		signIn: "Entrar",
 		signInHint: "A fila de moderação é só para a equipe da Prefeitura.",
@@ -528,7 +537,7 @@ const pt: ForumMessages = {
 		},
 		sources: {
 			rules: "Regras",
-			openjev: "OpenJev",
+			openjev: "Revisão automática",
 			moderator: "Moderador",
 		},
 	},
@@ -641,8 +650,11 @@ const fr: ForumMessages = {
 	moderation: {
 		eyebrow: "Mairie",
 		title: "Modération",
+		dashboard: "Tableau de bord",
+		cityNav: "Sections de la ville",
+		signOut: "Se déconnecter",
 		intro:
-			"L'examen est un tri automatique : d'abord des règles fixes, puis OpenJev. Ce qui est douteux arrive ici et une personne décide.",
+			"L'examen est un tri automatique : d'abord des règles fixes, puis une analyse automatique du texte. Ce qui est douteux arrive ici et une personne décide.",
 		signInTitle: "Connectez-vous avec votre compte de la ville",
 		signIn: "Se connecter",
 		signInHint: "La file de modération est réservée à l'équipe de la Mairie.",
@@ -706,7 +718,7 @@ const fr: ForumMessages = {
 		},
 		sources: {
 			rules: "Règles",
-			openjev: "OpenJev",
+			openjev: "Examen automatique",
 			moderator: "Modérateur",
 		},
 	},

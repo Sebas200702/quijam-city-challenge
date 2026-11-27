@@ -7,6 +7,7 @@ import {
 	Leaf,
 	type LucideIcon,
 	MapPin,
+	MapPinOff,
 	Palette,
 	Trees,
 	Trophy,
@@ -14,6 +15,7 @@ import {
 } from "lucide-react";
 import { PLACE_KIND_LABELS } from "../../lib/community/community-labels";
 import type { Place, PlaceKind } from "../../lib/community/community-types";
+import { ambAnchor } from "../../lib/geo/amb-boundary";
 import { useT } from "../../lib/i18n/use-language";
 
 export const PLACE_KIND_ICONS: Record<PlaceKind, LucideIcon> = {
@@ -43,7 +45,12 @@ export function PlaceKindTile({ kind }: { kind: PlaceKind }) {
 	);
 }
 
-/** "Entrada libre" / "Con costo" and "Accesible" badges. */
+/** True when the place gets a pin on /mapa (inside the AMB, or on its shore). */
+export function isOnAmbMap(place: Place): boolean {
+	return ambAnchor(place.latitude, place.longitude) !== null;
+}
+
+/** "Entrada libre" / "Con costo", "Accesible" and "Fuera del área metropolitana" badges. */
 export function PlaceBadges({ place }: { place: Place }) {
 	const t = useT();
 	return (
@@ -57,6 +64,12 @@ export function PlaceBadges({ place }: { place: Place }) {
 				<span className="q-badge q-badge--neutral">
 					<Accessibility size={12} aria-hidden="true" />
 					{t.places.accessible}
+				</span>
+			)}
+			{!isOnAmbMap(place) && (
+				<span className="q-badge q-badge--neutral">
+					<MapPinOff size={12} aria-hidden="true" />
+					{t.places.outsideAmb}
 				</span>
 			)}
 		</>

@@ -478,8 +478,8 @@ const HANDLERS: { [N in AssistantToolName]: Handler<N> } = {
 			placeId: place?.id ?? null,
 			locationText: args.location_text?.trim() || null,
 			capacity: args.capacity ?? null,
-			isFree: true,
-			priceCop: null,
+			isFree: !args.price_cop,
+			priceCop: args.price_cop ?? null,
 		});
 		return publishOutcome(
 			result,

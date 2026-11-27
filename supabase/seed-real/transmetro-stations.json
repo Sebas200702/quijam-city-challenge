@@ -1,0 +1,258 @@
+[
+	{
+		"code": "TM-PORTAL-SOLEDAD",
+		"name": "Portal de Soledad",
+		"line": "Troncal Murillo",
+		"portal": true,
+		"municipality": "soledad",
+		"latitude": 10.90729,
+		"longitude": -74.80114,
+		"is_accessible": false,
+		"source": {
+			"osm": "https://www.openstreetmap.org/way/404996039",
+			"station_list": "https://es.wikipedia.org/wiki/Transmetro_(Barranquilla)",
+			"retrieved": "2026-11-27",
+			"license": "ODbL — © OpenStreetMap contributors"
+		}
+	},
+	{
+		"code": "TM-PACHO-GALAN",
+		"name": "Estación Pacho Galán",
+		"line": "Troncal Murillo",
+		"portal": false,
+		"municipality": "soledad",
+		"latitude": 10.91463,
+		"longitude": -74.79982,
+		"is_accessible": false,
+		"source": {
+			"osm": "https://www.openstreetmap.org/node/8735432441",
+			"station_list": "https://es.wikipedia.org/wiki/Transmetro_(Barranquilla)",
+			"retrieved": "2026-11-27",
+			"license": "ODbL — © OpenStreetMap contributors"
+		}
+	},
+	{
+		"code": "TM-PEDRO-RAMAYA",
+		"name": "Estación Pedro Ramayá Beltrán",
+		"line": "Troncal Murillo",
+		"portal": false,
+		"municipality": "soledad",
+		"latitude": 10.92124,
+		"longitude": -74.79888,
+		"is_accessible": false,
+		"source": {
+			"osm": "https://www.openstreetmap.org/node/8345985099",
+			"station_list": "https://es.wikipedia.org/wiki/Transmetro_(Barranquilla)",
+			"retrieved": "2026-11-27",
+			"license": "ODbL — © OpenStreetMap contributors"
+		}
+	},
+	{
+		"code": "TM-BUENOS-AIRES",
+		"name": "Estación Buenos Aires",
+		"line": "Troncal Murillo",
+		"portal": false,
+		"municipality": "barranquilla",
+		"latitude": 10.94165,
+		"longitude": -74.79958,
+		"is_accessible": false,
+		"source": {
+			"osm": "https://www.openstreetmap.org/way/206151337",
+			"station_list": "https://es.wikipedia.org/wiki/Transmetro_(Barranquilla)",
+			"retrieved": "2026-11-27",
+			"license": "ODbL — © OpenStreetMap contributors"
+		}
+	},
+	{
+		"code": "TM-LA-OCHO",
+		"name": "Estación La Ocho",
+		"line": "Troncal Murillo",
+		"portal": false,
+		"municipality": "barranquilla",
+		"latitude": 10.94671,
+		"longitude": -74.79974,
+		"is_accessible": true,
+		"source": {
+			"osm": "https://www.openstreetmap.org/way/206166253",
+			"station_list": "https://es.wikipedia.org/wiki/Transmetro_(Barranquilla)",
+			"retrieved": "2026-11-27",
+			"license": "ODbL — © OpenStreetMap contributors"
+		}
+	},
+	{
+		"code": "TM-LA-CATORCE",
+		"name": "Estación La Catorce",
+		"line": "Troncal Murillo",
+		"portal": false,
+		"municipality": "barranquilla",
+		"latitude": 10.95503,
+		"longitude": -74.7964,
+		"is_accessible": true,
+		"source": {
+			"osm": "https://www.openstreetmap.org/way/206157804",
+			"station_list": "https://es.wikipedia.org/wiki/Transmetro_(Barranquilla)",
+			"retrieved": "2026-11-27",
+			"license": "ODbL — © OpenStreetMap contributors"
+		}
+	},
+	{
+		"code": "TM-LA-VEINTIUNA",
+		"name": "Estación La Veintiuna",
+		"line": "Troncal Murillo",
+		"portal": false,
+		"municipality": "barranquilla",
+		"latitude": 10.96055,
+		"longitude": -74.79372,
+		"is_accessible": true,
+		"source": {
+			"osm": "https://www.openstreetmap.org/way/251717736",
+			"station_list": "https://es.wikipedia.org/wiki/Transmetro_(Barranquilla)",
+			"retrieved": "2026-11-27",
+			"license": "ODbL — © OpenStreetMap contributors"
+		}
+	},
+	{
+		"code": "TM-ATLANTICO",
+		"name": "Estación Atlántico",
+		"line": "Troncal Murillo",
+		"portal": false,
+		"municipality": "barranquilla",
+		"latitude": 10.96883,
+		"longitude": -74.79027,
+		"is_accessible": true,
+		"source": {
+			"osm": "https://www.openstreetmap.org/way/251717735",
+			"station_list": "https://es.wikipedia.org/wiki/Transmetro_(Barranquilla)",
+			"retrieved": "2026-11-27",
+			"license": "ODbL — © OpenStreetMap contributors"
+		}
+	},
+	{
+		"code": "TM-CHIQUINQUIRA",
+		"name": "Estación Chiquinquirá",
+		"line": "Troncal Murillo",
+		"portal": false,
+		"municipality": "barranquilla",
+		"latitude": 10.97731,
+		"longitude": -74.78781,
+		"is_accessible": true,
+		"source": {
+			"osm": "https://www.openstreetmap.org/way/206712094",
+			"station_list": "https://es.wikipedia.org/wiki/Transmetro_(Barranquilla)",
+			"retrieved": "2026-11-27",
+			"license": "ODbL — © OpenStreetMap contributors"
+		}
+	},
+	{
+		"code": "TM-LA-ARENOSA",
+		"name": "Estación La Arenosa",
+		"line": "Troncal Murillo",
+		"portal": false,
+		"municipality": "barranquilla",
+		"latitude": 10.9822,
+		"longitude": -74.78644,
+		"is_accessible": true,
+		"source": {
+			"osm": "https://www.openstreetmap.org/way/206712097",
+			"station_list": "https://es.wikipedia.org/wiki/Transmetro_(Barranquilla)",
+			"retrieved": "2026-11-27",
+			"license": "ODbL — © OpenStreetMap contributors"
+		}
+	},
+	{
+		"code": "TM-PORTAL-BARRANQUILLITA",
+		"name": "Portal de Barranquillita Nelson Pinedo",
+		"line": "Troncal Olaya Herrera",
+		"portal": true,
+		"municipality": "barranquilla",
+		"latitude": 10.98564,
+		"longitude": -74.77149,
+		"is_accessible": false,
+		"source": {
+			"osm": "https://www.openstreetmap.org/way/339468989",
+			"station_list": "https://es.wikipedia.org/wiki/Transmetro_(Barranquilla)",
+			"retrieved": "2026-11-27",
+			"license": "ODbL — © OpenStreetMap contributors"
+		}
+	},
+	{
+		"code": "TM-PARQUE-CULTURAL",
+		"name": "Estación Parque Cultural del Caribe",
+		"line": "Troncal Olaya Herrera",
+		"portal": false,
+		"municipality": "barranquilla",
+		"latitude": 10.98591,
+		"longitude": -74.77831,
+		"is_accessible": true,
+		"source": {
+			"osm": "https://www.openstreetmap.org/way/201609135",
+			"station_list": "https://es.wikipedia.org/wiki/Transmetro_(Barranquilla)",
+			"retrieved": "2026-11-27",
+			"license": "ODbL — © OpenStreetMap contributors"
+		}
+	},
+	{
+		"code": "TM-BARRIO-ABAJO",
+		"name": "Estación Barrio Abajo",
+		"line": "Troncal Olaya Herrera",
+		"portal": false,
+		"municipality": "barranquilla",
+		"latitude": 10.98706,
+		"longitude": -74.78407,
+		"is_accessible": true,
+		"source": {
+			"osm": "https://www.openstreetmap.org/way/182939301",
+			"station_list": "https://es.wikipedia.org/wiki/Transmetro_(Barranquilla)",
+			"retrieved": "2026-11-27",
+			"license": "ODbL — © OpenStreetMap contributors"
+		}
+	},
+	{
+		"code": "TM-LA-CATEDRAL",
+		"name": "Estación La Catedral",
+		"line": "Troncal Olaya Herrera",
+		"portal": false,
+		"municipality": "barranquilla",
+		"latitude": 10.98842,
+		"longitude": -74.78869,
+		"is_accessible": true,
+		"source": {
+			"osm": "https://www.openstreetmap.org/way/206320232",
+			"station_list": "https://es.wikipedia.org/wiki/Transmetro_(Barranquilla)",
+			"retrieved": "2026-11-27",
+			"license": "ODbL — © OpenStreetMap contributors"
+		}
+	},
+	{
+		"code": "TM-ESTHERCITA-FORERO",
+		"name": "Estación Esthercita Forero",
+		"line": "Troncal Olaya Herrera",
+		"portal": false,
+		"municipality": "barranquilla",
+		"latitude": 10.9927,
+		"longitude": -74.80266,
+		"is_accessible": true,
+		"source": {
+			"osm": "https://www.openstreetmap.org/way/255279414",
+			"station_list": "https://es.wikipedia.org/wiki/Transmetro_(Barranquilla)",
+			"retrieved": "2026-11-27",
+			"license": "ODbL — © OpenStreetMap contributors"
+		}
+	},
+	{
+		"code": "TM-JOE-ARROYO",
+		"name": "Estación de Retorno Joe Arroyo",
+		"line": "Troncal Olaya Herrera",
+		"portal": false,
+		"municipality": "barranquilla",
+		"latitude": 10.9947,
+		"longitude": -74.80777,
+		"is_accessible": false,
+		"source": {
+			"osm": "https://www.openstreetmap.org/way/404974658",
+			"station_list": "https://es.wikipedia.org/wiki/Transmetro_(Barranquilla)",
+			"retrieved": "2026-11-27",
+			"license": "ODbL — © OpenStreetMap contributors"
+		}
+	}
+]

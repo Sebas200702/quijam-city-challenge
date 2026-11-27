@@ -1,8 +1,10 @@
 // Small building blocks shared by the community screens.
 
-import type { ReactNode } from "react";
+import { CircleAlert, RefreshCw, WifiOff } from "lucide-react";
+import { cloneElement, type ReactElement, type ReactNode } from "react";
 import type { PublishResult } from "../../lib/community/community-types";
 import { useT } from "../../lib/i18n/use-language";
+import { useOnlineStatus } from "../visitor-home/use-online-status";
 import type { LoadState } from "./use-community";
 
 export const inputClass =
@@ -10,24 +12,61 @@ export const inputClass =
 export const textareaClass =
 	"min-h-32 w-full rounded-[var(--radius-md)] border border-[var(--line-control)] bg-[var(--bg)] px-4 py-3 text-[15px] text-[var(--ink)] placeholder:text-[var(--ink-subtle)]";
 
+/**
+ * Label, control, hint and error of one form field. The hint and the error are
+ * tied to the control (`aria-describedby`, `aria-invalid`), so a screen reader
+ * reads them with it.
+ */
 export function Field({
 	id,
 	label,
 	hint,
+	error,
 	children,
 }: {
 	id: string;
 	label: string;
 	hint?: string;
-	children: ReactNode;
+	/** Message for this field only; marks the control as invalid. */
+	error?: string | null;
+	children: ReactElement<{
+		"aria-describedby"?: string;
+		"aria-invalid"?: boolean;
+	}>;
 }) {
+	const hintId = `${id}-hint`;
+	const errorId = `${id}-error`;
+	const describedBy =
+		[hint ? hintId : null, error ? errorId : null].filter(Boolean).join(" ") ||
+		undefined;
 	return (
 		<div className="space-y-1.5">
 			<label htmlFor={id} className="q-eyebrow block">
 				{label}
 			</label>
-			{children}
-			{hint && <p className="q-sm q-muted">{hint}</p>}
+			{cloneElement(children, {
+				"aria-describedby": describedBy,
+				"aria-invalid": error ? true : undefined,
+			})}
+			{hint && (
+				<p id={hintId} className="q-sm q-muted">
+					{hint}
+				</p>
+			)}
+			{error && (
+				<p
+					id={errorId}
+					className="flex items-start gap-1.5 text-sm font-semibold text-[var(--red-text)]"
+				>
+					<CircleAlert
+						size={16}
+						strokeWidth={1.75}
+						className="mt-0.5 shrink-0"
+						aria-hidden="true"
+					/>
+					{error}
+				</p>
+			)}
 		</div>
 	);
 }
@@ -140,6 +179,43 @@ export function Loading({ label }: { label?: string }) {
 	);
 }
 
+/** Failed load: says whether the connection is down and offers to try again. */
+function LoadError({
+	message,
+	onRetry,
+}: {
+	message: string;
+	onRetry?: () => void;
+}) {
+	const t = useT();
+	const online = useOnlineStatus();
+	const Glyph = online ? CircleAlert : WifiOff;
+	return (
+		<div
+			className={`q-state q-state--${online ? "error" : "offline"}`}
+			role="alert"
+		>
+			<span className="q-state__glyph" aria-hidden="true">
+				<Glyph size={28} strokeWidth={1.75} />
+			</span>
+			<p className="q-state__title">
+				{online ? t.shared.ui.errorTitle : t.offline.title}
+			</p>
+			<p className="q-state__text">
+				{online ? message : t.shared.ui.offlineText}
+			</p>
+			<button
+				type="button"
+				className="q-btn q-btn--secondary q-state__action"
+				onClick={onRetry ?? (() => window.location.reload())}
+			>
+				<RefreshCw size={18} aria-hidden="true" />
+				{t.offline.retry}
+			</button>
+		</div>
+	);
+}
+
 /** Renders loading and error states, and `children(data)` when ready. */
 export function Loaded<T>({
 	state,
@@ -151,7 +227,8 @@ export function Loaded<T>({
 	loadingLabel?: string;
 }) {
 	if (state.status === "loading") return <Loading label={loadingLabel} />;
-	if (state.status === "error") return <ErrorNote message={state.message} />;
+	if (state.status === "error")
+		return <LoadError message={state.message} onRetry={state.retry} />;
 	return <>{children(state.data)}</>;
 }
 

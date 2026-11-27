@@ -8,6 +8,6 @@ const initialCatalog = await loadOpenDataCatalog();
 const { aiHref } = homeContent;
 ---
 
-<BaseLayout title="Portal de datos abiertos · QUILLART" theme="light">
+<BaseLayout translated={false} title="Portal de datos abiertos · QUILLART" theme="light">
 	<OpenDataPortal client:load initialCatalog={initialCatalog} aiHref={aiHref} />
 </BaseLayout>

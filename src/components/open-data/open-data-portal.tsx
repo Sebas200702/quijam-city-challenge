@@ -88,7 +88,7 @@ function DatasetCard({
 							href={dataset.licenseUrl}
 							target="_blank"
 							rel="noreferrer"
-							className="font-semibold text-[var(--ink)] underline-offset-2 hover:underline"
+							className="inline-flex min-h-11 items-center font-semibold text-[var(--ink)] underline-offset-2 hover:underline"
 						>
 							{dataset.license}
 						</a>
@@ -310,7 +310,7 @@ export function OpenDataPortal({
 				<SecondaryMenu />
 			</header>
 
-			<main className="flex flex-1 flex-col gap-6 px-4 pt-4 pb-24 lg:gap-8 lg:px-8 lg:pt-8 lg:pb-16">
+			<main className="flex flex-1 flex-col gap-6 px-4 pt-4 pb-8 lg:gap-8 lg:px-8 lg:pt-8 lg:pb-16">
 				<section className="q-card">
 					<div className="q-flag" aria-hidden="true">
 						<i />
@@ -353,7 +353,7 @@ export function OpenDataPortal({
 									href={catalog.licenseUrl}
 									target="_blank"
 									rel="noreferrer"
-									className="q-sm text-[var(--green-text)] underline-offset-2 hover:underline"
+									className="q-sm inline-flex min-h-11 items-center text-[var(--green-text)] underline-offset-2 hover:underline"
 								>
 									Ver términos de uso
 								</a>

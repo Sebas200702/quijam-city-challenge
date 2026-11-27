@@ -10,7 +10,8 @@ import {
 	isActionTool,
 } from "./assistant-types";
 import { answerLocally } from "./local-agents";
-import { routeMessage } from "./orchestrator";
+import { latestUserText, routeMessage } from "./orchestrator";
+import { uiActionsForCalls } from "./ui-actions";
 
 export interface OfflineNotes {
 	/** Before the first answer of a turn: "Sin conexión: …". */
@@ -36,14 +37,22 @@ export async function answerOffline(
 	const text = reads.length < allowed.length ? notes.noActions : turn.text;
 	// A wrap-up after tool results continues the same answer: no second note.
 	const wrapUp = messages.at(-1)?.role === "tool";
+	const toolCalls = reads.map(
+		(call) => ({ id: newId(), ...call }) as AssistantToolCall,
+	);
+	// The screen still changes offline: filters and the map need no network.
+	const uiActions = uiActionsForCalls(
+		toolCalls,
+		latestUserText(messages),
+		context.screen,
+	);
 	return {
 		agent,
 		routedBy,
 		text: wrapUp ? text : `${notes.offline} ${text}`,
-		toolCalls: reads.map(
-			(call) => ({ id: newId(), ...call }) as AssistantToolCall,
-		),
+		toolCalls,
 		source: "local",
 		suggestions: AGENTS[agent].suggestions,
+		...(uiActions.length > 0 ? { uiActions } : {}),
 	};
 }

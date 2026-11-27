@@ -11,6 +11,6 @@ export interface LiveTokenResponse {
 	mode: GuideMode;
 	/** ISO time after which no new session can be opened with this token. */
 	newSessionExpiresAt: string;
-	/** Quillart AI agent whose instruction and tools the token locks, if any. */
+	/** Set for the Quillart AI voice conduit: the agent shown on Live's own turns. */
 	agent?: AssistantAgentId;
 }
