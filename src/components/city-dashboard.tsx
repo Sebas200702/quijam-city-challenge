@@ -44,6 +44,7 @@ import { CityAuthGate } from "./city-auth-gate";
 import { CrowdSimPanel } from "./crowd-sim-panel";
 import { ImpactReportPanel } from "./impact-report-panel";
 import { JuryQrPanel } from "./jury-qr-panel";
+import { LiveIndicatorsPanel } from "./live-indicators-panel";
 import { OverchargeInbox } from "./overcharge-inbox";
 
 const EMPTY_PRESENCE: VisitorPresenceSummary = {
@@ -353,6 +354,11 @@ export function CityDashboard() {
 
 				{snapshot && (
 					<>
+						<LiveIndicatorsPanel
+							activeFloodZoneIds={cityEventsState.activeFloodZoneIds}
+							lastCityEvent={lastCityEvent}
+							nowMs={nowMs}
+						/>
 						<JuryQrPanel summary={presence} connectionState={presenceState} />
 						{zones.length > 0 && (
 							<CrowdSimPanel zones={zones} canWrite={!demo} />
