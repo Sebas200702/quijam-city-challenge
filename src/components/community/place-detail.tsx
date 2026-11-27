@@ -82,10 +82,10 @@ export function PlaceDetail({
 						t.places.careTips[place.kind as keyof typeof t.places.careTips];
 					return (
 						<>
-							<div className="q-illus py-5">
+							<div className="q-illus py-3 sm:py-5">
 								<SpotIllustration
 									src={PLACE_ILLUSTRATIONS[place.kind]}
-									className="h-36! lg:h-56!"
+									className="h-20! sm:h-36! lg:h-56!"
 								/>
 							</div>
 							<section className="flex flex-col gap-3">
@@ -100,6 +100,24 @@ export function PlaceDetail({
 								</div>
 								<div className="flex flex-wrap gap-1.5">
 									<PlaceBadges place={place} />
+								</div>
+								{/* Main action above the fold on phones (audit U37). */}
+								<div className="flex flex-wrap gap-2">
+									<a
+										href={directionsUrl(
+											place.name,
+											place.latitude,
+											place.longitude,
+										)}
+										target="_blank"
+										rel="noopener noreferrer"
+										className="q-btn q-btn--primary"
+									>
+										<Navigation size={18} aria-hidden="true" />
+										{t.places.directions}
+										<span className="sr-only">{t.places.opensNewTab}</span>
+									</a>
+									<AskQuillartButton prompt={t.places.askAbout(place.name)} />
 								</div>
 								<p className="q-p">{place.description}</p>
 								<dl className="q-card gap-3 p-4">
@@ -131,23 +149,6 @@ export function PlaceDetail({
 										</dd>
 									</div>
 								</dl>
-								<div className="flex flex-wrap gap-2">
-									<a
-										href={directionsUrl(
-											place.name,
-											place.latitude,
-											place.longitude,
-										)}
-										target="_blank"
-										rel="noopener noreferrer"
-										className="q-btn q-btn--primary"
-									>
-										<Navigation size={18} aria-hidden="true" />
-										{t.places.directions}
-										<span className="sr-only">{t.places.opensNewTab}</span>
-									</a>
-									<AskQuillartButton prompt={t.places.askAbout(place.name)} />
-								</div>
 							</section>
 
 							<section aria-labelledby="place-events" className="space-y-3">

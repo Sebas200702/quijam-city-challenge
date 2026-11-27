@@ -146,10 +146,10 @@ function EventView({
 	return (
 		<>
 			<article className="q-card space-y-4 p-5 lg:p-8">
-				<div className="q-illus py-5">
+				<div className="q-illus py-3 sm:py-5">
 					<SpotIllustration
 						src={EVENT_ILLUSTRATIONS[event.category]}
-						className="h-36! lg:h-56!"
+						className="h-20! sm:h-36! lg:h-56!"
 					/>
 				</div>
 				<div className="flex flex-wrap items-center gap-2">
@@ -383,8 +383,11 @@ function RegistrationPanel({
 
 	if (sessionLoading) return null;
 
+	// When the panel holds the screen's main action, it stays in reach on phones.
+	let primary = false;
 	let content: ReactNode;
 	if (!signedIn) {
+		primary = !blocker;
 		content = blocker ? (
 			<p className="q-p q-muted">{blocker}</p>
 		) : (
@@ -424,6 +427,7 @@ function RegistrationPanel({
 			</>
 		);
 	} else if (canJoinWaitlist(event)) {
+		primary = true;
 		content = (
 			<>
 				<p className="q-p q-muted">{t.agenda.waitlistHint}</p>
@@ -440,6 +444,7 @@ function RegistrationPanel({
 	} else if (blocker) {
 		content = <p className="q-p q-muted">{blocker}</p>;
 	} else {
+		primary = true;
 		content = (
 			<button
 				type="button"
@@ -454,7 +459,11 @@ function RegistrationPanel({
 
 	return (
 		<section
-			className="q-card space-y-3 p-5"
+			className={`q-card space-y-3 p-5 ${
+				primary
+					? "max-lg:sticky! max-lg:bottom-[4.5rem] max-lg:z-20 max-lg:shadow-[var(--shadow-modal)]!"
+					: ""
+			}`}
 			aria-label={t.agenda.registrationLabel}
 		>
 			{content}
