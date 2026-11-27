@@ -388,7 +388,7 @@ export function CrowdSimPanel({ zones, canWrite }: CrowdSimPanelProps) {
 							<li className="inline-flex items-center gap-1.5">
 								<CloudRain {...ICON} />
 								{blockedFloods > 0
-									? `Arroyo activo: ${blockedFloods} tramo(s) cerrado(s)`
+									? `Arroyo activo: ${blockedFloods} ${blockedFloods === 1 ? "tramo cerrado" : "tramos cerrados"}`
 									: "Arroyo activo: tramo cerrado"}
 							</li>
 							<li className="inline-flex items-center gap-1.5">

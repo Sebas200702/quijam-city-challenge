@@ -25,7 +25,8 @@ interface NoticeCardProps {
 export function NoticeCard({ notice, onAction, onDismiss }: NoticeCardProps) {
 	const Icon = TONE_ICON[notice.tone];
 	return (
-		<div className={`q-alert q-alert--${notice.tone} q-notice`}>
+		// Notice copy is Spanish only for now (WCAG 3.1.2, language of parts).
+		<div className={`q-alert q-alert--${notice.tone} q-notice`} lang="es">
 			<span className="q-alert__icon" aria-hidden="true">
 				<Icon size={18} strokeWidth={1.75} />
 			</span>

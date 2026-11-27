@@ -154,11 +154,15 @@ export function MapHeader({
 						type="button"
 						className={`q-chip corridor-chip corridor-chip--${tone}`}
 						aria-pressed={visible[key]}
+						// Named "Paraderos (7)", not "Paraderos7"; the count hides on narrow phones.
+						aria-label={`${label(copy)} (${counts[key]})`}
 						onClick={() => onToggle(key)}
 					>
 						<Icon size={18} strokeWidth={1.75} aria-hidden="true" />
 						{label(copy)}
-						<span className="corridor-chip__count">{counts[key]}</span>
+						<span className="corridor-chip__count" aria-hidden="true">
+							{counts[key]}
+						</span>
 					</button>
 				))}
 				{children}

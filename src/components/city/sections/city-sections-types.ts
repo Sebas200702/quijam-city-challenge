@@ -81,6 +81,7 @@ export interface ActiveDiversion {
 	quota: number;
 	fromPctBefore: number;
 	fromPctNow: number;
-	businessVisits: number;
+	/** Visits to the destination's businesses; unknown until vendors report them. */
+	businessVisits?: number;
 	committeePaused: boolean;
 }

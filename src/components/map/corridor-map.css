@@ -35,6 +35,23 @@
 	position: absolute;
 	inset: 0;
 }
+/* Skip link: hidden until a keyboard reaches it, then a pill above the map. */
+.corridor-skip {
+	position: absolute;
+	top: 12px;
+	left: 12px;
+	z-index: 1200;
+	padding: 10px 16px;
+	border-radius: var(--radius-pill);
+	background: var(--surface-raised);
+	color: var(--ink);
+	font-weight: 600;
+	box-shadow: var(--shadow-card);
+	transform: translateY(-200%);
+}
+.corridor-skip:focus {
+	transform: none;
+}
 .corridor-panel {
 	position: absolute;
 	top: 12px;
@@ -342,20 +359,6 @@
 .corridor-search__logo .q-star {
 	width: 18px;
 	height: 18px;
-}
-.corridor-search-miss {
-	align-self: flex-start;
-	margin: 0;
-	padding: 6px 12px;
-	border-radius: var(--radius-pill);
-	background: var(--red-soft);
-	color: var(--red-text);
-	font-size: 13px;
-	line-height: 18px;
-	font-weight: 600;
-}
-.corridor-search-miss:empty {
-	display: none;
 }
 
 /* ── Layer chips (q-chip): white like the map chips, icon in the layer colour ── */
@@ -745,11 +748,6 @@
 		animation: none;
 	}
 }
-.route-card__body {
-	display: flex;
-	flex-direction: column;
-	gap: 12px;
-}
 .route-card__fields {
 	display: grid;
 	grid-template-columns: 1fr 1fr;
@@ -767,7 +765,8 @@
 	padding: 0 8px;
 	background: var(--surface-raised, #fff);
 	color: inherit;
-	border: 1px solid var(--frame, #d0d5dd);
+	/* --line-control keeps the field edge at 3:1 or more (WCAG 1.4.11). */
+	border: 1px solid var(--line-control);
 }
 .route-card__toggle {
 	display: flex;
@@ -778,43 +777,6 @@
 .route-card__toggle input {
 	width: 20px;
 	height: 20px;
-}
-.route-card__facts {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 6px;
-}
-.route-card__details summary {
-	cursor: pointer;
-	min-height: 44px;
-	display: flex;
-	align-items: center;
-}
-.route-card__alert {
-	display: flex;
-	align-items: center;
-	gap: 8px;
-	padding: 10px 14px;
-	background: var(--red, #c62828);
-	color: #fff;
-	font-weight: 600;
-}
-
-/* ── Flood alert: the only alert that interrupts (epic #57, rule 4). From PR #63. ── */
-.corridor-alert {
-	border-bottom: 2px solid var(--red);
-}
-.corridor-alert__body {
-	padding: 12px 16px;
-}
-.corridor-alert__title {
-	font-weight: 700;
-	color: var(--red-text, var(--red));
-}
-.corridor-alert__text {
-	margin-top: 4px;
-	font-size: 0.875rem;
-	color: var(--ink);
 }
 @media (min-width: 640px) {
 	.route-card__guide {

@@ -3,11 +3,16 @@ import type {
 	FloodZone,
 } from "../../../lib/city-dashboard-types";
 import { ZONE_LABELS } from "../../../lib/city-dashboard-utils";
+import type {
+	CorridorStop,
+	RouteSegment,
+	TransportMode,
+} from "../../../lib/corridor/corridor-types";
 import {
 	type FloodCountdowns,
 	floodStatus,
 } from "../../../lib/flood-alert/flood-countdown";
-import type { ArroyoRow } from "./city-sections-types";
+import type { AffectedRoute, ArroyoRow } from "./city-sections-types";
 
 export const RISK_LABELS: Record<FloodRiskLevel, string> = {
 	low: "riesgo bajo",
@@ -72,4 +77,36 @@ export function arroyoAlertTitle(summary: ArroyoSummary): string {
 export function joinNames(names: readonly string[]): string {
 	if (names.length <= 1) return names[0] ?? "";
 	return `${names.slice(0, -1).join(", ")} y ${names[names.length - 1]}`;
+}
+
+const ROUTE_ICON: Record<TransportMode, AffectedRoute["icon"]> = {
+	transmetro: "bus-front",
+	bus: "bus",
+	taxi_verified: "taxi",
+	walk: "walk",
+	bike: "walk",
+};
+
+/**
+ * Corridor legs that cross an alerted arroyo: the Decider no longer offers them
+ * (hard rule), so the city sees them as blocked.
+ */
+export function toAffectedRoutes(
+	segments: readonly RouteSegment[],
+	stops: readonly CorridorStop[],
+	alertedFloodCodes: readonly string[],
+): AffectedRoute[] {
+	const alerted = new Set(alertedFloodCodes);
+	const nameOf = new Map(stops.map((stop) => [stop.code, stop.name]));
+	return segments
+		.filter((s) => s.flood_zone_code && alerted.has(s.flood_zone_code))
+		.map((s) => ({
+			id: s.code,
+			label: `${nameOf.get(s.origin_stop_code) ?? s.origin_stop_code} → ${
+				nameOf.get(s.destination_stop_code) ?? s.destination_stop_code
+			}`,
+			detail: "Cruza un arroyo con alerta: el Decisor ya no la ofrece.",
+			state: "blocked",
+			icon: ROUTE_ICON[s.transport_mode],
+		}));
 }

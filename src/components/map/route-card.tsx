@@ -64,11 +64,6 @@ interface RouteCardProps {
 	onOpenGuide: () => void;
 	/** Starts guidance on the chosen route. When set it becomes the primary action. */
 	onStart?: () => void;
-	/**
-	 * Shows the "Datos de referencia" tag for the corridor seed (epic #57, rule 9:
-	 * once per screen). Pass false when the screen header already carries it.
-	 */
-	showSimTag?: boolean;
 }
 
 /** Small decorative illustration for a state block. */
@@ -181,7 +176,6 @@ export function RouteCard({
 	alert,
 	onOpenGuide,
 	onStart,
-	showSimTag = true,
 }: RouteCardProps) {
 	const t = useT().map;
 	const fare = makeFare(t);
@@ -512,11 +506,14 @@ export function RouteCard({
 				<span>{t.needAccessible}</span>
 			</label>
 
-			<div aria-live="polite">{body}</div>
-
-			{showSimTag ? (
-				<span className="q-sim-tag self-start">{t.referenceTag}</span>
-			) : null}
+			{/* Not a live region: a route change would re-read the whole card. Only the
+			    one-line decision is announced; state blocks carry their own role. */}
+			<div>{body}</div>
+			<p className="q-sr" role="status">
+				{route && !loading
+					? `${t.goTo(destination)}: ${t.minutesShort(route.durationMinutes)}`
+					: ""}
+			</p>
 
 			{/* Sticky so the action stays in reach while the card scrolls on phones. */}
 			<div className="sticky bottom-0 z-[1] -mx-5 -mb-5 flex flex-col gap-2 bg-[var(--surface-raised)] px-5 pt-2 pb-5 empty:hidden">
@@ -537,7 +534,7 @@ export function RouteCard({
 						onClick={onOpenGuide}
 					>
 						<MessageCircle size={20} strokeWidth={STROKE} aria-hidden="true" />
-						{t.askGuideBilingual}
+						{t.askGuide}
 					</button>
 				</div>
 			</div>

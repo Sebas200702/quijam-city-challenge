@@ -94,7 +94,7 @@ const es = {
 			"No pasa transporte público directo; el taxi verificado es seguro.",
 		noRouteTitle: "Ahora no hay una ruta segura",
 		noRouteText:
-			"Espera en un lugar seco o pregúntale al Guía por otra salida.",
+			"Espera en un lugar seco o pregúntale a Quillart AI por otra salida.",
 		taxi: "Taxi verificado",
 		range: "rango justo",
 		details: "Ver detalles",
@@ -229,7 +229,7 @@ const en: GuideMessages = {
 		whyTaxi:
 			"No direct public transport; the verified taxi is the safe option.",
 		noRouteTitle: "No safe route right now",
-		noRouteText: "Wait somewhere dry or ask the Guide for another way.",
+		noRouteText: "Wait somewhere dry or ask Quillart AI for another way.",
 		taxi: "Verified taxi",
 		range: "fair range",
 		details: "See details",
@@ -367,7 +367,7 @@ const pt: GuideMessages = {
 			"Não há transporte público direto; o táxi verificado é a opção segura.",
 		noRouteTitle: "Agora não há rota segura",
 		noRouteText:
-			"Espere em um lugar seco ou pergunte ao Guia por outro caminho.",
+			"Espere em um lugar seco ou pergunte ao Quillart AI por outro caminho.",
 		taxi: "Táxi verificado",
 		range: "faixa justa",
 		details: "Ver detalhes",
@@ -508,7 +508,7 @@ const fr: GuideMessages = {
 			"Pas de transport public direct ; le taxi vérifié est l'option sûre.",
 		noRouteTitle: "Aucun itinéraire sûr pour l'instant",
 		noRouteText:
-			"Attendez dans un endroit sec ou demandez un autre chemin au Guide.",
+			"Attendez dans un endroit sec ou demandez un autre chemin à Quillart AI.",
 		taxi: "Taxi vérifié",
 		range: "fourchette juste",
 		details: "Voir les détails",

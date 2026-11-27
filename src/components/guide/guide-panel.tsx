@@ -18,10 +18,12 @@ import type { GuideAnswer } from "../../lib/guide/guide-answer";
 import type { GuideLanguage } from "../../lib/guide/guide-local";
 import type {
 	GuideMessages,
+	GuideSuggestion,
 	GuideSuggestionIcon,
 } from "../../lib/i18n/dictionaries/guide";
 import { VOICE_LOCALES } from "../../lib/i18n/languages";
 import { useLanguage, useT } from "../../lib/i18n/use-language";
+import { scrollBehavior } from "../../lib/reduced-motion";
 import type { DestinationKey } from "../../lib/trip/trip-planner";
 import { AskQuillartButton } from "../assistant/ask-quillart-button";
 import {
@@ -117,6 +119,8 @@ interface GuidePanelProps {
 	onReportSaved?: (reportId: string) => void;
 	/** Show the "reference data" tag; off on the map, whose header already has it. */
 	showReferenceTag?: boolean;
+	/** The route on the map, offered first as a question for the Mobility agent. */
+	routeQuestion?: string;
 }
 
 function GuideAvatar() {
@@ -152,21 +156,30 @@ function GlossedText({
 
 function Suggestions({
 	text,
+	routeQuestion,
 	disabled,
 	wrap,
 	onAsk,
 }: {
 	text: GuideMessages["panel"];
+	routeQuestion?: string;
 	disabled: boolean;
 	wrap: boolean;
 	onAsk: (question: string) => void;
 }) {
+	// The map's route replaces the generic route example.
+	const suggestions: GuideSuggestion[] = routeQuestion
+		? [
+				{ text: routeQuestion, icon: "route" },
+				...text.suggestions.filter((suggestion) => suggestion.icon !== "route"),
+			]
+		: text.suggestions;
 	return (
 		<fieldset
 			className={`guide-panel__chips${wrap ? " guide-panel__chips--wrap" : ""}`}
 		>
 			<legend className="q-sr">{text.suggestionsLabel}</legend>
-			{text.suggestions.map((suggestion) => {
+			{suggestions.map((suggestion) => {
 				const Icon = SUGGESTION_ICONS[suggestion.icon];
 				return (
 					<button
@@ -191,6 +204,7 @@ export function GuidePanel({
 	onClose,
 	onReportSaved,
 	showReferenceTag = false,
+	routeQuestion,
 }: GuidePanelProps) {
 	const inputId = useId();
 	const titleId = useId();
@@ -239,7 +253,10 @@ export function GuidePanel({
 	// Keep the latest message in view as the conversation grows.
 	// biome-ignore lint/correctness/useExhaustiveDependencies: scroll on every new message or form.
 	useEffect(() => {
-		endRef.current?.scrollIntoView({ block: "end", behavior: "smooth" });
+		endRef.current?.scrollIntoView({
+			block: "end",
+			behavior: scrollBehavior(),
+		});
 	}, [messages, thinking, reportingId]);
 
 	/** At most one state card at a time: a new turn replaces the last one. */
@@ -388,7 +405,8 @@ export function GuidePanel({
 								</span>
 							)}
 						</div>
-						<h2 className="q-h2" id={titleId}>
+						{/* tabIndex -1: the map moves focus here when it opens the panel. */}
+						<h2 className="q-h2" id={titleId} tabIndex={-1}>
 							{text.title}
 						</h2>
 					</div>
@@ -457,6 +475,7 @@ export function GuidePanel({
 						<p className="q-eyebrow">{text.tryThis}</p>
 						<Suggestions
 							text={text}
+							routeQuestion={routeQuestion}
 							disabled={thinking}
 							wrap
 							onAsk={(question) => ask(question)}
@@ -569,6 +588,7 @@ export function GuidePanel({
 				{!empty && !voice.listening && (
 					<Suggestions
 						text={text}
+						routeQuestion={routeQuestion}
 						disabled={thinking}
 						wrap={false}
 						onAsk={(question) => ask(question)}

@@ -173,13 +173,15 @@ export function ActiveDiversionCard({
 								{before.label} → {now.label}
 							</dd>
 						</div>
-						<div>
-							<dt>
-								<Store size={14} strokeWidth={1.75} aria-hidden="true" />
-								Visitas a negocios
-							</dt>
-							<dd>+{fmt.format(diversion.businessVisits)}</dd>
-						</div>
+						{diversion.businessVisits !== undefined && (
+							<div>
+								<dt>
+									<Store size={14} strokeWidth={1.75} aria-hidden="true" />
+									Visitas a negocios
+								</dt>
+								<dd>+{fmt.format(diversion.businessVisits)}</dd>
+							</div>
+						)}
 					</dl>
 
 					<SectionRow

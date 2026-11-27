@@ -13,6 +13,8 @@ import {
 import type {
 	CityDashboardSnapshot,
 	CitySessionInfo,
+	CorridorZone,
+	FloodZone,
 	ReportStatus,
 } from "../lib/city-dashboard-types";
 import {
@@ -31,6 +33,15 @@ import type {
 	PresenceConnectionState,
 	VisitorPresenceSummary,
 } from "../lib/presence/visitor-presence-types";
+import { ActiveDiversionCard } from "./city/sections/active-diversion-card";
+import type { SectionLoadState } from "./city/sections/city-sections-types";
+import { DiversionProposalCard } from "./city/sections/diversion-proposal-card";
+import {
+	type AppliedDiversion,
+	buildDiversionProposal,
+	proposalZone,
+	toActiveDiversion,
+} from "./city/sections/diversion-utils";
 import {
 	CityShellHeader,
 	type ShellTheme,
@@ -45,6 +56,7 @@ import { CrowdSimPanel } from "./crowd-sim-panel";
 import { ImpactReportPanel } from "./impact-report-panel";
 import { JuryQrPanel } from "./jury-qr-panel";
 import { LiveIndicatorsPanel } from "./live-indicators-panel";
+import { useFloodCountdown } from "./map/use-flood-countdown";
 import { OverchargeInbox } from "./overcharge-inbox";
 import MatchTimeline from "./timeline/match-timeline";
 
@@ -52,6 +64,8 @@ const EMPTY_PRESENCE: VisitorPresenceSummary = {
 	connectedCount: 0,
 	qrCount: 0,
 };
+
+const NO_FLOOD_ZONES: FloodZone[] = [];
 
 const CLOCK = new Intl.DateTimeFormat("es-CO", {
 	hour: "2-digit",
@@ -64,6 +78,9 @@ const VERIFIED_OPEN_BUSINESSES = countVerifiedOpenBusinesses(
 	CORRIDOR_SEED.businesses,
 );
 
+/** Same key the layout's inline script reads, so the city keeps the theme it chose. */
+const THEME_STORAGE_KEY = "quillart-theme";
+
 export function CityDashboard() {
 	// Dev-only preview with fixtures (/ciudad?demo); always null in production builds.
 	const demo = useMemo(
@@ -71,7 +88,10 @@ export function CityDashboard() {
 			import.meta.env.DEV ? readShellDemoMode(window.location.search) : null,
 		[],
 	);
-	const [theme, setTheme] = useState<ShellTheme>("dark");
+	// Dark by default (the page asks for it), unless a saved choice already switched it.
+	const [theme, setTheme] = useState<ShellTheme>(() =>
+		document.documentElement.dataset.theme === "light" ? "light" : "dark",
+	);
 	const [session, setSession] = useState<CitySessionInfo | null>(null);
 	const [authLoading, setAuthLoading] = useState(true);
 	const [snapshot, setSnapshot] = useState<CityDashboardSnapshot | null>(null);
@@ -87,12 +107,40 @@ export function CityDashboard() {
 	const [busyId, setBusyId] = useState<string | null>(null);
 	const online = useOnlineStatus();
 	const { state: cityEventsState, lastEvent: lastCityEvent } = useCityState();
+	const flood = useFloodCountdown(
+		lastCityEvent,
+		snapshot?.floodZones ?? NO_FLOOD_ZONES,
+	);
+	// The diversion lives on this screen: the city applies, pauses or reverts it here.
+	const [applied, setApplied] = useState<AppliedDiversion | null>(null);
+	const [justApplied, setJustApplied] = useState(false);
+	const [pausedZones, setPausedZones] = useState<CorridorZone[]>([]);
+	const [discardedProposal, setDiscardedProposal] = useState<string | null>(
+		null,
+	);
 
 	const configured = demo !== null || isSupabaseConfigured();
 
 	useEffect(() => {
 		document.documentElement.dataset.theme = theme;
 	}, [theme]);
+
+	const changeTheme = (next: ShellTheme) => {
+		try {
+			localStorage.setItem(THEME_STORAGE_KEY, next);
+		} catch {
+			// Private mode or blocked storage: the theme still changes for this visit.
+		}
+		setTheme(next);
+	};
+
+	// The setup detail is for whoever deploys, not for the operator on screen.
+	useEffect(() => {
+		if (!configured)
+			console.warn(
+				"City dashboard: set PUBLIC_SUPABASE_URL and PUBLIC_SUPABASE_PUBLISHABLE_KEY in .env (see .env.example).",
+			);
+	}, [configured]);
 
 	useEffect(() => {
 		const timer = window.setInterval(() => setNowMs(Date.now()), 5000);
@@ -261,11 +309,75 @@ export function CityDashboard() {
 		: null;
 	const zones = snapshot?.zones ?? [];
 	const firstZone = zones[0];
+	const sectionState: SectionLoadState = !snapshot
+		? loadError
+			? "error"
+			: "loading"
+		: connection === "offline"
+			? "offline"
+			: "ready";
+	const proposal = snapshot
+		? buildDiversionProposal({
+				zones,
+				floodZones: snapshot.floodZones,
+				blockedFloodCodes: flood.blocked,
+				hour: cityEventsState.hour,
+				segments: CORRIDOR_SEED.segments,
+				businesses: CORRIDOR_SEED.businesses,
+				pausedZones,
+			})
+		: null;
+	const pendingProposal =
+		proposal && !applied && proposal.id !== discardedProposal ? proposal : null;
+	const decisionSlot = applied ? (
+		<ActiveDiversionCard
+			diversion={toActiveDiversion(
+				applied,
+				zones,
+				pausedZones.includes(applied.toZone),
+			)}
+			loadState={sectionState}
+			justApplied={justApplied}
+			onDismissApplied={() => setJustApplied(false)}
+			onRevert={() => {
+				setApplied(null);
+				setJustApplied(false);
+			}}
+			onTogglePause={(_, paused) => {
+				const zone = applied.toZone;
+				setPausedZones((current) =>
+					paused
+						? [...new Set([...current, zone])]
+						: current.filter((z) => z !== zone),
+				);
+			}}
+			onRetry={() => void loadSnapshot()}
+		/>
+	) : (
+		<DiversionProposalCard
+			proposal={pendingProposal}
+			loadState={sectionState}
+			onApply={() => {
+				if (!pendingProposal) return;
+				const toZone = proposalZone(pendingProposal);
+				setApplied({
+					proposal: pendingProposal,
+					toZone,
+					toVisitorsAtStart:
+						zones.find((count) => count.zone === toZone)?.active_visitors ?? 0,
+					since: CLOCK.format(Date.now()),
+				});
+				setJustApplied(true);
+			}}
+			onDiscard={(id) => setDiscardedProposal(id)}
+			onRetry={() => void loadSnapshot()}
+		/>
+	);
 
 	const header = (
 		<CityShellHeader
 			theme={theme}
-			onThemeChange={setTheme}
+			onThemeChange={changeTheme}
 			operator={
 				isCity && session
 					? { email: session.email, onSignOut: () => void handleSignOut() }
@@ -284,8 +396,8 @@ export function CityDashboard() {
 				<main className="cs-main" style={{ maxWidth: 720 }}>
 					<ShellState
 						kind="setup"
-						title="Falta conectar Supabase"
-						text="Copia .env.example a .env y define PUBLIC_SUPABASE_URL y PUBLIC_SUPABASE_PUBLISHABLE_KEY."
+						title="El Centro de Mando no está disponible ahora"
+						text="Falta configurar la conexión con los datos de la ciudad. Avisa al equipo técnico de QUILLART."
 					/>
 				</main>
 			</>
@@ -351,6 +463,7 @@ export function CityDashboard() {
 					}}
 					onRetry={() => void loadSnapshot()}
 					clockLabel={CLOCK.format(nowMs)}
+					decisionSlot={decisionSlot}
 					timelineSlot={<MatchTimeline variant="city" />}
 				/>
 
@@ -367,8 +480,18 @@ export function CityDashboard() {
 						)}
 						<FloodAlertsSection
 							floodZones={snapshot.floodZones}
+							countdowns={flood.countdowns}
+							blockedFloodCodes={flood.blocked}
+							nowMs={flood.now}
+							rainSentAt={
+								cityEventsState.floodAlertAt === null
+									? undefined
+									: CLOCK.format(cityEventsState.floodAlertAt)
+							}
+							loadState={sectionState}
 							busyId={busyId}
 							onToggle={(id, next) => void handleToggleFlood(id, next)}
+							onRetry={() => void loadSnapshot()}
 						/>
 						<div id="cobros">
 							<OverchargeInbox
