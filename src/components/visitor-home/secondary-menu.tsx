@@ -2,6 +2,7 @@ import { Globe, Menu } from "lucide-react";
 import { useState } from "react";
 import { SECONDARY_MENU_HREFS } from "../../lib/home-content";
 import { languageName } from "../../lib/home-content-language";
+import { useTheme } from "../home/use-theme";
 import { LanguageSheet } from "./language-sheet";
 import { useOnlineStatus } from "./use-online-status";
 import { useVisitorLanguage } from "./use-visitor-language";
@@ -18,6 +19,7 @@ type Sheet = "menu" | "language" | null;
 export function SecondaryMenu() {
 	const { language, detected, copy, choose } = useVisitorLanguage();
 	const online = useOnlineStatus();
+	const { theme, toggle: toggleTheme } = useTheme();
 	const [sheet, setSheet] = useState<Sheet>(null);
 	const name = languageName(language);
 
@@ -51,6 +53,8 @@ export function SecondaryMenu() {
 					hrefs={SECONDARY_MENU_HREFS}
 					online={online}
 					onOpenLanguage={() => setSheet("language")}
+					theme={theme}
+					onToggleTheme={toggleTheme}
 					onClose={() => setSheet(null)}
 				/>
 			) : null}

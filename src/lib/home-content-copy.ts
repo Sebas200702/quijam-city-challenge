@@ -16,8 +16,11 @@ export const VISITOR_SHELL_COPY: Record<VisitorLanguage, VisitorShellCopy> = {
 			slang: { title: "Jerga", hint: "Qué significa ajá, trancón y más" },
 			data: { title: "Datos", hint: "Qué usamos y qué no guardamos" },
 			language: { title: "Idioma", hint: "" },
+			theme: { title: "Tema", hint: "" },
 		},
 		languageHint: (name) => `${name}. Cámbialo en un toque`,
+		themeHint: (dark) =>
+			dark ? "Oscuro. Cámbialo a claro" : "Claro. Cámbialo a oscuro",
 		menuOfflineNote:
 			"Sin conexión: pasaporte, jerga e idioma funcionan con lo guardado. Los datos abiertos necesitan internet.",
 		nextStepEyebrow: "Tu siguiente paso",
@@ -64,8 +67,11 @@ export const VISITOR_SHELL_COPY: Record<VisitorLanguage, VisitorShellCopy> = {
 			slang: { title: "Slang", hint: "What ajá, trancón and more mean" },
 			data: { title: "Data", hint: "What we use and what we never keep" },
 			language: { title: "Language", hint: "" },
+			theme: { title: "Theme", hint: "" },
 		},
 		languageHint: (name) => `${name}. Change it in one tap`,
+		themeHint: (dark) =>
+			dark ? "Dark. Switch to light" : "Light. Switch to dark",
 		menuOfflineNote:
 			"Offline: passport, slang and language work with what is saved. Open data needs internet.",
 		nextStepEyebrow: "Your next step",
@@ -112,8 +118,11 @@ export const VISITOR_SHELL_COPY: Record<VisitorLanguage, VisitorShellCopy> = {
 			slang: { title: "Gíria", hint: "O que significam ajá, trancón e mais" },
 			data: { title: "Dados", hint: "O que usamos e o que não guardamos" },
 			language: { title: "Idioma", hint: "" },
+			theme: { title: "Tema", hint: "" },
 		},
 		languageHint: (name) => `${name}. Mude com um toque`,
+		themeHint: (dark) =>
+			dark ? "Escuro. Mudar para claro" : "Claro. Mudar para escuro",
 		menuOfflineNote:
 			"Sem conexão: passaporte, gíria e idioma funcionam com o que está salvo. Os dados abertos precisam de internet.",
 		nextStepEyebrow: "Seu próximo passo",
@@ -163,8 +172,11 @@ export const VISITOR_SHELL_COPY: Record<VisitorLanguage, VisitorShellCopy> = {
 				hint: "Ce que nous utilisons et ne gardons pas",
 			},
 			language: { title: "Langue", hint: "" },
+			theme: { title: "Thème", hint: "" },
 		},
 		languageHint: (name) => `${name}. Changez-la en un geste`,
+		themeHint: (dark) =>
+			dark ? "Sombre. Passer au clair" : "Clair. Passer au sombre",
 		menuOfflineNote:
 			"Hors ligne : passeport, argot et langue marchent avec ce qui est enregistré. Les données ouvertes demandent internet.",
 		nextStepEyebrow: "Votre prochaine étape",

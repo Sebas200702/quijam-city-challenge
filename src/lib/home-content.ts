@@ -1,9 +1,9 @@
 import type { FeatureItem } from "../components/home/feature-grid";
 import type { MapNextStep, VisitorMenuItemId } from "./home-content-types";
 
-/** Secondary menu routes (rule 2). "language" opens a sheet instead of a page. */
+/** Secondary menu routes (rule 2). "language" opens a sheet and "theme" toggles, instead of a page. */
 export const SECONDARY_MENU_HREFS: Record<
-	Exclude<VisitorMenuItemId, "language">,
+	Exclude<VisitorMenuItemId, "language" | "theme">,
 	string
 > = {
 	passport: "/pasaporte",

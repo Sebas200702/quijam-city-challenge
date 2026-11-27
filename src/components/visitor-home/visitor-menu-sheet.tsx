@@ -3,7 +3,9 @@ import {
 	Globe,
 	type LucideIcon,
 	MessagesSquare,
+	Moon,
 	ShieldCheck,
+	Sun,
 	WifiOff,
 } from "lucide-react";
 import type {
@@ -18,15 +20,18 @@ const ITEMS: { id: VisitorMenuItemId; Icon: LucideIcon; tone: string }[] = [
 	{ id: "slang", Icon: MessagesSquare, tone: "q-tile--green" },
 	{ id: "data", Icon: ShieldCheck, tone: "visitor-tile--neutral" },
 	{ id: "language", Icon: Globe, tone: "visitor-tile--neutral" },
+	{ id: "theme", Icon: Moon, tone: "visitor-tile--neutral" },
 ];
 
 interface VisitorMenuSheetProps {
 	copy: VisitorShellCopy;
 	lang: string;
 	languageName: string;
-	hrefs: Record<Exclude<VisitorMenuItemId, "language">, string>;
+	hrefs: Record<Exclude<VisitorMenuItemId, "language" | "theme">, string>;
 	online: boolean;
 	onOpenLanguage: () => void;
+	theme: "light" | "dark";
+	onToggleTheme: () => void;
 	onClose: () => void;
 }
 
@@ -41,6 +46,8 @@ export function VisitorMenuSheet({
 	hrefs,
 	online,
 	onOpenLanguage,
+	theme,
+	onToggleTheme,
 	onClose,
 }: VisitorMenuSheetProps) {
 	return (
@@ -53,12 +60,17 @@ export function VisitorMenuSheet({
 		>
 			<nav aria-label={copy.menuTitle}>
 				<ul className="visitor-menu">
-					{ITEMS.map(({ id, Icon, tone }) => {
+					{ITEMS.map(({ id, Icon: BaseIcon, tone }) => {
 						const { title } = copy.menuItems[id];
+						const dark = theme === "dark";
+						// The theme icon shows what the tap switches to.
+						const Icon = id === "theme" ? (dark ? Sun : Moon) : BaseIcon;
 						const hint =
 							id === "language"
 								? copy.languageHint(languageName)
-								: copy.menuItems[id].hint;
+								: id === "theme"
+									? copy.themeHint(dark)
+									: copy.menuItems[id].hint;
 						const content = (
 							<>
 								<span className={`q-tile ${tone}`} aria-hidden="true">
@@ -70,11 +82,11 @@ export function VisitorMenuSheet({
 						);
 						return (
 							<li key={id}>
-								{id === "language" ? (
+								{id === "language" || id === "theme" ? (
 									<button
 										type="button"
 										className="q-feature visitor-menu__item"
-										onClick={onOpenLanguage}
+										onClick={id === "language" ? onOpenLanguage : onToggleTheme}
 									>
 										{content}
 									</button>

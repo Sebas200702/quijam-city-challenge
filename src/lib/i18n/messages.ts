@@ -14,11 +14,6 @@ import { shared } from "./dictionaries/shared";
 import type { Language } from "./languages";
 
 const es = {
-	language: {
-		button: "Idioma",
-		menuTitle: "Elige el idioma",
-		current: "Idioma actual",
-	},
 	nav: {
 		sections: "Secciones",
 		home: "Quillart",
@@ -27,10 +22,6 @@ const es = {
 		places: "Lugares",
 		map: "Mapa",
 		profile: "Perfil",
-	},
-	theme: {
-		toDark: "Cambiar a tema oscuro",
-		toLight: "Cambiar a tema claro",
 	},
 	chat: {
 		composerLabel: "Escríbele a Quillart",
@@ -92,11 +83,6 @@ export type Messages = BaseMessages & {
 };
 
 const en: BaseMessages = {
-	language: {
-		button: "Language",
-		menuTitle: "Choose your language",
-		current: "Current language",
-	},
 	nav: {
 		sections: "Sections",
 		home: "Quillart",
@@ -105,10 +91,6 @@ const en: BaseMessages = {
 		places: "Places",
 		map: "Map",
 		profile: "Profile",
-	},
-	theme: {
-		toDark: "Switch to dark theme",
-		toLight: "Switch to light theme",
 	},
 	chat: {
 		composerLabel: "Write to Quillart",
@@ -154,11 +136,6 @@ const en: BaseMessages = {
 };
 
 const pt: BaseMessages = {
-	language: {
-		button: "Idioma",
-		menuTitle: "Escolha o idioma",
-		current: "Idioma atual",
-	},
 	nav: {
 		sections: "Seções",
 		home: "Quillart",
@@ -167,10 +144,6 @@ const pt: BaseMessages = {
 		places: "Lugares",
 		map: "Mapa",
 		profile: "Perfil",
-	},
-	theme: {
-		toDark: "Mudar para o tema escuro",
-		toLight: "Mudar para o tema claro",
 	},
 	chat: {
 		composerLabel: "Escreva para o Quillart",
@@ -217,11 +190,6 @@ const pt: BaseMessages = {
 };
 
 const fr: BaseMessages = {
-	language: {
-		button: "Langue",
-		menuTitle: "Choisissez la langue",
-		current: "Langue actuelle",
-	},
 	nav: {
 		sections: "Sections",
 		home: "Quillart",
@@ -230,10 +198,6 @@ const fr: BaseMessages = {
 		places: "Lieux",
 		map: "Carte",
 		profile: "Profil",
-	},
-	theme: {
-		toDark: "Passer au thème sombre",
-		toLight: "Passer au thème clair",
 	},
 	chat: {
 		composerLabel: "Écrire à Quillart",

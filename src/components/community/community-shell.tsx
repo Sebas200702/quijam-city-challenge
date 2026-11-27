@@ -1,11 +1,10 @@
 import type { ReactNode } from "react";
 import { useT } from "../../lib/i18n/use-language";
 import { BottomNav } from "../home/bottom-nav";
-import { LanguageSwitcher } from "../home/language-switcher";
 import type { NavSection } from "../home/nav-sections";
 import { QuillartLogo } from "../home/quillart-logo";
-import { ThemeToggle } from "../home/theme-toggle";
 import { TopNav } from "../home/top-nav";
+import { SecondaryMenu } from "../visitor-home/secondary-menu";
 import { useStore } from "./use-community";
 
 interface CommunityShellProps {
@@ -33,8 +32,7 @@ export function CommunityShell({
 					<QuillartLogo />
 				</a>
 				<TopNav current={current} aiHref={aiHref} />
-				<LanguageSwitcher />
-				<ThemeToggle />
+				<SecondaryMenu />
 			</header>
 			{store.mode === "device" && (
 				<p className="q-sm q-muted mx-4 mt-3 rounded-[var(--radius-md)] bg-[var(--gold-soft)] px-4 py-2 text-[var(--gold-text)] lg:mx-8">
