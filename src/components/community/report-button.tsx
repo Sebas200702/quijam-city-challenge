@@ -4,19 +4,17 @@
 import { Flag } from "lucide-react";
 import { useId, useState } from "react";
 import type { ReportReason } from "../../lib/community/community-types";
+import { useT } from "../../lib/i18n/use-language";
 import type { ContentKind } from "../../lib/moderation/moderation-types";
 import { signInHref, useSession, useStore } from "./use-community";
 
-const REASONS: { value: ReportReason; label: string }[] = [
-	{
-		value: "misinformation",
-		label: "Información falsa o alarma sin confirmar",
-	},
-	{ value: "scam", label: "Estafa o cobro sospechoso" },
-	{ value: "impersonation", label: "Se hace pasar por otra persona o entidad" },
-	{ value: "offensive", label: "Ofensivo o acoso" },
-	{ value: "spam", label: "Publicidad o spam" },
-	{ value: "other", label: "Otro motivo" },
+const REASONS: ReportReason[] = [
+	"misinformation",
+	"scam",
+	"impersonation",
+	"offensive",
+	"spam",
+	"other",
 ];
 
 interface ReportButtonProps {
@@ -34,6 +32,7 @@ export function ReportButton({
 	ownerId,
 	compact,
 }: ReportButtonProps) {
+	const t = useT();
 	const store = useStore();
 	const { profile } = useSession();
 	const formId = useId();
@@ -58,15 +57,14 @@ export function ReportButton({
 			onClick={() => setOpen((value) => !value)}
 		>
 			<Flag size={compact ? 14 : 16} aria-hidden="true" />
-			Reportar
+			{t.forum.report.button}
 		</button>
 	);
 
 	if (state === "sent") {
 		return (
 			<p role="status" className="q-sm q-muted">
-				Gracias. Lo revisaremos; si varias personas lo reportan, se oculta
-				mientras tanto.
+				{t.forum.report.thanks}
 			</p>
 		);
 	}
@@ -82,9 +80,9 @@ export function ReportButton({
 					{!profile ? (
 						<p className="q-sm">
 							<a href={signInHref()} className="font-semibold">
-								Entra con tu cuenta
+								{t.forum.report.signInLink}
 							</a>{" "}
-							para reportar.
+							{t.forum.report.signInAfter}
 						</p>
 					) : (
 						<form
@@ -100,27 +98,29 @@ export function ReportButton({
 										error:
 											error instanceof Error
 												? error.message
-												: "No pudimos enviar el reporte.",
+												: t.forum.report.error,
 									});
 								}
 							}}
 						>
 							<fieldset className="flex flex-col gap-1">
-								<legend className="q-eyebrow mb-1">¿Qué pasa?</legend>
-								{REASONS.map((item) => (
+								<legend className="q-eyebrow mb-1">
+									{t.forum.report.legend}
+								</legend>
+								{REASONS.map((value) => (
 									<label
-										key={item.value}
+										key={value}
 										className="flex min-h-11 items-center gap-3 text-[15px]"
 									>
 										<input
 											type="radio"
 											name={`${formId}-reason`}
-											value={item.value}
-											checked={reason === item.value}
-											onChange={() => setReason(item.value)}
+											value={value}
+											checked={reason === value}
+											onChange={() => setReason(value)}
 											className="h-5 w-5"
 										/>
-										{item.label}
+										{t.forum.report.reasons[value]}
 									</label>
 								))}
 							</fieldset>
@@ -135,19 +135,17 @@ export function ReportButton({
 									className="q-btn q-btn--primary q-btn--sm min-h-11!"
 									disabled={state === "sending"}
 								>
-									Enviar reporte
+									{t.forum.report.submit}
 								</button>
 								<button
 									type="button"
 									className="q-btn q-btn--secondary q-btn--sm min-h-11!"
 									onClick={() => setOpen(false)}
 								>
-									Cancelar
+									{t.forum.report.cancel}
 								</button>
 							</div>
-							<p className="q-sm q-muted">
-								¿Alguien está en peligro? Llama a la Línea 123.
-							</p>
+							<p className="q-sm q-muted">{t.forum.report.danger}</p>
 						</form>
 					)}
 				</div>

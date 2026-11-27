@@ -7,14 +7,13 @@ import {
 	initials,
 } from "../../lib/community/community-labels";
 import type { ForumThread } from "../../lib/community/community-types";
-import { useLanguage } from "../../lib/i18n/use-language";
+import { useT } from "../../lib/i18n/use-language";
 import { HeldBadge } from "./community-ui";
 import { CitizenReportBadge } from "./trust-badges";
 
 export function ThreadCard({ thread }: { thread: ForumThread }) {
-	useLanguage();
-	const replies =
-		thread.replyCount === 1 ? "1 respuesta" : `${thread.replyCount} respuestas`;
+	const t = useT();
+	const replies = t.forum.card.replies(thread.replyCount);
 	return (
 		<a
 			href={`/foro/${thread.id}`}

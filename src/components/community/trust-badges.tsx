@@ -2,6 +2,7 @@
 
 import { BadgeCheck, CircleAlert } from "lucide-react";
 import type { ForumThread } from "../../lib/community/community-types";
+import { useT } from "../../lib/i18n/use-language";
 
 /**
  * A citizen report (the triage flagged a risk in public space) stays
@@ -9,6 +10,7 @@ import type { ForumThread } from "../../lib/community/community-types";
  * city channel, never from the forum.
  */
 export function CitizenReportBadge({ thread }: { thread: ForumThread }) {
+	const t = useT();
 	if (
 		thread.moderationStatus !== "published" ||
 		thread.triagePriority === "none"
@@ -17,22 +19,23 @@ export function CitizenReportBadge({ thread }: { thread: ForumThread }) {
 	return thread.cityVerified ? (
 		<span className="q-badge q-badge--optimal">
 			<BadgeCheck size={14} aria-hidden="true" />
-			Confirmado por la ciudad
+			{t.forum.trust.cityConfirmed}
 		</span>
 	) : (
 		<span className="q-badge q-badge--high">
 			<CircleAlert size={14} aria-hidden="true" />
-			Reporte ciudadano · sin confirmar
+			{t.forum.trust.unconfirmed}
 		</span>
 	);
 }
 
 export function VerifiedOrganizerBadge({ verified }: { verified: boolean }) {
+	const t = useT();
 	if (!verified) return null;
 	return (
 		<span className="q-badge q-badge--optimal">
 			<BadgeCheck size={14} aria-hidden="true" />
-			Organizador verificado
+			{t.forum.trust.verifiedOrganizer}
 		</span>
 	);
 }
