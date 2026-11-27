@@ -94,6 +94,7 @@ Detalle en [`docs/`](docs/).
 | [`docs/20-identidad.md`](docs/20-identidad.md) | Identidad: el intérprete de la ciudad, qué no somos (gemelo digital), vocabulario y orden de la demo |
 | [`docs/21-respuestas.md`](docs/21-respuestas.md) | Qué responder cuando pregunten por el proyecto: versiones de 10 s, 30 s y 1 min, y preguntas difíciles |
 | [`docs/22-seguridad-y-confianza.md`](docs/22-seguridad-y-confianza.md) | Seguridad y confianza: desinformación, suplantación, estafas, reportes, límites de uso, IA blindada y derechos sobre los datos |
+| [`docs/24-datos-faltantes-ui.md`](docs/24-datos-faltantes-ui.md) | Datos que faltan para que las pantallas de la maqueta y los componentes rediseñados funcionen con datos reales, por superficie, con propuestas de esquema y de eventos |
 | [`docs/26-arquitectura-de-informacion.md`](docs/26-arquitectura-de-informacion.md) | Arquitectura de información: las 5 superficies, Quillart AI como inicio, cuenta solo para participar, avisos, superficie × `city-events`, plan de roles, glosario y guion de prueba |
 | [`docs/feedback.md`](docs/feedback.md) | Registro de retroalimentación por sprint y validación con personas ajenas |
 
