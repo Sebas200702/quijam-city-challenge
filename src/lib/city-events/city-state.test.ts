@@ -81,4 +81,53 @@ describe("crowdByZoneFrom", () => {
 			gran_malecon: 1,
 		});
 	});
+
+	it("follows a host assignment from pending to arrived and clears it when done", () => {
+		let state = reduceCityEvent(INITIAL_CITY_STATE, {
+			type: "anfitrion_asignado",
+			assignmentId: "h1",
+			need: "movilidad_reducida",
+			meetingPointCode: "STOP-MURILLO-SUR",
+		});
+		expect(state.hostAssignment?.status).toBe("pendiente");
+
+		state = reduceCityEvent(state, {
+			type: "anfitrion_estado",
+			assignmentId: "h1",
+			status: "en_camino",
+			etaMin: 6,
+		});
+		expect(state.hostAssignment).toMatchObject({ status: "en_camino", etaMin: 6 });
+
+		state = reduceCityEvent(state, {
+			type: "anfitrion_estado",
+			assignmentId: "h1",
+			status: "llego",
+		});
+		expect(state.hostAssignment?.status).toBe("llego");
+
+		state = reduceCityEvent(state, {
+			type: "anfitrion_estado",
+			assignmentId: "h1",
+			status: "terminada",
+		});
+		expect(state.hostAssignment).toBeNull();
+	});
+
+	it("ignores updates for an unknown assignment and resets on reiniciar", () => {
+		const unknown = reduceCityEvent(INITIAL_CITY_STATE, {
+			type: "anfitrion_estado",
+			assignmentId: "x",
+			status: "llego",
+		});
+		expect(unknown).toBe(INITIAL_CITY_STATE);
+
+		const assigned = reduceCityEvent(INITIAL_CITY_STATE, {
+			type: "anfitrion_asignado",
+			assignmentId: "h1",
+			need: "movilidad_reducida",
+			meetingPointCode: "STOP-MURILLO-SUR",
+		});
+		expect(reduceCityEvent(assigned, { type: "reiniciar" }).hostAssignment).toBeNull();
+	});
 });

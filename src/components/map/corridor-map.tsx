@@ -37,6 +37,7 @@ import { DESTINATIONS, type DestinationKey } from "../../lib/trip/trip-planner";
 import { GuidePanel } from "../guide/guide-panel";
 import "./corridor-map.css";
 import { DetailCard } from "./detail-card";
+import { HostArrivalNotice } from "../host/host-arrival-notice";
 import { FloodAlertBanner } from "./flood-alert-banner";
 import { MapHeader, type Theme } from "./map-header";
 import {
@@ -520,6 +521,7 @@ export default function CorridorMap({
 
 			{/* Mount point for NoticeSlot and ArroyoModal: at the root, above card, Guide and detail. */}
 			{notices && <div className="corridor-app__notices">{notices}</div>}
+			<HostArrivalNotice assignment={city.hostAssignment} />
 		</div>
 	);
 }

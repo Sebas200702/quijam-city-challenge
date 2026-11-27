@@ -8,6 +8,7 @@ export const INITIAL_CITY_STATE: CityState = {
 	floodAlertAt: null,
 	maleconCapacityPct: 60,
 	lastOverchargeReportId: null,
+	hostAssignment: null,
 };
 
 /** Pure reducer shared by every screen that listens to `city-events`. */
@@ -35,6 +36,30 @@ export function reduceCityEvent(
 			return event.hour >= 8 && event.hour <= 23
 				? { ...state, hour: event.hour }
 				: state;
+		case "anfitrion_asignado":
+			return {
+				...state,
+				hostAssignment: {
+					id: event.assignmentId,
+					need: event.need,
+					meetingPointCode: event.meetingPointCode,
+					status: "pendiente",
+				},
+			};
+		case "anfitrion_estado":
+			// Ignore updates for an assignment this screen never saw.
+			if (state.hostAssignment?.id !== event.assignmentId) return state;
+			return {
+				...state,
+				hostAssignment:
+					event.status === "terminada"
+						? null
+						: {
+								...state.hostAssignment,
+								status: event.status,
+								etaMin: event.etaMin,
+							},
+			};
 		case "reiniciar":
 			return INITIAL_CITY_STATE;
 	}
