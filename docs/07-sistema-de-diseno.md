@@ -133,6 +133,81 @@ Tarjeta de decisión (Decision Engine): `.q-card` con `.q-band`, impacto en
 `.q-impact`, confianza en `.q-meter--sm` y acciones Aplicar / Descartar /
 Revertir. Toda decisión se puede revertir.
 
+## Componentes de navegación por rol (issue #56)
+
+Sostienen las reglas de UX de la épica #57 y la arquitectura de
+[20-arquitectura-de-informacion.md](20-arquitectura-de-informacion.md). Solo
+usan tokens existentes: ningún color nuevo.
+
+| Componente | Clases | Cuándo usarlo |
+|---|---|---|
+| Tu siguiente paso | `.q-next-step`, `__head` `__eyebrow` `__title` `__why` `__facts` | La única tarjeta de acción en la pantalla de inicio del visitante, del vendedor y del anfitrión. Un título con verbo, una frase de por qué y un solo `.q-btn--primary.q-btn--block` |
+| Aviso | `.q-alert` + `--info` `--safe` `--alert`, `__icon` `__body` `__title` `__text` `__actions` `__close` | Tarjeta discreta para todo lo que no es seguridad: desvío, anfitrión en camino, reporte enviado. Máximo uno visible a la vez |
+| Aviso de seguridad | `.q-backdrop` > `.q-alert.q-alert--alert.q-alert--modal` | Solo para un arroyo activo que toca la ruta o la zona del visitante. Es la única interrupción permitida |
+| Hoja inferior | `.q-sheet` + `--dock` `--peek` `--expanded`, `__grab` `__handle` `__head` `__body` `__more` | Detalle sobre el mapa (ruta, negocio, menú secundario). En `--peek` se oculta `__more` |
+| Estado | `.q-state` + `--loading` `--empty` `--error` `--offline`, `__glyph` `__title` `__text` `__action` | Ocupa el área completa cuando no hay contenido que mostrar. Cada pantalla tiene los cuatro |
+| Datos simulados | `.q-sim-tag` | Una vez por pantalla, cerca del mapa o del título. Nunca en cada tarjeta |
+| Ver detalles | `.q-details` (sobre `<details>`), `__body` | Probabilidades, confianza y fuentes del Decisor. Cerrado por defecto |
+
+### Tu siguiente paso
+
+```html
+<section class="q-next-step" aria-labelledby="next-title">
+  <div class="q-next-step__head">
+    <p class="q-next-step__eyebrow"><span class="q-star" aria-hidden="true"></span>Tu siguiente paso</p>
+    <span class="q-badge q-badge--optimal">Ruta verde</span>
+  </div>
+  <h2 class="q-next-step__title" id="next-title">Toma el Transmetro al estadio</h2>
+  <p class="q-next-step__why">Evitamos el trancón de la Vía 40; esta ruta tiene sombra en los paraderos.</p>
+  <button class="q-btn q-btn--primary q-btn--block" type="button">Empezar ruta</button>
+</section>
+```
+
+- El título empieza con verbo. El por qué cabe en una línea (regla 6).
+- Cifras en `__facts` (tiempo, tarifa de referencia), como `<dl>`.
+- Probabilidades y confianza nunca en la tarjeta: van en `.q-details`.
+
+### Aviso y aviso de seguridad
+
+- `--info` (oro): sugerencia o novedad. `--safe` (verde): algo salió bien o
+  alguien viene a ayudar. `--alert` (rojo): riesgo.
+- El título dice el estado en palabras; el icono lleva un glifo (`!`, `✓`,
+  `i`) además del color.
+- Discreto: `role="status"` y `aria-live="polite"`. Botón de cerrar
+  `.q-alert__close` de 44 px con `aria-label`.
+- Modal: `role="alertdialog"`, `aria-modal="true"`, `aria-labelledby` y
+  `aria-describedby`. El foco entra al botón principal y vuelve al origen al
+  cerrar. `Esc` cierra solo si la acción principal no es obligatoria.
+- Ningún aviso desaparece solo antes de 20 s (WCAG 2.2.1).
+
+### Hoja inferior
+
+- `.q-sheet` ya existía (hoja de trayecto); se agregan `--dock`, `--peek`,
+  `--expanded`, `__grab`, `__head`, `__body` y `__more`, y el relleno inferior
+  respeta `env(safe-area-inset-bottom)`.
+- `__grab` es un `<button>` de 44 px con `aria-expanded` y `aria-controls`;
+  contiene el `__handle` visual. Arrastrar es opcional; tocar siempre funciona.
+- Altura del modo `--peek`: variable `--q-sheet-peek` (200 px por defecto).
+
+### Estados
+
+- Carga: `.q-star.q-star--think` dentro de `__glyph` y `aria-busy="true"` en
+  la región que carga.
+- Vacío: dice qué falta y la acción que lo llena ("Marca tu negocio abierto").
+- Error: dice qué pasó sin códigos y ofrece "Reintentar".
+- Sin conexión: dice qué sigue funcionando ("El mapa y las respuestas
+  guardadas funcionan sin internet").
+- El bloque lleva `role="status"`; el error, `role="alert"`.
+
+### Accesibilidad común
+
+- Áreas táctiles de 44 px o más (botones, cerrar, `summary`, `__grab`).
+- Foco visible con `--focus` en todos los controles nuevos.
+- Con `prefers-reduced-motion: reduce` se apagan las transiciones de la hoja y
+  del chevron de `.q-details`, además de las animaciones existentes.
+- Contraste: texto `--ink` y `--ink-muted` sobre `--gold-soft`, `--green-soft`
+  y `--red-soft` supera 4,5:1 en ambos temas (calculado, falta medir).
+
 ## Iconos e ilustraciones
 
 - **Iconos:** [lucide-react](https://lucide.dev), 24×24, trazo 1,75, color
