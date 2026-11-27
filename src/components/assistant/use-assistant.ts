@@ -22,6 +22,7 @@ import type {
 import { isActionTool } from "../../lib/assistant/assistant-types";
 import { answerOffline } from "../../lib/assistant/offline-answer";
 import { screenContext } from "../../lib/assistant/screen-context-store";
+import { type UiNavigation, uiBus } from "../../lib/assistant/ui-action-bus";
 import { declinedResult, runTool } from "../../lib/assistant/tool-executor";
 import { withOfflineGuide } from "../../lib/guide/guide-offline";
 import { messages as dictionaries } from "../../lib/i18n/messages";
@@ -167,6 +168,11 @@ export function useAssistant() {
 	const [error, setError] = useState<AssistantError | null>(null);
 	const [suggestions, setSuggestions] = useState<string[]>([]);
 	const [draft, setDraft] = useState<AssistantDraft | null>(null);
+	/** Tool calls whose result is already visible on the screen itself. */
+	const [onScreen, setOnScreen] = useState<ReadonlySet<string>>(
+		() => new Set(),
+	);
+	const navigation = useRef<UiNavigation | null>(null);
 	const batch = useRef<OpenBatch | null>(null);
 	const busy = useRef(false);
 	const profileRef = useRef(profile);
@@ -297,6 +303,21 @@ export function useAssistant() {
 		[],
 	);
 
+	/**
+	 * Ends a loop. When the agent asked for another screen (a route on the
+	 * map), it opens now, with the whole conversation saved, so the dock there
+	 * picks it up where it was.
+	 */
+	const finish = useCallback((history: AssistantMessage[]) => {
+		busy.current = false;
+		setLoading(false);
+		const next = navigation.current;
+		navigation.current = null;
+		if (!next) return;
+		save({ messages: history, batch: batch.current });
+		uiBus().follow(next);
+	}, []);
+
 	const converse = useCallback(
 		async (history: AssistantMessage[], rounds: number): Promise<void> => {
 			busy.current = true;
@@ -326,6 +347,16 @@ export function useAssistant() {
 			setDraft(null);
 			setMessages(next);
 			setSuggestions(response.suggestions ?? []);
+
+			// The agent changes the screen the person is on (whitelisted again here).
+			const shown = uiBus().dispatch(response.uiActions ?? []);
+			const fromCalls = shown.changes.flatMap((change) =>
+				change.action.fromCall ? [change.action.fromCall] : [],
+			);
+			if (fromCalls.length > 0) {
+				setOnScreen((current) => new Set([...current, ...fromCalls]));
+			}
+			if (shown.navigation) navigation.current = shown.navigation;
 
 			const reads = response.toolCalls.filter(
 				(call) => !isActionTool(call.name),
@@ -359,8 +390,7 @@ export function useAssistant() {
 				setPending(
 					actions.map((call) => toPending(call, response.agent, known)),
 				);
-				busy.current = false;
-				setLoading(false);
+				finish(known);
 				return;
 			}
 
@@ -373,10 +403,9 @@ export function useAssistant() {
 					return;
 				}
 			}
-			busy.current = false;
-			setLoading(false);
+			finish(next);
 		},
-		[request, store, toPending],
+		[request, store, toPending, finish],
 	);
 
 	/** Answers one pending action; when none is left, the loop continues. */
@@ -465,6 +494,7 @@ export function useAssistant() {
 
 	return {
 		messages,
+		onScreen,
 		draft,
 		pending,
 		loading,

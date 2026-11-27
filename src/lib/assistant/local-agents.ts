@@ -425,9 +425,47 @@ export const EMERGENCY_TEXT =
 
 const MAX_REPORT_LENGTH = 1000;
 
+const OVERCHARGE_WORDS = [
+	"me cobraron",
+	"cobro de mas",
+	"cobrar de mas",
+	"cobro abusivo",
+	"overcharg*",
+];
+
+/** "Me cobraron 25.000 en un taxi" → the fare report form, already filled (U17). */
+export function overchargeReportPath(text: string): string {
+	const normalized = normalizeText(text);
+	const params = new URLSearchParams();
+	const amount = /(\d{1,3}(?:[.,\s]\d{3})+|\d{4,6})/.exec(text)?.[1];
+	if (amount) params.set("monto", amount.replace(/\D/g, ""));
+	if (hasAnyKeyword(normalized, ["taxi*"])) params.set("vehiculo", "taxi");
+	else if (hasAnyKeyword(normalized, ["bus", "buseta*", "transmetro"])) {
+		params.set("vehiculo", "bus");
+	}
+	const search = params.toString();
+	return `/reportar${search ? `?${search}` : ""}`;
+}
+
 function cityReportsTurn(text: string, context: AssistantContext): AgentTurn {
-	const emergency = hasAnyKeyword(normalizeText(text), EMERGENCY_WORDS);
+	const normalizedText = normalizeText(text);
+	const emergency = hasAnyKeyword(normalizedText, EMERGENCY_WORDS);
 	const prefix = emergency ? `${EMERGENCY_TEXT} ` : "";
+	if (!emergency && hasAnyKeyword(normalizedText, OVERCHARGE_WORDS)) {
+		// Fares have their own form (no account needed): open it filled.
+		return {
+			text: "Te dejé el reporte de cobro casi listo: revisa el tramo y el monto y envíalo.",
+			toolCalls: [
+				{
+					name: "open_page",
+					args: {
+						path: overchargeReportPath(text),
+						label: "Reportar el cobro",
+					},
+				},
+			],
+		};
+	}
 	if (!context.signedIn) {
 		const turn = signInTurn("Para enviar el reporte necesitas una cuenta.");
 		return { ...turn, text: `${prefix}${turn.text}` };

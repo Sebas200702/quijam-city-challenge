@@ -17,6 +17,7 @@ import type {
 } from "../community/community-types";
 import type { Language } from "../i18n/languages";
 import type { ScreenContext } from "./screen-context-types";
+import type { UiAction } from "./ui-action-types";
 
 /** Specialized agents, one per section of the platform. */
 export type AssistantAgentId =
@@ -159,6 +160,11 @@ export interface AssistantResponse {
 	source: "gemini" | "local";
 	/** Short follow-up suggestions for chips. */
 	suggestions: string[];
+	/**
+	 * Visible changes for the screen (filter, map, prefill), derived from the
+	 * validated tool calls and whitelisted. Never writes (see ui-actions.ts).
+	 */
+	uiActions?: UiAction[];
 }
 
 /**

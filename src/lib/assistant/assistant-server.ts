@@ -27,8 +27,9 @@ import {
 } from "./assistant-types";
 import { type GeminiAgentOptions, runGeminiAgent } from "./gemini-agent";
 import { answerLocally, EMERGENCY_TEXT } from "./local-agents";
-import { routeMessage } from "./orchestrator";
+import { latestUserText, routeMessage } from "./orchestrator";
 import { parseScreenContext } from "./screen-context";
+import { uiActionsForCalls } from "./ui-actions";
 
 export const MAX_MESSAGES = 30;
 export const MAX_USER_TEXT = 1000;
@@ -303,6 +304,12 @@ export async function answer(
 	const toolCalls = limitActionCalls(
 		turn.toolCalls.filter((call) => allowed.includes(call.name)),
 	).map((call) => ({ id: newId(), ...call }) as AssistantToolCall);
+	// Visible changes come only from these validated calls, through the whitelist.
+	const uiActions = uiActionsForCalls(
+		toolCalls,
+		latestUserText(messages),
+		context.screen,
+	);
 
 	return {
 		agent,
@@ -311,5 +318,6 @@ export async function answer(
 		toolCalls,
 		source,
 		suggestions: AGENTS[agent].suggestions,
+		...(uiActions.length > 0 ? { uiActions } : {}),
 	};
 }

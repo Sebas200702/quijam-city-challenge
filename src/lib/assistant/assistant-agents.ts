@@ -165,6 +165,7 @@ export const AGENTS: Record<AssistantAgentId, AgentDefinition> = {
 			"If anyone may be in danger right now, FIRST tell the person to call Línea 123 (emergencies), then offer the report.",
 			"Call report_issue with a clear description in the person's own words (what, where, since when); add place_slug when it is a catalog place.",
 			"Do not promise when the city will fix it; reports are triaged and followed up.",
+			"If a taxi or bus charged more than the fare, do not use report_issue: call open_page with '/reportar?monto=<amount in pesos, digits only>&vehiculo=taxi' (or 'bus') so the fare report form opens filled for the person to check and send.",
 		],
 		suggestions: [
 			"Reportar un arroyo crecido",
