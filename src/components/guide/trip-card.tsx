@@ -1,16 +1,23 @@
 import {
+	Accessibility,
 	Bike,
 	Bus,
 	CarTaxiFront,
 	Flag,
 	Footprints,
+	Leaf,
 	type LucideIcon,
 	Map as MapIcon,
+	MapPin,
 	TramFront,
 } from "lucide-react";
 import type { TransportMode } from "../../lib/corridor/corridor-types";
 import { formatFare, type GuideLanguage } from "../../lib/guide/guide-local";
-import { DESTINATIONS, type TripPlan } from "../../lib/trip/trip-planner";
+import {
+	DESTINATIONS,
+	type TripPlan,
+	VISITOR_ORIGIN,
+} from "../../lib/trip/trip-planner";
 import { guideText } from "./guide-text";
 
 const MODE_ICONS: Record<TransportMode, LucideIcon> = {
@@ -20,6 +27,55 @@ const MODE_ICONS: Record<TransportMode, LucideIcon> = {
 	walk: Footprints,
 	bike: Bike,
 };
+
+const STROKE = 1.75;
+
+/** Card-only copy. Same rule as guide-text: Spanish for Spanish, English for the rest. */
+const COPY = {
+	es: {
+		eyebrow: "Ruta propuesta",
+		showRoute: "Ver la ruta",
+		accessible: "Accesible",
+		whyGreen: "Es la opción verde con mejor tiempo y tarifa.",
+		whyFlood: "Evitamos un tramo con alerta de arroyo; esta ruta va seca.",
+		whyTaxi:
+			"No pasa transporte público directo; el taxi verificado es seguro.",
+		noRouteTitle: "Ahora no hay una ruta segura",
+		noRouteText:
+			"Espera en un lugar seco o pregúntale al Guía por otra salida.",
+		taxi: "Taxi verificado",
+		range: "rango justo",
+		details: "Ver detalles",
+		confidence: "Confianza de la ruta",
+		distance: "Distancia",
+		access: "Silla de ruedas",
+		yes: "Sí",
+		no: "No",
+		sources: "Fuentes: datos abiertos de transporte y alertas de arroyos.",
+		levels: ["Baja", "Media", "Alta"],
+	},
+	en: {
+		eyebrow: "Suggested route",
+		showRoute: "See the route",
+		accessible: "Accessible",
+		whyGreen: "It is the green option with the best time and fare.",
+		whyFlood: "We avoided a leg with a flood alert; this route stays dry.",
+		whyTaxi:
+			"No direct public transport; the verified taxi is the safe option.",
+		noRouteTitle: "No safe route right now",
+		noRouteText: "Wait somewhere dry or ask the Guide for another way.",
+		taxi: "Verified taxi",
+		range: "fair range",
+		details: "See details",
+		confidence: "Route confidence",
+		distance: "Distance",
+		access: "Wheelchair",
+		yes: "Yes",
+		no: "No",
+		sources: "Sources: open transport data and flood alerts.",
+		levels: ["Low", "Medium", "High"],
+	},
+} as const;
 
 interface TripCardProps {
 	plan: TripPlan;
@@ -36,71 +92,168 @@ export function TripCard({
 	onReport,
 }: TripCardProps) {
 	const text = guideText(language);
+	const copy = language === "es" ? COPY.es : COPY.en;
 	const { green, taxi } = plan;
-	const GreenIcon = green ? MODE_ICONS[green.transport_mode] : Flag;
+	const destination = DESTINATIONS[plan.destination].name;
+	const GreenIcon = green ? MODE_ICONS[green.transport_mode] : CarTaxiFront;
+	const percent = Math.round(plan.confidence * 100);
+	const level = copy.levels[percent >= 75 ? 2 : percent >= 50 ? 1 : 0];
+	const money = (cop: number) =>
+		cop === 0 ? text.free : formatFare(cop, language);
+	const why =
+		plan.blockedByFlood.length > 0
+			? copy.whyFlood
+			: green
+				? copy.whyGreen
+				: copy.whyTaxi;
+
+	if (!green && !taxi) {
+		return (
+			<article className="guide-trip" aria-label={destination}>
+				<div
+					className="q-state q-state--empty"
+					role="status"
+					style={{ minHeight: 0, padding: "12px 8px" }}
+				>
+					<span className="q-state__glyph" aria-hidden="true">
+						<Flag size={26} strokeWidth={STROKE} />
+					</span>
+					<p className="q-state__title">{copy.noRouteTitle}</p>
+					<p className="q-state__text">{copy.noRouteText}</p>
+				</div>
+			</article>
+		);
+	}
 
 	return (
-		<article
-			className="guide-trip"
-			aria-label={DESTINATIONS[plan.destination].name}
-		>
-			<div className="guide-trip__main">
-				<span className="guide-trip__icon" aria-hidden="true">
-					<GreenIcon size={22} strokeWidth={1.75} />
-				</span>
-				<div className="guide-trip__text">
+		<article className="guide-trip" aria-label={destination}>
+			<div className="q-next-step__head flex-wrap">
+				<p className="q-next-step__eyebrow whitespace-nowrap">
+					<span className="q-star" aria-hidden="true" />
+					{copy.eyebrow}
+				</p>
+				<span className="flex flex-wrap gap-1.5">
 					<span
 						className={`q-badge ${green ? "q-badge--optimal" : "q-badge--neutral"}`}
 					>
+						{green ? (
+							<Leaf size={14} strokeWidth={STROKE} aria-hidden="true" />
+						) : null}
 						{green ? text.greenRoute : text.noGreenRoute}
 					</span>
+					{green?.is_accessible ? (
+						<span className="q-badge q-badge--optimal">
+							<Accessibility
+								size={14}
+								strokeWidth={STROKE}
+								aria-hidden="true"
+							/>
+							{copy.accessible}
+						</span>
+					) : null}
+				</span>
+			</div>
+
+			<div className="guide-trip__main">
+				<span className="guide-trip__icon" aria-hidden="true">
+					<GreenIcon size={22} strokeWidth={STROKE} />
+				</span>
+				<div className="guide-trip__text">
 					<span className="guide-trip__title">
 						{green
 							? `${text.modes[green.transport_mode]} · ${text.minutes(green.estimated_minutes)}`
-							: DESTINATIONS[plan.destination].name}
+							: `${copy.taxi} · ${text.minutes(taxi?.estimated_minutes ?? 0)}`}
 					</span>
 				</div>
-				{green && (
+				{green ? (
 					<div className="guide-trip__fare">
 						<span className="q-num guide-trip__amount">
-							{green.reference_fare_cop === 0
-								? text.free
-								: formatFare(green.reference_fare_cop, language)}
+							{money(green.reference_fare_cop)}
 						</span>
 						<span className="q-sm q-muted">{text.referenceFare}</span>
 					</div>
-				)}
+				) : null}
 			</div>
 
-			{taxi && (
-				<p className="guide-trip__taxi">
-					<CarTaxiFront size={16} strokeWidth={1.75} aria-hidden="true" />
-					{text.fairTaxi}:{" "}
-					<strong className="q-num">
-						{formatFare(taxi.fare_min_cop, language)} –{" "}
-						{formatFare(taxi.fare_max_cop, language)}
-					</strong>
-				</p>
-			)}
-			{plan.blockedByFlood.length > 0 && (
-				<p className="q-sm q-muted">{text.floodBlocked}</p>
-			)}
+			<p className="q-sm q-muted m-0 flex items-center gap-1.5">
+				<MapPin size={14} strokeWidth={STROKE} aria-hidden="true" />
+				{VISITOR_ORIGIN.name} → {destination}
+			</p>
+			<p
+				className="q-next-step__why"
+				style={{ fontSize: 14, lineHeight: "20px" }}
+			>
+				{why}
+			</p>
 
-			<div className="q-row">
+			{taxi ? (
+				<p className="guide-trip__taxi">
+					<CarTaxiFront size={16} strokeWidth={STROKE} aria-hidden="true" />
+					<span className="min-w-0 flex-1">
+						{copy.taxi} · {text.referenceFare.toLowerCase()}{" "}
+						<strong className="q-num">{money(taxi.reference_fare_cop)}</strong>{" "}
+						<span className="q-muted">
+							({copy.range}{" "}
+							<span className="q-num">
+								{formatFare(taxi.fare_min_cop, language)} –{" "}
+								{formatFare(taxi.fare_max_cop, language)}
+							</span>
+							)
+						</span>
+					</span>
+				</p>
+			) : null}
+
+			{green ? (
+				<details className="q-details">
+					<summary>{copy.details}</summary>
+					<div className="q-details__body">
+						<dl className="m-0 flex flex-col gap-1.5">
+							<div className="flex justify-between gap-3">
+								<dt>{copy.confidence}</dt>
+								<dd className="q-num m-0">
+									{level} · {percent} %
+								</dd>
+							</div>
+							<div className="flex justify-between gap-3">
+								<dt>{copy.distance}</dt>
+								<dd className="q-num m-0">
+									{green.distance_km.toLocaleString(
+										language === "es" ? "es-CO" : "en-US",
+									)}{" "}
+									km
+								</dd>
+							</div>
+							<div className="flex justify-between gap-3">
+								<dt>{copy.access}</dt>
+								<dd className="m-0">
+									{green.is_accessible ? copy.yes : copy.no}
+								</dd>
+							</div>
+						</dl>
+						{plan.blockedByFlood.length > 0 ? (
+							<p className="m-0">{text.floodBlocked}</p>
+						) : null}
+						<p className="m-0">{copy.sources}</p>
+					</div>
+				</details>
+			) : null}
+
+			<div className="flex flex-col gap-1">
 				<button
 					type="button"
-					className="q-btn q-btn--secondary q-btn--sm"
+					className="q-btn q-btn--primary q-btn--block"
 					onClick={onShowOnMap}
 				>
-					<MapIcon size={16} strokeWidth={1.75} aria-hidden="true" />
-					{text.showOnMap}
+					<MapIcon size={18} strokeWidth={STROKE} aria-hidden="true" />
+					{copy.showRoute}
 				</button>
 				<button
 					type="button"
-					className="q-btn q-btn--ghost q-btn--sm"
+					className="q-btn q-btn--ghost q-btn--sm q-btn--block"
 					onClick={onReport}
 				>
-					<Flag size={16} strokeWidth={1.75} aria-hidden="true" />
+					<Flag size={16} strokeWidth={STROKE} aria-hidden="true" />
 					{text.reportOvercharge}
 				</button>
 			</div>
