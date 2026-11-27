@@ -44,6 +44,8 @@ export function buildLiveTokenConfig(
 			config: {
 				responseModalities: [Modality.AUDIO],
 				outputAudioTranscription: {},
+				// Without it an audio session is cut at about 15 minutes.
+				contextWindowCompression: { slidingWindow: {} },
 				systemInstruction: agent?.systemInstruction ?? GUIDE_SYSTEM_INSTRUCTION,
 				// The agent's turns are written to the chat, so the person's words are too.
 				...(agent ? { tools: agent.tools, inputAudioTranscription: {} } : {}),

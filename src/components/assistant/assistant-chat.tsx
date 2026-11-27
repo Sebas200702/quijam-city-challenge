@@ -43,6 +43,7 @@ import { LIVE_VOICE_TEXT } from "./live-voice-text";
 import { PlaceResultCard } from "./place-result-card";
 import { useAnswerAnnouncement } from "./use-answer-announcement";
 import { useAssistant } from "./use-assistant";
+import { useLiveResume } from "./use-live-resume";
 import { useLiveVoice } from "./use-live-voice";
 import { speak, useVoiceConduit } from "./voice-conduit";
 import "../../styles/life-assistant.css";
@@ -263,6 +264,8 @@ export function AssistantChat({
 	const [draft, setDraft] = useState("");
 	const voice = useVoiceConduit((text) => void send(text));
 	const live = useLiveVoice(assistant);
+	// /inicio takes part in Live resume like the dock does.
+	useLiveResume(live);
 	const liveText = LIVE_VOICE_TEXT[useLanguage()];
 	const input = voiceInput(live.status, voice.canListen);
 	const inputId = useId();
@@ -373,10 +376,7 @@ export function AssistantChat({
 		) : null;
 
 	const composer = (
-		<form
-			onSubmit={submit}
-			className={`q-prompt ${empty ? "lg:py-1.5" : ""}`}
-		>
+		<form onSubmit={submit} className={`q-prompt ${empty ? "lg:py-1.5" : ""}`}>
 			<label htmlFor={inputId} className="q-sr">
 				{t.chat.composerLabel}
 			</label>
@@ -516,10 +516,7 @@ export function AssistantChat({
 							/>
 						</span>
 					</div>
-					<div
-						className="l-ask la-ask l-rise"
-						style={{ ["--i" as string]: 1 }}
-					>
+					<div className="l-ask la-ask l-rise" style={{ ["--i" as string]: 1 }}>
 						{composer}
 					</div>
 					{voice.error && <ErrorNote message={voice.error} />}

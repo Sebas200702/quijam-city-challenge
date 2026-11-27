@@ -53,6 +53,13 @@ describe("buildLiveTokenConfig", () => {
 		expect(live?.responseModalities).toEqual([Modality.AUDIO]);
 	});
 
+	it("compresses the context so long voice sessions are not cut", () => {
+		const config = buildLiveTokenConfig("some-model", now);
+		expect(
+			config.liveConnectConstraints?.config?.contextWindowCompression,
+		).toEqual({ slidingWindow: {} });
+	});
+
 	it("defaults to a Live model the API serves", () => {
 		expect(DEFAULT_LIVE_MODEL).toBe("gemini-3.8-live");
 	});

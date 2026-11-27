@@ -14,10 +14,28 @@ describe("Live resume across a page load (S4)", () => {
 	it("resumes once on the next page, only shortly after leaving", () => {
 		const storage = memoryStorage();
 		markLiveResume(storage, 1_000);
-		expect(takeLiveResume(storage, 5_000)).toBe(true);
+		expect(takeLiveResume(storage, 5_000)).toEqual({ unspoken: false });
 		// One shot: a later reload does not reopen the microphone.
-		expect(takeLiveResume(storage, 5_001)).toBe(false);
+		expect(takeLiveResume(storage, 5_001)).toBeNull();
 		markLiveResume(storage, 1_000);
-		expect(takeLiveResume(storage, 120_000)).toBe(false);
+		expect(takeLiveResume(storage, 120_000)).toBeNull();
+	});
+
+	it("remembers that she left mid-answer, so she picks it up again", () => {
+		const storage = memoryStorage();
+		markLiveResume(storage, 1_000, true);
+		expect(takeLiveResume(storage, 2_000)).toEqual({ unspoken: true });
+	});
+
+	it("reads an older timestamp-only mark as already spoken", () => {
+		const storage = memoryStorage();
+		storage.setItem("quillart.live.resume", "1000");
+		expect(takeLiveResume(storage, 2_000)).toEqual({ unspoken: false });
+	});
+
+	it("ignores a broken mark", () => {
+		const storage = memoryStorage();
+		storage.setItem("quillart.live.resume", "{nope");
+		expect(takeLiveResume(storage, 2_000)).toBeNull();
 	});
 });
