@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { useT } from "../../lib/i18n/use-language";
 import { BottomNav } from "../home/bottom-nav";
 import { LanguageSwitcher } from "../home/language-switcher";
 import type { NavSection } from "../home/nav-sections";
@@ -21,6 +22,7 @@ export function CommunityShell({
 	aiHref = "/inicio",
 }: CommunityShellProps) {
 	const store = useStore();
+	const t = useT();
 	return (
 		<div className="mx-auto flex min-h-[calc(100dvh-3px)] w-full max-w-md flex-col lg:max-w-6xl">
 			<header className="flex items-center gap-3 px-4 pt-4 lg:gap-6 lg:px-8 lg:pt-6">
@@ -36,8 +38,7 @@ export function CommunityShell({
 			</header>
 			{store.mode === "device" && (
 				<p className="q-sm q-muted mx-4 mt-3 rounded-[var(--radius-md)] bg-[var(--gold-soft)] px-4 py-2 text-[var(--gold-text)] lg:mx-8">
-					Sin conexión con el servidor de la comunidad: lo que publiques se
-					guarda en este dispositivo.
+					{t.shared.ui.deviceMode}
 				</p>
 			)}
 			<main className="flex flex-1 flex-col gap-5 px-4 pt-4 pb-24 lg:gap-8 lg:px-8 lg:pt-8 lg:pb-16">

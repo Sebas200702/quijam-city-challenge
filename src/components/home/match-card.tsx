@@ -1,4 +1,5 @@
 import { Route } from "lucide-react";
+import { useT } from "../../lib/i18n/use-language";
 import { Illustration } from "./illustration";
 
 interface MatchCardProps {
@@ -17,10 +18,11 @@ export function MatchCard({
 	illustration,
 	routeHref,
 }: MatchCardProps) {
+	const t = useT();
 	const routeIcon = <Route size={20} strokeWidth={1.75} aria-hidden="true" />;
 
 	return (
-		<article className="q-card" aria-label="Partido de hoy">
+		<article className="q-card" aria-label={t.shared.match.ariaLabel}>
 			<div className="flex items-center gap-3.5 py-3.5 pr-4 pl-3.5">
 				<Illustration src={illustration} imageClassName="h-[84px]! lg:h-36!" />
 				<div className="flex min-w-0 flex-1 flex-col items-start gap-1.5">
@@ -37,7 +39,7 @@ export function MatchCard({
 					<a
 						className="q-btn q-btn--primary q-btn--icon"
 						href={routeHref}
-						aria-label="Cómo llegar al estadio"
+						aria-label={t.shared.match.directions}
 					>
 						{routeIcon}
 					</a>
@@ -45,7 +47,7 @@ export function MatchCard({
 					<button
 						type="button"
 						className="q-btn q-btn--primary q-btn--icon"
-						aria-label="Cómo llegar al estadio"
+						aria-label={t.shared.match.directions}
 					>
 						{routeIcon}
 					</button>

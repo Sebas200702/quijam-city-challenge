@@ -3,12 +3,420 @@
 
 import type { Language } from "../languages";
 
-const es = {};
+const es = {
+	validation: {
+		titleMin4: "El título debe tener al menos 4 caracteres.",
+		titleMax120: "El título no puede pasar de 120 caracteres.",
+		eventBodyMin: "Cuenta un poco más del evento (mínimo 10 caracteres).",
+		eventStartPast: "La fecha de inicio ya pasó. Elige una fecha futura.",
+		eventEndAfterStart: "La hora de cierre debe ser después del inicio.",
+		eventPlaceMissing: "Elige un lugar o escribe la dirección del encuentro.",
+		capacityInteger: "Los cupos deben ser un número entero mayor que cero.",
+		titleMax140: "El título no puede pasar de 140 caracteres.",
+		displayNameMin: "Escribe cómo quieres que te vean (mínimo 2 caracteres).",
+		reservedName:
+			"Ese nombre está reservado para entidades oficiales. Usa tu nombre o un apodo.",
+		invalidEmail: "Escribe un correo válido.",
+		passwordMin: "La contraseña debe tener al menos 8 caracteres.",
+		eventPassed: "Este evento ya pasó.",
+	},
+	eventCategories: {
+		culture: "Cultura",
+		music: "Música y baile",
+		nature: "Naturaleza",
+		sport: "Deporte",
+		volunteer: "Voluntariado",
+		food: "Gastronomía",
+		learning: "Talleres",
+		community: "Encuentro vecinal",
+	},
+	forumCategories: {
+		general: "General",
+		visitors: "Visitantes",
+		neighborhood: "Mi barrio",
+		nature: "Naturaleza",
+		mobility: "Movilidad",
+		culture: "Cultura",
+		safety: "Seguridad",
+	},
+	placeKinds: {
+		nature: "Naturaleza",
+		park: "Parque",
+		waterfront: "Río y mar",
+		culture: "Cultura",
+		heritage: "Patrimonio",
+		sport: "Deporte",
+	},
+	agents: {
+		agenda: "Agente de Agenda",
+		community: "Agente de Comunidad",
+		places: "Agente de Lugares y naturaleza",
+		mobility: "Agente de Movilidad",
+		city_reports: "Agente de Reportes a la ciudad",
+		account: "Agente de tu Cuenta",
+	},
+	ui: {
+		loading: "Cargando…",
+		loadError: "No pudimos cargar la información.",
+		heldBadge: "En revisión",
+		deviceMode:
+			"Sin conexión con el servidor de la comunidad: lo que publiques se guarda en este dispositivo.",
+	},
+	ask: {
+		button: "Pregúntale a Quillart",
+		aiPrompt: "Pregúntale a Quillart AI",
+	},
+	match: {
+		ariaLabel: "Partido de hoy",
+		directions: "Cómo llegar al estadio",
+	},
+	confirm: {
+		ariaLabel: "Confirma la acción",
+		eyebrowSuffix: "¿Lo hacemos?",
+		ungroundedWarning: "Revisa bien: esta acción no salió de lo que pediste.",
+		preparing: "Preparando…",
+		quoteIntro: "Esto es lo que se publicará, tal cual:",
+		fieldTitle: "Título",
+		fieldBody: "Mensaje",
+		fieldDescription: "Descripción",
+		invalid: "Revisa el texto: no puede quedar vacío ni ser demasiado largo.",
+		save: "Guardar cambios",
+		discard: "Descartar cambios",
+		signInNeeded:
+			"Para hacerlo necesitas iniciar sesión. Al volver, tu conversación te espera aquí.",
+		confirm: "Confirmar",
+		running: "Haciéndolo…",
+		signIn: "Inicia sesión",
+		edit: "Editar",
+		cancel: "Cancelar",
+		fallbackTitle: "Hacer esta acción",
+		thisEvent: "este evento",
+		community: "Comunidad",
+		theConversation: "la conversación",
+		register: (event: string) => `Inscribirte en ${event}`,
+		unregister: (event: string) => `Cancelar tu inscripción en ${event}`,
+		createEvent: (details: string) =>
+			`Publicar un evento${details ? ` · ${details}` : ""}`,
+		createThread: (category: string) => `Abrir una conversación en ${category}`,
+		reply: (thread: string) => `Responder en «${thread}»`,
+		report: (place: string) =>
+			`Reportar a la ciudad${place ? ` en ${place}` : ""}`,
+	},
+};
 
 export type SharedMessages = typeof es;
 
-const en: SharedMessages = {};
-const pt: SharedMessages = {};
-const fr: SharedMessages = {};
+const en: SharedMessages = {
+	validation: {
+		titleMin4: "The title must be at least 4 characters long.",
+		titleMax120: "The title cannot exceed 120 characters.",
+		eventBodyMin:
+			"Tell us a bit more about the event (at least 10 characters).",
+		eventStartPast: "The start date has already passed. Pick a future date.",
+		eventEndAfterStart: "The end time must be after the start.",
+		eventPlaceMissing: "Choose a place or type the meeting address.",
+		capacityInteger: "Spots must be a whole number greater than zero.",
+		titleMax140: "The title cannot exceed 140 characters.",
+		displayNameMin: "Write how you want to be seen (at least 2 characters).",
+		reservedName:
+			"That name is reserved for official entities. Use your name or a nickname.",
+		invalidEmail: "Enter a valid email.",
+		passwordMin: "The password must be at least 8 characters long.",
+		eventPassed: "This event has already taken place.",
+	},
+	eventCategories: {
+		culture: "Culture",
+		music: "Music and dance",
+		nature: "Nature",
+		sport: "Sports",
+		volunteer: "Volunteering",
+		food: "Food",
+		learning: "Workshops",
+		community: "Neighborhood meetup",
+	},
+	forumCategories: {
+		general: "General",
+		visitors: "Visitors",
+		neighborhood: "My neighborhood",
+		nature: "Nature",
+		mobility: "Getting around",
+		culture: "Culture",
+		safety: "Safety",
+	},
+	placeKinds: {
+		nature: "Nature",
+		park: "Park",
+		waterfront: "River and sea",
+		culture: "Culture",
+		heritage: "Heritage",
+		sport: "Sports",
+	},
+	agents: {
+		agenda: "Events Agent",
+		community: "Community Agent",
+		places: "Places and Nature Agent",
+		mobility: "Mobility Agent",
+		city_reports: "City Reports Agent",
+		account: "Your Account Agent",
+	},
+	ui: {
+		loading: "Loading…",
+		loadError: "We could not load the information.",
+		heldBadge: "Under review",
+		deviceMode:
+			"No connection to the community server: what you post is saved on this device.",
+	},
+	ask: {
+		button: "Ask Quillart",
+		aiPrompt: "Ask Quillart AI",
+	},
+	match: {
+		ariaLabel: "Today's match",
+		directions: "How to get to the stadium",
+	},
+	confirm: {
+		ariaLabel: "Confirm the action",
+		eyebrowSuffix: "Shall we do it?",
+		ungroundedWarning:
+			"Check carefully: this action did not come from what you asked for.",
+		preparing: "Preparing…",
+		quoteIntro: "This is what will be published, word for word:",
+		fieldTitle: "Title",
+		fieldBody: "Message",
+		fieldDescription: "Description",
+		invalid: "Check the text: it cannot be empty or too long.",
+		save: "Save changes",
+		discard: "Discard changes",
+		signInNeeded:
+			"You need to sign in to do this. When you come back, your conversation will be waiting here.",
+		confirm: "Confirm",
+		running: "Doing it…",
+		signIn: "Sign in",
+		edit: "Edit",
+		cancel: "Cancel",
+		fallbackTitle: "Do this action",
+		thisEvent: "this event",
+		community: "Community",
+		theConversation: "the conversation",
+		register: (event: string) => `Register for ${event}`,
+		unregister: (event: string) => `Cancel your registration for ${event}`,
+		createEvent: (details: string) =>
+			`Post an event${details ? ` · ${details}` : ""}`,
+		createThread: (category: string) => `Start a conversation in ${category}`,
+		reply: (thread: string) => `Reply in «${thread}»`,
+		report: (place: string) =>
+			`Report to the city${place ? ` at ${place}` : ""}`,
+	},
+};
+
+const pt: SharedMessages = {
+	validation: {
+		titleMin4: "O título deve ter pelo menos 4 caracteres.",
+		titleMax120: "O título não pode passar de 120 caracteres.",
+		eventBodyMin:
+			"Conte um pouco mais sobre o evento (mínimo de 10 caracteres).",
+		eventStartPast: "A data de início já passou. Escolha uma data futura.",
+		eventEndAfterStart: "O horário de término deve ser depois do início.",
+		eventPlaceMissing: "Escolha um lugar ou escreva o endereço do encontro.",
+		capacityInteger: "As vagas devem ser um número inteiro maior que zero.",
+		titleMax140: "O título não pode passar de 140 caracteres.",
+		displayNameMin: "Escreva como quer ser visto (mínimo de 2 caracteres).",
+		reservedName:
+			"Esse nome é reservado para entidades oficiais. Use seu nome ou um apelido.",
+		invalidEmail: "Digite um e-mail válido.",
+		passwordMin: "A senha deve ter pelo menos 8 caracteres.",
+		eventPassed: "Este evento já aconteceu.",
+	},
+	eventCategories: {
+		culture: "Cultura",
+		music: "Música e dança",
+		nature: "Natureza",
+		sport: "Esporte",
+		volunteer: "Voluntariado",
+		food: "Gastronomia",
+		learning: "Oficinas",
+		community: "Encontro de vizinhos",
+	},
+	forumCategories: {
+		general: "Geral",
+		visitors: "Visitantes",
+		neighborhood: "Meu bairro",
+		nature: "Natureza",
+		mobility: "Mobilidade",
+		culture: "Cultura",
+		safety: "Segurança",
+	},
+	placeKinds: {
+		nature: "Natureza",
+		park: "Parque",
+		waterfront: "Rio e mar",
+		culture: "Cultura",
+		heritage: "Patrimônio",
+		sport: "Esporte",
+	},
+	agents: {
+		agenda: "Agente de Agenda",
+		community: "Agente de Comunidade",
+		places: "Agente de Lugares e natureza",
+		mobility: "Agente de Mobilidade",
+		city_reports: "Agente de Denúncias à cidade",
+		account: "Agente da sua Conta",
+	},
+	ui: {
+		loading: "Carregando…",
+		loadError: "Não conseguimos carregar as informações.",
+		heldBadge: "Em revisão",
+		deviceMode:
+			"Sem conexão com o servidor da comunidade: o que você publicar fica salvo neste dispositivo.",
+	},
+	ask: {
+		button: "Pergunte ao Quillart",
+		aiPrompt: "Pergunte ao Quillart AI",
+	},
+	match: {
+		ariaLabel: "Jogo de hoje",
+		directions: "Como chegar ao estádio",
+	},
+	confirm: {
+		ariaLabel: "Confirme a ação",
+		eyebrowSuffix: "Vamos fazer?",
+		ungroundedWarning: "Confira bem: esta ação não veio do que você pediu.",
+		preparing: "Preparando…",
+		quoteIntro: "Isto é o que será publicado, exatamente assim:",
+		fieldTitle: "Título",
+		fieldBody: "Mensagem",
+		fieldDescription: "Descrição",
+		invalid: "Confira o texto: ele não pode ficar vazio nem ser longo demais.",
+		save: "Salvar alterações",
+		discard: "Descartar alterações",
+		signInNeeded:
+			"Para fazer isso, você precisa entrar. Quando voltar, sua conversa estará esperando aqui.",
+		confirm: "Confirmar",
+		running: "Fazendo…",
+		signIn: "Entrar",
+		edit: "Editar",
+		cancel: "Cancelar",
+		fallbackTitle: "Fazer esta ação",
+		thisEvent: "este evento",
+		community: "Comunidade",
+		theConversation: "a conversa",
+		register: (event: string) => `Inscrever-se em ${event}`,
+		unregister: (event: string) => `Cancelar sua inscrição em ${event}`,
+		createEvent: (details: string) =>
+			`Publicar um evento${details ? ` · ${details}` : ""}`,
+		createThread: (category: string) => `Abrir uma conversa em ${category}`,
+		reply: (thread: string) => `Responder em «${thread}»`,
+		report: (place: string) =>
+			`Denunciar à cidade${place ? ` em ${place}` : ""}`,
+	},
+};
+
+const fr: SharedMessages = {
+	validation: {
+		titleMin4: "Le titre doit comporter au moins 4 caractères.",
+		titleMax120: "Le titre ne peut pas dépasser 120 caractères.",
+		eventBodyMin:
+			"Dites-nous en un peu plus sur l’événement (10 caractères minimum).",
+		eventStartPast:
+			"La date de début est déjà passée. Choisissez une date future.",
+		eventEndAfterStart: "L’heure de fin doit être après le début.",
+		eventPlaceMissing:
+			"Choisissez un lieu ou saisissez l’adresse du rendez-vous.",
+		capacityInteger:
+			"Le nombre de places doit être un entier supérieur à zéro.",
+		titleMax140: "Le titre ne peut pas dépasser 140 caractères.",
+		displayNameMin:
+			"Écrivez comment vous voulez apparaître (2 caractères minimum).",
+		reservedName:
+			"Ce nom est réservé aux entités officielles. Utilisez votre nom ou un pseudo.",
+		invalidEmail: "Saisissez une adresse e-mail valide.",
+		passwordMin: "Le mot de passe doit comporter au moins 8 caractères.",
+		eventPassed: "Cet événement est déjà passé.",
+	},
+	eventCategories: {
+		culture: "Culture",
+		music: "Musique et danse",
+		nature: "Nature",
+		sport: "Sport",
+		volunteer: "Bénévolat",
+		food: "Gastronomie",
+		learning: "Ateliers",
+		community: "Rencontre de voisins",
+	},
+	forumCategories: {
+		general: "Général",
+		visitors: "Visiteurs",
+		neighborhood: "Mon quartier",
+		nature: "Nature",
+		mobility: "Mobilité",
+		culture: "Culture",
+		safety: "Sécurité",
+	},
+	placeKinds: {
+		nature: "Nature",
+		park: "Parc",
+		waterfront: "Fleuve et mer",
+		culture: "Culture",
+		heritage: "Patrimoine",
+		sport: "Sport",
+	},
+	agents: {
+		agenda: "Agent Agenda",
+		community: "Agent Communauté",
+		places: "Agent Lieux et nature",
+		mobility: "Agent Mobilité",
+		city_reports: "Agent Signalements à la ville",
+		account: "Agent de votre Compte",
+	},
+	ui: {
+		loading: "Chargement…",
+		loadError: "Nous n’avons pas pu charger les informations.",
+		heldBadge: "En cours de vérification",
+		deviceMode:
+			"Pas de connexion au serveur de la communauté : ce que vous publiez est enregistré sur cet appareil.",
+	},
+	ask: {
+		button: "Demandez à Quillart",
+		aiPrompt: "Demandez à Quillart AI",
+	},
+	match: {
+		ariaLabel: "Match du jour",
+		directions: "Comment aller au stade",
+	},
+	confirm: {
+		ariaLabel: "Confirmez l’action",
+		eyebrowSuffix: "On le fait ?",
+		ungroundedWarning:
+			"Vérifiez bien : cette action ne vient pas de ce que vous avez demandé.",
+		preparing: "Préparation…",
+		quoteIntro: "Voici ce qui sera publié, tel quel :",
+		fieldTitle: "Titre",
+		fieldBody: "Message",
+		fieldDescription: "Description",
+		invalid: "Vérifiez le texte : il ne peut pas être vide ni trop long.",
+		save: "Enregistrer les modifications",
+		discard: "Annuler les modifications",
+		signInNeeded:
+			"Pour le faire, vous devez vous connecter. À votre retour, votre conversation vous attendra ici.",
+		confirm: "Confirmer",
+		running: "En cours…",
+		signIn: "Se connecter",
+		edit: "Modifier",
+		cancel: "Annuler",
+		fallbackTitle: "Effectuer cette action",
+		thisEvent: "cet événement",
+		community: "Communauté",
+		theConversation: "la conversation",
+		register: (event: string) => `Vous inscrire à ${event}`,
+		unregister: (event: string) => `Annuler votre inscription à ${event}`,
+		createEvent: (details: string) =>
+			`Publier un événement${details ? ` · ${details}` : ""}`,
+		createThread: (category: string) =>
+			`Ouvrir une conversation dans ${category}`,
+		reply: (thread: string) => `Répondre dans « ${thread} »`,
+		report: (place: string) =>
+			`Signaler à la ville${place ? ` à ${place}` : ""}`,
+	},
+};
 
 export const shared: Record<Language, SharedMessages> = { es, en, pt, fr };

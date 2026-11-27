@@ -1,4 +1,5 @@
 import { Mic } from "lucide-react";
+import { useT } from "../../lib/i18n/use-language";
 
 interface AiPromptLinkProps {
 	href: string;
@@ -6,6 +7,7 @@ interface AiPromptLinkProps {
 
 /** Pill that invites the visitor to talk to Quillart AI. */
 export function AiPromptLink({ href }: AiPromptLinkProps) {
+	const t = useT();
 	return (
 		<a
 			href={href}
@@ -17,7 +19,7 @@ export function AiPromptLink({ href }: AiPromptLinkProps) {
 					style={{ width: 16, height: 16 }}
 				/>
 			</span>
-			<span className="min-w-0 flex-1">Pregúntale a Quillart AI</span>
+			<span className="min-w-0 flex-1">{t.shared.ask.aiPrompt}</span>
 			<span
 				className="q-tile q-tile--gold"
 				style={{ width: 40, height: 40, borderRadius: "50%" }}

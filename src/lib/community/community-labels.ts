@@ -1,6 +1,7 @@
 // Spanish labels and formatters for the community screens.
 
 import { type Language, VOICE_LOCALES } from "../i18n/languages";
+import { messages } from "../i18n/messages";
 import { getLanguage } from "../i18n/use-language";
 import type {
 	EventCategory,
@@ -8,35 +9,33 @@ import type {
 	PlaceKind,
 } from "./community-types";
 
-export const EVENT_CATEGORY_LABELS: Record<EventCategory, string> = {
-	culture: "Cultura",
-	music: "Música y baile",
-	nature: "Naturaleza",
-	sport: "Deporte",
-	volunteer: "Voluntariado",
-	food: "Gastronomía",
-	learning: "Talleres",
-	community: "Encuentro vecinal",
-};
+type LabelGroup = "eventCategories" | "forumCategories" | "placeKinds";
 
-export const FORUM_CATEGORY_LABELS: Record<ForumCategory, string> = {
-	general: "General",
-	visitors: "Visitantes",
-	neighborhood: "Mi barrio",
-	nature: "Naturaleza",
-	mobility: "Movilidad",
-	culture: "Cultura",
-	safety: "Seguridad",
-};
+/**
+ * A Record whose values are read in the current interface language each time
+ * (the keys are the same in every language, so they come from Spanish).
+ */
+function labelMap<K extends string>(group: LabelGroup): Record<K, string> {
+	const keys = () => Object.keys(messages.es.shared[group]);
+	return new Proxy({} as Record<K, string>, {
+		get: (_target, key) =>
+			typeof key === "string"
+				? (messages[getLanguage()].shared[group] as Record<string, string>)[key]
+				: undefined,
+		has: (_target, key) => typeof key === "string" && keys().includes(key),
+		ownKeys: () => keys(),
+		getOwnPropertyDescriptor: (_target, key) =>
+			typeof key === "string" && keys().includes(key)
+				? { enumerable: true, configurable: true }
+				: undefined,
+	});
+}
 
-export const PLACE_KIND_LABELS: Record<PlaceKind, string> = {
-	nature: "Naturaleza",
-	park: "Parque",
-	waterfront: "Río y mar",
-	culture: "Cultura",
-	heritage: "Patrimonio",
-	sport: "Deporte",
-};
+export const EVENT_CATEGORY_LABELS = labelMap<EventCategory>("eventCategories");
+
+export const FORUM_CATEGORY_LABELS = labelMap<ForumCategory>("forumCategories");
+
+export const PLACE_KIND_LABELS = labelMap<PlaceKind>("placeKinds");
 
 const TIME_ZONE = "America/Bogota";
 

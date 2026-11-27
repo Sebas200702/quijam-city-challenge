@@ -1,10 +1,9 @@
-// Asks the person to confirm an action Quillart AI proposed, in plain Spanish.
+// Asks the person to confirm an action Quillart AI proposed, in the interface language.
 // Anything that will be published is shown word for word (speech-to-text
 // slips and injected text become visible) and can be edited before confirming.
 
 import { LogIn, TriangleAlert } from "lucide-react";
 import { useEffect, useId, useState } from "react";
-import { UNGROUNDED_WARNING } from "../../lib/assistant/action-provenance";
 import { AGENT_LABELS } from "../../lib/assistant/assistant-labels";
 import type {
 	AssistantToolArgs,
@@ -19,7 +18,8 @@ import {
 } from "../../lib/community/community-labels";
 import { bogotaLocalToIso } from "../../lib/community/community-rules";
 import type { CommunityStore } from "../../lib/community/community-types";
-import { useLanguage } from "../../lib/i18n/use-language";
+import { messages } from "../../lib/i18n/messages";
+import { getLanguage, useT } from "../../lib/i18n/use-language";
 import { inputClass, textareaClass } from "../community/community-ui";
 import { signInHref, useStore } from "../community/use-community";
 import {
@@ -76,7 +76,9 @@ async function placeName(store: CommunityStore, slug?: string) {
 
 async function eventLine(store: CommunityStore, id: string) {
 	const event = await store.getEvent(id);
-	return event ? `«${event.title}» · ${eventWhen(event)}` : "este evento";
+	return event
+		? `«${event.title}» · ${eventWhen(event)}`
+		: messages[getLanguage()].shared.confirm.thisEvent;
 }
 
 /** One clear sentence of what will happen, plus a short detail. */
@@ -84,18 +86,19 @@ export async function describeAction(
 	call: AssistantToolCall,
 	store: CommunityStore,
 ): Promise<ActionText> {
+	const c = messages[getLanguage()].shared.confirm;
 	switch (call.name) {
 		case "register_for_event": {
 			const args = call.args as AssistantToolArgs["register_for_event"];
 			return {
-				title: `Inscribirte en ${await eventLine(store, args.event_id)}`,
+				title: c.register(await eventLine(store, args.event_id)),
 				quote: null,
 			};
 		}
 		case "unregister_from_event": {
 			const args = call.args as AssistantToolArgs["unregister_from_event"];
 			return {
-				title: `Cancelar tu inscripción en ${await eventLine(store, args.event_id)}`,
+				title: c.unregister(await eventLine(store, args.event_id)),
 				quote: null,
 			};
 		}
@@ -109,14 +112,16 @@ export async function describeAction(
 				EVENT_CATEGORY_LABELS[args.category],
 			].filter(Boolean);
 			return {
-				title: `Publicar un evento${parts.length ? ` · ${parts.join(" · ")}` : ""}`,
+				title: c.createEvent(parts.join(" · ")),
 				quote: publishedText(call),
 			};
 		}
 		case "create_thread": {
 			const args = call.args as AssistantToolArgs["create_thread"];
 			return {
-				title: `Abrir una conversación en ${FORUM_CATEGORY_LABELS[args.category] ?? "Comunidad"}`,
+				title: c.createThread(
+					FORUM_CATEGORY_LABELS[args.category] ?? c.community,
+				),
 				quote: publishedText(call),
 			};
 		}
@@ -124,7 +129,7 @@ export async function describeAction(
 			const args = call.args as AssistantToolArgs["reply_to_thread"];
 			const thread = await store.getThread(args.thread_id);
 			return {
-				title: `Responder en «${thread?.title ?? "la conversación"}»`,
+				title: c.reply(thread?.title ?? c.theConversation),
 				quote: publishedText(call),
 			};
 		}
@@ -132,20 +137,14 @@ export async function describeAction(
 			const args = call.args as AssistantToolArgs["report_issue"];
 			const where = await placeName(store, args.place_slug);
 			return {
-				title: `Reportar a la ciudad${where ? ` en ${where}` : ""}`,
+				title: c.report(where ?? ""),
 				quote: publishedText(call),
 			};
 		}
 		default:
-			return { title: "Hacer esta acción", quote: null };
+			return { title: c.fallbackTitle, quote: null };
 	}
 }
-
-const FIELD_LABELS: Record<keyof EditableText, string> = {
-	title: "Título",
-	body: "Mensaje",
-	description: "Descripción",
-};
 
 /** Current values of the editable fields of a call. */
 function editableValues(action: PendingAction): EditableText {
@@ -160,9 +159,10 @@ function editableValues(action: PendingAction): EditableText {
 }
 
 function QuotedText({ quote }: { quote: PublishedText }) {
+	const t = useT();
 	return (
 		<div className="flex flex-col gap-1">
-			<p className="q-sm q-muted">Esto es lo que se publicará, tal cual:</p>
+			<p className="q-sm q-muted">{t.shared.confirm.quoteIntro}</p>
 			<blockquote
 				className="whitespace-pre-wrap break-words rounded-[var(--radius-md)] border-l-4 border-[var(--line-control)] bg-[var(--bg)] px-4 py-3"
 				data-testid="action-quote"
@@ -181,6 +181,13 @@ function EditForm({
 	action: PendingAction;
 	onDone: () => void;
 }) {
+	const t = useT();
+	const c = t.shared.confirm;
+	const fieldLabels: Record<keyof EditableText, string> = {
+		title: c.fieldTitle,
+		body: c.fieldBody,
+		description: c.fieldDescription,
+	};
 	const baseId = useId();
 	const fields = EDITABLE_TEXT_FIELDS[action.call.name] ?? [];
 	const [values, setValues] = useState<EditableText>(() =>
@@ -205,7 +212,7 @@ function EditForm({
 				return (
 					<div key={field} className="flex flex-col gap-1">
 						<label htmlFor={id} className="q-sm font-semibold">
-							{FIELD_LABELS[field]}
+							{fieldLabels[field]}
 						</label>
 						{field === "title" ? (
 							<input
@@ -229,7 +236,7 @@ function EditForm({
 			})}
 			{invalid && (
 				<p className="q-sm" role="alert">
-					Revisa el texto: no puede quedar vacío ni ser demasiado largo.
+					{c.invalid}
 				</p>
 			)}
 			<div className="flex flex-wrap gap-2">
@@ -238,14 +245,14 @@ function EditForm({
 					className="q-btn q-btn--primary min-h-11"
 					onClick={save}
 				>
-					Guardar cambios
+					{c.save}
 				</button>
 				<button
 					type="button"
 					className="q-btn q-btn--secondary min-h-11"
 					onClick={onDone}
 				>
-					Descartar cambios
+					{c.discard}
 				</button>
 			</div>
 		</div>
@@ -263,18 +270,20 @@ export function ActionConfirmCard({
 	onConfirm: () => void;
 	onCancel: () => void;
 }) {
-	useLanguage();
+	const t = useT();
+	const c = t.shared.confirm;
 	const store = useStore();
 	const [text, setText] = useState<ActionText | null>(null);
 	const [editing, setEditing] = useState(false);
 	const editable = EDITABLE_TEXT_FIELDS[action.call.name] !== undefined;
 
+	// biome-ignore lint/correctness/useExhaustiveDependencies: `t` re-describes the action when the language changes.
 	useEffect(() => {
 		let active = true;
 		describeAction(action.call, store)
 			.catch(
 				(): ActionText => ({
-					title: "Hacer esta acción",
+					title: messages[getLanguage()].shared.confirm.fallbackTitle,
 					quote: publishedText(action.call),
 				}),
 			)
@@ -282,14 +291,16 @@ export function ActionConfirmCard({
 		return () => {
 			active = false;
 		};
-	}, [action.call, store]);
+	}, [action.call, store, t]);
 
 	return (
 		<section
 			className="q-card q-card--raised gap-3 p-4"
-			aria-label="Confirma la acción"
+			aria-label={c.ariaLabel}
 		>
-			<p className="q-eyebrow">{AGENT_LABELS[action.agent]} · ¿Lo hacemos?</p>
+			<p className="q-eyebrow">
+				{AGENT_LABELS[action.agent]} · {c.eyebrowSuffix}
+			</p>
 			{!action.grounded && (
 				<p className="q-sm flex items-start gap-2 font-semibold" role="alert">
 					<TriangleAlert
@@ -297,21 +308,16 @@ export function ActionConfirmCard({
 						aria-hidden="true"
 						className="mt-0.5 shrink-0"
 					/>
-					{UNGROUNDED_WARNING}
+					{c.ungroundedWarning}
 				</p>
 			)}
-			<p className="q-h3 break-words">{text?.title ?? "Preparando…"}</p>
+			<p className="q-h3 break-words">{text?.title ?? c.preparing}</p>
 			{editing ? (
 				<EditForm action={action} onDone={() => setEditing(false)} />
 			) : (
 				text?.quote && <QuotedText quote={text.quote} />
 			)}
-			{!signedIn && (
-				<p className="q-sm q-muted">
-					Para hacerlo necesitas iniciar sesión. Al volver, tu conversación te
-					espera aquí.
-				</p>
-			)}
+			{!signedIn && <p className="q-sm q-muted">{c.signInNeeded}</p>}
 			{!editing && (
 				<div className="flex flex-wrap gap-2">
 					{signedIn ? (
@@ -322,12 +328,12 @@ export function ActionConfirmCard({
 							disabled={action.running || !text}
 							aria-busy={action.running}
 						>
-							{action.running ? "Haciéndolo…" : "Confirmar"}
+							{action.running ? c.running : c.confirm}
 						</button>
 					) : (
 						<a className="q-btn q-btn--primary min-h-11" href={signInHref()}>
 							<LogIn size={18} aria-hidden="true" />
-							Inicia sesión
+							{c.signIn}
 						</a>
 					)}
 					{editable && (
@@ -337,7 +343,7 @@ export function ActionConfirmCard({
 							onClick={() => setEditing(true)}
 							disabled={action.running}
 						>
-							Editar
+							{c.edit}
 						</button>
 					)}
 					<button
@@ -346,7 +352,7 @@ export function ActionConfirmCard({
 						onClick={onCancel}
 						disabled={action.running}
 					>
-						Cancelar
+						{c.cancel}
 					</button>
 				</div>
 			)}
