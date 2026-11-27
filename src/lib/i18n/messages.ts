@@ -7,6 +7,7 @@ import { guide } from "./dictionaries/guide";
 import { inbox } from "./dictionaries/inbox";
 import { landing } from "./dictionaries/landing";
 import { map } from "./dictionaries/map";
+import { offline } from "./dictionaries/offline";
 import { places } from "./dictionaries/places";
 import { profile } from "./dictionaries/profile";
 import { reports } from "./dictionaries/reports";
@@ -75,6 +76,7 @@ export type Messages = BaseMessages & {
 	forum: (typeof forum)[Language];
 	places: (typeof places)[Language];
 	map: (typeof map)[Language];
+	offline: (typeof offline)[Language];
 	guide: (typeof guide)[Language];
 	profile: (typeof profile)[Language];
 	reports: (typeof reports)[Language];
@@ -254,6 +256,7 @@ function build(language: Language): Messages {
 		forum: forum[language],
 		places: places[language],
 		map: map[language],
+		offline: offline[language],
 		guide: guide[language],
 		profile: profile[language],
 		reports: reports[language],

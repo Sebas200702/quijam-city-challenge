@@ -57,7 +57,9 @@ const { title, titleKey, theme = "light" } = Astro.props;
 		<slot />
 		<script>
 			import { initStaticText } from "../lib/i18n/apply-static";
+			import { registerServiceWorker } from "../lib/offline/register-service-worker";
 			initStaticText();
+			registerServiceWorker();
 		</script>
 	</body>
 </html>
