@@ -9,17 +9,10 @@ import {
 	OUTPUT_SAMPLE_RATE,
 } from "./pcm-audio";
 
-// Posts each mic buffer to the main thread. Inlined so no extra static file is needed.
-const CAPTURE_WORKLET = `
-class Capture extends AudioWorkletProcessor {
-  process(inputs) {
-    const channel = inputs[0][0];
-    if (channel) this.port.postMessage(channel.slice(0));
-    return true;
-  }
-}
-registerProcessor("capture", Capture);
-`;
+// Posts each mic buffer to the main thread. Served from public/ as our own
+// file: the Content-Security-Policy allows 'self' scripts on every page,
+// while a blob: worklet is only allowed on /prueba-guia.
+export const CAPTURE_WORKLET_URL = "/live-capture-worklet.js";
 
 export interface Microphone {
 	stop: () => void;
@@ -32,10 +25,7 @@ export async function startMicrophone(
 	const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 	const context = new AudioContext({ sampleRate: INPUT_SAMPLE_RATE });
 	try {
-		const moduleUrl = URL.createObjectURL(
-			new Blob([CAPTURE_WORKLET], { type: "application/javascript" }),
-		);
-		await context.audioWorklet.addModule(moduleUrl);
+		await context.audioWorklet.addModule(CAPTURE_WORKLET_URL);
 		const node = new AudioWorkletNode(context, "capture");
 		node.port.onmessage = (event: MessageEvent<Float32Array>) => {
 			onChunk({
