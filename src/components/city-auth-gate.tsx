@@ -8,10 +8,17 @@ import {
 } from "lucide-react";
 import { type SyntheticEvent, useEffect, useState } from "react";
 import type { CitySessionInfo } from "../lib/city-dashboard-types";
+import { useT } from "../lib/i18n/use-language";
+import { CaptchaField } from "./community/captcha-field";
+import { useCaptcha } from "./community/use-captcha";
 
 interface CityAuthGateProps {
 	session: CitySessionInfo | null;
-	onSignIn: (email: string, password: string) => Promise<void>;
+	onSignIn: (
+		email: string,
+		password: string,
+		captchaToken?: string | null,
+	) => Promise<void>;
 	onSignOut: () => Promise<void>;
 }
 
@@ -231,17 +238,28 @@ export function CityAuthGate({
 	const [submitting, setSubmitting] = useState(false);
 	const [error, setError] = useState<SignInError | null>(null);
 	const [online, recheckOnline] = useOnlineStatus();
+	const captcha = useCaptcha();
+	const t = useT();
 
 	async function handleSubmit(event: SyntheticEvent<HTMLFormElement>) {
 		event.preventDefault();
+		if (captcha.missing) {
+			setError({
+				title: t.profile.captchaLabel,
+				text: t.profile.captchaRequired,
+				detail: null,
+			});
+			return;
+		}
 		setSubmitting(true);
 		setError(null);
 		try {
-			await onSignIn(email.trim(), password);
+			await onSignIn(email.trim(), password, captcha.token);
 		} catch (err) {
 			setError(describeSignInError(err));
 		} finally {
 			setSubmitting(false);
+			captcha.reset();
 		}
 	}
 
@@ -321,6 +339,8 @@ export function CityAuthGate({
 							className={INPUT_CLASS}
 						/>
 					</div>
+
+					<CaptchaField captcha={captcha} />
 
 					{error && (
 						<div

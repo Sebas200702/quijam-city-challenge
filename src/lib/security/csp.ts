@@ -18,10 +18,15 @@ const SOURCES = {
 		"https://generativelanguage.googleapis.com",
 		"wss://generativelanguage.googleapis.com",
 	],
+	/** Cloudflare Turnstile: its script and the challenge iframe (issue #124). */
+	turnstile: ["https://challenges.cloudflare.com"],
 } as const;
 
 /** Pages that load an AudioWorklet from a blob URL (the voice test). */
 const BLOB_WORKLET_PATHS = new Set(["/prueba-guia"]);
+
+/** Pages with a sign-in or sign-up form, which load the Turnstile CAPTCHA. */
+const TURNSTILE_PATHS = new Set(["/perfil", "/ciudad", "/vendedor/entrar"]);
 
 /** Reporting endpoint for violations (see src/pages/api/csp-report.ts). */
 export const CSP_REPORT_PATH = "/api/csp-report";
@@ -75,9 +80,12 @@ export function buildCsp({
 }: CspInput): string {
 	const supabase = supabaseOrigins(supabaseUrl);
 	const scriptExtra = BLOB_WORKLET_PATHS.has(pathname) ? ["blob:"] : [];
+	const page = pathname.length > 1 ? pathname.replace(/\/+$/, "") : pathname;
+	const turnstile = TURNSTILE_PATHS.has(page) ? SOURCES.turnstile : [];
 	const directives: Record<string, string[]> = {
 		"default-src": ["'self'"],
-		"script-src": ["'self'", ...scriptHashes, ...scriptExtra],
+		"script-src": ["'self'", ...scriptHashes, ...scriptExtra, ...turnstile],
+		"frame-src": ["'self'", ...turnstile],
 		"style-src": ["'self'", "'unsafe-inline'", ...SOURCES.fontsCss],
 		"font-src": ["'self'", ...SOURCES.fontFiles],
 		"img-src": ["'self'", "data:", "blob:", ...SOURCES.tiles],
