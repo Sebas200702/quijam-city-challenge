@@ -12,6 +12,7 @@ import {
 } from "../../lib/assistant/assistant-stream";
 import type {
 	AssistantAgentId,
+	AssistantContext,
 	AssistantMessage,
 	AssistantRequest,
 	AssistantResponse,
@@ -80,7 +81,12 @@ interface OpenBatch {
 	results: AssistantToolResult[];
 	remaining: AssistantToolCall[];
 	agent: AssistantAgentId;
+	/** The actions came from a Gemini Live session: the outcome goes back to it. */
+	live?: boolean;
 }
+
+/** Sends tool results back to the Live session that asked for them. */
+export type LiveResponder = (results: AssistantToolResult[]) => void;
 
 /** Kept for this tab only, so the conversation survives signing in. */
 const SAVED_KEY = "quillart-assistant-conversation";
@@ -121,7 +127,7 @@ function referrerPath(): string | null {
 }
 
 /** The model only needs the compact summaries, not the rich card data. */
-function forWire(messages: AssistantMessage[]): AssistantMessage[] {
+export function forWire(messages: AssistantMessage[]): AssistantMessage[] {
 	return messages.map((message) =>
 		message.role === "tool"
 			? {
@@ -171,6 +177,28 @@ export function useAssistant() {
 	const profileRef = useRef(profile);
 	profileRef.current = profile;
 	const restored = useRef(false);
+	const messagesRef = useRef(messages);
+	messagesRef.current = messages;
+	/** Answers the Live session once its waiting action is confirmed or cancelled. */
+	const liveResponder = useRef<LiveResponder | null>(null);
+	/** Live turns that arrived while an action waited; shown after it settles. */
+	const liveQueue = useRef<AssistantMessage[]>([]);
+
+	/** Sets the conversation and keeps the ref in step for Live callbacks. */
+	const commit = useCallback((next: AssistantMessage[]) => {
+		messagesRef.current = next;
+		setMessages(next);
+	}, []);
+
+	/** Shows the Live turns queued while an action waited. */
+	const flushLiveQueue = useCallback(
+		(history: AssistantMessage[]) => {
+			const queued = liveQueue.current;
+			liveQueue.current = [];
+			commit([...history, ...queued]);
+		},
+		[commit],
+	);
 
 	/** Applies an edit to a waiting action (its args and the replayed turn). */
 	const editAction = useCallback(
@@ -225,6 +253,21 @@ export function useAssistant() {
 		const saved = loadSaved();
 		restored.current = true;
 		if (!saved) return;
+		if (saved.batch?.live) {
+			// The Live session that asked is gone: its waiting actions did not happen.
+			const { messages: history, results, remaining } = saved.batch;
+			setMessages([
+				...history,
+				{
+					role: "tool",
+					results: [
+						...results,
+						...remaining.map((call) => declinedResult(call)),
+					],
+				},
+			]);
+			return;
+		}
 		setMessages(saved.messages);
 		batch.current = saved.batch;
 		if (saved.batch) {
@@ -240,19 +283,24 @@ export function useAssistant() {
 		if (restored.current) save({ messages, batch: batch.current });
 	}, [messages, pending]);
 
+	/** Facts about the person and the moment, for the server. */
+	const currentContext = useCallback((): AssistantContext => {
+		const current = profileRef.current;
+		return {
+			now: new Date().toISOString(),
+			signedIn: current !== null,
+			displayName: current?.displayName ?? null,
+			isVisitor: current?.isVisitor ?? null,
+			fromPath: referrerPath(),
+			language: getLanguage(),
+		};
+	}, []);
+
 	const request = useCallback(
 		async (history: AssistantMessage[]): Promise<AssistantResponse> => {
-			const current = profileRef.current;
 			const body: AssistantRequest = {
 				messages: forWire(history),
-				context: {
-					now: new Date().toISOString(),
-					signedIn: current !== null,
-					displayName: current?.displayName ?? null,
-					isVisitor: current?.isVisitor ?? null,
-					fromPath: referrerPath(),
-					language: getLanguage(),
-				},
+				context: currentContext(),
 			};
 			let response: Response;
 			try {
@@ -288,7 +336,7 @@ export function useAssistant() {
 			if (!isResponse(data)) throw new Error("invalid response");
 			return data;
 		},
-		[],
+		[currentContext],
 	);
 
 	const converse = useCallback(
@@ -391,9 +439,107 @@ export function useAssistant() {
 			setMessages(next);
 			if (open.remaining.length > 0) return;
 			batch.current = null;
+			if (open.live) {
+				// Live continues the conversation itself once it has the outcome.
+				const respond = liveResponder.current;
+				liveResponder.current = null;
+				respond?.(open.results);
+				flushLiveQueue(next);
+				return;
+			}
 			if (open.rounds < MAX_ROUNDS) await converse(next, open.rounds + 1);
 		},
-		[converse],
+		[converse, flushLiveQueue],
+	);
+
+	/** Adds a Live transcript turn; while an action waits it is queued. */
+	const appendLive = useCallback(
+		(message: AssistantMessage) => {
+			if (batch.current?.live) {
+				liveQueue.current.push(message);
+				return;
+			}
+			commit([...messagesRef.current, message]);
+		},
+		[commit],
+	);
+
+	/**
+	 * One Live model turn with tool calls (already checked against the agent's
+	 * allow-list and schemas). Reads run now and go back to Live; an action
+	 * waits for the same confirmation card as text. Returns true when an action
+	 * is waiting for the person.
+	 */
+	const runLiveTurn = useCallback(
+		async (
+			agent: AssistantAgentId,
+			text: string,
+			toolCalls: AssistantToolCall[],
+			respond: LiveResponder,
+		): Promise<boolean> => {
+			const turn: AssistantMessage = {
+				role: "assistant",
+				agent,
+				text,
+				toolCalls,
+			};
+			const next = [...messagesRef.current, turn];
+			commit(next);
+			const reads = toolCalls.filter((call) => !isActionTool(call.name));
+			const [action, ...extraActions] = toolCalls.filter((call) =>
+				isActionTool(call.name),
+			);
+			const results = [
+				...(await Promise.all(reads.map((call) => runTool(call, store)))),
+				...extraActions.map(droppedResult),
+			];
+			if (!action) {
+				if (results.length > 0) commit([...next, { role: "tool", results }]);
+				respond(results);
+				return false;
+			}
+			batch.current = {
+				messages: next,
+				rounds: 0,
+				results,
+				remaining: [action],
+				agent,
+				live: true,
+			};
+			liveResponder.current = respond;
+			const known: AssistantMessage[] =
+				results.length > 0 ? [...next, { role: "tool", results }] : next;
+			if (results.length > 0) commit(known);
+			setPending([toPending(action, agent, known)]);
+			return true;
+		},
+		[commit, store, toPending],
+	);
+
+	/**
+	 * The Live session closed or withdrew calls: waiting Live actions did not
+	 * happen and nobody is left to answer. With `ids`, only those calls.
+	 */
+	const abandonLive = useCallback(
+		(ids?: string[]) => {
+			const open = batch.current;
+			if (!open?.live) return;
+			if (ids && !open.remaining.some((call) => ids.includes(call.id))) return;
+			batch.current = null;
+			liveResponder.current = null;
+			setPending([]);
+			flushLiveQueue([
+				...open.messages,
+				{
+					role: "tool",
+					results: [
+						...open.results,
+						...open.remaining.map((call) => declinedResult(call)),
+					],
+				},
+			]);
+		},
+		[flushLiveQueue],
 	);
 
 	const confirm = useCallback(
@@ -451,11 +597,13 @@ export function useAssistant() {
 	const reset = useCallback(() => {
 		if (busy.current) return;
 		batch.current = null;
+		liveResponder.current = null;
+		liveQueue.current = [];
 		setPending([]);
-		setMessages([]);
+		commit([]);
 		setSuggestions([]);
 		setError(null);
-	}, []);
+	}, [commit]);
 
 	return {
 		messages,
@@ -470,5 +618,9 @@ export function useAssistant() {
 		confirm,
 		cancel,
 		reset,
+		currentContext,
+		appendLive,
+		runLiveTurn,
+		abandonLive,
 	};
 }
