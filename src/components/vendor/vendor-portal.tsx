@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { BadgeCheck, Eye, LogOut, Plus, Store, Trash2 } from "lucide-react";
-import { type FormEvent, useCallback, useEffect, useState } from "react";
+import { type SyntheticEvent, useCallback, useEffect, useState } from "react";
 import {
 	formatCop,
 	parsePriceCop,
@@ -152,7 +152,7 @@ export default function VendorPortal() {
 			setConfirmClose(false);
 		});
 
-	const submitProduct = (event: FormEvent) => {
+	const submitProduct = (event: SyntheticEvent) => {
 		event.preventDefault();
 		const priceCop = parsePriceCop(draftPrice);
 		const problem =

@@ -36,6 +36,7 @@ import { useT } from "../../lib/i18n/use-language";
 import { DESTINATIONS, type DestinationKey } from "../../lib/trip/trip-planner";
 import { GuidePanel } from "../guide/guide-panel";
 import "./corridor-map.css";
+import { BusinessExtras } from "./business-extras";
 import { DetailCard } from "./detail-card";
 import { FloodAlertBanner } from "./flood-alert-banner";
 import { MapHeader, type Theme } from "./map-header";
@@ -52,6 +53,7 @@ import { pinIcon, setMarkerSelected, userIcon } from "./map-markers";
 import { RouteCard } from "./route-card";
 import { StopList } from "./stop-list";
 import { useFloodCountdown } from "./use-flood-countdown";
+import { useLiveBusinesses } from "./use-live-businesses";
 import { type RouteQuery, useRoutePlan } from "./use-route-plan";
 
 // Standard OpenStreetMap tiles: no API key. The dark theme darkens them in CSS.
@@ -175,10 +177,25 @@ export default function CorridorMap({
 	);
 	const planLayerRef = useRef<L.LayerGroup | null>(null);
 	const floodLayerRef = useRef<L.LayerGroup | null>(null);
+	// Businesses opened or closed by their vendors arrive by Realtime (#49).
+	const live = useLiveBusinesses(data);
 	const detail = useMemo(
-		() => describeSelection(data, selected),
-		[data, selected],
+		() => describeSelection(live, selected),
+		[live, selected],
 	);
+	const selectedBusiness =
+		selected?.kind === "business"
+			? (live.businesses.find((business) => business.code === selected.code) ??
+				null)
+			: null;
+
+	// /mapa?negocio=<code> (the vendor's "Cómo te ven") opens that business's card.
+	useEffect(() => {
+		const code = new URLSearchParams(window.location.search).get("negocio");
+		if (code && data.businesses.some((business) => business.code === code)) {
+			setSelected({ kind: "business", code });
+		}
+	}, [data]);
 
 	useEffect(() => {
 		const container = containerRef.current;
@@ -240,8 +257,8 @@ export default function CorridorMap({
 	// biome-ignore lint/correctness/useExhaustiveDependencies: `t` is the trigger; the pins come from `tRef`.
 	useEffect(() => {
 		const layers = layersRef.current;
-		if (layers) relabelPins(layers, data, tRef.current);
-	}, [t, data]);
+		if (layers) relabelPins(layers, live, tRef.current);
+	}, [t, live]);
 
 	// Show or hide each layer, then mark the selected marker again: Leaflet
 	// rebuilds a marker's element when its layer comes back (and when a new language relabels it).
@@ -258,7 +275,7 @@ export default function CorridorMap({
 		for (const [key, marker] of layers.markers) {
 			setMarkerSelected(marker, key === selectedKey);
 		}
-	}, [visible, selected, t]);
+	}, [visible, selected, t, live]);
 
 	// Draws the route the Decider chose: gold on a dark edge (green edge when it is the accessible one).
 	useEffect(() => {
@@ -503,7 +520,14 @@ export default function CorridorMap({
 							source={source}
 							onClose={() => setSelected(null)}
 							onOpenGuide={() => setGuideOpen(true)}
-						/>
+						>
+							{selectedBusiness && (
+								<BusinessExtras
+									code={selectedBusiness.code}
+									isOpen={selectedBusiness.is_open}
+								/>
+							)}
+						</DetailCard>
 					) : (
 						<RouteCard
 							stops={stops}

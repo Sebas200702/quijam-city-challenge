@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { BadgeCheck, LogIn, UserPlus } from "lucide-react";
-import { type FormEvent, useEffect, useState } from "react";
+import { type SyntheticEvent, useEffect, useState } from "react";
 import { isClaimCode } from "../../lib/vendor/vendor-logic";
 import {
 	claimBusiness,
@@ -85,7 +85,7 @@ export default function VendorEntry() {
 		});
 	}, []);
 
-	const submit = async (event: FormEvent) => {
+	const submit = async (event: SyntheticEvent) => {
 		event.preventDefault();
 		if (!client) return;
 		setBusy(true);
