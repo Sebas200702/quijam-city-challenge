@@ -4,7 +4,7 @@ Issue #42. Datos simulados 2034. Solo en el tablero de ciudad (`/ciudad`), nunca
 
 ## Qué muestra
 
-- 2.000 puntos que se mueven por las calles del corredor (la misma línea del mapa). Cada punto representa unos 6 visitantes. El número sale de los conteos de la base al abrir el tablero.
+- 2.000 puntos que se mueven por las calles del corredor (la misma línea del mapa). Cada punto representa unos 6 visitantes. El número sale de los conteos de la base al abrir el tablero y se ajusta cuando esos conteos cambian.
 - El color de cada punto es el estado de su zona, con la escala del tablero: verde fluido (< 60 %), dorado moderado (60 a 85 %), rojo saturado (≥ 85 %).
 - Barras por zona con visitantes, umbral y porcentaje, actualizadas cada segundo.
 
@@ -29,6 +29,13 @@ Son las del borrador [14-desvio-barrio-abajo.md](14-desvio-barrio-abajo.md):
 - El conteo de una zona son las personas que están en ella o caminando hacia ella. Quien solo pasa por una zona no cuenta para esa zona.
 - Mientras corre, el simulador escribe los conteos en `zone_visitor_counts` cada 5 s (solo el rol ciudad puede, por RLS). Las filas quedan con `is_simulated = true`. El tablero se actualiza por Realtime.
 - "Pausar" detiene el movimiento y la escritura.
+- El ensayo sigue los conteos en vivo: cuando `zone_visitor_counts` cambia, los puntos se reparten de nuevo por zona (`CrowdSim.setZoneTargets`) y caminan a su nueva zona.
+- Si el cambio no viene del propio panel (sus valores no coinciden con los últimos que escribió; por ejemplo, `bun scripts/simulate-city.ts --run` u otro tablero abierto), el panel deja de escribir durante 30 s y lo indica debajo del mapa. Cada nuevo cambio externo reinicia la pausa; cuando pasan 30 s sin cambios externos, vuelve a escribir cada 5 s. No compara relojes ni `updated_at`.
+
+## Cómo verlo
+
+- Producción: `/ciudad`, con una cuenta de rol ciudad y el segundo factor (TOTP). Para ver la ciudad en movimiento, en otra terminal con la clave de servicio: `bun scripts/simulate-city.ts --seed` (una vez) y `bun scripts/simulate-city.ts --run --minutes 10 --speed 360`.
+- Solo en desarrollo (`astro dev`): `/ciudad?demo` muestra el tablero con datos de prueba sin iniciar sesión; ahí el panel no escribe en la base.
 
 ## Rendimiento y accesibilidad
 

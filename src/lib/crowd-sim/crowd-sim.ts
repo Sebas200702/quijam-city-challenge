@@ -75,7 +75,8 @@ function haversine(
  */
 export class CrowdSim {
 	readonly agentCount: number;
-	readonly visitorsPerAgent: number;
+	/** Visitors each agent stands for; follows the live total after setZoneTargets. */
+	visitorsPerAgent: number;
 	/** Position along the path, meters from the stadium. */
 	readonly pos: Float32Array;
 	/** Sideways spread from -1 to 1, so dots fill the street instead of a line. */
@@ -307,6 +308,38 @@ export class CrowdSim {
 			zone = this.zoneOf(this.pos[agent]);
 		}
 		this.sendTo(agent, zone);
+	}
+
+	/**
+	 * Follows live zone counts written by someone else (scripts/simulate-city.ts,
+	 * another dashboard): destination weights, capacities and visitors per agent
+	 * take the new values, and just enough agents are re-routed so each zone's
+	 * count (resting there or walking there) matches its new share. Agents walk
+	 * to their new zone, so the dots show the change. `reset` still goes back to
+	 * the counts the simulation opened with.
+	 */
+	setZoneTargets(zones: ZoneSeed[]): void {
+		const total = zones.reduce((sum, zone) => sum + zone.visitors, 0);
+		if (total <= 0) return;
+		SIM_ZONES.forEach((zone, index) => {
+			const seed = zones.find((item) => item.zone === zone);
+			this.weights[index] = (seed?.visitors ?? 0) / total;
+			if (seed) this.capacity[index] = seed.capacity;
+		});
+		this.visitorsPerAgent = Math.max(1, total / this.agentCount);
+		const wanted = this.weights.map((weight) =>
+			Math.round(weight * this.agentCount),
+		);
+		const counts = this.countCommitted();
+		for (let i = 0; i < this.agentCount; i++) {
+			const from = this.committedZone(i);
+			if (counts[from] <= wanted[from]) continue;
+			const to = wanted.findIndex((want, zone) => counts[zone] < want);
+			if (to === -1) break;
+			counts[from]--;
+			counts[to]++;
+			this.sendTo(i, to);
+		}
 	}
 
 	/** Keeps a target out of blocked arroyos: stop before the first one on the way. */

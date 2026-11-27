@@ -128,6 +128,40 @@ describe("CrowdSim", () => {
 		expect(sim.counts()).toEqual(start);
 	});
 
+	it("follows live zone counts from another writer with setZoneTargets", () => {
+		const sim = newSim();
+		const live: ZoneSeed[] = [
+			{ zone: "estadio", visitors: 800, capacity: 6000 },
+			{ zone: "troncal_murillo", visitors: 1200, capacity: 3000 },
+			{ zone: "centro", visitors: 2000, capacity: 2500 },
+			{ zone: "barrio_abajo", visitors: 1500, capacity: 1800 },
+			{ zone: "gran_malecon", visitors: 4500, capacity: 3500 },
+		];
+		sim.setZoneTargets(live);
+		expect(sim.visitorsPerAgent).toBeCloseTo(10000 / 2000);
+		const counts = sim.counts();
+		for (const zone of live) {
+			expect(Math.abs(counts[zone.zone] - zone.visitors)).toBeLessThanOrEqual(
+				2 * Math.ceil(sim.visitorsPerAgent),
+			);
+		}
+		// Re-routed agents walk to their new zones and the counts hold.
+		run(sim, 5);
+		const after = sim.counts();
+		for (const zone of live) {
+			expect(Math.abs(after[zone.zone] - zone.visitors)).toBeLessThan(
+				zone.visitors * 0.15 + 50,
+			);
+		}
+	});
+
+	it("ignores an all-zero update from setZoneTargets", () => {
+		const sim = newSim();
+		const before = sim.counts();
+		sim.setZoneTargets(ZONES.map((zone) => ({ ...zone, visitors: 0 })));
+		expect(sim.counts()).toEqual(before);
+	});
+
 	it("places agents on the corridor", () => {
 		const sim = newSim(50);
 		const out: [number, number] = [0, 0];
