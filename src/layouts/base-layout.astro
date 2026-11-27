@@ -3,11 +3,13 @@ import "../styles/global.css";
 
 interface Props {
 	title: string;
+	/** Key of the title in the i18n dictionaries (e.g. "agenda.pageTitle"), to translate it. */
+	titleKey?: string;
 	/** Default theme before the saved choice (applied by the inline script) loads. */
 	theme?: "light" | "dark";
 }
 
-const { title, theme = "light" } = Astro.props;
+const { title, titleKey, theme = "light" } = Astro.props;
 ---
 
 <!doctype html>
@@ -22,7 +24,7 @@ const { title, theme = "light" } = Astro.props;
 			rel="stylesheet"
 			href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap"
 		/>
-		<title>{title}</title>
+		<title data-i18n={titleKey}>{title}</title>
 		<script is:inline>
 			// Light is the default theme; apply a saved choice before the first paint.
 			try {
@@ -45,5 +47,9 @@ const { title, theme = "light" } = Astro.props;
 			<i></i><i></i><i></i>
 		</div>
 		<slot />
+		<script>
+			import { initStaticText } from "../lib/i18n/apply-static";
+			initStaticText();
+		</script>
 	</body>
 </html>

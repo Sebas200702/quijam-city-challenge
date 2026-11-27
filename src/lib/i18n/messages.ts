@@ -1,6 +1,13 @@
 // Interface text in the four languages. Spanish is the reference: the other
 // dictionaries must have the same keys (the compiler checks it).
 
+import { agenda } from "./dictionaries/agenda";
+import { forum } from "./dictionaries/forum";
+import { landing } from "./dictionaries/landing";
+import { map } from "./dictionaries/map";
+import { places } from "./dictionaries/places";
+import { profile } from "./dictionaries/profile";
+import { shared } from "./dictionaries/shared";
 import type { Language } from "./languages";
 
 const es = {
@@ -65,9 +72,20 @@ const es = {
 	},
 };
 
-export type Messages = typeof es;
+type BaseMessages = typeof es;
 
-const en: Messages = {
+/** The shell text above plus one dictionary per page (see ./dictionaries). */
+export type Messages = BaseMessages & {
+	landing: (typeof landing)[Language];
+	agenda: (typeof agenda)[Language];
+	forum: (typeof forum)[Language];
+	places: (typeof places)[Language];
+	map: (typeof map)[Language];
+	profile: (typeof profile)[Language];
+	shared: (typeof shared)[Language];
+};
+
+const en: BaseMessages = {
 	language: {
 		button: "Language",
 		menuTitle: "Choose your language",
@@ -129,7 +147,7 @@ const en: Messages = {
 	},
 };
 
-const pt: Messages = {
+const pt: BaseMessages = {
 	language: {
 		button: "Idioma",
 		menuTitle: "Escolha o idioma",
@@ -192,7 +210,7 @@ const pt: Messages = {
 	},
 };
 
-const fr: Messages = {
+const fr: BaseMessages = {
 	language: {
 		button: "Langue",
 		menuTitle: "Choisissez la langue",
@@ -256,4 +274,24 @@ const fr: Messages = {
 	},
 };
 
-export const messages: Record<Language, Messages> = { es, en, pt, fr };
+const base: Record<Language, BaseMessages> = { es, en, pt, fr };
+
+function build(language: Language): Messages {
+	return {
+		...base[language],
+		landing: landing[language],
+		agenda: agenda[language],
+		forum: forum[language],
+		places: places[language],
+		map: map[language],
+		profile: profile[language],
+		shared: shared[language],
+	};
+}
+
+export const messages: Record<Language, Messages> = {
+	es: build("es"),
+	en: build("en"),
+	pt: build("pt"),
+	fr: build("fr"),
+};

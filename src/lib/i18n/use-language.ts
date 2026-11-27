@@ -56,6 +56,9 @@ function subscribe(listener: () => void): () => void {
 	};
 }
 
+/** For code outside React (the static Astro text) that must react to a change. */
+export const subscribeLanguage = subscribe;
+
 /** The server and the first client render use Spanish, then the saved choice applies. */
 export function useLanguage(): Language {
 	return useSyncExternalStore(subscribe, getLanguage, () => DEFAULT_LANGUAGE);
