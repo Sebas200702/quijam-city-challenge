@@ -3,7 +3,8 @@ import {
 	CheckCircle2,
 	Clock,
 	Eye,
-	RefreshCw,
+	Receipt,
+	SearchX,
 	Sparkles,
 	XCircle,
 } from "lucide-react";
@@ -25,6 +26,7 @@ import {
 	ZONE_LABELS,
 } from "../lib/city-dashboard-utils";
 import { overchargePercent } from "../lib/reports/overcharge-report";
+import { SectionState } from "./city/sections/section-state";
 
 const PRIMARY_WORKFLOW_STATUSES: ReportStatus[] = [
 	"open",
@@ -172,7 +174,7 @@ export function OverchargeInbox({
 						</div>
 					</div>
 
-					<div className="grid grid-cols-3 gap-2.5 pt-1">
+					<div className="grid gap-2.5 pt-1 sm:grid-cols-3">
 						{PRIMARY_WORKFLOW_STATUSES.map((status) => {
 							const { className, Icon } = getStatusBadge(status);
 							return (
@@ -185,7 +187,7 @@ export function OverchargeInbox({
 										)
 									}
 									aria-pressed={filter === status}
-									className={`flex min-h-11 flex-col items-start justify-between rounded-[var(--radius-md)] border p-3 text-left transition-colors ${
+									className={`flex min-h-11 items-center justify-between gap-2 sm:flex-col sm:items-start rounded-[var(--radius-md)] border p-3 text-left transition-colors ${
 										filter === status
 											? "border-[var(--action)] bg-[var(--surface-raised)]"
 											: "border-[var(--line)] bg-[var(--surface)]"
@@ -195,7 +197,7 @@ export function OverchargeInbox({
 										<Icon size={12} strokeWidth={2} aria-hidden="true" />
 										{REPORT_STATUS_LABELS[status]}
 									</span>
-									<span className="q-num mt-2 text-2xl font-bold text-[var(--ink)]">
+									<span className="q-num text-2xl font-bold text-[var(--ink)] sm:mt-2">
 										{summary[status]}
 									</span>
 								</button>
@@ -226,40 +228,39 @@ export function OverchargeInbox({
 
 				{/* Complete states: loading, error, empty, list */}
 				{isLoading ? (
-					<div className="flex items-center justify-center gap-3 rounded-[var(--radius-md)] bg-[var(--bg)] px-4 py-10">
-						<span
-							className="q-star q-star--think text-[var(--gold)]"
-							aria-hidden="true"
-						/>
-						<span className="q-sm q-muted">Cargando bandeja de reportes…</span>
-					</div>
+					<SectionState
+						compact
+						kind="loading"
+						title="Cargando reportes"
+						text="Traemos los cobros abusivos que enviaron los visitantes."
+					/>
 				) : error && reports.length === 0 ? (
-					<div
-						role="alert"
-						className="flex flex-wrap items-center justify-between gap-3 rounded-[var(--radius-md)] bg-[var(--red-soft)] p-4 text-sm text-[var(--red-text)]"
-					>
-						<span>{error}</span>
-						<button
-							type="button"
-							onClick={onRetry}
-							className="q-btn q-btn--secondary q-btn--sm min-h-11"
-						>
-							<RefreshCw size={16} strokeWidth={1.75} aria-hidden="true" />
-							Reintentar
-						</button>
-					</div>
+					<SectionState
+						compact
+						kind="error"
+						icon={Receipt}
+						title="No pudimos cargar los reportes"
+						text={error}
+						onRetry={onRetry}
+					/>
 				) : visibleReports.length === 0 ? (
-					<div className="rounded-[var(--radius-md)] bg-[var(--bg)] px-4 py-8 text-center">
-						<p className="q-p font-medium text-[var(--ink)]">
-							{filter === "all"
-								? "No hay reportes de cobro abusivo registrados."
-								: `No hay reportes en estado "${REPORT_STATUS_LABELS[filter]}".`}
-						</p>
-						<p className="q-sm q-muted mt-1">
-							Cuando un visitante envíe un reporte desde /reportar o el Guía,
-							aparecerá aquí en tiempo real.
-						</p>
-					</div>
+					filter === "all" ? (
+						<SectionState
+							compact
+							kind="empty"
+							illustration="/illustrations/transport.svg"
+							title="No hay cobros abusivos reportados"
+							text="Cuando un visitante reporte uno desde Reportar o el Guía, aparece aquí al momento."
+						/>
+					) : (
+						<SectionState
+							compact
+							kind="empty"
+							icon={SearchX}
+							title={`No hay reportes en «${REPORT_STATUS_LABELS[filter]}»`}
+							text="Cambia el filtro para ver los demás."
+						/>
+					)
 				) : (
 					<ul className="space-y-3">
 						{visibleReports.map((report) => {
