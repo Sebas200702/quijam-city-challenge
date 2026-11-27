@@ -3,10 +3,12 @@
 
 import { agenda } from "./dictionaries/agenda";
 import { forum } from "./dictionaries/forum";
+import { inbox } from "./dictionaries/inbox";
 import { landing } from "./dictionaries/landing";
 import { map } from "./dictionaries/map";
 import { places } from "./dictionaries/places";
 import { profile } from "./dictionaries/profile";
+import { reports } from "./dictionaries/reports";
 import { shared } from "./dictionaries/shared";
 import type { Language } from "./languages";
 
@@ -82,6 +84,8 @@ export type Messages = BaseMessages & {
 	places: (typeof places)[Language];
 	map: (typeof map)[Language];
 	profile: (typeof profile)[Language];
+	reports: (typeof reports)[Language];
+	inbox: (typeof inbox)[Language];
 	shared: (typeof shared)[Language];
 };
 
@@ -285,6 +289,8 @@ function build(language: Language): Messages {
 		places: places[language],
 		map: map[language],
 		profile: profile[language],
+		reports: reports[language],
+		inbox: inbox[language],
 		shared: shared[language],
 	};
 }
