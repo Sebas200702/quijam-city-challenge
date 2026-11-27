@@ -145,6 +145,89 @@
 	gap: 6px;
 	pointer-events: none;
 }
+/* "That point is outside the metro area": a quiet note under the chips, closable. */
+.corridor-note-region:empty {
+	display: none;
+}
+.corridor-note {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin: 0;
+	padding: 4px 4px 4px 12px;
+	border-radius: var(--radius-md);
+	background: var(--surface-raised);
+	color: var(--ink);
+	font-size: 14px;
+	line-height: 20px;
+	box-shadow: var(--shadow-card);
+}
+.corridor-note > svg {
+	flex: none;
+	color: var(--ink-muted);
+}
+.corridor-note__text {
+	flex: 1;
+	min-width: 0;
+}
+.corridor-note__close {
+	display: grid;
+	flex: none;
+	place-items: center;
+	width: 44px;
+	height: 44px;
+	border: 0;
+	border-radius: 50%;
+	background: none;
+	color: inherit;
+	cursor: pointer;
+}
+.corridor-note__close:focus-visible {
+	outline: 2px solid var(--focus);
+	outline-offset: -4px;
+}
+
+/* ── Groups of pins (U32): the count in a 44px circle, ringed in the layer's colour ── */
+.corridor-cluster-icon {
+	background: none;
+	border: 0;
+}
+.corridor-cluster {
+	display: grid;
+	place-items: center;
+	width: 44px;
+	height: 44px;
+	border: 3px solid var(--line-control);
+	border-radius: 50%;
+	background: var(--surface-raised);
+	color: var(--ink);
+	font-family: var(--font-display);
+	font-size: 16px;
+	font-weight: 700;
+	font-variant-numeric: tabular-nums;
+	box-shadow: 0 6px 16px #0b131e38;
+}
+.corridor-cluster--green {
+	border-color: var(--green);
+}
+.corridor-cluster--gold {
+	border-color: var(--gold-text);
+}
+.corridor-cluster--red {
+	border-color: var(--red);
+}
+.corridor-cluster-icon:focus-visible {
+	outline: none;
+}
+.corridor-cluster-icon:focus-visible .corridor-cluster {
+	outline: 3px solid var(--focus);
+	outline-offset: 2px;
+}
+@media (min-width: 1024px) {
+	.corridor-cluster-icon:hover .corridor-cluster {
+		box-shadow: var(--glow-gold);
+	}
+}
 .corridor-maptags__badge {
 	height: 28px;
 	box-shadow: var(--shadow-card);
