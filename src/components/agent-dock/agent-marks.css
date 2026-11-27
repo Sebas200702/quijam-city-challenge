@@ -1,0 +1,64 @@
+/* What Quillart AI changed on the screen: gold and the star, never colour alone
+   (the mark always carries words). */
+
+.q-agent-mark {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	flex-wrap: wrap;
+	min-height: 44px;
+	padding: 4px 6px 4px 12px;
+	border-radius: var(--radius-md);
+	border: 1px solid var(--gold-text);
+	background: var(--gold-soft);
+	color: var(--gold-text);
+	font-size: 13px;
+	line-height: 18px;
+	font-weight: 600;
+}
+
+.q-agent-mark .q-star {
+	width: 14px;
+	height: 14px;
+}
+
+.q-agent-mark__text {
+	flex: 1 1 auto;
+	min-width: 0;
+}
+
+.q-agent-mark__action {
+	font: inherit;
+	min-height: 36px;
+	padding: 0 10px;
+	border: 0;
+	border-radius: var(--radius-sm, 6px);
+	background: none;
+	color: inherit;
+	text-decoration: underline;
+	text-underline-offset: 3px;
+	cursor: pointer;
+}
+
+.q-agent-mark__action:focus-visible {
+	outline: 2px solid var(--focus);
+	outline-offset: 2px;
+}
+
+/* A field or a block the agent filled or pointed at. */
+.q-agent-filled.q-agent-filled {
+	border-color: var(--gold-text);
+	box-shadow: var(--glow-gold);
+}
+
+.q-agent-highlight {
+	border-radius: var(--radius-md);
+	box-shadow: var(--glow-gold);
+	transition: box-shadow 0.3s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.q-agent-highlight {
+		transition: none;
+	}
+}

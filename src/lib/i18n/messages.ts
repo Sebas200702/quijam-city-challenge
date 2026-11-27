@@ -2,6 +2,7 @@
 // dictionaries must have the same keys (the compiler checks it).
 
 import { agenda } from "./dictionaries/agenda";
+import { dock } from "./dictionaries/dock";
 import { forum } from "./dictionaries/forum";
 import { guide } from "./dictionaries/guide";
 import { inbox } from "./dictionaries/inbox";
@@ -86,6 +87,7 @@ export type Messages = BaseMessages & {
 	inbox: (typeof inbox)[Language];
 	shared: (typeof shared)[Language];
 	timeline: (typeof timeline)[Language];
+	dock: (typeof dock)[Language];
 };
 
 const en: BaseMessages = {
@@ -268,6 +270,7 @@ function build(language: Language): Messages {
 		inbox: inbox[language],
 		shared: shared[language],
 		timeline: timeline[language],
+		dock: dock[language],
 	};
 }
 

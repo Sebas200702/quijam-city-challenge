@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { uiBus } from "../../lib/assistant/ui-action-bus";
 import type {
 	CorridorData,
 	CorridorDataSource,
@@ -58,6 +59,17 @@ export default function VisitorMapSection({
 		[],
 	);
 	const { plan, error } = useRoutePlan(query, NO_FLOODS, NO_CROWD);
+
+	// Quillart AI drew another route: the map's route card shows it, not this one.
+	useEffect(
+		() =>
+			uiBus().onChange((changes) => {
+				if (changes.some((change) => change.action.type === "map.showRoute")) {
+					setNextStepOpen(false);
+				}
+			}),
+		[],
+	);
 
 	// Watch the map's bottom area and step aside when it needs the space.
 	useEffect(() => {

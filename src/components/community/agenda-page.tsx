@@ -1,14 +1,29 @@
-// Agenda: upcoming community events grouped by day, with search and categories.
+// Agenda: upcoming community events grouped by day, with search, categories
+// and a date filter. The filters live in the URL (`?q=&categoria=&cuando=`),
+// so they can be shared and Quillart AI can leave the list filtered (U13).
 
 import { Plus, Search } from "lucide-react";
 import { useEffect, useState } from "react";
+import type { AgendaWhen } from "../../lib/assistant/ui-action-types";
 import { EVENT_CATEGORY_LABELS } from "../../lib/community/community-labels";
-import { isoToBogotaLocal } from "../../lib/community/community-rules";
 import type {
 	CommunityEvent,
 	EventCategory,
 } from "../../lib/community/community-types";
+import {
+	AGENDA_WHEN,
+	type AgendaFilters,
+	activeFilters,
+	daysFromToday,
+	filtersSearch,
+	matchesWhen,
+	NO_AGENDA_FILTERS,
+	readAgendaFilters,
+} from "../../lib/community/list-filters";
 import { useT } from "../../lib/i18n/use-language";
+import { AgentMark } from "../agent-dock/agent-mark";
+import { usePublishScreen } from "../agent-dock/use-screen-context";
+import { useUiAction } from "../agent-dock/use-ui-action";
 import { AskQuillartButton } from "../assistant/ask-quillart-button";
 import { CommunityShell } from "./community-shell";
 import { EmptyState, Loaded, PageTitle } from "./community-ui";
@@ -16,18 +31,10 @@ import { EventCard } from "./event-card";
 import { useLoad, useSession } from "./use-community";
 
 const CATEGORIES = Object.keys(EVENT_CATEGORY_LABELS) as EventCategory[];
-const DAY_MS = 24 * 60 * 60 * 1000;
 
 interface EventGroup {
 	title: string;
 	events: CommunityEvent[];
-}
-
-/** Days between today and the event, both counted in Barranquilla time. */
-function daysFromToday(iso: string, now: Date): number {
-	const day = (value: string) =>
-		Date.parse(`${isoToBogotaLocal(value).slice(0, 10)}T00:00:00Z`);
-	return Math.round((day(iso) - day(now.toISOString())) / DAY_MS);
 }
 
 function groupEvents(
@@ -53,6 +60,20 @@ function useDebounced<T>(value: T, delay = 250): T {
 	return debounced;
 }
 
+/** Keeps the address bar in step with the filters, without a new history entry. */
+function writeUrl(filters: AgendaFilters) {
+	const search = filtersSearch({
+		q: filters.q,
+		categoria: filters.categoria,
+		cuando: filters.cuando,
+	});
+	window.history.replaceState(
+		null,
+		"",
+		`${window.location.pathname}${search}${window.location.hash}`,
+	);
+}
+
 export interface AgendaPageProps {
 	aiHref?: string;
 }
@@ -60,9 +81,44 @@ export interface AgendaPageProps {
 export default function AgendaPage({ aiHref }: AgendaPageProps) {
 	const t = useT();
 	const { profile } = useSession();
-	const [search, setSearch] = useState("");
-	const [category, setCategory] = useState<EventCategory | null>(null);
+	const [filters, setFilters] = useState<AgendaFilters>(() =>
+		readAgendaFilters(window.location.search),
+	);
+	/** True while the current filters are the ones Quillart AI set. */
+	const [byAgent, setByAgent] = useState(false);
+	const { q: search, categoria: category, cuando } = filters;
 	const query = useDebounced(search.trim());
+
+	const change = (next: Partial<AgendaFilters>, agent = false) => {
+		setFilters((current) => ({ ...current, ...next }));
+		setByAgent(agent);
+	};
+
+	useEffect(() => writeUrl({ ...filters, q: query }), [filters, query]);
+
+	usePublishScreen({
+		route: "/agenda",
+		title: t.agenda.title,
+		filters: activeFilters({ q: query, categoria: category, cuando }),
+	});
+
+	useUiAction("agenda.filter", (action) => {
+		const before = filters;
+		const next: AgendaFilters = {
+			q: action.q ?? "",
+			categoria: action.categoria ?? null,
+			cuando: action.cuando ?? null,
+		};
+		change(next, true);
+		return {
+			labels: [
+				next.cuando ? t.dock.when[next.cuando] : null,
+				next.categoria ? EVENT_CATEGORY_LABELS[next.categoria] : null,
+				next.q ? t.dock.searchFor(next.q) : null,
+			].filter((label): label is string => label !== null),
+			undo: () => change(before),
+		};
+	});
 
 	const { state } = useLoad(
 		async (store) => {
@@ -81,7 +137,8 @@ export default function AgendaPage({ aiHref }: AgendaPageProps) {
 		["events"],
 	);
 
-	const filtering = query !== "" || category !== null;
+	const filtering = query !== "" || category !== null || cuando !== null;
+	const clearFilters = () => change(NO_AGENDA_FILTERS);
 	const publishLink = (
 		<a href="/agenda/nuevo" className="q-btn q-btn--primary">
 			<Plus size={18} aria-hidden="true" />
@@ -118,7 +175,7 @@ export default function AgendaPage({ aiHref }: AgendaPageProps) {
 						id="agenda-search"
 						type="search"
 						value={search}
-						onChange={(event) => setSearch(event.target.value)}
+						onChange={(event) => change({ q: event.target.value })}
 						placeholder={t.agenda.searchPlaceholder}
 						autoComplete="off"
 					/>
@@ -131,21 +188,38 @@ export default function AgendaPage({ aiHref }: AgendaPageProps) {
 					<CategoryChip
 						label={t.agenda.all}
 						active={category === null}
-						onClick={() => setCategory(null)}
+						onClick={() => change({ categoria: null })}
 					/>
 					{CATEGORIES.map((item) => (
 						<CategoryChip
 							key={item}
 							label={EVENT_CATEGORY_LABELS[item]}
 							active={category === item}
-							onClick={() => setCategory(category === item ? null : item)}
+							onClick={() =>
+								change({ categoria: category === item ? null : item })
+							}
 						/>
 					))}
 				</fieldset>
+				<WhenChips
+					value={cuando}
+					onChange={(next) => change({ cuando: next })}
+				/>
+				{byAgent && filtering && (
+					<AgentMark
+						text={t.dock.filteredByAgent}
+						actionLabel={t.dock.clear}
+						onAction={clearFilters}
+					/>
+				)}
 			</section>
 
 			<Loaded state={state} loadingLabel={t.agenda.loading}>
-				{({ events, placeNames, registered }) => {
+				{({ events: loaded, placeNames, registered }) => {
+					const now = new Date();
+					const events = loaded.filter((event) =>
+						matchesWhen(event.startsAt, cuando, now),
+					);
 					if (events.length === 0) {
 						return filtering ? (
 							<EmptyState
@@ -155,10 +229,7 @@ export default function AgendaPage({ aiHref }: AgendaPageProps) {
 									<button
 										type="button"
 										className="q-btn q-btn--secondary"
-										onClick={() => {
-											setSearch("");
-											setCategory(null);
-										}}
+										onClick={clearFilters}
 									>
 										{t.agenda.seeAllPlans}
 									</button>
@@ -177,8 +248,8 @@ export default function AgendaPage({ aiHref }: AgendaPageProps) {
 						);
 					}
 					return (
-						<div className="space-y-6">
-							{groupEvents(events, new Date(), [
+						<div id="agenda-results" className="space-y-6">
+							{groupEvents(events, now, [
 								t.agenda.groupTodayTomorrow,
 								t.agenda.groupThisWeek,
 								t.agenda.groupLater,
@@ -207,6 +278,30 @@ export default function AgendaPage({ aiHref }: AgendaPageProps) {
 				}}
 			</Loaded>
 		</CommunityShell>
+	);
+}
+
+/** "Hoy", "Este finde", "Esta semana": the date filter (`?cuando=`). */
+function WhenChips({
+	value,
+	onChange,
+}: {
+	value: AgendaWhen | null;
+	onChange: (next: AgendaWhen | null) => void;
+}) {
+	const t = useT();
+	return (
+		<fieldset className="-mx-4 flex min-w-0 gap-2 overflow-x-auto px-4 pb-1 lg:mx-0 lg:flex-wrap lg:px-0">
+			<legend className="q-sr">{t.dock.whenLegend}</legend>
+			{AGENDA_WHEN.map((item) => (
+				<CategoryChip
+					key={item}
+					label={t.dock.when[item]}
+					active={value === item}
+					onClick={() => onChange(value === item ? null : item)}
+				/>
+			))}
+		</fieldset>
 	);
 }
 

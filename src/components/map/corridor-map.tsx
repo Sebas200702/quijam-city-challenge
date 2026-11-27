@@ -61,6 +61,7 @@ import { StopList } from "./stop-list";
 import { useFloodCountdown } from "./use-flood-countdown";
 import { useFloodNotice } from "./use-flood-notice";
 import { useLiveBusinesses } from "./use-live-businesses";
+import { useMapUiActions } from "./use-map-ui-actions";
 import { type RouteQuery, useRoutePlan } from "./use-route-plan";
 
 // Standard OpenStreetMap tiles: no API key. The dark theme darkens them in CSS.
@@ -275,6 +276,14 @@ export default function CorridorMap({ data, source }: CorridorMapProps) {
 			tileLayerRef.current = null;
 		};
 	}, [data]);
+
+	// Quillart AI: what the map shows, and the agent's map actions (audit v2, U05).
+	useMapUiActions({
+		mapRef,
+		query,
+		setQuery,
+		selected: selected?.code ?? null,
+	});
 
 	useHeatLayer(mapRef, data, heatOn, t);
 
