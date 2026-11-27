@@ -149,8 +149,11 @@ export function LiveIndicatorsPanel({
 		<section aria-labelledby="live-indicators-title" className="space-y-4">
 			<div className="flex flex-wrap items-end justify-between gap-3">
 				<div>
-					<p className="q-eyebrow">Programa QUILLART · 5 dimensiones</p>
-					<h2 id="live-indicators-title" className="q-h2 mt-0.5">
+					<p className="l-eyebrow">
+						<span className="q-dot" aria-hidden="true" />
+						Programa QUILLART · 5 dimensiones
+					</p>
+					<h2 id="live-indicators-title" className="l-h2 mt-2 !text-[clamp(1.6rem,3.2vw,2.4rem)]">
 						Indicadores en vivo
 					</h2>
 				</div>
@@ -193,7 +196,7 @@ export function LiveIndicatorsPanel({
 			)}
 
 			{loading && !raw ? (
-				<div className="q-card q-state q-state--loading">
+				<div className="q-card q-state q-state--loading rounded-[40px_16px_40px_16px]">
 					<div className="q-state__glyph" aria-hidden="true">
 						<span className="q-star q-star--think" />
 					</div>
@@ -216,11 +219,11 @@ export function LiveIndicatorsPanel({
 					</button>
 				</div>
 			) : (
-				<div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-					{indicators.map((indicator) => {
+				<div className="lc-cards grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+					{indicators.map((indicator, index) => {
 						const Icon = DIMENSION_ICONS[indicator.dimension];
 						return (
-							<article key={indicator.dimension} className="q-card h-full">
+							<article key={indicator.dimension} className="q-card l-rise h-full overflow-hidden rounded-[28px_56px_28px_28px] transition-transform duration-200 hover:-translate-y-1">
 								<div
 									className={`q-band q-band--${indicator.tone}`}
 									aria-hidden="true"
@@ -276,7 +279,7 @@ export function LiveIndicatorsPanel({
 										</div>
 
 										{indicator.communityFacts.length > 0 && (
-											<div className="rounded-[var(--radius-md)] bg-[var(--green-soft)] p-3 space-y-1.5">
+											<div className="rounded-[24px_24px_24px_6px] bg-[var(--green-soft)] p-4 space-y-1.5">
 												<p className="q-eyebrow text-[var(--green-text)]">
 													Comunidad · datos reales
 												</p>
@@ -299,7 +302,7 @@ export function LiveIndicatorsPanel({
 										)}
 
 										{indicator.referenceFacts.length > 0 && (
-											<div className="rounded-[var(--radius-md)] bg-[var(--bg)] p-3 space-y-1.5">
+											<div className="rounded-[24px_6px_24px_24px] bg-[var(--bg)] p-4 space-y-1.5">
 												<p className="q-eyebrow">
 													Corredor · datos de referencia
 												</p>

@@ -5,6 +5,8 @@
 // supabase/migrations; src/pages/api). Spanish is the source text; the English
 // version follows it section by section. pt and fr are not translated yet.
 // Static page: no islands and no inline scripts of its own (CSP).
+import SiteFooter from "../components/site/site-footer.astro";
+import SiteHeader from "../components/site/site-header.astro";
 import BaseLayout from "../layouts/base-layout.astro";
 
 type Block =
@@ -361,30 +363,39 @@ const policies = [
 ---
 
 <BaseLayout title="Política de privacidad · QUILLART" theme="light">
+	<SiteHeader>
+		<a slot="actions" href="#en" hreflang="en" lang="en" class="q-btn q-btn--ghost q-btn--sm min-h-11">English</a>
+	</SiteHeader>
 	<main class="mx-auto w-full max-w-2xl px-4 pt-6 pb-16 lg:py-10">
-		<nav
-			class="mb-8 flex flex-wrap items-center justify-between gap-3"
-			aria-label="Privacidad"
-		>
-			<a href="/" class="q-btn q-btn--ghost q-btn--sm min-h-11">← QUILLART</a>
-			<a
-				href="#en"
-				class="q-sm inline-flex min-h-11 items-center underline"
-				hreflang="en"
-				lang="en">Read in English</a
-			>
-		</nav>
 		{
 			policies.map(({ policy, Title, Heading }) => (
 				<article
 					lang={policy.lang}
 					id={policy.lang}
 					aria-labelledby={`${policy.lang}-title`}
-					class="q-stack mb-16 border-line border-b pb-16 last:mb-0 last:border-b-0 last:pb-0"
+					class="q-stack mb-16 scroll-mt-24 last:mb-0"
 				>
-					<header class="q-stack mb-4">
-						<p class="q-eyebrow">{policy.eyebrow}</p>
-						<Title id={`${policy.lang}-title`} class="q-h1">
+					<header
+						class="q-stack relative isolate mb-4 overflow-hidden rounded-[32px_32px_96px_32px] bg-[linear-gradient(160deg,var(--gold-soft),var(--surface))] px-5 py-8 shadow-[inset_0_0_0_1px_color-mix(in_srgb,var(--ink)_6%,transparent)] lg:px-10 lg:py-12"
+						data-reveal
+					>
+						<span
+							class="l-geo l-geo--ring l-geo--green top-5 right-6 max-lg:hidden"
+							aria-hidden="true"
+						/>
+						<span
+							class="l-geo l-geo--quarter l-geo--gold bottom-0 left-0 -z-10 opacity-60"
+							aria-hidden="true"
+						/>
+						<span
+							class="l-geo l-geo--plus right-24 bottom-8 max-lg:hidden"
+							aria-hidden="true"
+						/>
+						<p class="l-eyebrow">
+							<span class="q-dot" aria-hidden="true" />
+							{policy.eyebrow}
+						</p>
+						<Title id={`${policy.lang}-title`} class="l-h2">
 							{policy.title}
 						</Title>
 						<p class="q-lead">{policy.lead}</p>
@@ -396,7 +407,8 @@ const policies = [
 						<section
 							id={section.id}
 							aria-labelledby={`${section.id}-h`}
-							class="q-stack mt-6"
+							class="q-stack mt-4 scroll-mt-24 rounded-[28px] bg-surface p-5 shadow-[var(--shadow-card)] odd:rounded-[28px_56px_28px_28px] even:rounded-[28px_28px_28px_56px] lg:p-7"
+							data-reveal
 						>
 							<Heading id={`${section.id}-h`} class="q-h3">
 								{section.title}
@@ -428,4 +440,5 @@ const policies = [
 			))
 		}
 	</main>
+	<SiteFooter variant="full" />
 </BaseLayout>

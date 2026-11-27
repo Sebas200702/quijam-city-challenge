@@ -1,8 +1,8 @@
 ---
 import { AssistantHome } from "../components/assistant/assistant-home";
 import { BottomNav } from "../components/home/bottom-nav";
-import { HomeHeader } from "../components/home/home-header";
 import { FloodNotifier } from "../components/notices/flood-notifier";
+import SiteHeader from "../components/site/site-header.astro";
 import BaseLayout from "../layouts/base-layout.astro";
 import { homeContent } from "../lib/home-content";
 
@@ -11,15 +11,14 @@ const { aiHref } = homeContent;
 
 <BaseLayout title="Quillart AI · Barranquilla" theme="light" dock={false}>
 	{/* Quillart AI is the entry point: the conversation comes first. `?q=` starts it with a question. */}
-	<div class="mx-auto flex min-h-[calc(100dvh-3px)] w-full max-w-md flex-col lg:max-w-6xl">
-		{/* The header sits outside <main> so it is the page's banner landmark. */}
-		<div class="px-4 pt-4 lg:px-8 lg:pt-6">
-			<HomeHeader
-				current="home"
-				aiHref={aiHref}
-				client:load
-			/>
-		</div>
+	{/* The shared header sits outside <main> so it is the page's banner landmark. */}
+	<SiteHeader current="home" homeHref="/inicio">
+		<a slot="actions" href="/perfil" class="q-btn q-btn--ghost q-btn--sm min-h-11 max-lg:hidden!">
+			<span data-i18n="nav.profile">Perfil</span>
+		</a>
+	</SiteHeader>
+	{/* No footer: the conversation fills the screen and the composer stays at the bottom. */}
+	<div class="mx-auto flex min-h-[calc(100dvh-3px-var(--site-header-space))] w-full max-w-md flex-col lg:max-w-6xl">
 		<main class="flex flex-1 flex-col gap-4 px-4 pt-4 pb-4 lg:gap-8 lg:px-8 lg:pt-8">
 			<AssistantHome client:only="react">
 				<p slot="fallback" class="q-p q-muted mx-auto w-full max-w-3xl">

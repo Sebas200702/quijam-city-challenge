@@ -3,6 +3,8 @@ import type { NavSection } from "./nav-sections";
 import { QuillartLogo } from "./quillart-logo";
 import { TopNav } from "./top-nav";
 import { WeatherBadge } from "./weather-badge";
+import "../../styles/life-shell.css";
+
 
 interface HomeHeaderProps {
 	/** Only shown when it comes from a real weather source; never hard-coded. */
@@ -13,7 +15,7 @@ interface HomeHeaderProps {
 
 export function HomeHeader({ weatherLabel, current, aiHref }: HomeHeaderProps) {
 	return (
-		<header className="flex items-center gap-3 lg:gap-6">
+		<header className="ls-topbar">
 			<QuillartLogo />
 			<TopNav current={current} aiHref={aiHref} />
 			{weatherLabel && <WeatherBadge label={weatherLabel} />}

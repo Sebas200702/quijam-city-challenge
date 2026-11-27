@@ -130,16 +130,27 @@ export function OverchargeInbox({
 
 	return (
 		<section
-			className="q-card"
+			className="q-card l-rise relative overflow-hidden rounded-[28px_56px_28px_28px]"
 			lang={language}
 			aria-labelledby="overcharge-inbox-title"
 			aria-live="polite"
 		>
 			<div className="q-band q-band--gold" aria-hidden="true" />
-			<div className="q-card__head">
-				<div>
-					<p className="q-eyebrow">{t.eyebrow}</p>
-					<h2 id="overcharge-inbox-title" className="q-h2 mt-1">
+			<div className="q-card__head relative bg-[linear-gradient(135deg,var(--gold-soft),var(--surface)_70%)]">
+				<span
+					aria-hidden="true"
+					className="l-geo l-geo--ring l-geo--gold absolute right-24 -top-3 max-lg:hidden"
+				/>
+				<span
+					aria-hidden="true"
+					className="l-geo l-geo--plus l-geo--green absolute right-1/3 bottom-2 max-lg:hidden"
+				/>
+				<div className="relative">
+					<p className="l-eyebrow">
+						<span className="q-dot" aria-hidden="true" />
+						{t.eyebrow}
+					</p>
+					<h2 id="overcharge-inbox-title" className="l-h2 mt-2 !text-[clamp(1.5rem,3vw,2.1rem)]">
 						{t.title}
 					</h2>
 				</div>
@@ -162,7 +173,7 @@ export function OverchargeInbox({
 
 			<div className="q-card__body space-y-5">
 				{/* Resolved reports indicator bar */}
-				<div className="rounded-[var(--radius-md)] bg-[var(--bg)] p-4 space-y-3">
+				<div className="rounded-[36px_16px_36px_16px] bg-[var(--bg)] p-5 space-y-3">
 					<div className="flex flex-wrap items-baseline justify-between gap-2">
 						<div>
 							<p className="q-eyebrow">{t.indicatorEyebrow}</p>
@@ -216,7 +227,13 @@ export function OverchargeInbox({
 										)
 									}
 									aria-pressed={filter === status}
-									className={`flex min-h-11 items-center justify-between gap-2 sm:flex-col sm:items-start rounded-[var(--radius-md)] border p-3 text-left transition-colors ${
+									className={`flex min-h-11 items-center justify-between gap-2 sm:flex-col sm:items-start border p-3 text-left transition-[transform,border-color,background-color] duration-200 hover:-translate-y-0.5 ${
+										status === PRIMARY_WORKFLOW_STATUSES[0]
+											? "rounded-[24px_24px_24px_6px]"
+											: status === PRIMARY_WORKFLOW_STATUSES[1]
+												? "rounded-[18px]"
+												: "rounded-[24px_6px_24px_24px]"
+									} ${
 										filter === status
 											? "border-[var(--action)] bg-[var(--surface-raised)]"
 											: "border-[var(--line)] bg-[var(--surface)]"
@@ -307,7 +324,7 @@ export function OverchargeInbox({
 							return (
 								<li
 									key={report.id}
-									className={`rounded-[var(--radius-md)] border p-4 ${
+									className={`l-rise rounded-[24px_40px_24px_24px] border p-4 transition-transform duration-200 hover:-translate-y-0.5 ${
 										isHighlighted
 											? "border-[var(--gold)] bg-[var(--surface-raised)]"
 											: "border-[var(--line)] bg-[var(--bg)]"
@@ -372,7 +389,7 @@ export function OverchargeInbox({
 									</div>
 
 									{report.notes && (
-										<p className="q-sm q-muted mt-3 rounded-[var(--radius-sm)] bg-[var(--surface)] px-3 py-2">
+										<p className="q-sm q-muted mt-3 rounded-[4px_18px_18px_18px] bg-[var(--gold-soft)] px-3 py-2">
 											{report.notes}
 										</p>
 									)}

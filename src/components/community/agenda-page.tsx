@@ -32,6 +32,13 @@ import { useLoad, useSession } from "./use-community";
 
 const CATEGORIES = Object.keys(EVENT_CATEGORY_LABELS) as EventCategory[];
 
+/** Icon chip of each day group: a different colour and shape per group. */
+const GROUP_CHIPS = [
+	"q-tile--gold l-ico--burst",
+	"q-tile--green l-ico--hex",
+	"q-tile--red l-ico--circle",
+];
+
 interface EventGroup {
 	title: string;
 	events: CommunityEvent[];
@@ -148,20 +155,43 @@ export default function AgendaPage({ aiHref }: AgendaPageProps) {
 
 	return (
 		<CommunityShell current="agenda" aiHref={aiHref}>
-			<PageTitle
-				eyebrow={t.agenda.eyebrow}
-				title={t.agenda.title}
-				illustration="/illustrations/events-calendar.svg"
-				action={publishLink}
-			>
-				{t.agenda.intro}
-			</PageTitle>
+			<div className="l-rise relative">
+				<span
+					className="l-geo l-geo--ring l-geo--green -top-3 right-[28%] max-lg:hidden"
+					aria-hidden="true"
+				/>
+				<span
+					className="l-geo l-geo--plus -bottom-3 left-[42%] max-lg:hidden"
+					style={{ ["--i" as string]: 2 }}
+					aria-hidden="true"
+				/>
+				<span
+					className="l-geo l-geo--tri l-geo--ink -top-4 left-10 -rotate-12 max-lg:hidden"
+					style={{ ["--i" as string]: 1 }}
+					aria-hidden="true"
+				/>
+				<PageTitle
+					eyebrow={t.agenda.eyebrow}
+					title={t.agenda.title}
+					illustration="/illustrations/events-calendar.svg"
+					action={publishLink}
+				>
+					{t.agenda.intro}
+				</PageTitle>
+			</div>
 
-			<div className="flex flex-wrap items-center gap-3">
+			<div
+				className="l-rise flex flex-wrap items-center gap-3"
+				style={{ ["--i" as string]: 1 }}
+			>
 				<AskQuillartButton prompt={t.agenda.askPrompt} />
 			</div>
 
-			<section aria-label={t.agenda.searchLabel} className="space-y-3">
+			<section
+				aria-label={t.agenda.searchLabel}
+				className="ev-filters l-rise space-y-3"
+				style={{ ["--i" as string]: 2 }}
+			>
 				<label htmlFor="agenda-search" className="q-sr">
 					{t.agenda.searchLabel}
 				</label>
@@ -253,12 +283,25 @@ export default function AgendaPage({ aiHref }: AgendaPageProps) {
 								t.agenda.groupTodayTomorrow,
 								t.agenda.groupThisWeek,
 								t.agenda.groupLater,
-							]).map((group) => (
-								<section key={group.title} className="space-y-3">
-									<h2 className="q-h2">{group.title}</h2>
-									<ul className="grid gap-3 lg:grid-cols-2">
-										{group.events.map((event) => (
-											<li key={event.id} className="grid">
+							]).map((group, groupIndex) => (
+								<section key={group.title} className="space-y-4">
+									<div className="ev-group__head">
+										<span
+											className={`q-tile ${GROUP_CHIPS[groupIndex % GROUP_CHIPS.length]}`}
+											aria-hidden="true"
+										>
+											<span className="q-star" />
+										</span>
+										<h2 className="q-h2 ev-group__title">{group.title}</h2>
+										<span className="ev-group__rule" aria-hidden="true" />
+									</div>
+									<ul className="m-0 grid list-none gap-4 p-0 lg:grid-cols-2">
+										{group.events.map((event, index) => (
+											<li
+												key={event.id}
+												className="l-rise grid min-w-0"
+												style={{ ["--i" as string]: Math.min(index, 6) }}
+											>
 												<EventCard
 													event={event}
 													placeName={

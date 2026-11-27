@@ -1,46 +1,67 @@
 ---
 // Three steps, almost no text: talk or type, the right agent answers, you confirm.
+// The steps hang from a timeline that fills while the section scrolls by.
 import { CircleCheck, Mic, Sparkles } from "lucide-react";
 
 const steps = [
-	{ icon: Mic, key: "step1", title: "Habla o escribe", tone: "q-tile--gold" },
+	{
+		icon: Mic,
+		key: "step1",
+		title: "Habla o escribe",
+		tone: "q-tile--gold",
+		shape: "l-ico--circle",
+	},
 	{
 		icon: Sparkles,
 		key: "step2",
 		title: "Te atiende el agente indicado",
 		tone: "q-tile--green",
+		shape: "l-ico--burst",
 	},
 	{
 		icon: CircleCheck,
 		key: "step3",
 		title: "Tú confirmas",
 		tone: "q-tile--red",
+		shape: "l-ico--hex",
 	},
 ];
 ---
 
-<section aria-labelledby="how-title" class="bg-[var(--surface)]">
-	<div class="mx-auto grid w-full max-w-6xl items-center gap-8 px-4 py-12 lg:grid-cols-2 lg:gap-14 lg:px-8 lg:py-16">
-		<div class="q-illus order-2 p-6 lg:order-1" aria-hidden="true">
-			<img src="/illustrations/audio-conversation.svg" alt="" class="h-44 w-auto lg:h-64" loading="lazy" width="300" height="260" />
+<section aria-labelledby="how-title" class="px-3 lg:px-8">
+	<div class="l-how">
+		<div class="l-how__intro">
+			<p class="l-eyebrow l-eyebrow--sunk" data-reveal>
+				<span class="q-star" aria-hidden="true"></span>
+				<span data-i18n="landing.how.eyebrow">Cómo funciona</span>
+			</p>
+			<h2 id="how-title" class="l-h2" data-reveal style="--i: 1" data-i18n="landing.how.title">Así de fácil</h2>
+			<div class="l-round-art l-round-art--arch" aria-hidden="true" data-reveal="scale" style="--i: 2">
+				<span class="l-geo l-geo--ring" style="--i: 1"></span>
+				<span class="l-geo l-geo--diamond l-geo--green" style="--i: 2"></span>
+				<span class="l-geo l-geo--half l-geo--gold" style="--i: 3"></span>
+				<img src="/illustrations/audio-conversation.svg" alt="" loading="lazy" width="300" height="260" />
+				<span class="l-voice">
+					<Mic size={18} strokeWidth={1.75} />
+					<span class="l-wave"><i></i><i></i><i></i><i></i><i></i></span>
+				</span>
+			</div>
 		</div>
-		<div class="order-1 lg:order-2">
-			<h2 id="how-title" class="q-h1 mb-6" data-i18n="landing.how.title">Así de fácil</h2>
-			<ol class="m-0 flex list-none flex-col gap-4 p-0">
-				{
-					steps.map((step, index) => (
-						<li class="flex items-center gap-4">
-							<span class={`q-tile ${step.tone}`} style="width: 56px; height: 56px; border-radius: 18px">
-								<step.icon size={26} strokeWidth={1.75} aria-hidden="true" />
-							</span>
-							<span class="q-h3">
-								<span class="q-sr" data-i18n={`landing.how.${step.key}Sr`}>Paso {index + 1}: </span>
-								<span data-i18n={`landing.how.${step.key}`}>{step.title}</span>
-							</span>
-						</li>
-					))
-				}
-			</ol>
-		</div>
+		<ol class="l-steps" data-steps>
+			{
+				steps.map((step, index) => (
+					<li class="l-step" data-reveal="left" style={`--i: ${index}`}>
+						<span class={`q-tile l-ico ${step.tone} ${step.shape}`}>
+							<step.icon size={26} strokeWidth={1.75} aria-hidden="true" />
+						</span>
+						<span class="l-step__title">
+							<span class="q-sr" data-i18n={`landing.how.${step.key}Sr`}>Paso {index + 1}: </span>
+							<span data-i18n={`landing.how.${step.key}`}>{step.title}</span>
+						</span>
+						<span class="l-step__num" aria-hidden="true">0{index + 1}</span>
+					</li>
+				))
+			}
+		</ol>
 	</div>
 </section>

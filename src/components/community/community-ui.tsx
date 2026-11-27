@@ -6,6 +6,7 @@ import type { PublishResult } from "../../lib/community/community-types";
 import { useT } from "../../lib/i18n/use-language";
 import { useOnlineStatus } from "../visitor-home/use-online-status";
 import type { LoadState } from "./use-community";
+import "../../styles/life-community.css";
 
 export const inputClass =
 	"h-12 w-full rounded-[var(--radius-md)] border border-[var(--line-control)] bg-[var(--bg)] px-4 text-[15px] text-[var(--ink)] placeholder:text-[var(--ink-subtle)]";
@@ -104,32 +105,59 @@ export function PageTitle({
 	/** Path under /illustrations; turns the title into an illustrated banner. */
 	illustration?: string;
 }) {
-	if (illustration) {
-		return (
-			<div className="q-card flex-row! items-center gap-4 overflow-hidden bg-[var(--illus)]! p-5 text-[#0B131E] lg:gap-8 lg:p-8">
-				<div className="flex min-w-0 flex-1 flex-col gap-3">
-					<div>
-						{eyebrow && <p className="q-eyebrow text-[#46566B]!">{eyebrow}</p>}
-						<h1 className="q-h1 mt-1 text-[#0B131E]">{title}</h1>
-						{children && <p className="q-p mt-1 text-[#46566B]">{children}</p>}
-					</div>
-					{action && <div className="flex flex-wrap gap-2">{action}</div>}
-				</div>
-				<SpotIllustration
-					src={illustration}
-					className="h-20! shrink-0 sm:h-28! lg:h-44!"
-				/>
-			</div>
-		);
-	}
+	// A small rounded canvas: tinted gradient, eyebrow pill, big title, confetti.
 	return (
-		<div className="flex flex-wrap items-end justify-between gap-3">
-			<div className="min-w-0">
-				{eyebrow && <p className="q-eyebrow">{eyebrow}</p>}
-				<h1 className="q-h1 mt-1">{title}</h1>
-				{children && <p className="q-p q-muted mt-1">{children}</p>}
+		<div className="lq-canvas l-rise">
+			<span
+				className="l-geo l-geo--quarter l-geo--green top-0 right-0 rotate-180 opacity-80"
+				aria-hidden="true"
+			/>
+			<span
+				className="l-geo l-geo--ring top-5 left-[54%] max-lg:hidden"
+				style={{ ["--i" as string]: 1 }}
+				aria-hidden="true"
+			/>
+			<span
+				className="l-geo l-geo--plus l-geo--gold bottom-5 left-[62%] rotate-12 max-lg:hidden"
+				style={{ ["--i" as string]: 2 }}
+				aria-hidden="true"
+			/>
+			<span
+				className="l-geo l-geo--tri l-geo--ink bottom-7 left-[46%] -rotate-12 max-lg:hidden"
+				style={{ ["--i" as string]: 3 }}
+				aria-hidden="true"
+			/>
+			<div
+				className={`lq-canvas__body flex gap-4 lg:gap-10 ${
+					illustration
+						? "items-center"
+						: "flex-wrap items-end justify-between"
+				}`}
+			>
+				<div className="flex min-w-0 flex-1 flex-col gap-3">
+					{eyebrow && (
+						<p className="l-eyebrow">
+							<span className="q-star" aria-hidden="true" />
+							{eyebrow}
+						</p>
+					)}
+					<h1 className="q-h1 lq-title">{title}</h1>
+					{children && <p className="q-p q-muted max-w-[56ch]">{children}</p>}
+					{illustration && action && (
+						<div className="flex flex-wrap gap-2">{action}</div>
+					)}
+				</div>
+				{illustration ? (
+					<div className="lq-art">
+						<SpotIllustration
+							src={illustration}
+							className="h-16! sm:h-20! lg:h-32!"
+						/>
+					</div>
+				) : (
+					action
+				)}
 			</div>
-			{action}
 		</div>
 	);
 }
@@ -138,7 +166,7 @@ export function ErrorNote({ message }: { message: string }) {
 	return (
 		<p
 			role="alert"
-			className="rounded-[var(--radius-md)] bg-[var(--red-soft)] px-4 py-3 text-sm text-[var(--red-text)]"
+			className="rounded-[18px_18px_18px_4px] bg-[var(--red-soft)] px-4 py-3 text-sm text-[var(--red-text)]"
 		>
 			{message}
 		</p>
@@ -158,13 +186,31 @@ export function EmptyState({
 	illustration?: string | null;
 }) {
 	return (
-		<div className="q-card items-center px-5 py-8 text-center">
+		<div className="q-card l-rise items-center rounded-[28px_72px_28px_72px]! px-6 py-8 text-center">
+			<span
+				className="l-geo l-geo--ring l-geo--gold top-6 left-6"
+				aria-hidden="true"
+			/>
+			<span
+				className="l-geo l-geo--plus l-geo--green right-7 bottom-7 rotate-12"
+				style={{ ["--i" as string]: 2 }}
+				aria-hidden="true"
+			/>
+			<span
+				className="l-geo l-geo--diamond top-10 right-[18%] max-lg:hidden"
+				style={{ ["--i" as string]: 1 }}
+				aria-hidden="true"
+			/>
 			{illustration && (
-				<SpotIllustration src={illustration} className="mb-4 h-28! lg:h-36!" />
+				<div className="lq-art lq-art--circle mb-4">
+					<SpotIllustration src={illustration} className="h-20! lg:h-28!" />
+				</div>
 			)}
-			<p className="q-h3">{title}</p>
-			{children && <p className="q-p q-muted mt-2">{children}</p>}
-			{action && <div className="mt-4 flex justify-center">{action}</div>}
+			<p className="q-h3 lq-h2 relative z-[2]">{title}</p>
+			{children && <p className="q-p q-muted relative z-[2] mt-2">{children}</p>}
+			{action && (
+				<div className="relative z-[2] mt-4 flex justify-center">{action}</div>
+			)}
 		</div>
 	);
 }
@@ -247,7 +293,7 @@ export function PublishNotice({
 	return (
 		<p
 			role="status"
-			className={`rounded-[var(--radius-md)] px-4 py-3 text-sm ${tone}`}
+			className={`rounded-[18px_18px_18px_4px] px-4 py-3 text-sm ${tone}`}
 		>
 			{result.message}
 		</p>

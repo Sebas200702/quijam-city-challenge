@@ -1,0 +1,117 @@
+---
+// The one footer of the app. "full" is the landing footer (link groups and the
+// giant wordmark); "slim" is one compact row for app and tool screens.
+import "../../styles/site-chrome.css";
+
+interface Props {
+	variant?: "full" | "slim";
+}
+
+const { variant = "full" } = Astro.props;
+
+const groups = [
+	{
+		key: "participate",
+		title: "Participa",
+		links: [
+			{ href: "/inicio", label: "Quillart AI", key: null },
+			{ href: "/agenda", label: "Agenda", key: "agenda" },
+			{
+				href: "/agenda/nuevo",
+				label: "Publicar un evento",
+				key: "publishEvent",
+			},
+			{ href: "/foro", label: "Foros", key: "forums" },
+		],
+	},
+	{
+		key: "explore",
+		title: "Explora",
+		links: [
+			{ href: "/lugares", label: "Lugares y naturaleza", key: "placesNature" },
+			{ href: "/mapa", label: "Mapa del corredor", key: "corridorMap" },
+		],
+	},
+	{
+		key: "accountCity",
+		title: "Cuenta y ciudad",
+		links: [
+			{ href: "/perfil", label: "Mi cuenta", key: "myAccount" },
+			{ href: "/datos", label: "Datos abiertos", key: "openData" },
+			{ href: "/moderacion", label: "Moderación", key: "moderation" },
+			{ href: "/ciudad", label: "Centro de Mando", key: "commandCenter" },
+		],
+	},
+];
+---
+
+{
+	variant === "slim" ? (
+		<footer class="site-footer site-footer--slim">
+			<div class="site-footer__row">
+				<a href="/" class="q-logo min-h-11" aria-label="QUILLART, inicio" data-i18n-attr="aria-label:landing.footer.homeLabel">
+					<span class="q-logo__tile" aria-hidden="true">
+						<span class="q-star" style="width: 18px; height: 18px" />
+					</span>
+					<span class="q-logo__word">QUILLART</span>
+				</a>
+				<p class="site-footer__legal q-sm q-subtle">
+					<a href="/privacidad">
+						<span data-i18n="landing.footer.legal">
+							Tratamiento de datos según la Ley 1581 de 2012. Hecho en Barranquilla.
+						</span>
+					</a>
+				</p>
+				<p class="q-sm">
+					<strong data-i18n="landing.footer.emergencies">Emergencias:</strong>{" "}
+					<span data-i18n="landing.footer.emergenciesLine">Línea 123</span>
+				</p>
+			</div>
+		</footer>
+	) : (
+		<footer class="site-footer border-t border-[var(--line)]">
+			<div class="mx-auto grid w-full max-w-6xl gap-8 px-4 py-10 lg:grid-cols-[1.2fr_2fr] lg:px-8">
+				<div class="flex flex-col gap-3">
+					<a href="/" class="q-logo" aria-label="QUILLART, inicio" data-i18n-attr="aria-label:landing.footer.homeLabel">
+						<span class="q-logo__tile" aria-hidden="true">
+							<span class="q-star" style="width: 22px; height: 22px" />
+						</span>
+						<span class="q-logo__word">QUILLART</span>
+					</a>
+					<p class="q-sm q-muted max-w-xs" data-i18n="landing.footer.tagline">
+						Barranquilla, a una conversación.
+					</p>
+					<p class="q-sm">
+						<strong data-i18n="landing.footer.emergencies">Emergencias:</strong>{" "}
+						<span data-i18n="landing.footer.emergenciesLine">Línea 123</span>
+					</p>
+				</div>
+				<nav aria-label="Pie de página" data-i18n-attr="aria-label:landing.footer.navLabel" class="grid grid-cols-2 gap-6 sm:grid-cols-3">
+					{groups.map((group) => (
+						<div>
+							<h2 class="q-eyebrow mb-2" data-i18n={`landing.footer.${group.key}`}>{group.title}</h2>
+							<ul class="m-0 list-none p-0">
+								{group.links.map((link) => (
+									<li>
+										<a
+											href={link.href}
+											class="flex min-h-11 items-center text-[var(--ink)] no-underline lg:hover:underline"
+										>
+											{link.key ? <span data-i18n={`landing.footer.${link.key}`}>{link.label}</span> : link.label}
+										</a>
+									</li>
+								))}
+							</ul>
+						</div>
+					))}
+				</nav>
+			</div>
+			<div class="mx-auto w-full max-w-6xl px-4 pb-8 lg:px-8">
+				<p class="q-sm q-subtle" data-i18n="landing.footer.legal">
+					Tratamiento de datos según la Ley 1581 de 2012. Hecho en Barranquilla.
+				</p>
+			</div>
+			<p class="l-wordmark" aria-hidden="true">QUILLART</p>
+		</footer>
+	)
+}

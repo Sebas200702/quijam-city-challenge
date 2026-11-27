@@ -56,20 +56,8 @@ function CityFrame({
 	const store = useStore();
 	return (
 		<div className="mx-auto flex min-h-[calc(100dvh-3px)] w-full max-w-6xl flex-col">
-			<header className="q-header">
-				<a
-					href="/ciudad"
-					className="q-logo"
-					aria-label={`QUILLART · ${t.dashboard}`}
-				>
-					<span className="q-logo__tile" aria-hidden="true">
-						<span className="q-star h-5 w-5" />
-					</span>
-					<span className="q-logo__text">
-						<span className="q-logo__word">QUILLART</span>
-					</span>
-				</a>
-				<nav className="q-header__center" aria-label={t.cityNav}>
+			<div className="q-header">
+				<nav aria-label={t.cityNav}>
 					<div className="q-seg">
 						<a className="q-seg__opt" href="/ciudad">
 							<Gauge size={18} strokeWidth={1.75} aria-hidden="true" />
@@ -97,7 +85,7 @@ function CityFrame({
 						{t.signOut}
 					</button>
 				)}
-			</header>
+			</div>
 			<main className="flex flex-1 flex-col gap-5 px-4 pt-4 pb-16 lg:gap-8 lg:px-8 lg:pt-8">
 				{children}
 			</main>
@@ -340,19 +328,19 @@ function QueueSection({
 	return (
 		<section aria-labelledby={`queue-${id}`} className="space-y-3">
 			<div>
-				<h2 id={`queue-${id}`} className="q-h2 flex items-center gap-2">
+				<h2 id={`queue-${id}`} className="q-h2 lq-h2 flex items-center gap-2">
 					{title}
 					<span className="q-badge q-badge--neutral">{items.length}</span>
 				</h2>
 				<p className="q-sm q-muted mt-1">{hint}</p>
 			</div>
 			{items.length === 0 ? (
-				<p className="q-p q-muted flex items-center gap-2">
+				<p className="q-p flex w-fit items-center gap-2 rounded-[var(--radius-pill)] bg-[var(--green-soft)] px-4 py-2 text-[var(--green-text)]">
 					<ShieldCheck size={18} aria-hidden="true" />
 					{t.forum.moderation.nothingPending}
 				</p>
 			) : (
-				<ul className="flex flex-col gap-3">
+				<ul className="lq-stagger flex flex-col gap-3">
 					{items.map((item) => (
 						<QueueItem
 							key={keyOf(item)}
@@ -385,7 +373,7 @@ function QueueItem({
 	const labels: ModerationLabel[] =
 		flagged.length > 0 ? flagged : item.labels.length > 0 ? ["ok"] : [];
 	return (
-		<li className="q-card space-y-3 px-5 py-4">
+		<li className="q-card lq-queue l-rise space-y-3 px-5 py-5">
 			<div className="flex flex-wrap items-center gap-2">
 				<span className="q-eyebrow">{m.kinds[item.kind]}</span>
 				{item.priority === "emergency" && (
@@ -413,7 +401,7 @@ function QueueItem({
 				{item.body}
 			</p>
 			{item.appeal && (
-				<p className="q-p whitespace-pre-line break-words rounded-[var(--radius-md)] bg-[var(--bg-soft)] p-3">
+				<p className="q-p whitespace-pre-line break-words rounded-[18px_18px_18px_4px] bg-[var(--bg-soft)] p-3">
 					<b>{m.appealSays}</b> {item.appeal.message}
 				</p>
 			)}

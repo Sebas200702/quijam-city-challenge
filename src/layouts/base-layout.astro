@@ -2,6 +2,8 @@
 import AgentDock from "../components/agent-dock/agent-dock";
 import type { ScreenRole } from "../lib/assistant/screen-context-types";
 import "../styles/global.css";
+// Shapes and motion shared by every screen (classes `l-*`).
+import "../styles/landing.css";
 
 interface Props {
 	title: string;
@@ -74,10 +76,19 @@ const {
 					document.documentElement.lang = lang;
 				}
 			} catch {}
+			// Motion is opt-in (see landing.css). If the motion script never arrives,
+			// the class comes off again so nothing stays hidden.
+			if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
+				const root = document.documentElement;
+				root.classList.add("l-motion");
+				setTimeout(() => {
+					if (!root.dataset.landingMotion) root.classList.remove("l-motion");
+				}, 3000);
+			}
 		</script>
 	</head>
 	<body
-		class="q-root min-h-dvh bg-bg text-ink antialiased"
+		class="q-root l-page min-h-dvh bg-bg text-ink antialiased"
 		data-dock={dockOverlay ? "overlay" : undefined}
 	>
 		<div class="q-flag q-flag--thin" aria-hidden="true">
@@ -86,10 +97,12 @@ const {
 		<slot />
 		{dock && <AgentDock client:only="react" role={dock} />}
 		<script>
+			import { initLandingMotion } from "../components/landing/landing-motion";
 			import { initStaticText } from "../lib/i18n/apply-static";
 			import { registerServiceWorker } from "../lib/offline/register-service-worker";
 			initStaticText();
 			registerServiceWorker();
+			initLandingMotion();
 		</script>
 	</body>
 </html>

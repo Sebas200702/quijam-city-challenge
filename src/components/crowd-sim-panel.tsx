@@ -290,7 +290,7 @@ export function CrowdSimPanel({ zones, canWrite }: CrowdSimPanelProps) {
 	const sim = simRef.current;
 	if (!sim) {
 		return (
-			<section className="q-card" aria-labelledby="crowd-sim-title">
+			<section className="q-card lc-shape--leaf" aria-labelledby="crowd-sim-title">
 				<div className="q-card__body">
 					<h2 id="crowd-sim-title" className="q-h2">
 						Ensayo de escenarios
@@ -313,15 +313,15 @@ export function CrowdSimPanel({ zones, canWrite }: CrowdSimPanelProps) {
 	const blockedFloods = city.activeFloodZoneIds.length;
 
 	return (
-		<section className="q-card" aria-labelledby="crowd-sim-title">
+		<section className="q-card lc-shape--leaf" aria-labelledby="crowd-sim-title">
 			<div className="q-band q-band--gold" aria-hidden="true" />
 			<div className="q-card__head flex-wrap">
 				<div className="min-w-0 flex-1">
-					<p className="q-eyebrow flex items-center gap-1.5">
+					<p className="l-eyebrow l-eyebrow--sunk lc-eb">
 						<FlaskConical {...ICON} />
 						Herramienta de planeación
 					</p>
-					<h2 id="crowd-sim-title" className="q-h2 mt-1">
+					<h2 id="crowd-sim-title" className="l-h2 lc-h2">
 						Ensayo de escenarios
 					</h2>
 					<p className="q-sm q-muted mt-1">
@@ -346,7 +346,7 @@ export function CrowdSimPanel({ zones, canWrite }: CrowdSimPanelProps) {
 				<div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_300px]">
 					<div className="flex min-w-0 flex-col gap-3">
 						<section
-							className="relative h-[340px] overflow-hidden rounded-[var(--radius-md)] sm:h-[420px] lg:h-[480px]"
+							className="relative h-[340px] overflow-hidden rounded-[20px_48px_20px_20px] sm:h-[420px] lg:h-[480px]"
 							aria-label="Mapa del corredor con el ensayo de visitantes en movimiento"
 						>
 							<div ref={mapRef} className="absolute inset-0" />

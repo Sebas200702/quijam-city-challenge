@@ -392,3 +392,87 @@ body[data-dock="overlay"]:has(.q-dock) {
 		scroll-behavior: auto;
 	}
 }
+
+/* ── Landing look: softer sheet, shaped avatar and chips, a mic that pops. ── */
+.q-dock__panel {
+	border-radius: 28px 28px 0 0;
+}
+
+.q-dock__avatar {
+	width: 36px;
+	height: 36px;
+	border-radius: 6px 16px 6px 16px;
+}
+
+.q-dock__bar {
+	transition:
+		transform 0.4s var(--l-ease, ease),
+		box-shadow 0.3s;
+}
+
+.q-dock__bar-text {
+	font-weight: 600;
+}
+
+.q-dock__mic {
+	border: 0;
+	box-shadow: var(--shadow-card);
+	transition: transform 0.4s var(--l-ease, ease);
+}
+
+.q-dock__send {
+	transition:
+		transform 0.4s var(--l-ease, ease),
+		background-color 0.3s;
+}
+
+.q-dock__suggestions .q-chip:nth-child(3n + 2) {
+	border-radius: 6px 18px 6px 18px;
+	background: var(--green-soft);
+	color: var(--green-text);
+}
+
+.q-dock__suggestions .q-chip:nth-child(3n) {
+	border-radius: 18px 18px 18px 4px;
+	background: var(--red-soft);
+	color: var(--red-text);
+}
+
+.q-dock__change {
+	border-radius: 6px 16px 6px 16px;
+}
+
+.q-dock__offline {
+	border-radius: 18px 18px 18px 4px;
+}
+
+@media (min-width: 1024px) {
+	.q-dock__panel {
+		border-radius: 30px;
+	}
+
+	.q-dock.is-open .q-dock__panel {
+		border-radius: 32px 32px 32px 10px;
+	}
+
+	.q-dock__bar:hover {
+		transform: translateY(-2px);
+	}
+
+	.q-dock__mic:hover {
+		transform: scale(1.08) rotate(-6deg);
+	}
+
+	.q-dock__send:not(:disabled):hover {
+		background: var(--gold-soft);
+		transform: translateX(2px);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.q-dock__bar,
+	.q-dock__mic,
+	.q-dock__send {
+		transition: none;
+	}
+}

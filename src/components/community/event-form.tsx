@@ -46,6 +46,7 @@ import {
 	useSession,
 	useStore,
 } from "./use-community";
+import "../../styles/life-events.css";
 
 const CATEGORIES = Object.keys(EVENT_CATEGORY_LABELS) as EventCategory[];
 const OTHER_PLACE = "";
@@ -202,13 +203,29 @@ export default function EventForm({ aiHref }: EventFormProps) {
 				<ArrowLeft size={18} aria-hidden="true" />
 				{t.agenda.backToAgenda}
 			</a>
-			<PageTitle
-				eyebrow={t.agenda.eyebrow}
-				title={t.agenda.formTitle}
-				illustration="/illustrations/publish-post.svg"
-			>
-				{t.agenda.formIntro}
-			</PageTitle>
+			<div className="l-rise relative">
+				<span
+					className="l-geo l-geo--half l-geo--green -top-3 left-[38%] -rotate-12 max-lg:hidden"
+					aria-hidden="true"
+				/>
+				<span
+					className="l-geo l-geo--diamond -bottom-2 left-8 max-lg:hidden"
+					style={{ ["--i" as string]: 1 }}
+					aria-hidden="true"
+				/>
+				<span
+					className="l-geo l-geo--ring l-geo--ink -top-4 right-10 max-lg:hidden"
+					style={{ ["--i" as string]: 2 }}
+					aria-hidden="true"
+				/>
+				<PageTitle
+					eyebrow={t.agenda.eyebrow}
+					title={t.agenda.formTitle}
+					illustration="/illustrations/publish-post.svg"
+				>
+					{t.agenda.formIntro}
+				</PageTitle>
+			</div>
 			{session.loading ? (
 				<Loading />
 			) : (
@@ -366,7 +383,7 @@ function EventFormBody({ signedIn }: { signedIn: boolean }) {
 	if (result && result.outcome !== "rejected" && result.record) {
 		const href = `/agenda/${encodeURIComponent(result.record.id)}`;
 		return (
-			<div className="q-card space-y-4 p-5">
+			<div className="q-card ev-panel ev-panel--gold l-rise space-y-4 p-5 lg:p-8">
 				<PublishNotice result={result} />
 				<p className="q-h3 break-words">{result.record.title}</p>
 				<div className="flex flex-wrap gap-3">
@@ -385,7 +402,8 @@ function EventFormBody({ signedIn }: { signedIn: boolean }) {
 		<form
 			id="event-form"
 			onSubmit={handleSubmit}
-			className="q-card space-y-5 p-5"
+			className="q-card ev-form l-rise space-y-5 p-5 lg:p-8"
+			style={{ ["--i" as string]: 1 }}
 			noValidate
 		>
 			{agentFilled.size > 0 && <AgentMark text={t.dock.filledByAgent} />}
@@ -435,7 +453,7 @@ function EventFormBody({ signedIn }: { signedIn: boolean }) {
 				</select>
 			</Field>
 
-			<div className="grid gap-4 sm:grid-cols-3">
+			<div className="grid gap-4 rounded-[24px_24px_24px_6px] bg-[var(--gold-soft)] p-4 sm:grid-cols-3">
 				<Field
 					id="event-date"
 					error={errorFor("event-date")}
@@ -479,7 +497,7 @@ function EventFormBody({ signedIn }: { signedIn: boolean }) {
 					/>
 				</Field>
 			</div>
-			<p className="q-sm q-muted -mt-3">{t.agenda.timeZoneNote}</p>
+			<p className="q-sm q-muted -mt-2">{t.agenda.timeZoneNote}</p>
 
 			<Loaded state={placesState} loadingLabel={t.agenda.loadingPlaces}>
 				{(places) => (

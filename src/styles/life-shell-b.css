@@ -1,0 +1,93 @@
+/* Shell helpers (second pass): small additions for the stamp scanner, the match
+   timeline and the notices. Colours come from tokens only. Entrances reuse the
+   shared `l-rise` class, so they only run with `html.l-motion`. */
+
+/* ── Stamp scanner ── */
+.lsb-scanner {
+	position: relative;
+	isolation: isolate;
+	overflow: hidden;
+}
+
+.lsb-scanner__title {
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+}
+
+.lsb-scanner__title .q-tile {
+	width: 40px;
+	height: 40px;
+	flex: none;
+}
+
+.lsb-scanner .l-geo {
+	z-index: -1;
+	opacity: 0.5;
+}
+
+.lsb-scanner .vm-scanner__form .q-input,
+.lsb-scanner .vm-scanner__form .q-btn {
+	border-radius: var(--radius-pill);
+}
+
+/* ── Match timeline ── */
+.lsb-timeline-card {
+	border-radius: 28px 28px 56px 28px;
+}
+
+.lsb-timeline-hour {
+	font-family: var(--font-display);
+	letter-spacing: -0.02em;
+}
+
+.lsb-timeline-agenda-head {
+	width: fit-content;
+	padding: 4px 12px 4px 8px;
+	border-radius: var(--radius-pill);
+	background: var(--gold-soft);
+	color: var(--gold-text);
+}
+
+.lsb-timeline-events > li:nth-child(odd) .match-timeline__event {
+	border-radius: 18px 18px 18px 4px;
+}
+
+.lsb-timeline-events > li:nth-child(even) .match-timeline__event {
+	border-radius: 6px 20px 6px 20px;
+}
+
+.lsb-timeline-events .match-timeline__event {
+	transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (hover: hover) {
+	.lsb-timeline-events .match-timeline__event:hover {
+		transform: translateX(4px);
+	}
+}
+
+/* ── Notices: the tone colours stay, only the silhouette changes ── */
+.lsb-notice {
+	border-radius: 24px 24px 24px 6px;
+}
+
+.lsb-notice--band {
+	border-radius: 8px 24px 8px 24px;
+}
+
+.lsb-notice--modal {
+	border-radius: 32px 32px 64px 32px;
+}
+
+.lsb-notice .q-alert__title {
+	font-family: var(--font-display);
+}
+
+.lsb-notice .q-alert__icon {
+	border-radius: 50%;
+}
+
+.lsb-optin {
+	border-radius: 18px 18px 18px 4px;
+}

@@ -177,9 +177,11 @@ function WrongRoleCard({
 }) {
 	return (
 		<section
-			className="q-card mx-auto mt-6 w-full max-w-[460px] sm:mt-10"
+			className="q-card lc-gate l-rise mx-auto mt-6 w-full max-w-[460px] sm:mt-10"
 			aria-labelledby="city-auth-role-title"
 		>
+			<span className="l-geo l-geo--diamond l-geo--green right-6 top-5" style={{ ["--i" as string]: 0 }} aria-hidden="true" />
+			<span className="l-geo l-geo--plus l-geo--gold right-14 top-4 max-sm:hidden" style={{ ["--i" as string]: 1 }} aria-hidden="true" />
 			<div className="q-band q-band--gold" aria-hidden="true" />
 			<div className="q-card__head items-center">
 				<span
@@ -189,7 +191,10 @@ function WrongRoleCard({
 					<ShieldAlert size={24} strokeWidth={1.75} />
 				</span>
 				<div className="min-w-0 flex-1">
-					<p className="q-eyebrow">QUILLART · Lo que la ciudad aprende</p>
+					<p className="l-eyebrow l-eyebrow--sunk lc-eb">
+						<span className="q-star" aria-hidden="true" />
+						QUILLART · Lo que la ciudad aprende
+					</p>
 					<h1 id="city-auth-role-title" className="q-h2 mt-1">
 						Esta cuenta no abre el tablero de la ciudad
 					</h1>
@@ -272,9 +277,11 @@ export function CityAuthGate({
 
 	return (
 		<section
-			className="q-card mx-auto mt-6 w-full max-w-[460px] sm:mt-10"
+			className="q-card lc-gate l-rise mx-auto mt-6 w-full max-w-[460px] sm:mt-10"
 			aria-labelledby="city-auth-title"
 		>
+			<span className="l-geo l-geo--diamond l-geo--green right-6 top-5" style={{ ["--i" as string]: 0 }} aria-hidden="true" />
+			<span className="l-geo l-geo--plus l-geo--gold right-14 top-4 max-sm:hidden" style={{ ["--i" as string]: 1 }} aria-hidden="true" />
 			<div className="q-flag" aria-hidden="true">
 				<i />
 				<i />
@@ -283,7 +290,10 @@ export function CityAuthGate({
 			<div className="q-card__head items-center">
 				<OperatorIllustration />
 				<div className="min-w-0 flex-1">
-					<p className="q-eyebrow">QUILLART · Lo que la ciudad aprende</p>
+					<p className="l-eyebrow l-eyebrow--sunk lc-eb">
+						<span className="q-star" aria-hidden="true" />
+						QUILLART · Lo que la ciudad aprende
+					</p>
 					<h1 id="city-auth-title" className="q-h1 mt-1">
 						Acceso de ciudad
 					</h1>

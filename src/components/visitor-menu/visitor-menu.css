@@ -311,3 +311,152 @@
 .vm-scanner__form .q-input {
 	min-height: 44px;
 }
+
+/* ── Landing look: a small rounded canvas for the title, varied silhouettes for
+   stamps and slang cards, staggered entrances (CSS only, React renders these). ── */
+.vm-titlerow {
+	position: relative;
+	isolation: isolate;
+	overflow: hidden;
+	padding: 20px 18px 22px;
+	border-radius: 32px 32px 72px 32px;
+	background: linear-gradient(
+		160deg,
+		var(--gold-soft),
+		color-mix(in srgb, var(--gold-soft) 50%, var(--surface)) 55%,
+		var(--surface)
+	);
+	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 6%, transparent);
+}
+.vm-titlerow > :first-child,
+.vm-titlerow > .vm-hero {
+	position: relative;
+	z-index: 2;
+}
+.vm-titlerow > :first-child {
+	gap: 10px;
+}
+.vm-titlerow .l-geo {
+	z-index: 0;
+}
+.vm-titlerow .l-h2 {
+	font-size: clamp(28px, 7vw, 40px);
+}
+.vm-count {
+	color: var(--gold-text);
+}
+
+.vm-page .q-state {
+	height: auto;
+	border-radius: 36px 36px 96px 36px;
+	background: var(--surface);
+	box-shadow: var(--shadow-card);
+}
+.vm-page .q-state__title {
+	font-family: var(--font-display);
+}
+
+.vm-stamp {
+	border-radius: 22px;
+	transition:
+		transform 0.5s var(--l-ease, ease),
+		box-shadow 0.5s var(--l-ease, ease);
+}
+.vm-stamp:nth-child(4n + 1) {
+	border-radius: 28px 10px 28px 10px;
+}
+.vm-stamp:nth-child(4n + 2) {
+	border-radius: 48px 48px 18px 18px;
+}
+.vm-stamp:nth-child(4n + 3) {
+	border-radius: 22px 22px 22px 4px;
+	background: var(--gold-soft);
+}
+.vm-stamp:nth-child(4n + 4) {
+	border-radius: 10px 28px 10px 28px;
+	background: var(--green-soft);
+}
+.vm-stamp:last-child {
+	background: transparent;
+	box-shadow: inset 0 0 0 2px var(--line-control);
+}
+.vm-stamp b {
+	font-family: var(--font-display);
+}
+
+.vm-slang {
+	border-radius: 24px 24px 24px 6px;
+	transition:
+		transform 0.5s var(--l-ease, ease),
+		box-shadow 0.5s var(--l-ease, ease);
+}
+.vm-list > li:nth-child(3n + 2) .vm-slang,
+.vm-list > .vm-slang:nth-child(3n + 2) {
+	border-radius: 24px 24px 6px 24px;
+}
+.vm-list > li:nth-child(3n) .vm-slang,
+.vm-list > .vm-slang:nth-child(3n) {
+	border-radius: 8px 30px 8px 30px;
+}
+.vm-slang__term {
+	font-size: 20px;
+	font-weight: 700;
+	letter-spacing: -0.01em;
+}
+.vm-slang__example {
+	border-radius: 4px 16px 16px 16px;
+}
+.vm-list > :nth-child(3n + 2) .vm-slang__example {
+	background: var(--green-soft);
+}
+.vm-list > :nth-child(3n) .vm-slang__example {
+	background: var(--red-soft);
+}
+
+.vm-stamps > :nth-child(2),
+.vm-list > :nth-child(2) {
+	--i: 1;
+}
+.vm-stamps > :nth-child(3),
+.vm-list > :nth-child(3) {
+	--i: 2;
+}
+.vm-stamps > :nth-child(4),
+.vm-list > :nth-child(4) {
+	--i: 3;
+}
+.vm-stamps > :nth-child(n + 5),
+.vm-list > :nth-child(n + 5) {
+	--i: 4;
+}
+html.l-motion .vm-titlerow,
+html.l-motion .vm-stamps > *,
+html.l-motion .vm-list > * {
+	animation: l-rise 0.9s var(--l-ease) calc(var(--i, 0) * 90ms) backwards;
+}
+
+.vm-scanner {
+	border: 0;
+	border-radius: 28px 28px 28px 8px;
+	background: var(--surface);
+	box-shadow: var(--shadow-card);
+}
+.vm-scanner__head b {
+	font-family: var(--font-display);
+	font-size: 18px;
+}
+.vm-scanner__video {
+	border-radius: 20px;
+}
+
+@media (min-width: 1024px) {
+	.vm-titlerow {
+		padding: 28px 28px 30px;
+		border-radius: 40px 40px 104px 40px;
+	}
+	.vm-stamp:hover,
+	.vm-slang:hover {
+		box-shadow: var(--shadow-modal);
+		transform: translateY(-4px);
+	}
+}

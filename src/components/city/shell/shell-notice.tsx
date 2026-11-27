@@ -1,4 +1,5 @@
 import { X } from "lucide-react";
+import "../../../styles/life-city-b.css";
 import type { ReactNode } from "react";
 import type { ConnectionView } from "../../../lib/city-dashboard-utils";
 import { OfflineIllustration } from "./shell-illustrations";
@@ -31,7 +32,7 @@ export function ShellNotice({
 	if (connection === "offline") {
 		return (
 			<section
-				className="q-panel cs-panel"
+				className="q-panel cs-panel lcb-panel lcb-panel--dee l-rise"
 				aria-labelledby="cs-offline-title"
 				role="status"
 			>
@@ -55,7 +56,7 @@ export function ShellNotice({
 
 	if (actionError) {
 		return (
-			<div className="q-alert q-alert--alert" role="alert">
+			<div className="q-alert q-alert--alert l-rise" role="alert">
 				<span className="q-alert__icon" aria-hidden="true">
 					!
 				</span>

@@ -1,3 +1,4 @@
+import "../../styles/life-city.css";
 // Requires a verified TOTP second factor (aal2) from accounts with the city role
 // before rendering city pages. Visitors, signed-out users and demo mode pass
 // straight through: the page keeps handling them. The server enforces the same
@@ -180,13 +181,18 @@ function GateCard({
 	useEffect(() => headingRef.current?.focus(), []);
 	return (
 		<section
-			className="q-card mx-auto mt-6 w-full max-w-[460px] sm:mt-10"
+			className="q-card lc-gate l-rise mx-auto mt-6 w-full max-w-[460px] sm:mt-10"
 			aria-labelledby={titleId}
 		>
+			<span className="l-geo l-geo--diamond l-geo--green right-6 top-5" style={{ ["--i" as string]: 0 }} aria-hidden="true" />
+			<span className="l-geo l-geo--plus l-geo--gold right-14 top-4 max-sm:hidden" style={{ ["--i" as string]: 1 }} aria-hidden="true" />
 			<div className="q-card__head items-center">
 				<Lock size={28} strokeWidth={1.75} aria-hidden="true" />
 				<div className="min-w-0 flex-1">
-					<p className="q-eyebrow">{eyebrow}</p>
+					<p className="l-eyebrow l-eyebrow--sunk lc-eb">
+						<span className="q-star" aria-hidden="true" />
+						{eyebrow}
+					</p>
 					<h1 id={titleId} ref={headingRef} tabIndex={-1} className="q-h1 mt-1">
 						{title}
 					</h1>

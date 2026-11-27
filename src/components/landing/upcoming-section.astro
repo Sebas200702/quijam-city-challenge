@@ -1,12 +1,22 @@
 ---
 // "Próximos planes": a small live window into the community agenda.
+import { ArrowRight } from "lucide-react";
 import { UpcomingEvents } from "./upcoming-events";
 ---
 
-<section aria-labelledby="upcoming-title" class="mx-auto w-full max-w-6xl px-4 py-12 lg:px-8 lg:py-16">
-	<div class="mb-6 flex flex-wrap items-center justify-between gap-4">
-		<h2 id="upcoming-title" class="q-h1" data-i18n="landing.upcoming.title">Próximos planes</h2>
-		<a href="/agenda" class="q-btn q-btn--secondary min-h-11" data-i18n="landing.upcoming.viewAgenda">Ver la agenda</a>
+<section aria-labelledby="upcoming-title" class="mx-auto w-full max-w-[1240px] px-3 py-14 lg:px-8 lg:py-24">
+	<div class="mb-6 flex flex-wrap items-end justify-between gap-4 lg:mb-10">
+		<div class="flex flex-col gap-4">
+			<p class="l-eyebrow" data-reveal>
+				<span class="q-dot" style="color: var(--red)" aria-hidden="true"></span>
+				<span data-i18n="landing.upcoming.eyebrow">En agenda</span>
+			</p>
+			<h2 id="upcoming-title" class="l-h2" data-reveal style="--i: 1" data-i18n="landing.upcoming.title">Próximos planes</h2>
+		</div>
+		<a href="/agenda" class="q-btn q-btn--secondary l-cta min-h-11" data-reveal style="--i: 2">
+			<span data-i18n="landing.upcoming.viewAgenda">Ver la agenda</span>
+			<ArrowRight size={18} strokeWidth={1.75} aria-hidden="true" />
+		</a>
 	</div>
 	<UpcomingEvents client:only="react" />
 	<noscript>

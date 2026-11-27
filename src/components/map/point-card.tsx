@@ -2,6 +2,7 @@ import { ArrowRight, X } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { useT } from "../../lib/i18n/use-language";
 import "./map-chrome.css";
+import "../../styles/life-map-b.css";
 import type { MapPoint, PointLayer } from "./map-layer-registry";
 
 interface PointCardProps {
@@ -22,12 +23,12 @@ export function PointCard({ layer, point, onClose }: PointCardProps) {
 
 	return (
 		<section
-			className="q-card q-card--raised q-card--frame corridor-detail mc-detail"
+			className="q-card q-card--raised q-card--frame corridor-detail mc-detail lmb-point"
 			aria-labelledby="corridor-point-title"
 		>
 			<div className="q-card__head mc-detail-head">
 				<span
-					className={`q-tile mc-tile-sm mc-hero mc-hero--${layer.tone}`}
+					className={`q-tile mc-tile-sm lmb-chip--shield mc-hero mc-hero--${layer.tone}`}
 					aria-hidden="true"
 				>
 					<Icon size={22} strokeWidth={1.75} />
@@ -54,12 +55,14 @@ export function PointCard({ layer, point, onClose }: PointCardProps) {
 			</div>
 			{point.description && (
 				<div className="q-card__body">
-					<p className="q-sm q-muted">{point.description}</p>
+					<p className="q-sm q-muted lmb-point__desc l-rise">
+						{point.description}
+					</p>
 				</div>
 			)}
 			{point.href && (
 				<div className="q-card__foot">
-					<a className="q-btn q-btn--primary q-btn--block" href={point.href}>
+					<a className="q-btn q-btn--primary q-btn--block lmb-go" href={point.href}>
 						{layer.openLabel(t)}
 						<ArrowRight size={18} strokeWidth={1.75} aria-hidden="true" />
 					</a>

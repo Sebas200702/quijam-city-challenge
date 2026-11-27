@@ -1,0 +1,163 @@
+/* Visitor sheets (menu, language) dressed like the landing: canvas header,
+   varied silhouettes, tone blocks. Visual only; sheet positioning stays in
+   visitor-sheets.css. Colours from tokens so both themes work. */
+
+/* ── Sheet header: small tinted canvas with confetti ── */
+.lab-sheet-head {
+	position: relative;
+	overflow: hidden;
+	isolation: isolate;
+	padding: 14px 10px 14px 18px;
+	border-radius: 28px 56px 28px 28px;
+	background: linear-gradient(135deg, var(--gold-soft), var(--surface) 78%);
+}
+
+.lab-sheet-head > h2 {
+	font-family: var(--font-display);
+	letter-spacing: -0.02em;
+	text-wrap: balance;
+}
+
+.lab-sheet-head > .l-geo {
+	z-index: -1;
+	opacity: 0.55;
+}
+
+.lab-sheet-head .visitor-sheet__hero {
+	padding: 6px;
+	border-radius: 50% 50% 50% 18px;
+	background: color-mix(in srgb, var(--surface) 70%, transparent);
+}
+
+/* ── Menu: every option its own silhouette and tone ── */
+.lab-menu .visitor-menu__item {
+	transition:
+		transform 0.35s var(--l-ease, ease),
+		box-shadow 0.35s var(--l-ease, ease);
+}
+
+.lab-menu .visitor-menu__item:hover {
+	transform: translateY(-3px);
+	box-shadow: var(--shadow-card);
+}
+
+.lab-menu > li:nth-child(1) .visitor-menu__item {
+	border-radius: 28px 28px 28px 8px;
+	background: var(--gold-soft);
+}
+
+.lab-menu > li:nth-child(2) .visitor-menu__item {
+	border-radius: 44px 16px 44px 16px;
+	background: var(--green-soft);
+}
+
+.lab-menu > li:nth-child(3) .visitor-menu__item {
+	border-radius: 16px 40px 16px 40px;
+}
+
+.lab-menu > li:nth-child(4) .visitor-menu__item {
+	border-radius: 14px 14px 44px 14px;
+}
+
+.lab-menu > li:nth-child(5) {
+	grid-column: 1 / -1;
+}
+
+.lab-menu > li:nth-child(5) .visitor-menu__item {
+	min-height: 84px;
+	border-radius: var(--radius-pill);
+	padding-inline: 24px;
+}
+
+.lab-menu .visitor-menu__item .q-tile.lab-ico--circle {
+	border-radius: 50%;
+}
+
+.lab-menu .visitor-menu__item .q-tile.lab-ico--shield {
+	border-radius: 14% 14% 50% 50% / 10% 10% 60% 60%;
+}
+
+.lab-menu .visitor-menu__item .q-tile.lab-ico--leaf {
+	border-radius: 60% 12% 60% 12%;
+}
+
+.lab-menu .visitor-menu__item .q-tile.lab-ico--hex {
+	border-radius: 0;
+	clip-path: polygon(25% 4%, 75% 4%, 100% 50%, 75% 96%, 25% 96%, 0 50%);
+}
+
+.lab-menu .visitor-menu__item .q-tile.lab-ico--octagon {
+	border-radius: 0;
+	clip-path: polygon(
+		30% 0,
+		70% 0,
+		100% 30%,
+		100% 70%,
+		70% 100%,
+		30% 100%,
+		0 70%,
+		0 30%
+	);
+}
+
+.lab-menu .visitor-menu__item .q-tile--gold {
+	background: var(--surface);
+}
+
+.lab-menu .visitor-menu__item .q-tile--green {
+	background: var(--surface);
+}
+
+/* ── Language options: alternating corners, chosen one fills gold ── */
+.lab-options .visitor-option {
+	transition:
+		transform 0.3s var(--l-ease, ease),
+		background-color 0.3s ease;
+}
+
+.lab-options .visitor-option:hover {
+	transform: translateX(3px);
+}
+
+.lab-options > li:nth-child(3n + 1) .visitor-option {
+	border-radius: 28px 28px 28px 8px;
+}
+
+.lab-options > li:nth-child(3n + 2) .visitor-option {
+	border-radius: var(--radius-pill);
+}
+
+.lab-options > li:nth-child(3n) .visitor-option {
+	border-radius: 8px 28px 28px 28px;
+}
+
+.lab-options .visitor-radio:checked + .visitor-option {
+	background: var(--gold-soft);
+}
+
+.lab-options .visitor-option__text b {
+	font-family: var(--font-display);
+}
+
+/* ── Header chip (language) ── */
+.lab-chip {
+	transition: transform 0.3s var(--l-ease, ease);
+}
+
+.lab-chip:hover {
+	transform: translateY(-2px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.lab-menu .visitor-menu__item,
+	.lab-options .visitor-option,
+	.lab-chip {
+		transition: none;
+	}
+
+	.lab-menu .visitor-menu__item:hover,
+	.lab-options .visitor-option:hover,
+	.lab-chip:hover {
+		transform: none;
+	}
+}

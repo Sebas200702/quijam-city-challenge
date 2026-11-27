@@ -1,3 +1,4 @@
+import "../../../styles/life-city.css";
 import { useState } from "react";
 import type {
 	OverchargeReport,
@@ -88,7 +89,7 @@ export function CitySectionsPreview({ state }: { state: PreviewState }) {
 	return (
 		<main className="mx-auto flex max-w-6xl flex-col gap-10 px-4 py-6 sm:px-6">
 			<div className="flex flex-wrap items-center justify-between gap-3">
-				<h1 className="q-h1">Secciones del Centro de Mando</h1>
+				<h1 className="lc-title">Secciones del Centro de Mando</h1>
 				<span className="q-sim-tag">Datos de referencia</span>
 			</div>
 

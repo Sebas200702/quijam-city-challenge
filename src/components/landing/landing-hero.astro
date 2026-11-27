@@ -1,70 +1,192 @@
 ---
 // Hero: the conversation is the way in. The ask box is a plain GET form, so it
-// works before (or without) JavaScript.
-import { ArrowUp } from "lucide-react";
+// works before (or without) JavaScript. The scene on the right is decorative: a
+// phone replaying a short chat, with one floating card per kind of help.
+import {
+	ArrowUp,
+	CalendarDays,
+	Check,
+	Megaphone,
+	Route,
+	Users,
+} from "lucide-react";
 import { ASSISTANT_HREF } from "../../lib/assistant/assistant-labels";
 import { HERO_PROMPTS } from "./landing-content";
+
+const floats = [
+	{
+		slot: "a",
+		agent: "agenda",
+		icon: CalendarDays,
+		tone: "q-tile--gold",
+		text: "Encuentra planes",
+		depth: 26,
+	},
+	{
+		slot: "b",
+		agent: "mobility",
+		icon: Route,
+		tone: "q-tile--green",
+		text: "Llega sin trancón",
+		depth: -20,
+	},
+	{
+		slot: "c",
+		agent: "city_reports",
+		icon: Megaphone,
+		tone: "q-tile--red",
+		text: "Avisa a la ciudad",
+		depth: 34,
+	},
+	{
+		slot: "d",
+		agent: "community",
+		icon: Users,
+		tone: "",
+		text: "Conecta con tus vecinos",
+		depth: -30,
+	},
+];
+
+const results = ["celebration", "among-nature", "walking-together"];
 ---
 
-<section
-	aria-labelledby="hero-title"
-	class="mx-auto grid w-full max-w-6xl items-center gap-8 px-4 pt-6 pb-12 lg:grid-cols-2 lg:gap-14 lg:px-8 lg:pt-14 lg:pb-20"
->
-	<div class="flex min-w-0 flex-col gap-5">
-		<h1 id="hero-title" class="q-display lg:text-[60px] lg:leading-[64px]" data-i18n="landing.hero.title">
-			Barranquilla, a una conversación
-		</h1>
-		<p class="q-lead" data-i18n="landing.hero.lead">Pregunta, inscríbete, publica. Quillart lo hace contigo.</p>
+<section aria-labelledby="hero-title" class="l-hero">
+	<div class="l-hero__frame">
+	<div class="l-hero__canvas" data-hero-canvas>
+		<span class="l-hero__glow l-hero__glow--green" aria-hidden="true"></span>
+		<span class="l-hero__glow l-hero__glow--red" aria-hidden="true"></span>
+		<span class="l-hero__dots" aria-hidden="true"></span>
+		<span class="l-geo l-geo--quarter l-geo--green" aria-hidden="true"></span>
+		<svg class="l-geo l-geo--zig l-geo--ink" viewBox="0 0 84 22" aria-hidden="true" data-depth="-14">
+			<path d="M3 17 L16 5 L29 17 L42 5 L55 17 L68 5 L81 17" />
+		</svg>
 
-		<form action={ASSISTANT_HREF} method="get" role="search" aria-label="Pregúntale a Quillart AI" data-i18n-attr="aria-label:landing.hero.formLabel">
-			<label for="hero-ask" class="q-sr" data-i18n="landing.hero.inputLabel">Escribe tu pregunta para Quillart AI</label>
-			<div class="q-prompt shadow-[var(--shadow-card)]">
-				<input
-					id="hero-ask"
-					name="q"
-					type="text"
-					required
-					maxlength="500"
-					autocomplete="off"
-					enterkeyhint="send"
-					placeholder="¿Qué hacemos hoy?"
-					data-i18n-attr="placeholder:landing.hero.placeholder"
-				/>
-				<button type="submit" class="q-btn q-btn--primary q-btn--icon" aria-label="Preguntar" data-i18n-attr="aria-label:landing.hero.submit">
-					<ArrowUp size={20} strokeWidth={1.75} aria-hidden="true" />
-				</button>
+		<div class="l-hero__copy">
+			<p class="l-eyebrow l-rise">
+				<span class="q-star q-star--think" aria-hidden="true"></span>
+				<span data-i18n="landing.hero.eyebrow">Tu ciudad, con IA</span>
+			</p>
+			<h1 id="hero-title" class="l-hero__title">
+				<span class="l-line l-rise" style="--i: 1" data-i18n="landing.hero.titleLead">Barranquilla,</span>
+				<span class="l-line l-rise" style="--i: 2">
+					<span class="l-mark" data-i18n="landing.hero.titleAccent">a una conversación</span>
+				</span>
+			</h1>
+			<p class="l-hero__lead l-rise" style="--i: 3" data-i18n="landing.hero.lead">
+				Pregunta, inscríbete, publica. Quillart lo hace contigo.
+			</p>
+
+			<form
+				action={ASSISTANT_HREF}
+				method="get"
+				role="search"
+				aria-label="Pregúntale a Quillart AI"
+				data-i18n-attr="aria-label:landing.hero.formLabel"
+				class="l-ask l-rise"
+				style="--i: 4"
+			>
+				<label for="hero-ask" class="q-sr" data-i18n="landing.hero.inputLabel">Escribe tu pregunta para Quillart AI</label>
+				<div class="q-prompt">
+					<input
+						id="hero-ask"
+						name="q"
+						type="text"
+						required
+						maxlength="500"
+						autocomplete="off"
+						enterkeyhint="send"
+						placeholder="¿Qué hacemos hoy?"
+						data-i18n-attr="placeholder:landing.hero.placeholder"
+						data-hero-ask
+					/>
+					<button type="submit" class="q-btn q-btn--primary q-btn--icon" aria-label="Preguntar" data-i18n-attr="aria-label:landing.hero.submit">
+						<ArrowUp size={22} strokeWidth={1.75} aria-hidden="true" />
+					</button>
+				</div>
+			</form>
+
+			<ul class="l-chips l-rise m-0 flex list-none flex-wrap gap-2 p-0" style="--i: 5" aria-label="Ejemplos" data-i18n-attr="aria-label:landing.hero.examples">
+				{
+					HERO_PROMPTS.map((item, index) => (
+						<li>
+							<a href={item.href} class="q-chip no-underline">
+								<span data-i18n={`landing.hero.chip${index + 1}`} data-hero-chip>{item.label}</span>
+							</a>
+						</li>
+					))
+				}
+			</ul>
+		</div>
+
+		<div class="l-stage" aria-hidden="true">
+			<div class="l-sun"><i></i><i></i><i></i></div>
+
+			<div class="l-phone" data-depth="10">
+				<div class="l-phone__bar">
+					<span class="q-avatar"><span class="q-star"></span></span>
+					Quillart AI
+					<span class="l-phone__live"><span class="q-dot"></span></span>
+				</div>
+				<div class="l-phone__chat">
+					<div class="l-bubble l-bubble--user" data-i18n="landing.hero.bubbleUser">¿Planes gratis este sábado?</div>
+					<div class="l-reply">
+						<div class="l-bubble l-bubble--think">
+							<span class="q-thinking__dots"><i></i><i></i><i></i></span>
+						</div>
+						<div class="l-bubble l-bubble--ai">
+							<span class="q-star"></span>
+							<span data-i18n="landing.hero.bubbleAi">¡Hay 3! ¿Te inscribo?</span>
+						</div>
+					</div>
+					<div class="flex flex-col gap-2">
+						{
+							results.map((name) => (
+								<div class="l-result">
+									<span class="l-result__thumb">
+										<img src={`/illustrations/${name}.svg`} alt="" width="36" height="36" />
+									</span>
+									<span class="l-result__lines"><i /><i /></span>
+									<span class="l-result__ok">
+										<Check size={14} strokeWidth={2.5} />
+									</span>
+								</div>
+							))
+						}
+					</div>
+				</div>
 			</div>
-		</form>
 
-		<ul class="m-0 flex list-none flex-wrap gap-2 p-0" aria-label="Ejemplos" data-i18n-attr="aria-label:landing.hero.examples">
 			{
-				HERO_PROMPTS.map((item, index) => (
-					<li>
-						<a href={item.href} class="q-chip no-underline">
-							<span data-i18n={`landing.hero.chip${index + 1}`}>{item.label}</span>
-						</a>
-					</li>
+				floats.map((item, index) => (
+					<div class={`l-float l-float--${item.slot}`} style={`--i: ${index}`} data-depth={item.depth}>
+						<span class={`q-tile ${item.tone}`}>
+							<item.icon size={20} strokeWidth={1.75} />
+						</span>
+						<span data-i18n={`landing.agents.${item.agent}.title`}>{item.text}</span>
+					</div>
 				))
 			}
-		</ul>
+
+			<span class="l-geo l-geo--ring" style="--i: 1" data-depth="40"></span>
+			<span class="l-geo l-geo--half l-geo--green" style="--i: 2" data-depth="-36"></span>
+			<span class="l-geo l-geo--plus l-geo--ink" style="--i: 3" data-depth="28"></span>
+			<span class="l-geo l-geo--tri" style="--i: 4" data-depth="-24"></span>
+			<span class="l-geo l-geo--diamond l-geo--green" style="--i: 5" data-depth="44"></span>
+		</div>
 	</div>
 
-	<div class="relative min-w-0" aria-hidden="true">
-		<div class="q-illus px-6 pt-10 pb-6 lg:px-10 lg:pt-14">
-			<img
-				src="/illustrations/voice-assistant.svg"
-				alt=""
-				class="mx-auto h-56 w-auto lg:h-80"
-				width="320"
-				height="320"
-			/>
-		</div>
-		<div class="absolute top-3 left-3 max-w-[62%] rounded-[18px] rounded-bl-[4px] bg-[var(--surface)] px-4 py-2.5 text-[15px] font-semibold text-[var(--ink)] shadow-[var(--shadow-card)] lg:top-5 lg:left-5" data-i18n="landing.hero.bubbleUser">
-			¿Planes gratis este sábado?
-		</div>
-		<div class="absolute right-3 bottom-4 flex max-w-[70%] items-center gap-2 rounded-[18px] rounded-br-[4px] bg-[var(--action)] px-4 py-2.5 text-[15px] font-semibold text-[var(--on-action)] shadow-[var(--shadow-card)] lg:right-5 lg:bottom-6">
-			<span class="q-star" style="width: 16px; height: 16px"></span>
-			<span data-i18n="landing.hero.bubbleAi">¡Hay 3! ¿Te inscribo?</span>
-		</div>
+	{/* Outside the canvas: on wide screens it sits in the corner cut out of it. */}
+	<div class="l-seal" aria-hidden="true">
+		<svg viewBox="0 0 120 120">
+			<defs>
+				<path id="hero-seal-path" d="M60 60 m-46 0 a46 46 0 1 1 92 0 a46 46 0 1 1 -92 0" />
+			</defs>
+			<text>
+				<textPath href="#hero-seal-path">QUILLART AI · BARRANQUILLA · QUILLART AI ·</textPath>
+			</text>
+		</svg>
+		<span class="q-star"></span>
+	</div>
 	</div>
 </section>

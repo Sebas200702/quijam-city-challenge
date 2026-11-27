@@ -1,6 +1,7 @@
 import { KeyRound, LogIn } from "lucide-react";
 import { type FormEvent, useCallback, useEffect, useState } from "react";
 import { fetchPresenterAccess } from "./presenter-access";
+import "../../styles/life-roles.css";
 
 const ICON = { size: 20, strokeWidth: 1.75, "aria-hidden": true } as const;
 
@@ -52,17 +53,33 @@ export default function PresenterEntry() {
 
 	return (
 		<main className="mx-auto flex min-h-[80dvh] max-w-md flex-col justify-center gap-6 px-4 py-10">
-			<div>
-				<p className="q-eyebrow">Demo Day</p>
-				<h1 className="q-h1 mt-1">Panel de presentador</h1>
-				<p className="q-sm q-subtle mt-2">
+			<div className="r-canvas r-canvas--dee l-rise">
+				<span className="l-geo l-geo--ring r-g1" aria-hidden="true" />
+				<span
+					className="l-geo l-geo--half l-geo--green r-g2"
+					aria-hidden="true"
+				/>
+				<span
+					className="l-geo l-geo--diamond l-geo--gold r-g3"
+					aria-hidden="true"
+				/>
+				<p className="l-eyebrow">
+					<span className="q-star" aria-hidden="true" />
+					Demo Day
+				</p>
+				<h1 className="l-h2 r-title">Panel de presentador</h1>
+				<p className="q-sm text-[var(--ink-muted)]">
 					Desde aquí se disparan los eventos de la ciudad que ven los celulares
 					y el tablero.
 				</p>
 			</div>
 
 			{demoKeyEnabled && (
-				<form className="q-card" onSubmit={submit}>
+				<form
+					className="q-card r-shape-corner l-rise"
+					style={{ ["--i" as string]: 1 }}
+					onSubmit={submit}
+				>
 					<div className="q-card__body space-y-3">
 						<label
 							htmlFor="presenter-key"
@@ -78,7 +95,7 @@ export default function PresenterEntry() {
 							onChange={(event) => setKey(event.target.value)}
 							aria-invalid={error ? true : undefined}
 							aria-describedby={error ? "presenter-key-error" : undefined}
-							className="h-12 w-full rounded-[var(--radius-md)] border border-[var(--line-control)] bg-[var(--bg)] px-4 text-[15px] text-[var(--ink)]"
+							className="h-12 w-full rounded-full border border-[var(--line-control)] bg-[var(--bg)] px-5 text-[15px] text-[var(--ink)]"
 						/>
 						{error && (
 							<p
@@ -91,7 +108,7 @@ export default function PresenterEntry() {
 						)}
 						<button
 							type="submit"
-							className="q-btn q-btn--primary q-btn--block"
+							className="q-btn q-btn--primary q-btn--block l-cta"
 							disabled={busy}
 						>
 							<KeyRound {...ICON} />
@@ -101,7 +118,11 @@ export default function PresenterEntry() {
 				</form>
 			)}
 
-			<a href="/ciudad" className="q-btn q-btn--secondary q-btn--block">
+			<a
+				href="/ciudad"
+				className="q-btn q-btn--secondary q-btn--block l-rise"
+				style={{ ["--i" as string]: 2 }}
+			>
 				<LogIn {...ICON} />
 				Entrar con una cuenta de la ciudad
 			</a>

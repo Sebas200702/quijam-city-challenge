@@ -1,0 +1,291 @@
+/* App chrome with the landing's energy (classes `ls-*`): top bar pill, floating
+   tab bar, feature bento, match card. Colours come from tokens only; motion
+   hangs from `html.l-motion`, like the landing. */
+
+/* ── Top bar: a floating pill. No backdrop-filter on purpose: it would trap the
+   fixed sheets of the secondary menu inside the bar. ── */
+.ls-topbar {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 6px 8px;
+	border-radius: var(--radius-pill);
+	background: color-mix(in srgb, var(--surface) 92%, transparent);
+	box-shadow:
+		inset 0 0 0 1px color-mix(in srgb, var(--ink) 7%, transparent),
+		var(--shadow-card);
+}
+
+.ls-topbar--bar {
+	margin: 8px 10px;
+}
+
+.ls-topbar__section {
+	margin: 0;
+	min-width: 0;
+	overflow: hidden;
+	padding: 4px 12px;
+	border-radius: 6px 16px 6px 16px;
+	background: var(--gold-soft);
+	color: var(--gold-text);
+	font-size: 14px;
+	line-height: 20px;
+	font-weight: 600;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.ls-toplink {
+	position: relative;
+	transition:
+		background-color 0.3s,
+		color 0.3s,
+		transform 0.35s var(--l-ease, ease);
+}
+
+.ls-toplink.is-on {
+	background: var(--ink);
+	color: var(--bg);
+	box-shadow: var(--shadow-card);
+}
+
+.ls-toplink .q-star {
+	color: var(--gold-text);
+	transition: transform 0.5s var(--l-ease, ease);
+}
+
+.ls-toplink.is-on .q-star {
+	color: var(--gold);
+}
+
+.ls-logo .q-logo__tile {
+	transition: transform 0.5s var(--l-ease, ease);
+}
+
+@media (min-width: 1024px) {
+	.ls-topbar {
+		gap: 20px;
+		padding: 8px 10px 8px 12px;
+	}
+
+	.ls-topbar--bar {
+		margin: 10px 32px;
+	}
+
+	.ls-toplink:not(.is-on):hover {
+		background: var(--gold-soft);
+		transform: translateY(-2px);
+	}
+
+	.ls-toplink:hover .q-star {
+		transform: rotate(90deg);
+	}
+
+	.ls-topbar:hover .ls-logo .q-logo__tile {
+		transform: rotate(-8deg);
+	}
+}
+
+/* ── Weather: a small leaf, not one more pill ── */
+.ls-weather {
+	border-radius: 6px 18px 6px 18px;
+}
+
+/* ── Bottom nav: a floating pill; the active tab pops out of it.
+   Total height stays 68px (other screens offset their sticky footers by it). ── */
+.q-bottom-nav {
+	padding: 0 10px 8px;
+	background: linear-gradient(transparent, var(--bg) 55%);
+}
+
+.q-bottom-nav .q-tabs {
+	padding: 4px;
+	border-radius: var(--radius-pill);
+	box-shadow:
+		inset 0 0 0 1px color-mix(in srgb, var(--ink) 7%, transparent),
+		var(--shadow-modal);
+}
+
+.q-bottom-nav .q-tab {
+	min-height: 52px;
+	gap: 2px;
+	border-radius: var(--radius-pill);
+	transition:
+		transform 0.4s var(--l-ease, ease),
+		background-color 0.3s,
+		color 0.3s;
+}
+
+.q-bottom-nav .q-tab.is-on {
+	background: var(--gold);
+	color: var(--on-gold);
+	box-shadow: var(--shadow-card);
+	transform: translateY(-5px);
+}
+
+/* Inside the agent dock the tabs are part of the panel: no second float. */
+.q-dock .q-bottom-nav {
+	padding: 0;
+	background: none;
+}
+
+.q-dock .q-bottom-nav .q-tabs {
+	padding: 6px 8px;
+	border-radius: 0;
+	background: transparent;
+	box-shadow: none;
+}
+
+.q-dock .q-bottom-nav .q-tab.is-on {
+	transform: translateY(-2px);
+}
+
+/* ── Ask link: keeps the halo of the landing's ask box at full width ── */
+.ls-asklink {
+	transition: transform 0.4s var(--l-ease, ease);
+}
+
+@media (min-width: 1024px) {
+	.ls-asklink:hover {
+		transform: translateY(-3px);
+	}
+}
+
+/* ── Feature bento: four silhouettes and tones, repeating ── */
+.ls-features > .q-feature {
+	transition:
+		transform 0.5s var(--l-ease, ease),
+		box-shadow 0.5s var(--l-ease, ease);
+}
+
+.ls-features > .q-feature b {
+	font-family: var(--font-display);
+	font-size: 16px;
+	letter-spacing: -0.01em;
+}
+
+.ls-features > .q-feature .q-illus img {
+	transition: transform 0.7s var(--l-ease, ease);
+}
+
+/* Leaf, gold. */
+.ls-features > .q-feature:nth-child(4n + 1) {
+	border-radius: 40px 18px 40px 18px;
+	background: var(--gold-soft);
+}
+
+.ls-features > .q-feature:nth-child(4n + 1) .q-illus {
+	border-radius: 28px 8px 14px 14px;
+}
+
+/* Speech bubble, green. */
+.ls-features > .q-feature:nth-child(4n + 2) {
+	border-radius: 28px 28px 28px 4px;
+	background: var(--green-soft);
+}
+
+/* Arch, red. */
+.ls-features > .q-feature:nth-child(4n + 3) {
+	border-radius: 80px 80px 24px 24px;
+	background: var(--red-soft);
+}
+
+.ls-features > .q-feature:nth-child(4n + 3) .q-illus {
+	border-radius: 68px 68px 14px 14px;
+}
+
+/* Contrast card: inverted against the theme. */
+.ls-features > .q-feature:nth-child(4n + 4) {
+	border-radius: 18px 40px 18px 40px;
+	background: var(--ink);
+	color: var(--bg);
+}
+
+.ls-features > .q-feature:nth-child(4n + 4) span {
+	color: color-mix(in srgb, var(--bg) 76%, transparent);
+}
+
+.ls-features > .q-feature:nth-child(4n + 4) .q-illus {
+	border-radius: 8px 28px 14px 14px;
+}
+
+.ls-features > .q-feature:nth-child(2) {
+	--i: 1;
+}
+
+.ls-features > .q-feature:nth-child(3) {
+	--i: 2;
+}
+
+.ls-features > .q-feature:nth-child(4) {
+	--i: 3;
+}
+
+.ls-features > .q-feature:nth-child(n + 5) {
+	--i: 4;
+}
+
+/* `backwards`: once the entrance ends the hover transform is free again. */
+html.l-motion .ls-features > .q-feature {
+	animation: l-rise 0.9s var(--l-ease) calc(var(--i, 0) * 90ms) backwards;
+}
+
+@media (min-width: 1024px) {
+	.ls-features > .q-feature:hover {
+		box-shadow: var(--shadow-modal);
+		transform: translateY(-6px);
+	}
+
+	.ls-features > .q-feature:hover .q-illus img {
+		transform: scale(1.08) rotate(-2deg);
+	}
+}
+
+/* ── Match card: a bubble with an arch picture and one loose ring ── */
+.ls-match {
+	border-radius: 32px 32px 32px 8px;
+	background: linear-gradient(
+		150deg,
+		var(--gold-soft),
+		color-mix(in srgb, var(--gold-soft) 45%, var(--surface)) 55%,
+		var(--surface)
+	);
+	transition:
+		transform 0.5s var(--l-ease, ease),
+		box-shadow 0.5s var(--l-ease, ease);
+}
+
+.ls-match .q-illus {
+	border-radius: 999px 999px 18px 18px;
+}
+
+.ls-match .q-h3 {
+	font-family: var(--font-display);
+	letter-spacing: -0.01em;
+}
+
+.ls-match__body {
+	position: relative;
+	z-index: 2;
+}
+
+html.l-motion .ls-match {
+	animation: l-rise 0.9s var(--l-ease) backwards;
+}
+
+@media (min-width: 1024px) {
+	.ls-match:hover {
+		box-shadow: var(--shadow-modal);
+		transform: translateY(-4px);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.q-bottom-nav .q-tab,
+	.ls-toplink,
+	.ls-asklink,
+	.ls-match,
+	.ls-features > .q-feature {
+		transition: none;
+	}
+}

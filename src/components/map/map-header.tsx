@@ -17,6 +17,7 @@ import type {
 import type { MapMessages } from "../../lib/i18n/dictionaries/map";
 import { useT } from "../../lib/i18n/use-language";
 import "./map-chrome.css";
+import "../../styles/life-map.css";
 import type { LayerKey } from "./map-layers";
 
 const LAYER_TOGGLES: {
@@ -97,11 +98,14 @@ export function MapHeader({
 	return (
 		<>
 			<form
-				className="q-search mc-search"
+				className="q-search mc-search l-rise"
 				aria-label={copy.searchForm}
 				onSubmit={submit}
 			>
-				<span className="q-logo__tile corridor-search__logo" aria-hidden="true">
+				<span
+					className="q-logo__tile corridor-search__logo l-ico--burst"
+					aria-hidden="true"
+				>
 					<span className="q-star" />
 				</span>
 				<label htmlFor={`${listId}-input`} className="q-sr">
@@ -155,7 +159,10 @@ export function MapHeader({
 				)}
 			</div>
 
-			<fieldset className="corridor-chips q-scroll-fade">
+			<fieldset
+				className="corridor-chips q-scroll-fade l-rise"
+				style={{ ["--i" as string]: 1 }}
+			>
 				<legend className="q-sr">{copy.layers}</legend>
 				{[
 					...pointLayers,

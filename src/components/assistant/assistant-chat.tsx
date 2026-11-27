@@ -45,6 +45,7 @@ import { useAnswerAnnouncement } from "./use-answer-announcement";
 import { useAssistant } from "./use-assistant";
 import { useLiveVoice } from "./use-live-voice";
 import { speak, useVoiceConduit } from "./voice-conduit";
+import "../../styles/life-assistant.css";
 
 const NOTICE_TONES = {
 	ok: "bg-[var(--green-soft)] text-[var(--green-text)]",
@@ -121,7 +122,7 @@ function DisplayView({
 			// The route is one card with the map link, not a green notice (audit U26).
 			if (toolName === "plan_route" && display.tone === "ok") {
 				return (
-					<div className="q-next-step">
+					<div className="q-next-step la-route">
 						<p className="q-next-step__eyebrow">
 							<span className="q-star" aria-hidden="true" />
 							{t.chat.routeEyebrow}
@@ -144,7 +145,7 @@ function DisplayView({
 				<p
 					lang="es"
 					role="status"
-					className={`rounded-[var(--radius-md)] px-4 py-3 text-sm ${NOTICE_TONES[display.tone]}`}
+					className={`rounded-[20px_20px_20px_4px] px-4 py-3 text-sm ${NOTICE_TONES[display.tone]}`}
 				>
 					{display.text}
 				</p>
@@ -374,7 +375,7 @@ export function AssistantChat({
 	const composer = (
 		<form
 			onSubmit={submit}
-			className={`q-prompt shadow-[var(--shadow-card)] ${empty ? "lg:py-1.5" : ""}`}
+			className={`q-prompt ${empty ? "lg:py-1.5" : ""}`}
 		>
 			<label htmlFor={inputId} className="q-sr">
 				{t.chat.composerLabel}
@@ -438,11 +439,16 @@ export function AssistantChat({
 
 	return (
 		<section
-			className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-4"
+			className="la-chat mx-auto flex w-full max-w-3xl flex-1 flex-col gap-4"
 			aria-label="Quillart AI"
 		>
 			<div className="flex flex-wrap items-center gap-2">
-				<span className="q-eyebrow flex-1">Quillart AI</span>
+				<span className="flex-1">
+					<span className="l-eyebrow">
+						<span className="q-star" aria-hidden="true" />
+						Quillart AI
+					</span>
+				</span>
 				{voice.canSpeak && (
 					<button
 						type="button"
@@ -482,22 +488,46 @@ export function AssistantChat({
 
 			{empty ? (
 				<div className="flex flex-col gap-4 lg:gap-6">
-					<div className="q-card flex-row! items-center gap-4 overflow-hidden bg-[var(--illus)]! p-5 text-[#0B131E] lg:gap-8 lg:p-8">
-						<div className="min-w-0 flex-1">
-							<h1 className="q-h1 text-[#0B131E] lg:text-[40px] lg:leading-[44px]">
-								{greeting}
-							</h1>
-							<p className="q-p mt-1 text-[#46566B]">{intro}</p>
-						</div>
-						<SpotIllustration
-							src="/illustrations/voice-assistant.svg"
-							className="h-24! shrink-0 lg:h-48!"
+					<div className="la-hero l-rise">
+						<span
+							className="l-geo l-geo--half l-geo--green bottom-0 left-8"
+							aria-hidden="true"
 						/>
+						<span
+							className="l-geo l-geo--ring -right-3 -bottom-3"
+							aria-hidden="true"
+						/>
+						<span
+							className="l-geo l-geo--diamond l-geo--gold -top-2 left-[46%]"
+							aria-hidden="true"
+						/>
+						<span
+							className="l-geo l-geo--plus l-geo--ink top-6 right-[272px] max-lg:hidden"
+							aria-hidden="true"
+						/>
+						<div className="la-hero__copy">
+							<h1 className="l-h2">{greeting}</h1>
+							<p className="q-p la-hero__lead">{intro}</p>
+						</div>
+						<span className="la-hero__art">
+							<SpotIllustration
+								src="/illustrations/voice-assistant.svg"
+								className="h-24! shrink-0 lg:h-48!"
+							/>
+						</span>
 					</div>
-					{composer}
+					<div
+						className="l-ask la-ask l-rise"
+						style={{ ["--i" as string]: 1 }}
+					>
+						{composer}
+					</div>
 					{voice.error && <ErrorNote message={voice.error} />}
 					{liveStatus}
-					<div className="q-scroll-fade q-scroll-fade--wrap-lg -mx-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] lg:mx-0 lg:flex-wrap lg:overflow-visible lg:px-0 [&::-webkit-scrollbar]:hidden">
+					<div
+						className="la-chips l-rise q-scroll-fade q-scroll-fade--wrap-lg -mx-4 flex gap-2 overflow-x-auto px-4 pt-1 pb-1 [scrollbar-width:none] lg:mx-0 lg:flex-wrap lg:overflow-visible lg:px-0 [&::-webkit-scrollbar]:hidden"
+						style={{ ["--i" as string]: 2 }}
+					>
 						{chips.map((chip) => (
 							<button
 								key={chip}
@@ -584,7 +614,7 @@ export function AssistantChat({
 							// Follow-up suggestions come from the server in Spanish only (audit U21).
 							<div
 								lang="es"
-								className="q-scroll-fade q-scroll-fade--wrap-lg -mx-4 flex gap-2 overflow-x-auto px-4 pb-1 lg:mx-0 lg:flex-wrap lg:px-0"
+								className="la-chips q-scroll-fade q-scroll-fade--wrap-lg -mx-4 flex gap-2 overflow-x-auto px-4 pt-1 pb-1 lg:mx-0 lg:flex-wrap lg:px-0"
 							>
 								{chips.map((chip) => (
 									<button
@@ -598,7 +628,7 @@ export function AssistantChat({
 								))}
 							</div>
 						)}
-						{composer}
+						<div className="l-ask la-ask">{composer}</div>
 						{waitHint}
 					</div>
 				</>

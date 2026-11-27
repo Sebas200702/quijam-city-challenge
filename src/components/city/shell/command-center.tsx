@@ -102,8 +102,19 @@ export function CommandCenter({
 	}
 
 	return (
-		<div className="cs-grid">
-			<h1 className="q-sr">Lo que la ciudad aprende: mapa del corredor</h1>
+		<>
+			<header className="lc-canvas cs-canvas l-rise">
+				<span className="l-geo l-geo--ring l-geo--green right-[6%] top-3 max-lg:hidden" style={{ ["--i" as string]: 0 }} aria-hidden="true" />
+				<span className="l-geo l-geo--half l-geo--gold right-[18%] bottom-0 max-lg:hidden" style={{ ["--i" as string]: 1 }} aria-hidden="true" />
+				<span className="l-geo l-geo--plus right-[30%] top-4 max-lg:hidden" style={{ ["--i" as string]: 2 }} aria-hidden="true" />
+				<span className="l-geo l-geo--diamond l-geo--ink right-[42%] bottom-4 max-lg:hidden" style={{ ["--i" as string]: 3 }} aria-hidden="true" />
+				<p className="l-eyebrow lc-eb">
+					<span className="q-star" aria-hidden="true" />
+					Centro de Mando
+				</p>
+				<h1 className="lc-title">Lo que la ciudad aprende: mapa del corredor</h1>
+			</header>
+			<div className="cs-grid">
 			<CorridorZoneMap
 				zones={zones}
 				floodZones={floodZones}
@@ -112,5 +123,6 @@ export function CommandCenter({
 			/>
 			<div className="cs-right">{right}</div>
 		</div>
+		</>
 	);
 }

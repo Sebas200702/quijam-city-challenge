@@ -4,6 +4,7 @@ import {
 	arroyoTitle,
 } from "../../lib/notices/notice-builders";
 import "./notices.css";
+import "../../styles/life-shell-b.css";
 
 /**
  * After the visitor answers the modal, the arroyo stays as a red band on the
@@ -13,7 +14,7 @@ import "./notices.css";
 export function ArroyoBand({ alert }: { alert: ArroyoAlert }) {
 	return (
 		// The notice text is Spanish only for now: say so, so screen readers read it right (WCAG 3.1.2).
-		<div className="q-alert q-alert--alert q-notice-band" lang="es">
+		<div className="q-alert q-alert--alert q-notice-band lsb-notice lsb-notice--band" lang="es">
 			<span className="q-alert__icon" aria-hidden="true">
 				<CloudRain size={18} strokeWidth={1.75} />
 			</span>

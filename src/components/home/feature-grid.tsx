@@ -1,4 +1,6 @@
 import { FeatureTile } from "./feature-tile";
+import "../../styles/life-shell.css";
+
 
 export interface FeatureItem {
 	id: string;
@@ -14,7 +16,7 @@ interface FeatureGridProps {
 
 export function FeatureGrid({ items }: FeatureGridProps) {
 	return (
-		<div className="grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-6">
+		<div className="ls-features grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-6">
 			{items.map((item) => (
 				<FeatureTile
 					key={item.id}

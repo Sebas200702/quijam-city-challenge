@@ -1,4 +1,5 @@
 import { Bell, CloudRain, Receipt } from "lucide-react";
+import "../../../styles/life-city-b.css";
 import type {
 	FloodZone,
 	OverchargeReport,
@@ -19,15 +20,23 @@ export function StatusRowsPanel({ floodZones, reports }: StatusRowsPanelProps) {
 	const summary = summarizeReportsByStatus(reports);
 
 	return (
-		<section className="q-panel cs-panel" aria-labelledby="cs-notices-title">
+		<section
+			className="q-panel cs-panel lcb-panel lcb-panel--bubble l-rise"
+			aria-labelledby="cs-notices-title"
+		>
 			<h2 className="q-h3 cs-ih" id="cs-notices-title">
-				<Bell size={20} strokeWidth={1.75} aria-hidden="true" />
+				<span className="lcb-chip lcb-chip--circle">
+					<Bell size={20} strokeWidth={1.75} aria-hidden="true" />
+				</span>
 				Avisos
 			</h2>
 			<ul className="cs-list" style={{ gap: 8 }}>
-				<li className="cs-row">
+				<li
+					className="cs-row lcb-row l-rise"
+					style={{ gap: 12, ["--i" as string]: 1 }}
+				>
 					<div className="cs-rowl">
-						<span className="cs-ico">
+						<span className="cs-ico l-ico--octagon">
 							<CloudRain size={20} strokeWidth={1.75} aria-hidden="true" />
 						</span>
 						<div>
@@ -48,9 +57,12 @@ export function StatusRowsPanel({ floodZones, reports }: StatusRowsPanelProps) {
 						<span className="q-badge q-badge--optimal">✓ Seguro</span>
 					)}
 				</li>
-				<li className="cs-row">
+				<li
+					className="cs-row lcb-row l-rise"
+					style={{ gap: 12, ["--i" as string]: 2 }}
+				>
 					<div className="cs-rowl">
-						<span className="cs-ico">
+						<span className="cs-ico l-ico--circle">
 							<Receipt size={20} strokeWidth={1.75} aria-hidden="true" />
 						</span>
 						<div>
@@ -63,7 +75,7 @@ export function StatusRowsPanel({ floodZones, reports }: StatusRowsPanelProps) {
 							</span>
 						</div>
 					</div>
-					<a className="q-btn q-btn--ghost" href="#cobros">
+					<a className="q-btn q-btn--ghost lcb-pill" href="#cobros">
 						Ver cobros
 					</a>
 				</li>

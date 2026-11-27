@@ -137,8 +137,16 @@ function ThreadView({
 		: null;
 	return (
 		<div className="flex max-w-3xl flex-col gap-5">
-			<article className="q-card space-y-3 px-5 py-5">
-				<div className="flex flex-wrap items-center gap-2">
+			<article className="q-card l-rise relative space-y-3 overflow-hidden rounded-[36px_36px_36px_10px]! bg-[linear-gradient(135deg,var(--gold-soft),var(--surface)_70%)]! px-5 py-6">
+				<span
+					className="l-geo l-geo--ring l-geo--gold right-6 top-5 max-lg:hidden"
+					aria-hidden="true"
+				/>
+				<span
+					className="l-geo l-geo--plus l-geo--green bottom-5 right-20 max-lg:hidden"
+					aria-hidden="true"
+				/>
+				<div className="relative z-[2] flex flex-wrap items-center gap-2">
 					<span className="q-badge q-badge--neutral">
 						{FORUM_CATEGORY_LABELS[thread.category]}
 					</span>
@@ -351,7 +359,7 @@ function ReplyComposer({
 		<form
 			id="reply-form"
 			onSubmit={submit}
-			className="q-card space-y-3 px-5 py-5"
+			className="q-card l-rise space-y-3 rounded-[10px_36px_36px_36px]! px-5 py-5"
 			noValidate
 		>
 			<label htmlFor="reply-body" className="q-eyebrow block">

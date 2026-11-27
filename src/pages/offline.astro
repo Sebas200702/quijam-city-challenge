@@ -8,6 +8,7 @@ import {
 	Trees,
 	WifiOff,
 } from "lucide-react";
+import SiteHeader from "../components/site/site-header.astro";
 import BaseLayout from "../layouts/base-layout.astro";
 
 const SECTIONS = [
@@ -19,9 +20,14 @@ const SECTIONS = [
 ---
 
 <BaseLayout title="Sin conexión · QUILLART" titleKey="offline.pageTitle" dock={false}>
-	<main class="mx-auto grid min-h-[calc(100dvh-3px)] w-full max-w-md place-items-center px-4 py-8">
-		<div class="q-state q-state--offline" role="status">
-			<span class="q-state__glyph" aria-hidden="true">
+	<SiteHeader variant="compact" links={false} cta={false} />
+	<main class="mx-auto grid min-h-[calc(100dvh-3px-76px)] w-full max-w-md place-items-center px-4 py-8">
+		<div class="relative isolate w-full overflow-hidden rounded-[36px_36px_96px_36px] bg-[linear-gradient(160deg,var(--gold-soft),var(--surface))] px-4 py-10 shadow-[inset_0_0_0_1px_color-mix(in_srgb,var(--ink)_6%,transparent)]">
+		<span class="l-geo l-geo--ring l-geo--green top-5 right-6" aria-hidden="true"></span>
+		<span class="l-geo l-geo--quarter l-geo--gold bottom-0 left-0 -z-10 opacity-60" aria-hidden="true"></span>
+		<span class="l-geo l-geo--tri top-8 left-7" aria-hidden="true"></span>
+		<div class="q-state q-state--offline l-rise" role="status">
+			<span class="q-state__glyph l-ico--burst" aria-hidden="true">
 				<WifiOff size={28} strokeWidth={1.75} />
 			</span>
 			<h1 class="q-state__title" data-i18n="offline.title">Estás sin conexión</h1>
@@ -31,15 +37,16 @@ const SECTIONS = [
 			<nav class="mt-2 grid w-full grid-cols-2 gap-2" aria-labelledby="offline-sections">
 				<span id="offline-sections" class="q-sr" data-i18n="nav.sections">Secciones</span>
 				{SECTIONS.map(({ href, key, label, Icon }) => (
-					<a href={href} class="q-btn q-btn--secondary">
+					<a href={href} class="q-btn q-btn--secondary rounded-[var(--radius-pill)]">
 						<Icon size={18} strokeWidth={1.75} aria-hidden="true" />
 						<span data-i18n={key}>{label}</span>
 					</a>
 				))}
 			</nav>
-			<button type="button" id="offline-retry" class="q-btn q-btn--primary q-state__action" data-i18n="offline.retry">
+			<button type="button" id="offline-retry" class="q-btn q-btn--primary q-state__action l-cta" data-i18n="offline.retry">
 				Reintentar
 			</button>
+		</div>
 		</div>
 	</main>
 	<script>

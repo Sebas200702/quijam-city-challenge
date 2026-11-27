@@ -68,7 +68,7 @@ export function TripCard({
 					role="status"
 					style={{ minHeight: 0, padding: "12px 8px" }}
 				>
-					<span className="q-state__glyph" aria-hidden="true">
+					<span className="q-state__glyph l-ico--burst" aria-hidden="true">
 						<Flag size={26} strokeWidth={STROKE} />
 					</span>
 					<p className="q-state__title">{copy.noRouteTitle}</p>
@@ -108,7 +108,7 @@ export function TripCard({
 			</div>
 
 			<div className="guide-trip__main">
-				<span className="guide-trip__icon" aria-hidden="true">
+				<span className="guide-trip__icon l-ico--octagon" aria-hidden="true">
 					<GreenIcon size={22} strokeWidth={STROKE} />
 				</span>
 				<div className="guide-trip__text">

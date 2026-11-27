@@ -10,6 +10,7 @@ import type { ForumThread } from "../../lib/community/community-types";
 import { useT } from "../../lib/i18n/use-language";
 import { HeldBadge } from "./community-ui";
 import { CitizenReportBadge } from "./trust-badges";
+import "../../styles/life-community-b.css";
 
 export function ThreadCard({ thread }: { thread: ForumThread }) {
 	const t = useT();
@@ -17,7 +18,7 @@ export function ThreadCard({ thread }: { thread: ForumThread }) {
 	return (
 		<a
 			href={`/foro/${thread.id}`}
-			className="q-card block min-h-11 px-5 py-4 text-inherit no-underline transition-shadow lg:hover:shadow-[var(--shadow-card)]"
+			className="q-card lc-bubble l-rise mb-2 block min-h-11 px-5 py-4 text-inherit no-underline"
 		>
 			<div className="flex flex-wrap items-center gap-2">
 				<span className="q-badge q-badge--neutral">

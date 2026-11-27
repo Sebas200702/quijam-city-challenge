@@ -3,9 +3,7 @@ import {
 	Gauge,
 	LogOut,
 	Map as MapIcon,
-	Moon,
 	Receipt,
-	Sun,
 	Trophy,
 } from "lucide-react";
 import type { ConnectionView } from "../../../lib/city-dashboard-utils";
@@ -31,36 +29,27 @@ const SECTIONS = [
 	{ href: "#informe", label: "Informe", Icon: FileText },
 ] as const;
 
-/** City dashboard header: logo, sections, city mode and live status. */
+/**
+ * City dashboard toolbar under the site header: sections, city mode, live status
+ * and sign out. The theme switch lives in the site header's secondary menu.
+ */
 export function CityShellHeader({
-	theme,
-	onThemeChange,
 	operator,
 	connection,
 	freshness,
 	modeLabel,
 }: CityShellHeaderProps) {
-	const nextTheme: ShellTheme = theme === "dark" ? "light" : "dark";
+	// Nothing to show before the operator signs in: the site header carries the brand.
+	if (!operator) return null;
 
 	return (
-		<header className="q-header cs-head">
-			<a
-				href="/ciudad"
-				className="q-logo"
-				aria-label="QUILLART, lo que la ciudad aprende, ir al inicio"
-			>
-				<span className="q-logo__tile" aria-hidden="true">
-					<span className="q-star h-5 w-5" />
-				</span>
-				<span className="q-logo__text">
-					<span className="q-logo__word">QUILLART</span>
-					<span className="q-logo__sub">
-						Lo que la ciudad aprende · Barranquilla
-					</span>
-				</span>
-			</a>
-
-			<div className="q-header__center">
+		<div
+			role="toolbar"
+			aria-label="Herramientas del tablero"
+			className="q-header cs-head"
+			style={{ position: "static" }}
+		>
+			<div className="q-header__center" style={{ justifyContent: "flex-start" }}>
 				{operator && (
 					<nav
 						className="cs-nav"
@@ -92,22 +81,6 @@ export function CityShellHeader({
 				{operator && (
 					<ConnectionBadge view={connection} freshness={freshness} />
 				)}
-				<button
-					type="button"
-					className="q-btn q-btn--ghost q-btn--icon"
-					aria-label={
-						nextTheme === "dark"
-							? "Cambiar a tema oscuro"
-							: "Cambiar a tema claro"
-					}
-					onClick={() => onThemeChange(nextTheme)}
-				>
-					{theme === "dark" ? (
-						<Sun size={20} strokeWidth={1.75} aria-hidden="true" />
-					) : (
-						<Moon size={20} strokeWidth={1.75} aria-hidden="true" />
-					)}
-				</button>
 				{operator && (
 					<button
 						type="button"
@@ -121,6 +94,6 @@ export function CityShellHeader({
 					</button>
 				)}
 			</div>
-		</header>
+		</div>
 	);
 }

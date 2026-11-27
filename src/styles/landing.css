@@ -1,0 +1,2548 @@
+/* Landing page: layout, shapes and motion (classes `l-*`).
+   Colours come from the design-system tokens only (mixed with color-mix where a
+   tint is needed), so both themes work without extra rules.
+
+   Motion is opt-in: every animation hangs from `html.l-motion`, a class the page
+   adds only when JavaScript runs and the visitor has not asked for reduced
+   motion. Without it the page is complete and static. */
+
+@property --l-angle {
+	syntax: "<angle>";
+	initial-value: 0deg;
+	inherits: false;
+}
+
+.l-page {
+	--l-ease: cubic-bezier(0.22, 1, 0.36, 1);
+	--l-bezel: var(--ink);
+	--l-mark: var(--gold);
+	--l-max: 1240px;
+}
+
+[data-theme="dark"] .l-page {
+	--l-bezel: var(--surface-raised);
+	--l-mark: color-mix(in srgb, var(--gold) 42%, transparent);
+}
+
+/* ── Shared type ── */
+.l-h2 {
+	margin: 0;
+	font-family: var(--font-display);
+	font-size: clamp(30px, 4.6vw, 52px);
+	line-height: 1.04;
+	font-weight: 700;
+	letter-spacing: -0.02em;
+	text-wrap: balance;
+}
+
+.l-eyebrow {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	width: fit-content;
+	min-height: 32px;
+	margin: 0;
+	padding: 0 14px 0 10px;
+	border-radius: var(--radius-pill);
+	background: var(--surface);
+	box-shadow: var(--shadow-card);
+	color: var(--ink-muted);
+	font-size: 12px;
+	line-height: 16px;
+	font-weight: 600;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+}
+
+.l-eyebrow .q-star {
+	width: 14px;
+	height: 14px;
+	color: var(--gold-text);
+}
+
+.l-eyebrow--sunk {
+	background: var(--bg);
+	box-shadow: inset 0 0 0 1px var(--line);
+}
+
+/* ── Scroll reveal: hidden only while motion is on, shown when `.is-in` lands ── */
+html.l-motion [data-reveal] {
+	opacity: 0;
+	transform: translateY(28px);
+	transition:
+		opacity 0.8s var(--l-ease),
+		transform 0.8s var(--l-ease);
+	transition-delay: calc(var(--i, 0) * 80ms);
+}
+
+html.l-motion [data-reveal="scale"] {
+	transform: scale(0.94);
+}
+
+html.l-motion [data-reveal="left"] {
+	transform: translateX(36px);
+}
+
+html.l-motion [data-reveal].is-in {
+	opacity: 1;
+	transform: none;
+}
+
+/* ── Header: a floating glass pill that stays on top ── */
+.l-header {
+	position: sticky;
+	top: 10px;
+	z-index: 40;
+	margin-top: 10px;
+	padding: 0 12px;
+}
+
+.l-header__bar {
+	position: relative;
+	isolation: isolate;
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	max-width: var(--l-max);
+	margin: 0 auto;
+	padding: 8px 10px 8px 16px;
+	border-radius: var(--radius-pill);
+}
+
+/* The glass sits on a pseudo-element: a backdrop-filter on the bar itself would
+   trap the fixed sheets of the secondary menu inside it. */
+.l-header__bar::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	z-index: -1;
+	border-radius: inherit;
+	background: color-mix(in srgb, var(--surface) 70%, transparent);
+	box-shadow:
+		inset 0 0 0 1px color-mix(in srgb, var(--ink) 7%, transparent),
+		var(--shadow-card);
+	-webkit-backdrop-filter: blur(18px) saturate(1.5);
+	backdrop-filter: blur(18px) saturate(1.5);
+	transition:
+		background-color 0.3s,
+		box-shadow 0.3s;
+}
+
+.l-header.is-scrolled .l-header__bar::before {
+	background: color-mix(in srgb, var(--surface) 88%, transparent);
+	box-shadow:
+		inset 0 0 0 1px color-mix(in srgb, var(--ink) 9%, transparent),
+		var(--shadow-modal);
+}
+
+.l-nav a {
+	position: relative;
+}
+
+.l-nav a::after {
+	content: "";
+	position: absolute;
+	left: 16px;
+	right: 16px;
+	bottom: 8px;
+	height: 2px;
+	border-radius: 2px;
+	background: var(--gold-text);
+	transform: scaleX(0);
+	transform-origin: left;
+	transition: transform 0.35s var(--l-ease);
+}
+
+@media (min-width: 1024px) {
+	.l-header__bar {
+		gap: 20px;
+		padding: 8px 10px 8px 20px;
+	}
+
+	.l-nav a:hover::after {
+		transform: scaleX(1);
+	}
+
+	.l-header .q-btn:hover .q-star {
+		transform: rotate(90deg);
+	}
+}
+
+.l-header .q-btn .q-star {
+	width: 14px;
+	height: 14px;
+	color: var(--gold-text);
+	transition: transform 0.5s var(--l-ease);
+}
+
+/* ── Hero: a rounded canvas with the question on one side and a live scene on the other ── */
+.l-hero {
+	padding: 12px 12px 0;
+}
+
+.l-hero__canvas {
+	position: relative;
+	isolation: isolate;
+	overflow: hidden;
+	display: grid;
+	gap: 12px;
+	max-width: var(--l-max);
+	margin: 0 auto;
+	padding: 28px 18px 0;
+	border-radius: 32px;
+	background: linear-gradient(
+		160deg,
+		var(--gold-soft),
+		color-mix(in srgb, var(--gold-soft) 50%, var(--surface)) 55%,
+		var(--surface)
+	);
+	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 6%, transparent);
+}
+
+/* Soft colour glows and a dot grid behind everything. */
+.l-hero__glow {
+	position: absolute;
+	z-index: -1;
+	border-radius: 50%;
+	filter: blur(64px);
+	pointer-events: none;
+}
+
+.l-hero__glow--green {
+	left: -8%;
+	bottom: -18%;
+	width: 46%;
+	aspect-ratio: 1;
+	background: color-mix(in srgb, var(--green) 26%, transparent);
+}
+
+.l-hero__glow--red {
+	right: -6%;
+	top: -22%;
+	width: 38%;
+	aspect-ratio: 1;
+	background: color-mix(in srgb, var(--red) 16%, transparent);
+}
+
+.l-hero__dots {
+	position: absolute;
+	inset: 0;
+	z-index: -1;
+	background-image: radial-gradient(
+		color-mix(in srgb, var(--ink) 16%, transparent) 1px,
+		transparent 1.5px
+	);
+	background-size: 22px 22px;
+	-webkit-mask-image: radial-gradient(
+		ellipse at 72% 55%,
+		#000,
+		transparent 62%
+	);
+	mask-image: radial-gradient(ellipse at 72% 55%, #000, transparent 62%);
+	pointer-events: none;
+}
+
+.l-hero__copy {
+	position: relative;
+	z-index: 2;
+	display: flex;
+	flex-direction: column;
+	gap: 18px;
+	min-width: 0;
+	padding: 4px 4px 0;
+}
+
+.l-hero__title {
+	margin: 0;
+	font-family: var(--font-display);
+	font-size: clamp(40px, 11.5vw, 56px);
+	line-height: 1.02;
+	font-weight: 700;
+	letter-spacing: -0.03em;
+}
+
+.l-line {
+	display: block;
+}
+
+/* Marker stroke under the key words; it follows the text when it wraps. */
+.l-mark {
+	margin: 0 -0.08em;
+	padding: 0 0.08em;
+	border-radius: 0.14em;
+	background:
+		linear-gradient(var(--l-mark), var(--l-mark)) no-repeat 0 86% / 100% 36%;
+	-webkit-box-decoration-break: clone;
+	box-decoration-break: clone;
+}
+
+.l-hero__lead {
+	margin: 0;
+	max-width: 30ch;
+	color: var(--ink-muted);
+	font-size: 17px;
+	line-height: 26px;
+}
+
+/* Ask box with a slow tricolour halo: the one primary action of the page. */
+.l-ask {
+	position: relative;
+	isolation: isolate;
+	max-width: 520px;
+	border-radius: var(--radius-pill);
+}
+
+.l-ask::before {
+	content: "";
+	position: absolute;
+	inset: -3px;
+	z-index: -1;
+	border-radius: inherit;
+	background: conic-gradient(
+		from var(--l-angle),
+		var(--red),
+		var(--gold),
+		var(--green),
+		var(--gold),
+		var(--red)
+	);
+	filter: blur(10px);
+	opacity: 0.5;
+}
+
+.l-ask .q-prompt {
+	min-height: 64px;
+	padding: 6px 6px 6px 22px;
+	border-color: transparent;
+	box-shadow: var(--shadow-card);
+}
+
+.l-ask .q-prompt input {
+	height: 52px;
+	font-size: 17px;
+}
+
+.l-ask .q-btn--icon {
+	width: 52px;
+	min-height: 52px;
+}
+
+.l-chips .q-chip {
+	transition:
+		transform 0.3s var(--l-ease),
+		box-shadow 0.2s;
+}
+
+/* Scene: sun, phone and floating cards. Decorative, hidden from assistive tech. */
+.l-stage {
+	position: relative;
+	height: 380px;
+	margin: 0 -18px;
+}
+
+.l-sun {
+	position: absolute;
+	left: 50%;
+	bottom: -42%;
+	width: min(112%, 540px);
+	aspect-ratio: 1;
+	translate: -50% 0;
+	border-radius: 50%;
+	background: radial-gradient(
+		circle at 50% 30%,
+		var(--gold),
+		color-mix(in srgb, var(--gold) 80%, var(--red)) 115%
+	);
+}
+
+.l-sun i {
+	position: absolute;
+	inset: 0;
+	border-radius: 50%;
+	border: 1.5px solid color-mix(in srgb, var(--gold) 75%, transparent);
+	opacity: 0.6;
+	transform: scale(1.14);
+}
+
+.l-sun i:nth-child(2) {
+	opacity: 0.4;
+	transform: scale(1.3);
+}
+
+.l-sun i:nth-child(3) {
+	opacity: 0.2;
+	transform: scale(1.46);
+}
+
+.l-phone {
+	position: absolute;
+	left: 50%;
+	bottom: -64px;
+	z-index: 1;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	width: 232px;
+	height: 404px;
+	padding: 14px 12px;
+	overflow: hidden;
+	border-radius: 38px;
+	background: var(--bg);
+	box-shadow:
+		0 0 0 8px var(--l-bezel),
+		0 0 0 9px var(--line-control),
+		var(--shadow-modal);
+	translate: calc(-50% + var(--px, 0px)) var(--py, 0px);
+	transition: translate 0.5s ease-out;
+}
+
+.l-phone__bar {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 0 2px 8px;
+	border-bottom: 1px solid var(--line);
+	font-family: var(--font-display);
+	font-size: 14px;
+	font-weight: 600;
+}
+
+.l-phone__bar .q-avatar {
+	width: 28px;
+	height: 28px;
+	border-radius: 10px;
+}
+
+.l-phone__bar .q-avatar .q-star {
+	width: 15px;
+	height: 15px;
+}
+
+.l-phone__live {
+	display: grid;
+	place-items: center;
+	margin-left: auto;
+	color: var(--green-text);
+}
+
+.l-phone__chat {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	min-height: 0;
+}
+
+.l-bubble {
+	max-width: 90%;
+	padding: 9px 12px;
+	border-radius: 16px;
+	font-size: 12.5px;
+	line-height: 17px;
+	font-weight: 600;
+}
+
+.l-bubble--user {
+	align-self: flex-end;
+	border-bottom-right-radius: 5px;
+	background: var(--gold);
+	color: var(--on-gold);
+	transform-origin: 100% 100%;
+}
+
+.l-reply {
+	display: grid;
+	justify-items: start;
+}
+
+.l-reply > * {
+	grid-area: 1 / 1;
+}
+
+.l-bubble--ai {
+	display: flex;
+	align-items: center;
+	gap: 7px;
+	border-bottom-left-radius: 5px;
+	background: var(--surface-raised);
+	box-shadow: var(--shadow-card);
+	transform-origin: 0 100%;
+}
+
+.l-bubble--ai .q-star {
+	width: 13px;
+	height: 13px;
+	color: var(--gold-text);
+}
+
+/* The "thinking" bubble only shows while the scene is animated. */
+.l-bubble--think {
+	display: none;
+	align-self: center;
+	padding: 12px 14px;
+	border-bottom-left-radius: 5px;
+	background: var(--surface-raised);
+	box-shadow: var(--shadow-card);
+}
+
+.l-result {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 7px;
+	border-radius: 16px;
+	background: var(--surface-raised);
+	box-shadow: var(--shadow-card);
+}
+
+.l-result__thumb {
+	display: grid;
+	place-items: center;
+	flex: none;
+	width: 46px;
+	height: 46px;
+	border-radius: 12px;
+	background: var(--illus);
+}
+
+.l-result__thumb img {
+	display: block;
+	width: 36px;
+	height: 36px;
+	object-fit: contain;
+}
+
+.l-result__lines {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	gap: 6px;
+	min-width: 0;
+}
+
+.l-result__lines i {
+	display: block;
+	width: 78%;
+	height: 7px;
+	border-radius: var(--radius-pill);
+	background: var(--line-control);
+	opacity: 0.55;
+}
+
+.l-result__lines i + i {
+	width: 48%;
+	background: var(--line);
+	opacity: 1;
+}
+
+.l-result__ok {
+	display: grid;
+	place-items: center;
+	flex: none;
+	width: 24px;
+	height: 24px;
+	margin-right: 3px;
+	border-radius: 50%;
+	background: var(--green);
+	color: var(--on-green);
+}
+
+/* Floating agent cards: tilt with `rotate`, follow the pointer with `translate`,
+   pop in with `scale` and bob with `transform`, so the four never fight. */
+.l-float {
+	position: absolute;
+	z-index: 2;
+	display: flex;
+	align-items: center;
+	gap: 9px;
+	padding: 7px 14px 7px 7px;
+	border-radius: 18px;
+	background: color-mix(in srgb, var(--surface-raised) 84%, transparent);
+	box-shadow:
+		inset 0 0 0 1px color-mix(in srgb, var(--ink) 6%, transparent),
+		var(--shadow-modal);
+	-webkit-backdrop-filter: blur(12px);
+	backdrop-filter: blur(12px);
+	color: var(--ink);
+	font-size: 12px;
+	line-height: 16px;
+	font-weight: 600;
+	white-space: nowrap;
+	rotate: var(--r, 0deg);
+	translate: var(--px, 0px) var(--py, 0px);
+	transition: translate 0.5s ease-out;
+}
+
+.l-float .q-tile {
+	width: 34px;
+	height: 34px;
+	border-radius: 12px;
+}
+
+.l-float--a {
+	left: 3%;
+	top: -8px;
+	--r: -5deg;
+	--d: 5.5s;
+}
+
+.l-float--b {
+	right: 2%;
+	top: 60%;
+	--r: 4deg;
+	--d: 6.5s;
+}
+
+.l-float--c,
+.l-float--d {
+	display: none;
+}
+
+/* Round seal with the brand running around a star. */
+.l-seal {
+	display: none;
+	position: absolute;
+	z-index: 3;
+	width: 112px;
+	height: 112px;
+	color: var(--ink);
+}
+
+.l-seal svg {
+	display: block;
+	width: 100%;
+	height: 100%;
+}
+
+.l-seal text {
+	fill: currentColor;
+	font-family: var(--font-display);
+	font-size: 11.5px;
+	font-weight: 600;
+	letter-spacing: 0.14em;
+}
+
+.l-seal .q-star {
+	position: absolute;
+	inset: 0;
+	width: 34px;
+	height: 34px;
+	margin: auto;
+	color: var(--red);
+}
+
+@media (min-width: 1024px) {
+	.l-hero {
+		padding: 16px 32px 0;
+	}
+
+	.l-hero__canvas {
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+		gap: 16px;
+		min-height: 640px;
+		padding: 0 20px 0 64px;
+		border-radius: 48px;
+	}
+
+	.l-hero__copy {
+		justify-content: center;
+		gap: 24px;
+		padding: 72px 0;
+	}
+
+	.l-hero__title {
+		font-size: clamp(56px, 5.4vw, 72px);
+	}
+
+	.l-hero__lead {
+		max-width: 34ch;
+		font-size: 19px;
+		line-height: 28px;
+	}
+
+	.l-chips .q-chip:hover {
+		transform: translateY(-3px);
+	}
+
+	.l-stage {
+		height: auto;
+		min-height: 600px;
+		margin: 0;
+	}
+
+	.l-sun {
+		bottom: -34%;
+		width: min(104%, 580px);
+	}
+
+	.l-phone {
+		bottom: -72px;
+		gap: 12px;
+		width: 272px;
+		height: 548px;
+		padding: 18px 14px;
+		border-radius: 46px;
+		box-shadow:
+			0 0 0 10px var(--l-bezel),
+			0 0 0 11px var(--line-control),
+			var(--shadow-modal);
+	}
+
+	.l-bubble {
+		padding: 10px 13px;
+		font-size: 13.5px;
+		line-height: 19px;
+	}
+
+	.l-result__thumb {
+		width: 54px;
+		height: 54px;
+	}
+
+	.l-result__thumb img {
+		width: 42px;
+		height: 42px;
+	}
+
+	.l-float {
+		gap: 10px;
+		padding: 9px 18px 9px 9px;
+		border-radius: 22px;
+		font-size: 14px;
+		line-height: 18px;
+	}
+
+	.l-float .q-tile {
+		width: 40px;
+		height: 40px;
+		border-radius: 14px;
+	}
+
+	.l-float--a {
+		left: -3%;
+		top: 37%;
+	}
+
+	.l-float--b {
+		right: -1%;
+		top: 55%;
+	}
+
+	.l-float--c {
+		display: flex;
+		left: 1%;
+		bottom: 9%;
+		--r: 3deg;
+		--d: 7s;
+	}
+
+	.l-float--d {
+		display: flex;
+		left: 7%;
+		top: 9%;
+		--r: 4deg;
+		--d: 6s;
+	}
+
+	.l-seal {
+		display: block;
+		right: 26px;
+		top: 26px;
+	}
+}
+
+/* ── Marquee: two crossing bands of example questions ── */
+.l-marquee {
+	position: relative;
+	height: 150px;
+	margin-top: 28px;
+}
+
+.l-marquee__band {
+	position: absolute;
+	left: -6%;
+	right: -6%;
+	top: 50%;
+	overflow: hidden;
+	padding: 13px 0;
+	font-family: var(--font-display);
+	font-size: 18px;
+	line-height: 24px;
+	font-weight: 600;
+	white-space: nowrap;
+}
+
+.l-marquee__band--front {
+	z-index: 1;
+	background: var(--action);
+	color: var(--on-action);
+	box-shadow: var(--shadow-modal);
+	transform: translateY(-50%) rotate(-2.2deg);
+}
+
+.l-marquee__band--back {
+	background: var(--gold-soft);
+	color: var(--gold-text);
+	transform: translateY(-50%) rotate(1.8deg);
+}
+
+.l-marquee__track {
+	display: flex;
+	width: max-content;
+}
+
+.l-marquee__track ul {
+	display: flex;
+	flex: none;
+	align-items: center;
+	gap: 28px;
+	margin: 0;
+	padding: 0 14px;
+	list-style: none;
+}
+
+.l-marquee__track li {
+	display: flex;
+	align-items: center;
+	gap: 28px;
+}
+
+.l-marquee .q-star {
+	width: 18px;
+	height: 18px;
+	color: var(--gold);
+}
+
+[data-theme="dark"] .l-marquee__band--front .q-star {
+	color: var(--on-action);
+}
+
+.l-marquee__band--back .q-star {
+	color: var(--red);
+}
+
+@media (min-width: 1024px) {
+	.l-marquee {
+		height: 200px;
+		margin-top: 40px;
+	}
+
+	.l-marquee__band {
+		padding: 18px 0;
+		font-size: 26px;
+		line-height: 32px;
+	}
+}
+
+/* ── Agents: a bento of tiles with different sizes, colours and shapes ── */
+.l-tile {
+	--l-tile-bg: var(--surface);
+	--l-tile-ink: var(--ink);
+	position: relative;
+	isolation: isolate;
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	height: 100%;
+	padding: 12px;
+	overflow: hidden;
+	border-radius: 26px;
+	background: var(--l-tile-bg);
+	box-shadow: var(--shadow-card);
+	color: var(--l-tile-ink);
+	text-decoration: none;
+	transition:
+		transform 0.5s var(--l-ease),
+		box-shadow 0.5s var(--l-ease);
+}
+
+.l-tile--gold {
+	--l-tile-bg: var(--gold);
+	--l-tile-ink: var(--on-gold);
+}
+
+.l-tile--green {
+	--l-tile-bg: var(--green-soft);
+}
+
+.l-tile--red {
+	--l-tile-bg: var(--red-soft);
+}
+
+/* The contrast tile: inverted against whichever theme is on. */
+.l-tile--ink {
+	--l-tile-bg: var(--ink);
+	--l-tile-ink: var(--bg);
+}
+
+.l-tile__text {
+	z-index: 1;
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	justify-content: space-between;
+	gap: 10px;
+	min-width: 0;
+	padding: 0 4px 4px;
+}
+
+.l-tile__title {
+	margin: 0;
+	font-family: var(--font-display);
+	font-size: 17px;
+	line-height: 1.12;
+	font-weight: 700;
+	letter-spacing: -0.01em;
+	text-wrap: balance;
+}
+
+.l-tile__foot {
+	display: flex;
+	align-items: flex-end;
+	justify-content: space-between;
+	gap: 8px;
+}
+
+.l-tile__quote {
+	display: -webkit-box;
+	overflow: hidden;
+	color: color-mix(in srgb, var(--l-tile-ink) 74%, transparent);
+	font-size: 12.5px;
+	line-height: 17px;
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 2;
+	line-clamp: 2;
+}
+
+.l-tile__go {
+	display: grid;
+	place-items: center;
+	flex: none;
+	width: 36px;
+	height: 36px;
+	border-radius: 50%;
+	background: var(--l-tile-ink);
+	color: var(--l-tile-bg);
+	transition: transform 0.5s var(--l-ease);
+}
+
+/* Illustration panel: always the warm cream, in a different shape per tile. */
+.l-art {
+	display: grid;
+	place-items: center;
+	flex: none;
+	align-self: center;
+	width: 100%;
+	height: 112px;
+	overflow: hidden;
+	border-radius: 20px;
+	background: var(--illus);
+	transition:
+		transform 0.7s var(--l-ease),
+		border-radius 0.7s var(--l-ease);
+}
+
+.l-art img {
+	display: block;
+	width: auto;
+	max-width: 84%;
+	height: 84%;
+	object-fit: contain;
+	transition: transform 0.7s var(--l-ease);
+}
+
+.l-art--circle {
+	width: 112px;
+	border-radius: 50%;
+}
+
+.l-art--arch {
+	border-radius: 999px 999px 20px 20px;
+}
+
+.l-tile--row {
+	flex-direction: row-reverse;
+	align-items: stretch;
+}
+
+.l-tile--row .l-art {
+	width: 42%;
+	height: 124px;
+}
+
+.l-tile--row .l-art--circle {
+	width: 124px;
+}
+
+.l-tile--row .l-tile__text {
+	padding: 6px 4px 4px 6px;
+}
+
+.l-tile--row .l-tile__title {
+	font-size: 22px;
+}
+
+/* Decorations inside two of the tiles. */
+.l-tile__star {
+	position: absolute;
+	left: -46px;
+	bottom: -70px;
+	z-index: -1;
+	width: 220px;
+	height: 220px;
+	color: color-mix(in srgb, var(--l-tile-ink) 8%, transparent);
+}
+
+.l-tile__route {
+	position: absolute;
+	inset: 0;
+	z-index: -1;
+	width: 100%;
+	height: 100%;
+}
+
+.l-tile__route path {
+	fill: none;
+	stroke: var(--gold);
+	stroke-width: 3;
+	stroke-linecap: round;
+	stroke-dasharray: 2 12;
+	opacity: 0.75;
+}
+
+@media (min-width: 1024px) {
+	.l-tile,
+	.l-tile--row {
+		flex-direction: row-reverse;
+		align-items: stretch;
+		gap: 20px;
+		min-height: 300px;
+		padding: 28px;
+		border-radius: 36px;
+	}
+
+	.l-tile__text,
+	.l-tile--row .l-tile__text {
+		padding: 4px 0;
+	}
+
+	.l-tile__title,
+	.l-tile--row .l-tile__title {
+		font-size: 32px;
+	}
+
+	.l-tile__quote {
+		font-size: 15px;
+		line-height: 22px;
+	}
+
+	.l-tile__go {
+		width: 52px;
+		height: 52px;
+	}
+
+	.l-art,
+	.l-tile--row .l-art {
+		width: 44%;
+		height: auto;
+		align-self: stretch;
+		border-radius: 28px;
+	}
+
+	.l-art--circle,
+	.l-tile--row .l-art--circle {
+		width: auto;
+		height: 232px;
+		aspect-ratio: 1;
+		align-self: center;
+		border-radius: 50%;
+	}
+
+	.l-art--arch {
+		border-radius: 999px 999px 28px 28px;
+	}
+
+	.l-tile:hover {
+		box-shadow: var(--shadow-modal);
+		transform: translateY(-6px);
+	}
+
+	.l-tile:hover .l-tile__go {
+		transform: rotate(45deg) scale(1.08);
+	}
+
+	.l-tile:hover .l-art img {
+		transform: scale(1.08) rotate(-2deg);
+	}
+}
+
+/* ── How it works: a timeline that fills as you scroll ── */
+.l-how {
+	display: grid;
+	gap: 32px;
+	max-width: var(--l-max);
+	margin: 0 auto;
+	padding: 36px 20px;
+	border-radius: 32px;
+	background: var(--surface);
+	box-shadow: var(--shadow-card);
+}
+
+.l-how__intro {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+}
+
+.l-round-art {
+	position: relative;
+	display: grid;
+	place-items: center;
+	width: min(72%, 320px);
+	aspect-ratio: 1;
+	margin: 22px auto 0;
+	border-radius: 50%;
+	background: var(--illus);
+}
+
+.l-round-art img {
+	display: block;
+	width: 68%;
+	height: auto;
+}
+
+.l-orbit {
+	position: absolute;
+	inset: -16px;
+	border: 1.5px dashed var(--line-control);
+	border-radius: 50%;
+}
+
+.l-orbit .q-star {
+	position: absolute;
+	left: 50%;
+	top: -11px;
+	width: 22px;
+	height: 22px;
+	margin-left: -11px;
+	color: var(--gold-text);
+}
+
+.l-voice {
+	position: absolute;
+	right: -6%;
+	bottom: 8%;
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 10px 16px 10px 12px;
+	border-radius: var(--radius-pill);
+	background: var(--action);
+	box-shadow: var(--shadow-modal);
+	color: var(--on-action);
+}
+
+.l-wave {
+	display: inline-flex;
+	align-items: center;
+	gap: 3px;
+	height: 20px;
+}
+
+.l-wave i {
+	width: 3px;
+	height: 100%;
+	border-radius: 3px;
+	background: currentColor;
+	transform: scaleY(0.4);
+}
+
+.l-wave i:nth-child(2) {
+	--n: 1;
+	transform: scaleY(0.9);
+}
+
+.l-wave i:nth-child(3) {
+	--n: 2;
+	transform: scaleY(0.6);
+}
+
+.l-wave i:nth-child(4) {
+	--n: 3;
+	transform: scaleY(1);
+}
+
+.l-wave i:nth-child(5) {
+	--n: 4;
+	transform: scaleY(0.5);
+}
+
+.l-steps {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	gap: 14px;
+	margin: 0;
+	padding: 0 0 0 40px;
+	list-style: none;
+}
+
+.l-steps::before,
+.l-steps::after {
+	content: "";
+	position: absolute;
+	left: 13px;
+	top: 44px;
+	bottom: 44px;
+	width: 2px;
+	border-radius: 2px;
+	background: var(--line);
+}
+
+.l-steps::after {
+	background: var(--green);
+	transform: scaleY(var(--p, 1));
+	transform-origin: top;
+}
+
+.l-step {
+	position: relative;
+	display: flex;
+	align-items: center;
+	gap: 14px;
+	padding: 16px;
+	border-radius: 26px;
+	background: var(--bg);
+}
+
+.l-step::before {
+	content: "";
+	position: absolute;
+	left: -34px;
+	top: 50%;
+	z-index: 1;
+	width: 16px;
+	height: 16px;
+	margin-top: -8px;
+	border-radius: 50%;
+	background: var(--green);
+	box-shadow: 0 0 0 4px var(--green-soft);
+	transition:
+		background-color 0.4s,
+		box-shadow 0.4s;
+}
+
+.l-step__title {
+	min-width: 0;
+	font-family: var(--font-display);
+	font-size: 18px;
+	line-height: 24px;
+	font-weight: 600;
+}
+
+.l-step__num {
+	margin-left: auto;
+	padding-left: 8px;
+	color: transparent;
+	font-family: var(--font-display);
+	font-size: 40px;
+	line-height: 1;
+	font-weight: 700;
+	-webkit-text-stroke: 1.5px var(--line-control);
+}
+
+@media (min-width: 1024px) {
+	.l-how {
+		grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+		gap: 64px;
+		padding: 72px 64px;
+		border-radius: 48px;
+	}
+
+	.l-round-art {
+		width: min(78%, 340px);
+		margin: 36px 0 0 16px;
+	}
+
+	.l-steps {
+		gap: 18px;
+		padding-left: 52px;
+	}
+
+	.l-steps::before,
+	.l-steps::after {
+		left: 15px;
+		top: 56px;
+		bottom: 56px;
+	}
+
+	.l-step {
+		gap: 20px;
+		padding: 24px 28px 24px 24px;
+		border-radius: 32px;
+		transition: transform 0.5s var(--l-ease);
+	}
+
+	.l-step::before {
+		left: -44px;
+	}
+
+	.l-step__title {
+		font-size: 24px;
+		line-height: 30px;
+	}
+
+	.l-step__num {
+		font-size: 60px;
+	}
+
+	.l-step:hover .l-step__num {
+		color: var(--gold);
+		-webkit-text-stroke-color: var(--gold-text);
+	}
+}
+
+/* ── Trust ── */
+.l-trust li {
+	transition: transform 0.5s var(--l-ease);
+}
+
+@media (min-width: 1024px) {
+	.l-trust li:hover {
+		transform: translateX(8px);
+	}
+}
+
+/* ── Closing band ── */
+.l-join {
+	position: relative;
+	isolation: isolate;
+	overflow: hidden;
+	display: grid;
+	align-items: center;
+	gap: 24px;
+	max-width: var(--l-max);
+	margin: 0 auto;
+	padding: 40px 24px 32px;
+	border-radius: 32px;
+	background: var(--gold);
+	color: var(--on-gold);
+}
+
+.l-join__title {
+	margin: 0;
+	font-family: var(--font-display);
+	font-size: clamp(38px, 6.4vw, 68px);
+	line-height: 1.02;
+	font-weight: 700;
+	letter-spacing: -0.03em;
+}
+
+.l-join__star {
+	position: absolute;
+	right: -90px;
+	top: -130px;
+	z-index: -1;
+	width: 420px;
+	height: 420px;
+	color: color-mix(in srgb, var(--on-gold) 8%, transparent);
+}
+
+.l-cta svg {
+	transition: transform 0.35s var(--l-ease);
+}
+
+@media (min-width: 1024px) {
+	.l-join {
+		grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+		padding: 80px 72px;
+		border-radius: 48px;
+	}
+
+	.l-cta:hover svg {
+		transform: translateX(4px);
+	}
+}
+
+/* ── Footer wordmark ── */
+.l-wordmark {
+	overflow: hidden;
+	margin: 0 0 -0.16em;
+	background: linear-gradient(
+		color-mix(in srgb, var(--ink) 14%, transparent),
+		transparent 88%
+	);
+	-webkit-background-clip: text;
+	background-clip: text;
+	color: transparent;
+	font-family: var(--font-display);
+	font-size: clamp(64px, 19.5vw, 300px);
+	line-height: 0.86;
+	font-weight: 700;
+	letter-spacing: -0.03em;
+	text-align: center;
+	white-space: nowrap;
+	user-select: none;
+}
+
+/* ── Motion: everything below runs only with `html.l-motion` ── */
+html.l-motion .l-rise {
+	animation: l-rise 0.9s var(--l-ease) calc(var(--i, 0) * 90ms) both;
+}
+
+html.l-motion .l-mark {
+	animation: l-mark 0.9s var(--l-ease) 0.65s both;
+}
+
+html.l-motion .l-ask::before {
+	animation: l-angle 6s linear infinite;
+}
+
+html.l-motion .l-hero__glow {
+	animation: l-drift 14s ease-in-out infinite alternate;
+}
+
+html.l-motion .l-hero__glow--red {
+	animation-duration: 18s;
+	animation-direction: alternate-reverse;
+}
+
+html.l-motion .l-sun {
+	animation: l-sun 1.4s var(--l-ease) 0.1s both;
+}
+
+html.l-motion .l-sun i {
+	animation: l-ring 7.5s linear infinite;
+}
+
+html.l-motion .l-sun i:nth-child(2) {
+	animation-delay: -2.5s;
+}
+
+html.l-motion .l-sun i:nth-child(3) {
+	animation-delay: -5s;
+}
+
+html.l-motion .l-phone {
+	animation: l-phone 1.2s var(--l-ease) 0.2s both;
+}
+
+html.l-motion .l-bubble--user {
+	animation: l-chat-user 12s var(--l-ease) infinite both;
+}
+
+html.l-motion .l-bubble--think {
+	display: flex;
+	animation: l-chat-think 12s var(--l-ease) infinite both;
+}
+
+html.l-motion .l-bubble--ai {
+	animation: l-chat-ai 12s var(--l-ease) infinite both;
+}
+
+html.l-motion .l-result {
+	animation: l-chat-r1 12s var(--l-ease) infinite both;
+}
+
+html.l-motion .l-result:nth-of-type(2) {
+	animation-name: l-chat-r2;
+}
+
+html.l-motion .l-result:nth-of-type(3) {
+	animation-name: l-chat-r3;
+}
+
+html.l-motion .l-float {
+	animation:
+		l-pop 0.8s var(--l-ease) calc(0.7s + var(--i, 0) * 0.14s) both,
+		l-bob var(--d, 6s) ease-in-out calc(var(--i, 0) * -1.3s) infinite alternate;
+}
+
+html.l-motion .l-seal svg,
+html.l-motion .l-orbit {
+	animation: l-rotate 26s linear infinite;
+}
+
+html.l-motion .l-join__star,
+html.l-motion .l-tile__star {
+	animation: l-rotate 60s linear infinite;
+}
+
+html.l-motion .l-marquee__track {
+	animation: l-marquee 44s linear infinite;
+}
+
+html.l-motion .l-marquee__band--back .l-marquee__track {
+	animation-duration: 58s;
+	animation-direction: reverse;
+}
+
+html.l-motion .l-marquee:hover .l-marquee__track {
+	animation-play-state: paused;
+}
+
+html.l-motion .l-tile__route path {
+	animation: l-dash 1.4s linear infinite;
+}
+
+html.l-motion .l-wave i {
+	animation: l-wave 0.9s ease-in-out calc(var(--n, 0) * -0.22s) infinite
+		alternate;
+}
+
+html.l-motion .l-join img {
+	animation: l-bob 5s ease-in-out infinite alternate;
+}
+
+/* The timeline dots light up as each step arrives. */
+html.l-motion .l-step:not(.is-in)::before {
+	background: var(--surface);
+	box-shadow: 0 0 0 2px var(--line-control);
+}
+
+/* Closing title: the ink sweeps over the words while the band scrolls in. */
+@supports (animation-timeline: view()) {
+	html.l-motion .l-wipe {
+		background:
+			linear-gradient(
+				90deg,
+				var(--on-gold) 50%,
+				color-mix(in srgb, var(--on-gold) 24%, transparent) 50%
+			)
+			100% 0 / 200% 100% no-repeat;
+		-webkit-background-clip: text;
+		background-clip: text;
+		-webkit-text-fill-color: transparent;
+		animation: l-wipe linear both;
+		animation-timeline: view();
+		animation-range: entry 10% cover 40%;
+	}
+}
+
+@keyframes l-rise {
+	from {
+		opacity: 0;
+		filter: blur(8px);
+		transform: translateY(26px);
+	}
+}
+
+@keyframes l-mark {
+	from {
+		background-size: 0% 36%;
+	}
+}
+
+@keyframes l-angle {
+	to {
+		--l-angle: 360deg;
+	}
+}
+
+@keyframes l-drift {
+	to {
+		transform: translate(8%, -10%) scale(1.15);
+	}
+}
+
+@keyframes l-sun {
+	from {
+		opacity: 0;
+		transform: translateY(30%) scale(0.86);
+	}
+}
+
+@keyframes l-ring {
+	from {
+		opacity: 0.85;
+		transform: scale(1);
+	}
+
+	to {
+		opacity: 0;
+		transform: scale(1.6);
+	}
+}
+
+@keyframes l-phone {
+	from {
+		opacity: 0;
+		transform: translateY(90px) rotate(5deg);
+	}
+}
+
+@keyframes l-chat-user {
+	0%,
+	4% {
+		opacity: 0;
+		transform: translateY(10px) scale(0.86);
+	}
+
+	8%,
+	94% {
+		opacity: 1;
+		transform: none;
+	}
+
+	100% {
+		opacity: 0;
+		transform: none;
+	}
+}
+
+@keyframes l-chat-think {
+	0%,
+	12% {
+		opacity: 0;
+		transform: scale(0.8);
+	}
+
+	15%,
+	27% {
+		opacity: 1;
+		transform: none;
+	}
+
+	30%,
+	100% {
+		opacity: 0;
+		transform: scale(0.8);
+	}
+}
+
+@keyframes l-chat-ai {
+	0%,
+	29% {
+		opacity: 0;
+		transform: translateY(10px) scale(0.86);
+	}
+
+	33%,
+	94% {
+		opacity: 1;
+		transform: none;
+	}
+
+	100% {
+		opacity: 0;
+		transform: none;
+	}
+}
+
+@keyframes l-chat-r1 {
+	0%,
+	36% {
+		opacity: 0;
+		transform: translateY(14px);
+	}
+
+	40%,
+	94% {
+		opacity: 1;
+		transform: none;
+	}
+
+	100% {
+		opacity: 0;
+		transform: none;
+	}
+}
+
+@keyframes l-chat-r2 {
+	0%,
+	41% {
+		opacity: 0;
+		transform: translateY(14px);
+	}
+
+	45%,
+	94% {
+		opacity: 1;
+		transform: none;
+	}
+
+	100% {
+		opacity: 0;
+		transform: none;
+	}
+}
+
+@keyframes l-chat-r3 {
+	0%,
+	46% {
+		opacity: 0;
+		transform: translateY(14px);
+	}
+
+	50%,
+	94% {
+		opacity: 1;
+		transform: none;
+	}
+
+	100% {
+		opacity: 0;
+		transform: none;
+	}
+}
+
+@keyframes l-pop {
+	from {
+		opacity: 0;
+		scale: 0.6;
+	}
+}
+
+@keyframes l-bob {
+	from {
+		transform: translateY(-7px);
+	}
+
+	to {
+		transform: translateY(7px);
+	}
+}
+
+@keyframes l-twinkle {
+	0%,
+	100% {
+		opacity: 1;
+		transform: scale(1) rotate(0);
+	}
+
+	50% {
+		opacity: 0.35;
+		transform: scale(0.6) rotate(45deg);
+	}
+}
+
+@keyframes l-rotate {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+@keyframes l-marquee {
+	to {
+		transform: translateX(-50%);
+	}
+}
+
+@keyframes l-dash {
+	to {
+		stroke-dashoffset: -28;
+	}
+}
+
+@keyframes l-wave {
+	from {
+		transform: scaleY(0.25);
+	}
+
+	to {
+		transform: scaleY(1);
+	}
+}
+
+@keyframes l-wipe {
+	to {
+		background-position: 0 0;
+	}
+}
+
+/* ── Shape variety ──
+   No two blocks share a silhouette. Tiles: ticket, speech bubble, leaf, notched
+   corner, cut corners and a "D". Pictures: burst, arch, leaf, map pin, octagon
+   and circle. Around them, loose geometric confetti in the flag colours. */
+
+/* Confetti pieces: `color` paints them, `rotate` tilts them. */
+.l-geo {
+	position: absolute;
+	z-index: 1;
+	display: block;
+	color: var(--red);
+	pointer-events: none;
+	translate: var(--px, 0px) var(--py, 0px);
+	transition: translate 0.5s ease-out;
+}
+
+.l-geo--gold {
+	color: var(--gold);
+}
+
+.l-geo--green {
+	color: var(--green);
+}
+
+.l-geo--ink {
+	color: var(--ink);
+}
+
+.l-geo--ring {
+	width: 34px;
+	height: 34px;
+	border: 7px solid currentColor;
+	border-radius: 50%;
+}
+
+.l-geo--half {
+	width: 52px;
+	height: 26px;
+	border-radius: 52px 52px 0 0;
+	background: currentColor;
+}
+
+.l-geo--quarter {
+	width: 64px;
+	height: 64px;
+	border-radius: 0 100% 0 0;
+	background: currentColor;
+}
+
+.l-geo--tri {
+	width: 30px;
+	height: 27px;
+	background: currentColor;
+	clip-path: polygon(50% 0, 100% 100%, 0 100%);
+}
+
+.l-geo--plus {
+	width: 26px;
+	height: 26px;
+	background: currentColor;
+	clip-path: polygon(
+		36% 0,
+		64% 0,
+		64% 36%,
+		100% 36%,
+		100% 64%,
+		64% 64%,
+		64% 100%,
+		36% 100%,
+		36% 64%,
+		0 64%,
+		0 36%,
+		36% 36%
+	);
+}
+
+.l-geo--diamond {
+	width: 20px;
+	height: 20px;
+	border-radius: 4px;
+	background: currentColor;
+	rotate: 45deg;
+}
+
+.l-geo--zig {
+	width: 84px;
+	height: 22px;
+	fill: none;
+	stroke: currentColor;
+	stroke-width: 5;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+}
+
+/* Hero: where each piece sits. */
+.l-hero__frame {
+	position: relative;
+	max-width: var(--l-max);
+	margin: 0 auto;
+}
+
+.l-hero .l-geo--quarter {
+	left: 0;
+	bottom: 0;
+	z-index: 0;
+}
+
+.l-hero .l-geo--zig {
+	display: none;
+}
+
+.l-stage .l-geo--ring {
+	right: 5%;
+	top: 16%;
+}
+
+.l-stage .l-geo--half {
+	left: 6%;
+	top: 62%;
+	rotate: -24deg;
+}
+
+.l-stage .l-geo--plus {
+	right: 9%;
+	bottom: 14%;
+}
+
+.l-stage .l-geo--tri {
+	right: 10%;
+	top: 0;
+	rotate: 18deg;
+}
+
+.l-stage .l-geo--diamond {
+	left: 9%;
+	top: 30%;
+}
+
+/* Floating cards: pill, speech bubble, leaf and tag. */
+.l-float--a {
+	border-radius: var(--radius-pill);
+}
+
+.l-float--a .q-tile {
+	border-radius: 50%;
+}
+
+.l-float--b {
+	border-radius: 20px 20px 20px 4px;
+}
+
+.l-float--c {
+	border-radius: 6px 22px 6px 22px;
+}
+
+.l-float--c .q-tile {
+	border-radius: 4px 14px 4px 14px;
+}
+
+.l-float--d {
+	border-radius: 4px 22px 22px 22px;
+}
+
+.l-float--d .q-tile {
+	clip-path: polygon(
+		30% 0,
+		70% 0,
+		100% 30%,
+		100% 70%,
+		70% 100%,
+		30% 100%,
+		0 70%,
+		0 30%
+	);
+}
+
+/* Marquee separators alternate star, ring and diamond. */
+.l-sep {
+	display: block;
+	flex: none;
+	width: 16px;
+	height: 16px;
+	color: var(--gold);
+}
+
+.l-sep--ring {
+	border: 4px solid currentColor;
+	border-radius: 50%;
+}
+
+.l-sep--diamond {
+	width: 14px;
+	height: 14px;
+	border-radius: 3px;
+	background: currentColor;
+	rotate: 45deg;
+}
+
+[data-theme="dark"] .l-marquee__band--front .l-sep {
+	color: var(--on-action);
+}
+
+.l-marquee__band--back .l-sep {
+	color: var(--red);
+}
+
+/* Section heading with confetti beside it. */
+.l-heading {
+	position: relative;
+}
+
+.l-heading .l-geo {
+	display: none;
+}
+
+/* Tile silhouettes. The shaped ones drop the box shadow: a mask would cut it. */
+.l-cell {
+	position: relative;
+}
+
+/* Ticket: a bite on each long edge and a perforation between text and picture. */
+.l-tile--ticket {
+	--l-tear: calc(100% - 148px);
+	box-shadow: none;
+	-webkit-mask:
+		radial-gradient(circle 13px at var(--l-tear) 0, #0000 96%, #000) top / 100%
+		51% no-repeat,
+		radial-gradient(circle 13px at var(--l-tear) 100%, #0000 96%, #000) bottom /
+		100% 51% no-repeat;
+	mask:
+		radial-gradient(circle 13px at var(--l-tear) 0, #0000 96%, #000) top / 100%
+		51% no-repeat,
+		radial-gradient(circle 13px at var(--l-tear) 100%, #0000 96%, #000) bottom /
+		100% 51% no-repeat;
+}
+
+.l-tile--ticket::after {
+	content: "";
+	position: absolute;
+	left: var(--l-tear);
+	top: 22px;
+	bottom: 22px;
+	margin-left: -1px;
+	border-left: 2px dashed color-mix(in srgb, var(--l-tile-ink) 34%, transparent);
+}
+
+/* Speech bubble: one square corner with a tail under it (the tail hangs from the cell). */
+.l-tile--bubble {
+	border-radius: 26px 26px 26px 0;
+}
+
+.l-cell--bubble::after {
+	content: "";
+	position: absolute;
+	left: 0;
+	top: calc(100% - 1px);
+	width: 20px;
+	height: 11px;
+	background: var(--surface);
+	clip-path: polygon(0 0, 100% 0, 0 100%);
+	transition: transform 0.5s var(--l-ease);
+}
+
+.l-tile--leaf {
+	border-radius: 26px 72px 26px 72px;
+}
+
+.l-tile--leaf .l-tile__foot {
+	padding-left: 12px;
+}
+
+.l-tile--dee {
+	border-radius: 26px 96px 96px 26px;
+}
+
+/* Cut corners, like a road sign. */
+.l-tile--chamfer {
+	--c: 22px;
+	border-radius: 0;
+	box-shadow: none;
+	clip-path: polygon(
+		var(--c) 0,
+		calc(100% - var(--c)) 0,
+		100% var(--c),
+		100% calc(100% - var(--c)),
+		calc(100% - var(--c)) 100%,
+		var(--c) 100%,
+		0 calc(100% - var(--c)),
+		0 var(--c)
+	);
+}
+
+/* Notched corner: the arrow sits in a bite taken out of the tile. Where
+   shape() is missing the tile stays a plain rounded card. */
+.l-tile--notch,
+.l-tile--notch.l-tile--row {
+	--n: 60px;
+	--k: 18px;
+	--o: 26px;
+	flex-direction: row;
+}
+
+.l-tile--notch .l-tile__go {
+	position: absolute;
+	right: 0;
+	bottom: 0;
+	width: calc(var(--n) - 10px);
+	height: calc(var(--n) - 10px);
+}
+
+.l-tile--notch .l-tile__foot {
+	padding-right: 52px;
+}
+
+@supports (clip-path: shape(from 0 0, hline to 10px, close)) {
+	.l-tile--notch {
+		background: none;
+		box-shadow: none;
+	}
+
+	.l-tile--notch::before {
+		content: "";
+		position: absolute;
+		inset: 0;
+		z-index: -2;
+		background: var(--l-tile-bg);
+		clip-path: shape(
+			from var(--o) 0,
+			hline to calc(100% - var(--o)),
+			arc to 100% var(--o) of var(--o) cw,
+			vline to calc(100% - var(--n) - var(--k)),
+			arc to calc(100% - var(--k)) calc(100% - var(--n)) of var(--k) cw,
+			hline to calc(100% - var(--n) + var(--k)),
+			arc to calc(100% - var(--n)) calc(100% - var(--n) + var(--k)) of var(--k)
+				ccw,
+			vline to calc(100% - var(--k)),
+			arc to calc(100% - var(--n) - var(--k)) 100% of var(--k) cw,
+			hline to var(--o),
+			arc to 0 calc(100% - var(--o)) of var(--o) cw,
+			vline to var(--o),
+			arc to var(--o) 0 of var(--o) cw,
+			close
+		);
+	}
+
+	.l-tile--notch .l-tile__go {
+		background: var(--l-tile-bg);
+		color: var(--l-tile-ink);
+	}
+}
+
+/* Picture shapes. */
+.l-tile .l-art--burst {
+	width: 124px;
+	height: 124px;
+	border-radius: 0;
+	clip-path: polygon(
+		50% 0%,
+		61% 8.9%,
+		75% 6.7%,
+		80.1% 19.9%,
+		93.3% 25%,
+		91.1% 39%,
+		100% 50%,
+		91.1% 61%,
+		93.3% 75%,
+		80.1% 80.1%,
+		75% 93.3%,
+		61% 91.1%,
+		50% 100%,
+		39% 91.1%,
+		25% 93.3%,
+		19.9% 80.1%,
+		6.7% 75%,
+		8.9% 61%,
+		0% 50%,
+		8.9% 39%,
+		6.7% 25%,
+		19.9% 19.9%,
+		25% 6.7%,
+		39% 8.9%
+	);
+}
+
+.l-tile .l-art--burst img {
+	max-width: 64%;
+	height: 64%;
+}
+
+.l-tile .l-art--leaf {
+	border-radius: 0 62% 0 62%;
+}
+
+.l-tile .l-art--pin {
+	width: 96px;
+	height: 96px;
+	margin: 8px 16px 26px 12px;
+	border-radius: 50% 50% 50% 0;
+	rotate: -45deg;
+}
+
+.l-tile .l-art--pin img {
+	max-width: 68%;
+	height: 68%;
+	rotate: 45deg;
+}
+
+.l-tile .l-art--octagon {
+	width: 112px;
+	height: 112px;
+	border-radius: 0;
+	clip-path: polygon(
+		30% 0,
+		70% 0,
+		100% 30%,
+		100% 70%,
+		70% 100%,
+		30% 100%,
+		0 70%,
+		0 30%
+	);
+}
+
+/* "Así de fácil": a container with one big corner, an arch for the picture and
+   a different shape for the icon of each step. */
+.l-how {
+	border-radius: 32px 32px 96px 32px;
+}
+
+.l-round-art--arch {
+	width: min(64%, 280px);
+	aspect-ratio: 4 / 5;
+	border-radius: 999px 999px 28px 28px;
+}
+
+.l-round-art--arch .l-geo--ring {
+	left: -18%;
+	top: 12%;
+}
+
+.l-round-art--arch .l-geo--diamond {
+	right: -12%;
+	top: 22%;
+}
+
+.l-round-art--arch .l-geo--half {
+	left: -14%;
+	bottom: 16%;
+	rotate: 30deg;
+}
+
+.l-step {
+	padding: 12px 22px 12px 12px;
+	border-radius: var(--radius-pill);
+}
+
+.l-ico {
+	width: 56px;
+	height: 56px;
+}
+
+.l-ico--circle {
+	border-radius: 50%;
+}
+
+.l-ico--burst {
+	border-radius: 0;
+	clip-path: polygon(
+		50% 0%,
+		61% 8.9%,
+		75% 6.7%,
+		80.1% 19.9%,
+		93.3% 25%,
+		91.1% 39%,
+		100% 50%,
+		91.1% 61%,
+		93.3% 75%,
+		80.1% 80.1%,
+		75% 93.3%,
+		61% 91.1%,
+		50% 100%,
+		39% 91.1%,
+		25% 93.3%,
+		19.9% 80.1%,
+		6.7% 75%,
+		8.9% 61%,
+		0% 50%,
+		8.9% 39%,
+		6.7% 25%,
+		19.9% 19.9%,
+		25% 6.7%,
+		39% 8.9%
+	);
+}
+
+.l-ico--hex {
+	border-radius: 0;
+	clip-path: polygon(25% 4%, 75% 4%, 100% 50%, 75% 96%, 25% 96%, 0 50%);
+}
+
+.l-ico--shield {
+	border-radius: 14% 14% 50% 50% / 10% 10% 60% 60%;
+}
+
+.l-ico--octagon {
+	border-radius: 0;
+	clip-path: polygon(
+		30% 0,
+		70% 0,
+		100% 30%,
+		100% 70%,
+		70% 100%,
+		30% 100%,
+		0 70%,
+		0 30%
+	);
+}
+
+/* Trust: a shield for the picture; pill, leaf and bubble for the three promises. */
+.l-round-art--shield {
+	width: min(62%, 300px);
+	aspect-ratio: 5 / 6;
+	border-radius: 14% 14% 50% 50% / 10% 10% 58% 58%;
+}
+
+.l-round-art--shield img {
+	margin-bottom: 12%;
+}
+
+.l-round-art--shield .l-geo--plus {
+	right: -12%;
+	top: 8%;
+}
+
+.l-round-art--shield .l-geo--ring {
+	left: -14%;
+	bottom: 26%;
+}
+
+.l-trust li:nth-child(1) .q-card {
+	border-radius: var(--radius-pill);
+}
+
+.l-trust li:nth-child(2) .q-card {
+	border-radius: 8px 30px 8px 30px;
+}
+
+.l-trust li:nth-child(3) .q-card {
+	border-radius: 30px 30px 30px 4px;
+}
+
+/* Closing band: a scalloped top edge, like carnival bunting. */
+.l-join {
+	padding-top: 60px;
+	border-radius: 0 0 32px 32px;
+	-webkit-mask:
+		radial-gradient(circle 20px at 20px 20px, #000 97%, #0000) 0 0 / 40px 40px
+		round no-repeat,
+		linear-gradient(#000, #000) 0 20px / 100% calc(100% - 20px) no-repeat;
+	mask:
+		radial-gradient(circle 20px at 20px 20px, #000 97%, #0000) 0 0 / 40px 40px
+		round no-repeat,
+		linear-gradient(#000, #000) 0 20px / 100% calc(100% - 20px) no-repeat;
+}
+
+@media (min-width: 1024px) {
+	.l-hero .l-geo--quarter {
+		width: 104px;
+		height: 104px;
+	}
+
+	.l-hero .l-geo--zig {
+		display: block;
+		left: 47%;
+		bottom: 34px;
+	}
+
+	.l-geo--ring {
+		width: 46px;
+		height: 46px;
+		border-width: 9px;
+	}
+
+	.l-geo--half {
+		width: 68px;
+		height: 34px;
+	}
+
+	.l-geo--tri {
+		width: 38px;
+		height: 34px;
+	}
+
+	.l-geo--plus {
+		width: 32px;
+		height: 32px;
+	}
+
+	.l-geo--diamond {
+		width: 24px;
+		height: 24px;
+	}
+
+	.l-stage .l-geo--ring {
+		right: 3%;
+		top: 30%;
+	}
+
+	.l-stage .l-geo--tri {
+		right: 33%;
+		top: 9%;
+	}
+
+	.l-stage .l-geo--diamond {
+		left: 2%;
+		top: 26%;
+	}
+
+	.l-stage .l-geo--half {
+		left: 9%;
+		top: 60%;
+	}
+
+	.l-heading .l-geo {
+		display: block;
+	}
+
+	/* All on the eyebrow row, clear of the title below. */
+	.l-heading .l-geo--half {
+		left: 6%;
+		top: 6px;
+		rotate: -28deg;
+	}
+
+	.l-heading .l-geo--ring {
+		right: 6%;
+		top: -6px;
+	}
+
+	.l-heading .l-geo--plus {
+		right: 22%;
+		top: 2px;
+		rotate: 14deg;
+	}
+
+	.l-heading .l-geo--tri {
+		left: 23%;
+		top: 0;
+		rotate: -16deg;
+	}
+
+	.l-tile--ticket {
+		--l-tear: calc(100% - 286px);
+	}
+
+	.l-tile--ticket::after {
+		top: 30px;
+		bottom: 30px;
+	}
+
+	.l-tile--bubble {
+		border-radius: 36px 36px 36px 0;
+	}
+
+	.l-cell--bubble::after {
+		width: 34px;
+		height: 20px;
+	}
+
+	.l-cell--bubble:hover::after {
+		transform: translateY(-6px);
+	}
+
+	.l-tile--leaf {
+		border-radius: 36px 110px 36px 110px;
+	}
+
+	.l-tile--leaf .l-tile__foot {
+		padding-left: 14px;
+	}
+
+	.l-tile--dee {
+		border-radius: 36px 170px 170px 36px;
+	}
+
+	.l-tile--chamfer {
+		--c: 38px;
+	}
+
+	.l-tile--notch,
+	.l-tile--notch.l-tile--row {
+		--n: 92px;
+		--k: 28px;
+		--o: 36px;
+		flex-direction: row;
+	}
+
+	.l-tile--notch .l-tile__foot {
+		padding-right: 72px;
+	}
+
+	.l-tile .l-art--burst {
+		width: 250px;
+		height: 250px;
+		align-self: center;
+	}
+
+	.l-tile .l-art--leaf {
+		border-radius: 0 62% 0 62%;
+	}
+
+	.l-tile .l-art--pin {
+		width: 176px;
+		height: 176px;
+		margin: 0 34px 34px 28px;
+		align-self: center;
+		border-radius: 50% 50% 50% 0;
+	}
+
+	.l-tile .l-art--octagon {
+		width: 228px;
+		height: 228px;
+		align-self: center;
+	}
+
+	.l-how {
+		border-radius: 48px 48px 168px 48px;
+	}
+
+	.l-round-art--arch {
+		width: min(70%, 300px);
+	}
+
+	.l-step {
+		padding: 16px 34px 16px 16px;
+		border-radius: var(--radius-pill);
+	}
+
+	.l-ico {
+		width: 68px;
+		height: 68px;
+	}
+
+	.l-round-art--shield {
+		width: min(60%, 320px);
+	}
+
+	.l-join {
+		padding-top: 100px;
+		border-radius: 0 0 48px 48px;
+	}
+}
+
+/* The hero canvas loses its top corner to make room for the seal. */
+@supports (clip-path: shape(from 0 0, hline to 10px, close)) {
+	@media (min-width: 1024px) {
+		.l-hero__canvas {
+			--n: 148px;
+			--k: 30px;
+			--o: 48px;
+			box-shadow: none;
+			clip-path: shape(
+				from var(--o) 0,
+				hline to calc(100% - var(--n) - var(--k)),
+				arc to calc(100% - var(--n)) var(--k) of var(--k) cw,
+				vline to calc(var(--n) - var(--k)),
+				arc to calc(100% - var(--n) + var(--k)) var(--n) of var(--k) ccw,
+				hline to calc(100% - var(--k)),
+				arc to 100% calc(var(--n) + var(--k)) of var(--k) cw,
+				vline to calc(100% - var(--o)),
+				arc to calc(100% - var(--o)) 100% of var(--o) cw,
+				hline to var(--o),
+				arc to 0 calc(100% - var(--o)) of var(--o) cw,
+				vline to var(--o),
+				arc to var(--o) 0 of var(--o) cw,
+				close
+			);
+		}
+
+		.l-seal {
+			right: 8px;
+			top: 8px;
+			width: 124px;
+			height: 124px;
+		}
+	}
+}
+
+html.l-motion .l-geo {
+	animation: l-bob 5s ease-in-out calc(var(--i, 0) * -1.1s) infinite alternate;
+}
+
+html.l-motion .l-geo--ring,
+html.l-motion .l-geo--plus {
+	animation: l-twinkle 5s ease-in-out calc(var(--i, 0) * -0.9s) infinite;
+}

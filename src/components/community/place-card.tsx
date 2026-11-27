@@ -17,6 +17,7 @@ import { PLACE_KIND_LABELS } from "../../lib/community/community-labels";
 import type { Place, PlaceKind } from "../../lib/community/community-types";
 import { ambAnchor } from "../../lib/geo/amb-boundary";
 import { useT } from "../../lib/i18n/use-language";
+import "../../styles/life-community-b.css";
 
 export const PLACE_KIND_ICONS: Record<PlaceKind, LucideIcon> = {
 	nature: Leaf,
@@ -36,10 +37,22 @@ const KIND_TILE: Record<PlaceKind, string> = {
 	sport: "q-tile--red",
 };
 
+const KIND_SHAPE: Record<PlaceKind, string> = {
+	nature: "l-ico--burst",
+	park: "l-ico--circle",
+	waterfront: "l-ico--hex",
+	culture: "l-ico--octagon",
+	heritage: "l-ico--shield",
+	sport: "l-ico--circle",
+};
+
 export function PlaceKindTile({ kind }: { kind: PlaceKind }) {
 	const Icon = PLACE_KIND_ICONS[kind];
 	return (
-		<span className={`q-tile ${KIND_TILE[kind]}`} aria-hidden="true">
+		<span
+			className={`q-tile ${KIND_TILE[kind]} ${KIND_SHAPE[kind]}`}
+			aria-hidden="true"
+		>
 			<Icon size={22} />
 		</span>
 	);
@@ -91,7 +104,7 @@ export function PlaceCard({
 	return (
 		<a
 			href={`/lugares/${encodeURIComponent(place.slug)}`}
-			className="q-card w-full flex-row! gap-4 p-4 text-inherit no-underline transition-shadow lg:hover:shadow-[var(--glow-gold)]"
+			className="q-card lc-leaf l-rise w-full flex-row! gap-4 p-5 text-inherit no-underline"
 		>
 			<PlaceKindTile kind={place.kind} />
 			<div className="min-w-0 flex-1 space-y-1.5">

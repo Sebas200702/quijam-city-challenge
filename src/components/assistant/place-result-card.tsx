@@ -10,9 +10,17 @@ export function PlaceResultCard({ place }: { place: Place }) {
 	return (
 		<a
 			href={`/lugares/${encodeURIComponent(place.slug)}`}
-			className="q-card gap-1.5 px-4 py-3 text-inherit no-underline transition-shadow lg:hover:shadow-[var(--glow-gold)]"
+			className="q-card la-place la-lift gap-1.5 px-5 py-4 text-inherit no-underline lg:hover:shadow-[var(--glow-gold)]"
 		>
-			<span className="q-eyebrow">{PLACE_KIND_LABELS[place.kind]}</span>
+			<span className="flex items-center justify-between gap-2">
+				<span className="q-eyebrow">{PLACE_KIND_LABELS[place.kind]}</span>
+				<span
+					className="q-tile q-tile--green l-ico--hex h-9! w-9!"
+					aria-hidden="true"
+				>
+					<MapPin size={16} />
+				</span>
+			</span>
 			<h3 className="q-h3 break-words">{place.name}</h3>
 			<p className="q-sm q-muted flex items-center gap-1.5">
 				<MapPin size={14} aria-hidden="true" className="shrink-0" />

@@ -30,11 +30,11 @@ export function SectionRow({
 	children,
 }: SectionRowProps) {
 	return (
-		<div className="flex flex-col gap-3 rounded-[var(--radius-sm)] bg-[var(--bg)] px-3 py-2.5 text-[13px] leading-[18px]">
+		<div className="flex flex-col gap-3 rounded-[10px_24px_10px_24px] bg-[var(--bg)] px-3 py-2.5 text-[13px] leading-[18px]">
 			<div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
 				<div className="flex min-w-[12rem] flex-1 items-center gap-3">
 					<span
-						className={`grid size-10 flex-none place-items-center rounded-[var(--radius-sm)] ${ICON_TONES[tone]}`}
+						className={`grid size-10 flex-none place-items-center rounded-full ${ICON_TONES[tone]}`}
 						aria-hidden="true"
 					>
 						<Icon size={20} strokeWidth={1.75} />

@@ -1,3 +1,4 @@
+import "../styles/life-city.css";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
 	fetchCityDashboardSnapshot,

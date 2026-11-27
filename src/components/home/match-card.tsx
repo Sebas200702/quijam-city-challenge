@@ -1,6 +1,8 @@
 import { Route } from "lucide-react";
 import { useT } from "../../lib/i18n/use-language";
 import { Illustration } from "./illustration";
+import "../../styles/life-shell.css";
+
 
 interface MatchCardProps {
 	timeLabel: string;
@@ -22,8 +24,16 @@ export function MatchCard({
 	const routeIcon = <Route size={20} strokeWidth={1.75} aria-hidden="true" />;
 
 	return (
-		<article className="q-card" aria-label={t.shared.match.ariaLabel}>
-			<div className="flex items-center gap-3.5 py-3.5 pr-4 pl-3.5">
+		<article className="q-card ls-match" aria-label={t.shared.match.ariaLabel}>
+			<span
+				className="l-geo l-geo--ring l-geo--gold -top-3 right-16"
+				aria-hidden="true"
+			/>
+			<span
+				className="l-geo l-geo--diamond l-geo--green bottom-2 right-[38%] max-lg:hidden"
+				aria-hidden="true"
+			/>
+			<div className="ls-match__body flex items-center gap-3.5 py-3.5 pr-4 pl-3.5">
 				<Illustration src={illustration} imageClassName="h-[84px]! lg:h-36!" />
 				<div className="flex min-w-0 flex-1 flex-col items-start gap-1.5">
 					<span className="q-badge q-badge--live">

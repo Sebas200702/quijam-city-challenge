@@ -15,6 +15,12 @@ import { useLanguage, useT } from "../../lib/i18n/use-language";
 import { HeldBadge } from "./community-ui";
 import { VerifiedOrganizerBadge } from "./trust-badges";
 
+import "../../styles/life-events.css";
+
+/** Stub colour of the ticket, one per category so neighbours differ. */
+const TONES = ["", "ev-ticket--green", "ev-ticket--red", "ev-ticket--ink"];
+const CATEGORY_ORDER: string[] = Object.keys(EVENT_CATEGORY_LABELS);
+
 const TIME_ZONE = "America/Bogota";
 const LOCALES: Record<Language, string> = {
 	es: "es-CO",
@@ -35,16 +41,12 @@ function DateBlock({ iso }: { iso: string }) {
 		month: "short",
 	});
 	return (
-		<div
-			aria-hidden="true"
-			className="flex h-16 w-14 shrink-0 flex-col items-center justify-center rounded-[var(--radius-md)] bg-[var(--gold-soft)] text-[var(--gold-text)]"
-		>
-			<span className="font-[var(--font-display)] text-2xl leading-none font-bold">
-				{dayNumber.format(date)}
-			</span>
-			<span className="mt-1 text-xs font-semibold uppercase">
+		<div aria-hidden="true" className="ev-ticket__stub">
+			<span className="ev-ticket__day">{dayNumber.format(date)}</span>
+			<span className="ev-ticket__month">
 				{monthShort.format(date).replace(/\./g, "")}
 			</span>
+			<span className="q-star" />
 		</div>
 	);
 }
@@ -80,14 +82,17 @@ export function EventCard({
 	const spots = spotsText(event, t);
 	const where = placeName ?? event.locationText ?? t.agenda.placeTbd;
 	const cancelled = event.status === "cancelled";
+	const tone =
+		TONES[Math.max(CATEGORY_ORDER.indexOf(event.category), 0) % TONES.length];
 	return (
 		<a
 			href={`/agenda/${encodeURIComponent(event.id)}`}
-			className={`q-card flex-row! gap-4 p-4 text-inherit no-underline transition-shadow lg:hover:shadow-[var(--glow-gold)] ${cancelled ? "opacity-70" : ""}`}
+			className={`ev-ticket ${tone} ${cancelled ? "ev-ticket--off" : ""}`}
 			aria-label={`${event.title}, ${formatEventDay(event.startsAt)}`}
 		>
+			<div className="ev-ticket__paper">
 			<DateBlock iso={event.startsAt} />
-			<div className="min-w-0 flex-1 space-y-1.5">
+			<div className="ev-ticket__body">
 				<div className="flex flex-wrap items-center gap-1.5">
 					<span className="q-eyebrow">
 						{EVENT_CATEGORY_LABELS[event.category]}
@@ -100,7 +105,7 @@ export function EventCard({
 						</span>
 					)}
 				</div>
-				<h3 className={`q-h3 break-words ${cancelled ? "line-through" : ""}`}>
+				<h3 className={`ev-ticket__title ${cancelled ? "line-through" : ""}`}>
 					{event.title}
 				</h3>
 				<p className="q-sm q-muted flex items-center gap-1.5">
@@ -125,6 +130,7 @@ export function EventCard({
 							: formatCop(event.priceCop)}
 					</span>
 				</div>
+			</div>
 			</div>
 		</a>
 	);

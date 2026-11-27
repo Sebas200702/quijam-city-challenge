@@ -1,0 +1,33 @@
+---
+// Two crossing bands of example questions that drift in opposite directions.
+// Decorative: the same questions are real links in the agent tiles below.
+import { AGENT_TILES } from "./landing-content";
+
+const SEPARATORS = ["q-star", "l-sep--ring", "l-sep--diamond"];
+
+const bands = [
+	{ name: "back", tiles: [...AGENT_TILES].reverse() },
+	{ name: "front", tiles: AGENT_TILES },
+];
+---
+
+<div class="l-marquee" aria-hidden="true">
+	{
+		bands.map((band) => (
+			<div class={`l-marquee__band l-marquee__band--${band.name}`}>
+				<div class="l-marquee__track">
+					{[0, 1].map(() => (
+						<ul>
+							{band.tiles.map((tile, index) => (
+								<li>
+									<span data-i18n={`landing.agents.${tile.id}.example`}>“{tile.example.label}”</span>
+									<span class={`l-sep ${SEPARATORS[index % SEPARATORS.length]}`} />
+								</li>
+							))}
+						</ul>
+					))}
+				</div>
+			</div>
+		))
+	}
+</div>

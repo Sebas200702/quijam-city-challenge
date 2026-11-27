@@ -1,0 +1,149 @@
+/* Shared header and footer of every screen (components/site). The base look is
+   the landing pill (.l-header, .l-nav in landing.css); this file adds the active
+   section, the page-specific actions, the variants and the slim footer. */
+
+/* ── Header ── */
+.site-header__title {
+	min-width: 0;
+	margin: 0;
+	overflow: hidden;
+	padding: 4px 12px;
+	border-radius: 6px 16px 6px 16px;
+	background: var(--gold-soft);
+	color: var(--gold-text);
+	font-size: 14px;
+	line-height: 20px;
+	font-weight: 600;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.site-header__actions {
+	display: flex;
+	min-width: 0;
+	flex-shrink: 0;
+	align-items: center;
+	gap: 8px;
+}
+
+/* Current section: a filled pill, readable in both themes. */
+.site-header .l-nav a[aria-current="page"] {
+	background: var(--ink);
+	color: var(--bg);
+	box-shadow: var(--shadow-card);
+}
+
+.site-header .l-nav a[aria-current="page"]::after {
+	display: none;
+}
+
+.site-header__cta[aria-current="page"] {
+	box-shadow: inset 0 0 0 2px var(--gold-text);
+}
+
+/* Phones: the brand keeps only its tile and word so the actions fit at 375px. */
+@media (max-width: 479px) {
+	.site-header .q-logo__sub {
+		display: none;
+	}
+
+	.site-header .l-header__bar {
+		gap: 8px;
+		padding-left: 12px;
+	}
+}
+
+/* Overlay: floats over full-screen content (the map) and takes no layout space.
+   The page keeps its own top controls clear with --site-header-space. */
+.site-header--overlay {
+	position: fixed;
+	top: 13px;
+	right: 0;
+	left: 0;
+	margin-top: 0;
+	pointer-events: none;
+}
+
+.site-header--overlay .l-header__bar {
+	pointer-events: auto;
+}
+
+.site-header--overlay .l-header__bar::before {
+	background: color-mix(in srgb, var(--surface) 88%, transparent);
+}
+
+:root {
+	--site-header-space: 76px;
+}
+
+/* Compact: a slimmer, wider bar for dense tool screens. */
+.site-header--compact {
+	top: 6px;
+	margin-top: 6px;
+	padding: 0 8px;
+}
+
+.site-header--compact .l-header__bar {
+	max-width: none;
+	gap: 8px;
+	padding: 2px 6px 2px 12px;
+}
+
+.site-header--compact .q-logo__sub {
+	display: none;
+}
+
+.site-header--compact .site-header__actions {
+	flex-wrap: wrap;
+	justify-content: flex-end;
+}
+
+@media (min-width: 1024px) {
+	.site-header--compact .l-header__bar {
+		gap: 12px;
+		padding: 2px 8px 2px 16px;
+	}
+}
+
+/* ── Footer, slim: one compact row for app and tool screens ── */
+.site-footer--slim {
+	border-top: 1px solid var(--line);
+}
+
+.site-footer__row {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 4px 16px;
+	width: 100%;
+	max-width: var(--l-max, 1240px);
+	margin: 0 auto;
+	padding: 8px 16px;
+}
+
+.site-footer__row > p {
+	margin: 0;
+}
+
+.site-footer__legal {
+	min-width: 0;
+	flex: 1 1 240px;
+}
+
+.site-footer__legal a {
+	display: inline-flex;
+	min-height: 44px;
+	align-items: center;
+	color: inherit;
+	text-decoration: none;
+}
+
+@media (min-width: 1024px) {
+	.site-footer__row {
+		padding: 8px 32px;
+	}
+
+	.site-footer__legal a:hover {
+		text-decoration: underline;
+	}
+}

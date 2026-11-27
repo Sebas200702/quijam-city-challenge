@@ -91,8 +91,11 @@ export function SlangGlossary() {
 		<MenuShell online={online}>
 			<header className="vm-titlerow">
 				<div>
-					<p className="q-eyebrow">Jerga</p>
-					<h1 className="q-h1">Jerga costeña</h1>
+					<p className="l-eyebrow">
+						<span className="q-star" aria-hidden="true" />
+						Jerga
+					</p>
+					<h1 className="l-h2">Jerga costeña</h1>
 					<p className="q-p q-muted">
 						Lo que vas a oír en la calle, explicado en español e inglés.
 					</p>
@@ -100,6 +103,18 @@ export function SlangGlossary() {
 				<span className="vm-hero" aria-hidden="true">
 					<SlangBubblesIllustration />
 				</span>
+				<span
+					className="l-geo l-geo--ring l-geo--gold -top-3 -right-3"
+					aria-hidden="true"
+				/>
+				<span
+					className="l-geo l-geo--half l-geo--green right-8 -bottom-1"
+					aria-hidden="true"
+				/>
+				<span
+					className="l-geo l-geo--plus top-3 right-[42%] max-sm:hidden"
+					aria-hidden="true"
+				/>
 			</header>
 			<search>
 				<form className="q-search" onSubmit={(event) => event.preventDefault()}>
