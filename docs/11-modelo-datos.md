@@ -84,4 +84,17 @@ Detalle funcional y del triaje en [20-comunidad-y-moderacion.md](20-comunidad-y-
 | `event_registrations` | Sin acceso | `INSERT`/`DELETE` propias; `SELECT` propias y las de sus eventos | — | Todo |
 | `forum_threads`, `forum_posts` | `SELECT` publicados | `SELECT` publicados y los propios | `SELECT` todo | Inserta después del triaje; modera |
 
+### Seguridad y confianza (migración `20261127000002_trust_and_safety.sql`)
+
+| Cambio | Para qué |
+|---|---|
+| `is_reserved_display_name()` + trigger en `profiles` | Nadie usa nombres de autoridades ni de la plataforma. |
+| `profiles.is_verified_organizer` (solo la ciudad lo activa); las personas solo editan `display_name`, `neighborhood`, `is_visitor` | Organizadores verificados. |
+| `events.organizer_verified`, `forum_threads.city_verified_at` | Insignias "Organizador verificado" y "Confirmado por la ciudad". |
+| `community_reports` en eventos, hilos y respuestas + tabla `content_reports` + trigger `handle_content_report` | 3 reportes de personas distintas pasan el contenido a `held`; nadie reporta lo propio. |
+| Tabla `moderation_actions` | Auditoría de cada decisión de moderación. |
+| `delete_community_account(uuid)` | Eliminación de cuenta (Ley 1581), solo desde el servidor. |
+
+Detalle en [22-seguridad-y-confianza.md](22-seguridad-y-confianza.md).
+
 Regla clave: **los clientes no tienen permiso de `INSERT` en `events`, `forum_threads` ni `forum_posts`**. Todo contenido público entra por `POST /api/community/publish`, que corre el triaje y escribe con la llave de servicio. Lo retenido solo lo ven su autor y la ciudad.
