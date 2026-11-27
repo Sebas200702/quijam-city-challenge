@@ -18,8 +18,17 @@ function generateAnonymousId(): string {
 	) {
 		return `vis_${crypto.randomUUID().replaceAll("-", "").slice(0, 12)}`;
 	}
-	const fallback = Math.random().toString(16).slice(2, 14).padEnd(12, "0");
-	return `vis_${fallback}`;
+	if (
+		typeof crypto !== "undefined" &&
+		typeof crypto.getRandomValues === "function"
+	) {
+		const bytes = crypto.getRandomValues(new Uint8Array(6));
+		const secureId = Array.from(bytes, (byte) =>
+			byte.toString(16).padStart(2, "0"),
+		).join("");
+		return `vis_${secureId}`;
+	}
+	throw new Error("Secure random number generation is unavailable");
 }
 
 /**

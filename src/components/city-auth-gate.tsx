@@ -36,7 +36,9 @@ export function CityAuthGate({
 				<div className="q-band q-band--gold" aria-hidden="true" />
 				<div className="q-card__head">
 					<div>
-						<p className="q-eyebrow">Centro de Mando · Acceso restringido</p>
+						<p className="q-eyebrow">
+							Lo que la ciudad aprende · Acceso restringido
+						</p>
 						<h1 className="q-h2 mt-1">Se requiere rol ciudad</h1>
 					</div>
 					<span className="q-badge q-badge--high">{session.role}</span>
@@ -74,7 +76,7 @@ export function CityAuthGate({
 			</div>
 			<div className="q-card__head">
 				<div>
-					<p className="q-eyebrow">QUILLART · Centro de Mando</p>
+					<p className="q-eyebrow">QUILLART · Lo que la ciudad aprende</p>
 					<h1 className="q-h1 mt-1">Acceso de ciudad</h1>
 				</div>
 				<span className="q-badge q-badge--neutral">Rol city</span>
@@ -86,7 +88,7 @@ export function CityAuthGate({
 					<code className="rounded bg-[var(--line)] px-1.5 py-0.5 text-[var(--ink)]">
 						city
 					</code>{" "}
-					para monitorear el corredor en tiempo real.
+					para ver lo que la ciudad aprende de sus visitantes.
 				</p>
 
 				<div className="space-y-1.5">
@@ -138,7 +140,7 @@ export function CityAuthGate({
 					{submitting && (
 						<span className="q-star q-star--think" aria-hidden="true" />
 					)}
-					{submitting ? "Verificando acceso..." : "Entrar al Centro de Mando"}
+					{submitting ? "Verificando acceso..." : "Entrar"}
 				</button>
 			</form>
 		</section>
