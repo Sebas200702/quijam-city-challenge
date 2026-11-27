@@ -121,11 +121,13 @@
 	.corridor-controls .corridor-controls__overview {
 		display: grid;
 	}
+	/* Right of the controls' column (16 + 48 + 16 px): the Guide, the route and the
+	   point cards never slide under the map buttons (U11). */
 	.corridor-app__detail {
 		left: auto;
-		right: 16px;
+		right: 80px;
 		bottom: 32px;
-		width: 400px;
+		width: min(400px, max(320px, calc(100% - 492px)));
 		max-height: calc(100% - 48px);
 	}
 	.corridor-detail--empty:not(.route-card) {

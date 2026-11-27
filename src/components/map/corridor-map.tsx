@@ -740,7 +740,7 @@ export default function CorridorMap({ data, source }: CorridorMapProps) {
 				</div>
 				<button
 					type="button"
-					className="q-btn q-btn--primary corridor-guide-button"
+					className="q-btn q-btn--secondary corridor-guide-button"
 					aria-expanded={guideOpen}
 					onClick={openGuide}
 				>

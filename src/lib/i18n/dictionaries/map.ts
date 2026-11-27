@@ -169,6 +169,9 @@ const es = {
 		focusMissing: "No encontramos ese punto en el mapa.",
 		focusOutside:
 			"Ese punto queda fuera del área metropolitana y no aparece en el mapa.",
+		/** Peek of the next-step card on phones (U10). */
+		nextStepMore: "Ver más del siguiente paso",
+		nextStepLess: "Ver menos del siguiente paso",
 		dismissNote: "Cerrar aviso",
 	},
 	userHere: "Estás aquí",
@@ -428,6 +431,8 @@ const en: MapMessages = {
 		focusMissing: "We could not find that point on the map.",
 		focusOutside:
 			"That point is outside the metropolitan area and is not shown on the map.",
+		nextStepMore: "Show more of the next step",
+		nextStepLess: "Show less of the next step",
 		dismissNote: "Close notice",
 	},
 	userHere: "You are here",
@@ -683,6 +688,8 @@ const pt: MapMessages = {
 		focusMissing: "Não encontramos esse ponto no mapa.",
 		focusOutside:
 			"Esse ponto fica fora da área metropolitana e não aparece no mapa.",
+		nextStepMore: "Ver mais do próximo passo",
+		nextStepLess: "Ver menos do próximo passo",
 		dismissNote: "Fechar aviso",
 	},
 	userHere: "Você está aqui",
@@ -943,6 +950,8 @@ const fr: MapMessages = {
 		focusMissing: "Nous n’avons pas trouvé ce point sur la carte.",
 		focusOutside:
 			"Ce point est hors de l’aire métropolitaine et n’apparaît pas sur la carte.",
+		nextStepMore: "Voir plus sur la prochaine étape",
+		nextStepLess: "Voir moins sur la prochaine étape",
 		dismissNote: "Fermer l’avis",
 	},
 	userHere: "Vous êtes ici",
