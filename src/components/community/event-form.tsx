@@ -6,6 +6,7 @@
 import { ArrowLeft, LogIn } from "lucide-react";
 import { type SyntheticEvent, useEffect, useState } from "react";
 import { askHref } from "../../lib/assistant/assistant-labels";
+import { type GeoPoint, pointOf } from "../../lib/community/community-geo";
 import { EVENT_CATEGORY_LABELS } from "../../lib/community/community-labels";
 import {
 	bogotaLocalToIso,
@@ -18,6 +19,7 @@ import type {
 	CommunityEvent,
 	EventCategory,
 	NewEventInput,
+	Place,
 	PublishResult,
 } from "../../lib/community/community-types";
 import { readPrefill } from "../../lib/community/form-prefill";
@@ -36,6 +38,7 @@ import {
 	PublishNotice,
 	textareaClass,
 } from "./community-ui";
+import { LazyPointPicker } from "./lazy-maps";
 import {
 	errorText,
 	signInHref,
@@ -59,6 +62,15 @@ interface FormValues {
 	capacity: string;
 	isFree: boolean;
 	price: string;
+	/** Point of the meeting place on the AMB map (U15). */
+	point: GeoPoint | null;
+	/** True while the point is the catalog place's own, untouched. */
+	pointFromPlace: boolean;
+}
+
+/** The catalog place's point, when it is inside the AMB. */
+function placePoint(place: Place | undefined): GeoPoint | null {
+	return place ? pointOf({}, place) : null;
 }
 
 /** What was written before signing in, kept for this tab only. */
@@ -124,6 +136,8 @@ function initialValues(): FormValues {
 		capacity: "",
 		isFree: true,
 		price: "",
+		point: null,
+		pointFromPlace: false,
 	};
 	return withPrefill(
 		{ ...empty, ...savedDraft() },
@@ -170,6 +184,8 @@ function toInput(values: FormValues): NewEventInput {
 		capacity,
 		isFree: values.isFree,
 		priceCop: values.isFree ? null : price,
+		latitude: values.point?.latitude ?? null,
+		longitude: values.point?.longitude ?? null,
 	};
 }
 
@@ -217,8 +233,8 @@ function EventFormBody({ signedIn }: { signedIn: boolean }) {
 		null,
 	);
 
-	// A `?lugar=` id or slug resolves to the catalog place; anything else
-	// falls back to a free-text address.
+	// A `?lugar=` id or slug resolves to the catalog place and lends its point
+	// to the picker; anything else falls back to a free-text address.
 	useEffect(() => {
 		if (placesState.status !== "ready") return;
 		setValues((current) => {
@@ -226,8 +242,15 @@ function EventFormBody({ signedIn }: { signedIn: boolean }) {
 			const place = placesState.data.find(
 				(item) => item.id === current.placeId || item.slug === current.placeId,
 			);
-			if (place?.id === current.placeId) return current;
-			return { ...current, placeId: place?.id ?? OTHER_PLACE };
+			if (!place) return { ...current, placeId: OTHER_PLACE };
+			if (place.id === current.placeId && current.point) return current;
+			const point = current.point ?? placePoint(place);
+			return {
+				...current,
+				placeId: place.id,
+				point,
+				pointFromPlace: current.point ? current.pointFromPlace : point !== null,
+			};
 		});
 	}, [placesState]);
 
@@ -268,6 +291,25 @@ function EventFormBody({ signedIn }: { signedIn: boolean }) {
 		};
 	});
 
+	const places = placesState.status === "ready" ? placesState.data : [];
+	const chosenPlace = places.find((place) => place.id === values.placeId);
+
+	function choosePlace(placeId: string) {
+		const place = places.find((item) => item.id === placeId);
+		setValues((current) => {
+			// A point the person moved by hand stays; a borrowed one follows the place.
+			const keep = current.point && !current.pointFromPlace;
+			const point = keep ? current.point : placePoint(place);
+			return {
+				...current,
+				placeId,
+				point,
+				pointFromPlace: !keep && point !== null,
+			};
+		});
+		setError(null);
+	}
+
 	const today = isoToBogotaLocal(new Date().toISOString()).slice(0, 10);
 	const mark = (key: keyof FormValues) =>
 		agentFilled.has(key) ? " q-agent-filled" : "";
@@ -300,7 +342,11 @@ function EventFormBody({ signedIn }: { signedIn: boolean }) {
 			return;
 		}
 		const input = toInput(values);
-		const invalid = eventInputIssue(input);
+		const invalid =
+			eventInputIssue(input) ??
+			(!values.placeId && !values.point
+				? { field: "point" as const, message: t.geo.picker.pointRequired }
+				: null);
 		if (invalid) {
 			setIssue(invalid);
 			return;
@@ -442,7 +488,7 @@ function EventFormBody({ signedIn }: { signedIn: boolean }) {
 							id="event-place"
 							className={`${inputClass}${mark("placeId")}`}
 							value={values.placeId}
-							onChange={(e) => set("placeId", e.target.value)}
+							onChange={(e) => choosePlace(e.target.value)}
 						>
 							<option value={OTHER_PLACE}>{t.agenda.otherPlace}</option>
 							{places.map((place) => (
@@ -471,6 +517,31 @@ function EventFormBody({ signedIn }: { signedIn: boolean }) {
 					/>
 				</Field>
 			)}
+
+			<div id="event-point" tabIndex={-1} className="space-y-2">
+				<LazyPointPicker
+					title={t.geo.picker.eventTitle}
+					value={values.point}
+					initialCenter={placePoint(chosenPlace)}
+					note={
+						values.pointFromPlace && chosenPlace
+							? t.geo.picker.fromPlace(chosenPlace.name)
+							: null
+					}
+					onChange={(point) => {
+						setValues((current) => ({
+							...current,
+							point,
+							pointFromPlace: false,
+						}));
+						setError(null);
+						setIssue(null);
+					}}
+				/>
+				{errorFor("event-point") && (
+					<ErrorNote message={errorFor("event-point") ?? ""} />
+				)}
+			</div>
 
 			<Field
 				id="event-capacity"

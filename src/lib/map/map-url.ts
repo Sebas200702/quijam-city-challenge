@@ -1,7 +1,8 @@
 // The /mapa URL contract: what a link (or Quillart AI) can ask the map to show.
 //
 //   /mapa?lugar=<slug>              selects and centres a place (U07)
-//   /mapa?evento=<id>               selects an event, once events have a point (U08)
+//   /mapa?evento=<id>               selects a community event with a point (U08)
+//   /mapa?conversacion=<id>         selects a forum thread with a point (U08)
 //   /mapa?negocio=<code>            opens a business card (vendor "Cómo te ven")
 //   /mapa?lat=<lat>&lng=<lng>&zoom=<z>  centres a point inside the AMB
 //
@@ -27,6 +28,8 @@ export interface MapUrlState {
 	lugar?: string;
 	/** Community event id (`events.id`). */
 	evento?: string;
+	/** Forum thread id (`forum_threads.id`). */
+	conversacion?: string;
 	/** Business code (`businesses.code`). */
 	negocio?: string;
 	camera?: MapCamera;
@@ -51,9 +54,11 @@ export function parseMapUrl(search: string | URLSearchParams): MapUrlState {
 	const state: MapUrlState = {};
 	const lugar = key(params.get("lugar"));
 	const evento = key(params.get("evento"));
+	const conversacion = key(params.get("conversacion"));
 	const negocio = key(params.get("negocio"));
 	if (lugar) state.lugar = lugar;
 	if (evento) state.evento = evento;
+	if (conversacion) state.conversacion = conversacion;
 	if (negocio) state.negocio = negocio;
 	const lat = Number.parseFloat(params.get("lat") ?? "");
 	const lng = Number.parseFloat(params.get("lng") ?? "");
@@ -71,9 +76,11 @@ export function mapHref(state: MapUrlState = {}): string {
 	const params = new URLSearchParams();
 	const lugar = key(state.lugar ?? null);
 	const evento = key(state.evento ?? null);
+	const conversacion = key(state.conversacion ?? null);
 	const negocio = key(state.negocio ?? null);
 	if (lugar) params.set("lugar", lugar);
 	if (evento) params.set("evento", evento);
+	if (conversacion) params.set("conversacion", conversacion);
 	if (negocio) params.set("negocio", negocio);
 	const camera = state.camera;
 	if (camera && isInsideAmb(camera.lat, camera.lng)) {

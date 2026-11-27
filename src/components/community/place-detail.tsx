@@ -4,7 +4,6 @@ import {
 	ArrowLeft,
 	CalendarPlus,
 	Clock,
-	Map as MapIcon,
 	MapPin,
 	MessageSquarePlus,
 	Navigation,
@@ -22,6 +21,7 @@ import { AskQuillartButton } from "../assistant/ask-quillart-button";
 import { CommunityShell } from "./community-shell";
 import { EmptyState, Loaded, SpotIllustration } from "./community-ui";
 import { EventCard } from "./event-card";
+import { LazyMiniMap } from "./lazy-maps";
 import { isOnAmbMap, PlaceBadges, PlaceKindTile } from "./place-card";
 import { ThreadCard } from "./thread-card";
 import { useLoad } from "./use-community";
@@ -121,27 +121,30 @@ export function PlaceDetail({
 								</div>
 								{/* Main action above the fold on phones (audit U37). */}
 								<div className="flex flex-wrap gap-2">
-									<a
-										href={directionsUrl(
-											place.name,
-											place.latitude,
-											place.longitude,
-										)}
-										target="_blank"
-										rel="noopener noreferrer"
-										className="q-btn q-btn--primary"
-									>
-										<Navigation size={18} aria-hidden="true" />
-										{t.places.directions}
-										<span className="sr-only">{t.places.opensNewTab}</span>
-									</a>
-									{isOnAmbMap(place) && (
+									{isOnAmbMap(place) ? (
+										// In the app: /mapa selects the place and plans the way there.
 										<a
 											href={mapHref({ lugar: place.slug })}
-											className="q-btn q-btn--secondary"
+											className="q-btn q-btn--primary"
 										>
-											<MapIcon size={18} aria-hidden="true" />
-											{t.places.viewOnMap}
+											<Navigation size={18} aria-hidden="true" />
+											{t.places.directions}
+										</a>
+									) : (
+										// Outside the AMB the app map cannot show it: an outside map can.
+										<a
+											href={directionsUrl(
+												place.name,
+												place.latitude,
+												place.longitude,
+											)}
+											target="_blank"
+											rel="noopener noreferrer"
+											className="q-btn q-btn--primary"
+										>
+											<Navigation size={18} aria-hidden="true" />
+											{t.places.directions}
+											<span className="sr-only">{t.places.opensNewTab}</span>
 										</a>
 									)}
 									<AskQuillartButton prompt={t.places.askAbout(place.name)} />
@@ -179,6 +182,16 @@ export function PlaceDetail({
 										</dd>
 									</div>
 								</dl>
+								{isOnAmbMap(place) && (
+									<LazyMiniMap
+										latitude={place.latitude}
+										longitude={place.longitude}
+										name={place.name}
+										href={mapHref({ lugar: place.slug })}
+										tone="green"
+										glyph="place"
+									/>
+								)}
 							</section>
 
 							<section aria-labelledby="place-events" className="space-y-3">

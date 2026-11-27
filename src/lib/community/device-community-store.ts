@@ -19,6 +19,7 @@ import {
 	COMMUNITY_REPORT_HOLD_THRESHOLD,
 	NEW_ACCOUNT_HOURS,
 } from "../moderation/trust-policy";
+import { resolvePoint } from "./community-geo";
 import { publishResult, storedStatus } from "./community-mappers";
 import {
 	canJoinWaitlist,
@@ -106,6 +107,18 @@ function reportCount(data: DeviceData, id: string): number {
 			.filter((report) => report.contentId === id)
 			.map((report) => report.reporterId),
 	).size;
+}
+
+/** Point to keep: the one picked on the map, else the catalog place's (same rule as the server). */
+function pointFromCatalog(input: {
+	placeId: string | null;
+	latitude?: number | null;
+	longitude?: number | null;
+}) {
+	const place = input.placeId
+		? PLACES.find((item) => item.id === input.placeId)
+		: null;
+	return resolvePoint(input, place);
 }
 
 /** Corroboration (#126) on this device: same rule as the server, over local threads. */
@@ -418,6 +431,7 @@ export function createDeviceCommunityStore(): CommunityStore {
 			const data = load();
 			const event: CommunityEvent = {
 				...input,
+				...pointFromCatalog(input),
 				id: crypto.randomUUID(),
 				title: input.title.trim(),
 				description: input.description.trim(),
@@ -576,6 +590,7 @@ export function createDeviceCommunityStore(): CommunityStore {
 			const now = new Date().toISOString();
 			const thread: ForumThread = {
 				...input,
+				...pointFromCatalog(input),
 				id: crypto.randomUUID(),
 				title: input.title.trim(),
 				body: input.body.trim(),

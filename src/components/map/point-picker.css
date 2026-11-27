@@ -1,0 +1,107 @@
+/* Minimap of one point and the point picker (docs/30, U08, U15; mockup V12). */
+
+.mini-map {
+	margin: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+.mini-map__map,
+.point-picker__map {
+	position: relative;
+	width: 100%;
+	border-radius: var(--radius-md);
+	border: 1px solid var(--line);
+	overflow: hidden;
+	background: var(--surface);
+	z-index: 0;
+}
+.mini-map__map {
+	height: 168px;
+}
+.mini-map__foot {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+}
+.mini-map .corridor-pin,
+.point-picker .corridor-pin {
+	background: none;
+	border: 0;
+}
+
+.point-picker {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+.point-picker__frame {
+	position: relative;
+}
+.point-picker__map {
+	height: 280px;
+}
+@media (min-width: 1024px) {
+	.point-picker__map {
+		height: 340px;
+	}
+}
+/* The pin stays in the centre; the map moves under it. */
+.point-picker__pin {
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	transform: translate(-50%, -100%);
+	z-index: 500;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	pointer-events: none;
+}
+.point-picker__pin-head {
+	width: 40px;
+	height: 40px;
+	border-radius: 999px;
+	background: var(--gold);
+	color: var(--on-gold);
+	border: 3px solid var(--on-gold);
+	display: grid;
+	place-items: center;
+	box-shadow: 0 6px 16px #0b131e38;
+}
+.point-picker__pin-tip {
+	width: 3px;
+	height: 12px;
+	border-radius: 2px;
+	background: var(--on-gold);
+}
+.point-picker__hint {
+	position: absolute;
+	left: 8px;
+	right: 8px;
+	top: 8px;
+	z-index: 500;
+	display: flex;
+	justify-content: center;
+	pointer-events: none;
+}
+.point-picker__hint span {
+	padding: 4px 12px;
+	border-radius: var(--radius-pill);
+	background: var(--surface-raised);
+	color: var(--ink);
+	font-size: 13px;
+	font-weight: 600;
+	box-shadow: 0 2px 8px #0b131e1f;
+}
+.point-picker__actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+}
+.point-picker__place {
+	font-weight: 600;
+}
+.point-picker__place--outside {
+	color: var(--red-text);
+}

@@ -12,9 +12,9 @@ import {
 	Users,
 } from "lucide-react";
 import { type ReactNode, useState } from "react";
+import { pointOf } from "../../lib/community/community-geo";
 import { EVENT_ILLUSTRATIONS } from "../../lib/community/community-illustrations";
 import {
-	directionsUrl,
 	EVENT_CATEGORY_LABELS,
 	formatCop,
 	formatEventLongDay,
@@ -33,6 +33,7 @@ import type {
 	Profile,
 } from "../../lib/community/community-types";
 import { useT } from "../../lib/i18n/use-language";
+import { mapHref } from "../../lib/map/map-url";
 import { usePublishScreen } from "../agent-dock/use-screen-context";
 import { AskQuillartButton } from "../assistant/ask-quillart-button";
 import { CommunityShell } from "./community-shell";
@@ -43,6 +44,7 @@ import {
 	Loaded,
 	SpotIllustration,
 } from "./community-ui";
+import { LazyMiniMap } from "./lazy-maps";
 import { ReportButton } from "./report-button";
 import { ThreadCard } from "./thread-card";
 import { VerifiedOrganizerBadge } from "./trust-badges";
@@ -158,6 +160,20 @@ function EventView({
 	const isOrganizer = !!profile && profile.id === event.organizerId;
 	const cancelled = event.status === "cancelled";
 	const where = place?.name ?? event.locationText ?? t.agenda.placeTbd;
+	const point = pointOf(event, place);
+	// The "Eventos" layer of /mapa lists upcoming published events; any other event
+	// (held, cancelled, past) is shown by its point alone.
+	const onEventsLayer =
+		event.status === "published" &&
+		event.moderationStatus === "published" &&
+		!isPastEvent(event);
+	const onMapHref = point
+		? onEventsLayer
+			? mapHref({ evento: event.id })
+			: mapHref({
+					camera: { lat: point.latitude, lng: point.longitude, zoom: 16 },
+				})
+		: null;
 
 	return (
 		<>
@@ -229,14 +245,19 @@ function EventView({
 					{event.description}
 				</p>
 
+				{point && onMapHref && (
+					<LazyMiniMap
+						latitude={point.latitude}
+						longitude={point.longitude}
+						name={where}
+						href={onMapHref}
+						glyph="event"
+					/>
+				)}
+
 				<div className="flex flex-wrap gap-3">
-					{place && (
-						<a
-							href={directionsUrl(place.name, place.latitude, place.longitude)}
-							target="_blank"
-							rel="noopener noreferrer"
-							className="q-btn q-btn--secondary"
-						>
+					{onMapHref && (
+						<a href={onMapHref} className="q-btn q-btn--secondary">
 							<Navigation size={18} aria-hidden="true" />
 							{t.agenda.directions}
 						</a>

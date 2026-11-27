@@ -1,5 +1,5 @@
-// Point layers other features add to /mapa: places today; events and forum threads
-// once they have coordinates (docs/30, U07, U08 and §6.4). A layer says how to load
+// Point layers other features add to /mapa: places, community events and forum
+// threads with a point (docs/30, U07, U08 and §6.4). A layer says how to load
 // its points and how they look; the map draws them, clusters them, adds a chip to
 // toggle them, searches them and opens them from /mapa?<urlParam>=<id>.
 //
@@ -11,6 +11,7 @@ import type { LucideIcon } from "lucide-react";
 import type { StatusTone } from "../../lib/corridor/corridor-types";
 import type { Messages } from "../../lib/i18n/messages";
 import type { MapUrlState } from "../../lib/map/map-url";
+import { communityLayer, eventsLayer } from "./community-layers";
 import type { PinGlyph } from "./map-markers";
 import { placesLayer } from "./places-layer";
 
@@ -45,7 +46,7 @@ export interface PointLayer {
 	load: (t: Messages) => Promise<MapPoint[]>;
 }
 
-const POINT_LAYERS: PointLayer[] = [placesLayer];
+const POINT_LAYERS: PointLayer[] = [placesLayer, eventsLayer, communityLayer];
 
 /** Adds a layer (once per key). Call it before the map mounts. */
 export function registerMapLayer(layer: PointLayer): void {

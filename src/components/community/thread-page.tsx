@@ -2,6 +2,7 @@
 
 import { ArrowLeft, CalendarDays, MapPin } from "lucide-react";
 import { type SyntheticEvent, useState } from "react";
+import { pointOf } from "../../lib/community/community-geo";
 import {
 	FORUM_CATEGORY_LABELS,
 	formatRelative,
@@ -16,6 +17,7 @@ import type {
 } from "../../lib/community/community-types";
 import { readPrefill } from "../../lib/community/form-prefill";
 import { useT } from "../../lib/i18n/use-language";
+import { mapHref } from "../../lib/map/map-url";
 import { AgentMark } from "../agent-dock/agent-mark";
 import { usePublishScreen } from "../agent-dock/use-screen-context";
 import { useUiAction } from "../agent-dock/use-ui-action";
@@ -29,6 +31,7 @@ import {
 	PublishNotice,
 	textareaClass,
 } from "./community-ui";
+import { LazyMiniMap } from "./lazy-maps";
 import { ReportButton } from "./report-button";
 import { CitizenReportBadge } from "./trust-badges";
 import { signInHref, useLoad, useSession, useStore } from "./use-community";
@@ -123,6 +126,15 @@ function ThreadView({
 }) {
 	const t = useT();
 	const replies = t.forum.card.replies(posts.length);
+	const point = pointOf(thread);
+	// The "Comunidad" layer lists published conversations; a held one shows its point alone.
+	const onMapHref = point
+		? thread.moderationStatus === "published"
+			? mapHref({ conversacion: thread.id })
+			: mapHref({
+					camera: { lat: point.latitude, lng: point.longitude, zoom: 16 },
+				})
+		: null;
 	return (
 		<div className="flex max-w-3xl flex-col gap-5">
 			<article className="q-card space-y-3 px-5 py-5">
@@ -145,6 +157,16 @@ function ThreadView({
 					</time>
 				</div>
 				<p className="q-p whitespace-pre-line break-words">{thread.body}</p>
+				{point && onMapHref && (
+					<LazyMiniMap
+						latitude={point.latitude}
+						longitude={point.longitude}
+						name={thread.title}
+						href={onMapHref}
+						tone="neutral"
+						glyph="chat"
+					/>
+				)}
 				<LinkedContent placeId={thread.placeId} eventId={thread.eventId} />
 				<ReportButton kind="thread" id={thread.id} ownerId={thread.authorId} />
 			</article>
