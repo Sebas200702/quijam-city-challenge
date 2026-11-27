@@ -3,3 +3,20 @@
 @import "../../design-system/quillart.css";
 
 @config "../../design-system/tailwind.preset.cjs";
+
+/*
+ * Rows of chips that scroll sideways: the end fades out so a cut chip reads as
+ * "there is more" (audit U33). Static, so it is the same with reduced motion.
+ * The end padding lets the last chip scroll clear of the fade.
+ */
+.q-scroll-fade {
+	mask-image: linear-gradient(to right, #000 calc(100% - 2.5rem), transparent);
+	padding-inline-end: 2.5rem;
+}
+@media (min-width: 1024px) {
+	/* Rows that wrap on wide screens no longer scroll, so they need no hint. */
+	.q-scroll-fade--wrap-lg {
+		mask-image: none;
+		padding-inline-end: 0;
+	}
+}

@@ -19,6 +19,8 @@ import type {
 	Place,
 	PublishResult,
 } from "../community/community-types";
+import { ambAnchor } from "../geo/amb-boundary";
+import { mapHref } from "../map/map-url";
 import type {
 	AssistantDisplay,
 	AssistantToolArgs,
@@ -372,7 +374,11 @@ const HANDLERS: { [N in AssistantToolName]: Handler<N> } = {
 	async get_directions(args, { store }) {
 		const place = await requirePlace(store, args.place_slug);
 		if (!place) throw new ToolError("Dime a qué lugar quieres llegar.");
-		const href = directionsUrl(place.name, place.latitude, place.longitude);
+		// In the app: /mapa selects the place (docs/30, U08). Only a place outside the
+		// Metropolitan Area, which the app map cannot show, goes to an outside map.
+		const href = ambAnchor(place.latitude, place.longitude)
+			? mapHref({ lugar: place.slug })
+			: directionsUrl(place.name, place.latitude, place.longitude);
 		return {
 			summary: { place: place.name, address: place.address, url: href },
 			display: {
@@ -478,8 +484,8 @@ const HANDLERS: { [N in AssistantToolName]: Handler<N> } = {
 			placeId: place?.id ?? null,
 			locationText: args.location_text?.trim() || null,
 			capacity: args.capacity ?? null,
-			isFree: true,
-			priceCop: null,
+			isFree: !args.price_cop,
+			priceCop: args.price_cop ?? null,
 		});
 		return publishOutcome(
 			result,

@@ -12,9 +12,9 @@ import {
 	Users,
 } from "lucide-react";
 import { type ReactNode, useState } from "react";
+import { pointOf } from "../../lib/community/community-geo";
 import { EVENT_ILLUSTRATIONS } from "../../lib/community/community-illustrations";
 import {
-	directionsUrl,
 	EVENT_CATEGORY_LABELS,
 	formatCop,
 	formatEventLongDay,
@@ -33,6 +33,8 @@ import type {
 	Profile,
 } from "../../lib/community/community-types";
 import { useT } from "../../lib/i18n/use-language";
+import { mapHref } from "../../lib/map/map-url";
+import { usePublishScreen } from "../agent-dock/use-screen-context";
 import { AskQuillartButton } from "../assistant/ask-quillart-button";
 import { CommunityShell } from "./community-shell";
 import {
@@ -42,10 +44,17 @@ import {
 	Loaded,
 	SpotIllustration,
 } from "./community-ui";
+import { LazyMiniMap } from "./lazy-maps";
 import { ReportButton } from "./report-button";
 import { ThreadCard } from "./thread-card";
 import { VerifiedOrganizerBadge } from "./trust-badges";
-import { signInHref, useLoad, useSession, useStore } from "./use-community";
+import {
+	errorText,
+	signInHref,
+	useLoad,
+	useSession,
+	useStore,
+} from "./use-community";
 
 export interface EventDetailProps {
 	id: string;
@@ -75,6 +84,21 @@ export default function EventDetail({ id, aiHref }: EventDetailProps) {
 		},
 		[id, profile?.id],
 		["events", "forum"],
+	);
+	const shown = state.status === "ready" ? state.data : null;
+	usePublishScreen(
+		shown
+			? {
+					route: "/agenda/[id]",
+					title: shown.event.title,
+					entity: {
+						kind: "event",
+						id: shown.event.id,
+						name: shown.event.title,
+					},
+					...(shown.place ? { zone: shown.place.neighborhood } : {}),
+				}
+			: null,
 	);
 
 	return (
@@ -136,14 +160,28 @@ function EventView({
 	const isOrganizer = !!profile && profile.id === event.organizerId;
 	const cancelled = event.status === "cancelled";
 	const where = place?.name ?? event.locationText ?? t.agenda.placeTbd;
+	const point = pointOf(event, place);
+	// The "Eventos" layer of /mapa lists upcoming published events; any other event
+	// (held, cancelled, past) is shown by its point alone.
+	const onEventsLayer =
+		event.status === "published" &&
+		event.moderationStatus === "published" &&
+		!isPastEvent(event);
+	const onMapHref = point
+		? onEventsLayer
+			? mapHref({ evento: event.id })
+			: mapHref({
+					camera: { lat: point.latitude, lng: point.longitude, zoom: 16 },
+				})
+		: null;
 
 	return (
 		<>
 			<article className="q-card space-y-4 p-5 lg:p-8">
-				<div className="q-illus py-5">
+				<div className="q-illus py-3 sm:py-5">
 					<SpotIllustration
 						src={EVENT_ILLUSTRATIONS[event.category]}
-						className="h-36! lg:h-56!"
+						className="h-20! sm:h-36! lg:h-56!"
 					/>
 				</div>
 				<div className="flex flex-wrap items-center gap-2">
@@ -207,14 +245,19 @@ function EventView({
 					{event.description}
 				</p>
 
+				{point && onMapHref && (
+					<LazyMiniMap
+						latitude={point.latitude}
+						longitude={point.longitude}
+						name={where}
+						href={onMapHref}
+						glyph="event"
+					/>
+				)}
+
 				<div className="flex flex-wrap gap-3">
-					{place && (
-						<a
-							href={directionsUrl(place.name, place.latitude, place.longitude)}
-							target="_blank"
-							rel="noopener noreferrer"
-							className="q-btn q-btn--secondary"
-						>
+					{onMapHref && (
+						<a href={onMapHref} className="q-btn q-btn--secondary">
 							<Navigation size={18} aria-hidden="true" />
 							{t.agenda.directions}
 						</a>
@@ -369,7 +412,7 @@ function RegistrationPanel({
 			else await store.register(event.id);
 			onChange();
 		} catch (err) {
-			setError(err instanceof Error ? err.message : t.agenda.saveError);
+			setError(errorText(err, t.agenda.saveError));
 		} finally {
 			setBusy(false);
 		}
@@ -377,8 +420,11 @@ function RegistrationPanel({
 
 	if (sessionLoading) return null;
 
+	// When the panel holds the screen's main action, it stays in reach on phones.
+	let primary = false;
 	let content: ReactNode;
 	if (!signedIn) {
+		primary = !blocker;
 		content = blocker ? (
 			<p className="q-p q-muted">{blocker}</p>
 		) : (
@@ -418,6 +464,7 @@ function RegistrationPanel({
 			</>
 		);
 	} else if (canJoinWaitlist(event)) {
+		primary = true;
 		content = (
 			<>
 				<p className="q-p q-muted">{t.agenda.waitlistHint}</p>
@@ -434,6 +481,7 @@ function RegistrationPanel({
 	} else if (blocker) {
 		content = <p className="q-p q-muted">{blocker}</p>;
 	} else {
+		primary = true;
 		content = (
 			<button
 				type="button"
@@ -448,7 +496,11 @@ function RegistrationPanel({
 
 	return (
 		<section
-			className="q-card space-y-3 p-5"
+			className={`q-card space-y-3 p-5 ${
+				primary
+					? "max-lg:sticky! max-lg:bottom-[4.5rem] max-lg:z-20 max-lg:shadow-[var(--shadow-modal)]!"
+					: ""
+			}`}
 			aria-label={t.agenda.registrationLabel}
 		>
 			{content}
@@ -479,7 +531,7 @@ function OrganizerPanel({
 			await store.cancelEvent(event.id);
 			onChange();
 		} catch (err) {
-			setError(err instanceof Error ? err.message : t.agenda.cancelEventError);
+			setError(errorText(err, t.agenda.cancelEventError));
 		} finally {
 			setBusy(false);
 		}

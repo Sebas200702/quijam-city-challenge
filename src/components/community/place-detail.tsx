@@ -15,11 +15,14 @@ import {
 	PLACE_KIND_LABELS,
 } from "../../lib/community/community-labels";
 import { useT } from "../../lib/i18n/use-language";
+import { mapHref } from "../../lib/map/map-url";
+import { usePublishScreen } from "../agent-dock/use-screen-context";
 import { AskQuillartButton } from "../assistant/ask-quillart-button";
 import { CommunityShell } from "./community-shell";
 import { EmptyState, Loaded, SpotIllustration } from "./community-ui";
 import { EventCard } from "./event-card";
-import { PlaceBadges, PlaceKindTile } from "./place-card";
+import { LazyMiniMap } from "./lazy-maps";
+import { isOnAmbMap, PlaceBadges, PlaceKindTile } from "./place-card";
 import { ThreadCard } from "./thread-card";
 import { useLoad } from "./use-community";
 
@@ -57,6 +60,21 @@ export function PlaceDetail({
 		[slug],
 		["events", "forum"],
 	);
+	const shown = state.status === "ready" ? state.data : null;
+	usePublishScreen(
+		shown
+			? {
+					route: "/lugares/[slug]",
+					title: shown.place.name,
+					entity: {
+						kind: "place",
+						id: shown.place.slug,
+						name: shown.place.name,
+					},
+					zone: shown.place.neighborhood,
+				}
+			: null,
+	);
 
 	return (
 		<CommunityShell current="places" aiHref={aiHref}>
@@ -82,10 +100,10 @@ export function PlaceDetail({
 						t.places.careTips[place.kind as keyof typeof t.places.careTips];
 					return (
 						<>
-							<div className="q-illus py-5">
+							<div className="q-illus py-3 sm:py-5">
 								<SpotIllustration
 									src={PLACE_ILLUSTRATIONS[place.kind]}
-									className="h-36! lg:h-56!"
+									className="h-20! sm:h-36! lg:h-56!"
 								/>
 							</div>
 							<section className="flex flex-col gap-3">
@@ -101,6 +119,39 @@ export function PlaceDetail({
 								<div className="flex flex-wrap gap-1.5">
 									<PlaceBadges place={place} />
 								</div>
+								{/* Main action above the fold on phones (audit U37). */}
+								<div className="flex flex-wrap gap-2">
+									{isOnAmbMap(place) ? (
+										// In the app: /mapa selects the place and plans the way there.
+										<a
+											href={mapHref({ lugar: place.slug })}
+											className="q-btn q-btn--primary"
+										>
+											<Navigation size={18} aria-hidden="true" />
+											{t.places.directions}
+										</a>
+									) : (
+										// Outside the AMB the app map cannot show it: an outside map can.
+										<a
+											href={directionsUrl(
+												place.name,
+												place.latitude,
+												place.longitude,
+											)}
+											target="_blank"
+											rel="noopener noreferrer"
+											className="q-btn q-btn--primary"
+										>
+											<Navigation size={18} aria-hidden="true" />
+											{t.places.directions}
+											<span className="sr-only">{t.places.opensNewTab}</span>
+										</a>
+									)}
+									<AskQuillartButton prompt={t.places.askAbout(place.name)} />
+								</div>
+								{!isOnAmbMap(place) && (
+									<p className="q-sm q-muted">{t.places.outsideAmbNote}</p>
+								)}
 								<p className="q-p">{place.description}</p>
 								<dl className="q-card gap-3 p-4">
 									<div className="flex items-start gap-2">
@@ -131,23 +182,16 @@ export function PlaceDetail({
 										</dd>
 									</div>
 								</dl>
-								<div className="flex flex-wrap gap-2">
-									<a
-										href={directionsUrl(
-											place.name,
-											place.latitude,
-											place.longitude,
-										)}
-										target="_blank"
-										rel="noopener noreferrer"
-										className="q-btn q-btn--primary"
-									>
-										<Navigation size={18} aria-hidden="true" />
-										{t.places.directions}
-										<span className="sr-only">{t.places.opensNewTab}</span>
-									</a>
-									<AskQuillartButton prompt={t.places.askAbout(place.name)} />
-								</div>
+								{isOnAmbMap(place) && (
+									<LazyMiniMap
+										latitude={place.latitude}
+										longitude={place.longitude}
+										name={place.name}
+										href={mapHref({ lugar: place.slug })}
+										tone="green"
+										glyph="place"
+									/>
+								)}
 							</section>
 
 							<section aria-labelledby="place-events" className="space-y-3">

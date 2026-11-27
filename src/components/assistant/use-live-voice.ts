@@ -1,8 +1,9 @@
-// Gemini Live as a voice conduit for Quillart AI: the server's orchestrator
-// picks the agent and locks its instruction and tools in an ephemeral token;
-// tool calls run here with the person's session through useAssistant, and
-// actions wait for the same confirmation card as text. If Live cannot connect
-// or drops, the chat keeps the browser's speech recognition and text.
+// Gemini Live as the voice conduit of Quillart AI. Live only converses: every
+// real request comes back as an `ask_quillart` tool call, which goes through
+// the same text pipeline as typing in the dock (orchestrator, specialized
+// agent, uiActions, confirmation cards). Live then tells the result in its own
+// words. If Live cannot connect or drops, the chat keeps the browser's speech
+// recognition and text.
 
 import type { FunctionResponse, Session } from "@google/genai";
 import { useCallback, useEffect, useReducer, useRef } from "react";
@@ -12,36 +13,41 @@ import {
 	type Microphone,
 	startMicrophone,
 } from "../../lib/guide/live-audio";
+import { conduitResponse, toConduitCalls } from "../../lib/guide/live-conduit";
 import { openAgentLiveSession } from "../../lib/guide/live-session";
 import { INITIAL_LIVE_STATE, liveReducer } from "../../lib/guide/live-status";
-import {
-	liveHistoryTurns,
-	toFunctionResponses,
-	toLiveToolCalls,
-} from "../../lib/guide/live-tool-calls";
-import { getLanguage } from "../../lib/i18n/use-language";
-import { LIVE_VOICE_TEXT } from "./live-voice-text";
+import { liveHistoryTurns } from "../../lib/guide/live-tool-calls";
 import { forWire, type useAssistant } from "./use-assistant";
-import { speak } from "./voice-conduit";
 
 /** The server accepts up to 30 messages; keep the token request small. */
 const MAX_TOKEN_MESSAGES = 20;
 
 type Assistant = Pick<
 	ReturnType<typeof useAssistant>,
-	"messages" | "currentContext" | "appendLive" | "runLiveTurn" | "abandonLive"
+	"messages" | "currentContext" | "appendLive" | "ask" | "abandonLive"
 >;
+
+/**
+ * Where a relayed request is. While it is not idle, Live's own transcript is
+ * not written to the chat: the request and the orchestrator's answer already
+ * are, exactly as if the person had typed it.
+ */
+type Relay = "idle" | "asking" | "answered";
 
 export function useLiveVoice(assistant: Assistant) {
 	const [state, dispatch] = useReducer(liveReducer, INITIAL_LIVE_STATE);
 	const assistantRef = useRef(assistant);
 	assistantRef.current = assistant;
 	const session = useRef<Session | null>(null);
+	/** Agent shown on Live's own turns: the last one that answered. */
 	const agent = useRef<AssistantAgentId | null>(null);
 	const mic = useRef<Microphone | null>(null);
 	const playback = useRef<LivePlayback | null>(null);
 	const userText = useRef("");
 	const modelText = useRef("");
+	const relay = useRef<Relay>("idle");
+	/** ask_quillart calls Live withdrew: their answer is not sent back. */
+	const withdrawn = useRef(new Set<string>());
 	/** Bumps on every start and stop, so callbacks of an old session do nothing. */
 	const generation = useRef(0);
 
@@ -57,6 +63,17 @@ export function useLiveVoice(assistant: Assistant) {
 		return text;
 	}, []);
 
+	/** Writes Live's own words to the chat (small talk, not relayed answers). */
+	const appendModel = useCallback((text: string) => {
+		if (!text || !agent.current) return;
+		assistantRef.current.appendLive({
+			role: "assistant",
+			agent: agent.current,
+			text,
+			toolCalls: [],
+		});
+	}, []);
+
 	/** Frees the mic, speakers and session; waiting Live actions are dropped. */
 	const release = useCallback(() => {
 		mic.current?.stop();
@@ -65,19 +82,18 @@ export function useLiveVoice(assistant: Assistant) {
 		playback.current = null;
 		const current = session.current;
 		session.current = null;
-		flushUser();
-		const text = takeModelText();
-		if (text && agent.current) {
-			assistantRef.current.appendLive({
-				role: "assistant",
-				agent: agent.current,
-				text,
-				toolCalls: [],
-			});
+		if (relay.current === "idle") {
+			flushUser();
+			appendModel(takeModelText());
+		} else {
+			userText.current = "";
+			modelText.current = "";
 		}
+		relay.current = "idle";
+		withdrawn.current.clear();
 		assistantRef.current.abandonLive();
 		return current;
-	}, [flushUser, takeModelText]);
+	}, [appendModel, flushUser, takeModelText]);
 
 	const stop = useCallback(() => {
 		generation.current += 1;
@@ -114,63 +130,74 @@ export function useLiveVoice(assistant: Assistant) {
 				},
 				{
 					onInputText: (text) => {
-						if (isCurrent()) userText.current += text;
+						// While a request is relayed, its words are already in the chat.
+						if (isCurrent() && relay.current === "idle") {
+							userText.current += text;
+						}
 					},
 					onText: (text) => {
-						if (!isCurrent()) return;
-						flushUser();
-						modelText.current += text;
+						if (isCurrent()) modelText.current += text;
 					},
 					onAudio: (data) => {
 						if (isCurrent()) playback.current?.play(data);
 					},
-					onInterrupted: () => playback.current?.interrupt(),
-					onTurnComplete: () => {
-						if (!isCurrent() || !agent.current) return;
-						flushUser();
-						const text = takeModelText();
-						if (text) {
-							assistantRef.current.appendLive({
-								role: "assistant",
-								agent: agent.current,
-								text,
-								toolCalls: [],
-							});
+					onInterrupted: () => {
+						playback.current?.interrupt();
+						// What Live said before the interruption goes before the new words.
+						if (isCurrent() && relay.current === "idle") {
+							appendModel(takeModelText());
 						}
+					},
+					onTurnComplete: () => {
+						if (!isCurrent()) return;
+						if (relay.current !== "idle") {
+							// Live's summary of a relayed answer: the chat has the answer.
+							takeModelText();
+							if (relay.current === "answered") {
+								relay.current = "idle";
+								userText.current = "";
+							}
+							return;
+						}
+						flushUser();
+						appendModel(takeModelText());
 					},
 					onToolCall: (calls) => {
 						const live = session.current;
-						const chosen = agent.current;
-						if (!isCurrent() || !live || !chosen) return;
-						flushUser();
-						const text = takeModelText();
-						const { accepted, rejected } = toLiveToolCalls(chosen, calls);
+						if (!isCurrent() || !live) return;
+						// The request below is the person's message; their transcript is not.
+						userText.current = "";
+						modelText.current = "";
+						const { requests, rejected } = toConduitCalls(calls);
 						const respond = respondTo(live);
-						if (accepted.length === 0) {
-							if (text) {
-								assistantRef.current.appendLive({
-									role: "assistant",
-									agent: chosen,
-									text,
-									toolCalls: [],
-								});
-							}
+						if (requests.length === 0) {
 							respond(rejected);
 							return;
 						}
-						void assistantRef.current
-							.runLiveTurn(chosen, text, accepted, (results) =>
-								respond([...rejected, ...toFunctionResponses(results)]),
-							)
-							.then((waiting) => {
-								// Ask by voice too: the action only runs from the card.
-								if (waiting && isCurrent()) {
-									speak(LIVE_VOICE_TEXT[getLanguage()].confirmPrompt);
-								}
-							});
+						relay.current = "asking";
+						void (async () => {
+							const responses = [...rejected];
+							for (const { id, request } of requests) {
+								if (withdrawn.current.delete(id)) continue;
+								// Same pipeline as typing in the dock.
+								const result = await assistantRef.current.ask(request);
+								if (!isCurrent()) return;
+								if (result?.agent) agent.current = result.agent;
+								if (withdrawn.current.delete(id)) continue;
+								responses.push(conduitResponse(id, result));
+							}
+							if (responses.length === 0) {
+								relay.current = "idle";
+								return;
+							}
+							relay.current = "answered";
+							respond(responses);
+						})();
 					},
 					onToolCancel: (ids) => {
-						if (isCurrent()) assistantRef.current.abandonLive(ids);
+						if (!isCurrent()) return;
+						for (const id of ids) withdrawn.current.add(id);
+						assistantRef.current.abandonLive(ids);
 					},
 					onClose: (reason) => fail(reason),
 				},
@@ -197,16 +224,19 @@ export function useLiveVoice(assistant: Assistant) {
 		} catch (error) {
 			fail(error instanceof Error ? error.message : String(error));
 		}
-	}, [flushUser, release, takeModelText]);
+	}, [appendModel, flushUser, release, takeModelText]);
 
-	/** Typed text goes to the same Live session while it is on. */
+	/**
+	 * Typed text goes to the same Live session while it is on. It shows in the
+	 * chat when Live answers it itself; a relayed request shows instead.
+	 */
 	const sendText = useCallback(
 		(text: string): boolean => {
 			const live = session.current;
 			const clean = text.trim();
-			if (!live || !clean) return false;
+			if (!live || !clean || relay.current !== "idle") return false;
 			flushUser();
-			assistantRef.current.appendLive({ role: "user", text: clean });
+			userText.current = clean;
 			live.sendRealtimeInput({ text: clean });
 			return true;
 		},

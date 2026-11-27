@@ -2,6 +2,7 @@
 
 import { messages } from "../i18n/messages";
 import { getLanguage } from "../i18n/use-language";
+import { validatePoint } from "./community-geo";
 import type {
 	CommunityEvent,
 	EventQuery,
@@ -32,38 +33,70 @@ export function isoToBogotaLocal(iso: string): string {
 	return shifted.toISOString().slice(0, 16);
 }
 
-export function validateEventInput(
+/** The event field a validation message is about, so a form can point at it. */
+export type EventInputField =
+	| "title"
+	| "description"
+	| "start"
+	| "end"
+	| "place"
+	| "point"
+	| "capacity"
+	| "price";
+
+export interface EventInputIssue {
+	field: EventInputField;
+	message: string;
+}
+
+/** First problem of an event draft and the field it belongs to, or null. */
+export function eventInputIssue(
 	input: NewEventInput,
 	now: Date = new Date(),
-): string | null {
-	if (input.title.trim().length < 4) return validation().titleMin4;
-	if (input.title.trim().length > 120) return validation().titleMax120;
-	if (input.description.trim().length < 10) return validation().eventBodyMin;
+): EventInputIssue | null {
+	const v = validation();
+	const issue = (field: EventInputField, message: string) => ({
+		field,
+		message,
+	});
+	if (input.title.trim().length < 4) return issue("title", v.titleMin4);
+	if (input.title.trim().length > 120) return issue("title", v.titleMax120);
+	if (input.description.trim().length < 10)
+		return issue("description", v.eventBodyMin);
 	const start = new Date(input.startsAt);
-	if (Number.isNaN(start.getTime())) return "Indica la fecha y hora de inicio.";
-	if (start.getTime() < now.getTime()) return validation().eventStartPast;
+	if (Number.isNaN(start.getTime())) return issue("start", v.eventStartMissing);
+	if (start.getTime() < now.getTime()) return issue("start", v.eventStartPast);
 	if (input.endsAt) {
 		const end = new Date(input.endsAt);
 		if (Number.isNaN(end.getTime()) || end <= start)
-			return validation().eventEndAfterStart;
+			return issue("end", v.eventEndAfterStart);
 	}
 	if (!input.placeId && !input.locationText?.trim())
-		return validation().eventPlaceMissing;
+		return issue("place", v.eventPlaceMissing);
+	const pointError = validatePoint(input.latitude, input.longitude);
+	if (pointError) return issue("point", pointError);
 	if (
 		input.capacity !== null &&
 		(!Number.isInteger(input.capacity) || input.capacity < 1)
 	)
-		return validation().capacityInteger;
+		return issue("capacity", v.capacityInteger);
 	if (!input.isFree && (input.priceCop === null || input.priceCop <= 0))
-		return "Indica el valor de la entrada en pesos.";
+		return issue("price", v.eventPriceMissing);
 	return null;
+}
+
+export function validateEventInput(
+	input: NewEventInput,
+	now: Date = new Date(),
+): string | null {
+	return eventInputIssue(input, now)?.message ?? null;
 }
 
 export function validateThreadInput(input: NewThreadInput): string | null {
 	if (input.title.trim().length < 4) return validation().titleMin4;
 	if (input.title.trim().length > 140) return validation().titleMax140;
 	if (input.body.trim().length < 2) return "Escribe tu mensaje.";
-	return null;
+	return validatePoint(input.latitude, input.longitude);
 }
 
 export function validatePostBody(body: string): string | null {

@@ -109,9 +109,9 @@ export async function openLiveSession(
 }
 
 /**
- * Opens a Live session for the Quillart AI agent the server's orchestrator
- * picks from the conversation. The token locks that agent's instruction and
- * tools; tool calls come back through `onToolCall`.
+ * Opens a Live session as the voice conduit of Quillart AI. The token locks
+ * the conduit instruction and its single tool (ask_quillart); tool calls come
+ * back through `onToolCall`. `agent` labels Live's own conversational turns.
  */
 export async function openAgentLiveSession(
 	request: AssistantRequest,

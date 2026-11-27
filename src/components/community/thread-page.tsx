@@ -2,6 +2,7 @@
 
 import { ArrowLeft, CalendarDays, MapPin } from "lucide-react";
 import { type SyntheticEvent, useState } from "react";
+import { pointOf } from "../../lib/community/community-geo";
 import {
 	FORUM_CATEGORY_LABELS,
 	formatRelative,
@@ -14,7 +15,12 @@ import type {
 	Profile,
 	PublishResult,
 } from "../../lib/community/community-types";
+import { readPrefill } from "../../lib/community/form-prefill";
 import { useT } from "../../lib/i18n/use-language";
+import { mapHref } from "../../lib/map/map-url";
+import { AgentMark } from "../agent-dock/agent-mark";
+import { usePublishScreen } from "../agent-dock/use-screen-context";
+import { useUiAction } from "../agent-dock/use-ui-action";
 import { CommunityShell } from "./community-shell";
 import {
 	EmptyState,
@@ -25,6 +31,7 @@ import {
 	PublishNotice,
 	textareaClass,
 } from "./community-ui";
+import { LazyMiniMap } from "./lazy-maps";
 import { ReportButton } from "./report-button";
 import { CitizenReportBadge } from "./trust-badges";
 import { signInHref, useLoad, useSession, useStore } from "./use-community";
@@ -53,6 +60,16 @@ export default function ThreadPage({
 		},
 		[threadId, session.profile?.id],
 		["forum"],
+	);
+	const shown = state.status === "ready" ? state.data.thread : null;
+	usePublishScreen(
+		shown
+			? {
+					route: "/foro/[id]",
+					title: shown.title,
+					entity: { kind: "thread", id: shown.id, name: shown.title },
+				}
+			: null,
 	);
 
 	return (
@@ -109,6 +126,15 @@ function ThreadView({
 }) {
 	const t = useT();
 	const replies = t.forum.card.replies(posts.length);
+	const point = pointOf(thread);
+	// The "Comunidad" layer lists published conversations; a held one shows its point alone.
+	const onMapHref = point
+		? thread.moderationStatus === "published"
+			? mapHref({ conversacion: thread.id })
+			: mapHref({
+					camera: { lat: point.latitude, lng: point.longitude, zoom: 16 },
+				})
+		: null;
 	return (
 		<div className="flex max-w-3xl flex-col gap-5">
 			<article className="q-card space-y-3 px-5 py-5">
@@ -131,6 +157,16 @@ function ThreadView({
 					</time>
 				</div>
 				<p className="q-p whitespace-pre-line break-words">{thread.body}</p>
+				{point && onMapHref && (
+					<LazyMiniMap
+						latitude={point.latitude}
+						longitude={point.longitude}
+						name={thread.title}
+						href={onMapHref}
+						tone="neutral"
+						glyph="chat"
+					/>
+				)}
 				<LinkedContent placeId={thread.placeId} eventId={thread.eventId} />
 				<ReportButton kind="thread" id={thread.id} ownerId={thread.authorId} />
 			</article>
@@ -261,10 +297,29 @@ function ReplyComposer({
 }) {
 	const t = useT();
 	const store = useStore();
-	const [body, setBody] = useState("");
+	// `?respuesta=` (U16) or Quillart AI can leave the reply written.
+	const [body, setBody] = useState(
+		() => readPrefill("reply", window.location.search).body ?? "",
+	);
+	const [byAgent, setByAgent] = useState(false);
 	const [busy, setBusy] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [notice, setNotice] = useState<PublishResult<ForumPost> | null>(null);
+
+	useUiAction("form.prefill", (action) => {
+		// Only this conversation's reply: never text meant for another thread.
+		if (action.form !== "reply" || action.threadId !== threadId) return null;
+		const before = body;
+		setBody(action.fields.body ?? "");
+		setByAgent(true);
+		return {
+			labels: [t.dock.formFilled(1)],
+			undo: () => {
+				setBody(before);
+				setByAgent(false);
+			},
+		};
+	});
 
 	async function submit(formEvent: SyntheticEvent<HTMLFormElement>) {
 		formEvent.preventDefault();
@@ -293,13 +348,19 @@ function ReplyComposer({
 	}
 
 	return (
-		<form onSubmit={submit} className="q-card space-y-3 px-5 py-5" noValidate>
+		<form
+			id="reply-form"
+			onSubmit={submit}
+			className="q-card space-y-3 px-5 py-5"
+			noValidate
+		>
 			<label htmlFor="reply-body" className="q-eyebrow block">
 				{t.forum.thread.yourReply}
 			</label>
+			{byAgent && <AgentMark text={t.dock.filledByAgent} />}
 			<textarea
 				id="reply-body"
-				className={textareaClass}
+				className={`${textareaClass}${byAgent ? " q-agent-filled" : ""}`}
 				value={body}
 				maxLength={5000}
 				placeholder={t.forum.thread.replyPlaceholder}

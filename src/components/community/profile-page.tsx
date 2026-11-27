@@ -13,6 +13,7 @@ import { GOOGLE_AUTH_ENABLED } from "../../lib/auth/google-sign-in";
 import { initials } from "../../lib/community/community-labels";
 import { validateSignUp } from "../../lib/community/community-rules";
 import type { Profile } from "../../lib/community/community-types";
+import { neighborhoodLabel } from "../../lib/geo/amb-zones";
 import { useT } from "../../lib/i18n/use-language";
 import { AskQuillartButton } from "../assistant/ask-quillart-button";
 import { AppealsPanel } from "./appeals-panel";
@@ -33,7 +34,8 @@ import { GoogleSignInButton } from "./google-sign-in-button";
 import { MyDataPanel } from "./my-data-panel";
 import { ThreadCard } from "./thread-card";
 import { useCaptcha } from "./use-captcha";
-import { useLoad, useSession, useStore } from "./use-community";
+import { errorText, useLoad, useSession, useStore } from "./use-community";
+import { ZoneSelect } from "./zone-select";
 
 /** Only same-site paths: "/agenda/x" yes, "//evil.com" or "https://…" no. */
 export function safeReturnPath(raw: string | null): string | null {
@@ -52,10 +54,6 @@ function returnPath(): string | null {
 	return safeReturnPath(
 		new URLSearchParams(window.location.search).get("volver"),
 	);
-}
-
-function errorText(error: unknown, fallback: string): string {
-	return error instanceof Error && error.message ? error.message : fallback;
 }
 
 function SubmitButton({
@@ -211,7 +209,7 @@ function SignUpForm() {
 			displayName: displayName.trim(),
 			email: email.trim(),
 			password,
-			neighborhood: neighborhood.trim() || null,
+			neighborhood: neighborhood || null,
 			isVisitor,
 		};
 		const invalid = validateSignUp(input);
@@ -300,17 +298,11 @@ function SignUpForm() {
 					className={inputClass}
 				/>
 			</Field>
-			<Field id="signup-neighborhood" label={t.profile.neighborhood}>
-				<input
-					id="signup-neighborhood"
-					autoComplete="address-level3"
-					maxLength={60}
-					placeholder={t.profile.neighborhoodPlaceholder}
-					value={neighborhood}
-					onChange={(event) => setNeighborhood(event.target.value)}
-					className={inputClass}
-				/>
-			</Field>
+			<ZoneSelect
+				id="signup-neighborhood"
+				value={neighborhood}
+				onChange={setNeighborhood}
+			/>
 			<ResidencyField
 				name="signup-residency"
 				isVisitor={isVisitor}
@@ -409,7 +401,7 @@ function EditProfileForm({
 		try {
 			await store.updateProfile({
 				displayName: displayName.trim(),
-				neighborhood: neighborhood.trim() || null,
+				neighborhood: neighborhood || null,
 				isVisitor,
 			});
 			onDone();
@@ -439,15 +431,12 @@ function EditProfileForm({
 					className={inputClass}
 				/>
 			</Field>
-			<Field id="edit-neighborhood" label={t.profile.neighborhood}>
-				<input
-					id="edit-neighborhood"
-					maxLength={60}
-					value={neighborhood}
-					onChange={(event) => setNeighborhood(event.target.value)}
-					className={inputClass}
-				/>
-			</Field>
+			<ZoneSelect
+				id="edit-neighborhood"
+				value={neighborhood}
+				legacy={profile.neighborhood}
+				onChange={setNeighborhood}
+			/>
 			<ResidencyField
 				name="edit-residency"
 				isVisitor={isVisitor}
@@ -564,7 +553,7 @@ function SignedInView({ profile }: { profile: Profile }) {
 					</h1>
 					<p className="q-p q-muted mt-1">
 						{profile.neighborhood
-							? `${profile.neighborhood} · ${residency}`
+							? `${neighborhoodLabel(profile.neighborhood)} · ${residency}`
 							: residency}
 					</p>
 				</div>

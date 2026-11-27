@@ -28,7 +28,9 @@ import {
 import { type GeminiAgentOptions, runGeminiAgent } from "./gemini-agent";
 import { answerLocally } from "./local-agents";
 import { localCopy } from "./local-copy";
-import { routeMessage } from "./orchestrator";
+import { latestUserText, routeMessage } from "./orchestrator";
+import { parseScreenContext } from "./screen-context";
+import { uiActionsForCalls } from "./ui-actions";
 
 export const MAX_MESSAGES = 30;
 export const MAX_USER_TEXT = 1000;
@@ -180,6 +182,8 @@ function parseContext(value: unknown): AssistantContext {
 	if (fromPath !== null && !fromPath.startsWith("/")) {
 		fail("context.fromPath must be an internal path.");
 	}
+	// The screen only helps the agents: an unusable one is dropped, not refused.
+	const screen = parseScreenContext(value.screen);
 	return {
 		now,
 		signedIn: value.signedIn,
@@ -191,6 +195,7 @@ function parseContext(value: unknown): AssistantContext {
 		isVisitor,
 		fromPath,
 		...(isLanguage(value.language) ? { language: value.language } : {}),
+		...(screen ? { screen } : {}),
 	};
 }
 
@@ -228,23 +233,41 @@ export interface AnswerDeps {
 
 const ACCOUNT_ONLY_TOOLS: readonly AssistantToolName[] = ["my_registrations"];
 
+/** Said instead of the model's text when an action waits for the account. */
+export const ACTION_KEPT_TEXT =
+	"Te dejé la acción lista con el texto exacto. Entra a tu cuenta o créala para confirmarla; cuando vuelvas, sigue aquí.";
+
 /**
- * Safety net for the model: without a session, actions and personal reads
- * become a sign-in button instead.
+ * Safety net for the model without a session. Personal reads become a
+ * sign-in button. An action is kept as a pending card (U02): the card shows
+ * the exact text, asks to sign in instead of "Confirmar" and comes back
+ * ready after signing in, so nothing has to be said twice. It never runs
+ * without the account: the browser runs it with the person's own session.
  */
 export function enforceAccount(
 	turn: AgentTurn,
 	context: AssistantContext,
 ): AgentTurn {
 	if (context.signedIn) return turn;
-	const needsAccount = (name: AssistantToolName) =>
-		isActionTool(name) || ACCOUNT_ONLY_TOOLS.includes(name);
-	const kept = turn.toolCalls.filter((call) => !needsAccount(call.name));
+	const copy = localCopy(context.language);
+	// Keep an emergency reminder (Línea 123) if the model gave one.
+	const emergency = /\b123\b/.test(turn.text) ? `${copy.emergency} ` : "";
+	if (turn.toolCalls.some((call) => isActionTool(call.name))) {
+		return {
+			// The model's text may claim the action is done: never show it here.
+			text: `${emergency}${ACTION_KEPT_TEXT}`,
+			toolCalls: turn.toolCalls.filter(
+				(call) => !ACCOUNT_ONLY_TOOLS.includes(call.name),
+			),
+		};
+	}
+	const kept = turn.toolCalls.filter(
+		(call) => !ACCOUNT_ONLY_TOOLS.includes(call.name),
+	);
 	if (kept.length === turn.toolCalls.length) return turn;
 	const hasProfileLink = kept.some(
 		(call) => call.name === "open_page" && call.args.path === PROFILE_PATH,
 	);
-	const copy = localCopy(context.language);
 	const toolCalls: ToolCallDraft[] = hasProfileLink
 		? kept
 		: [
@@ -254,8 +277,6 @@ export function enforceAccount(
 					args: { path: PROFILE_PATH, label: copy.signInLabel },
 				},
 			];
-	// Keep an emergency reminder (Línea 123) if the model gave one.
-	const emergency = /\b123\b/.test(turn.text) ? `${copy.emergency} ` : "";
 	return {
 		text: `${emergency}${copy.needAccount}`,
 		toolCalls,
@@ -301,6 +322,12 @@ export async function answer(
 	const toolCalls = limitActionCalls(
 		turn.toolCalls.filter((call) => allowed.includes(call.name)),
 	).map((call) => ({ id: newId(), ...call }) as AssistantToolCall);
+	// Visible changes come only from these validated calls, through the whitelist.
+	const uiActions = uiActionsForCalls(
+		toolCalls,
+		latestUserText(messages),
+		context.screen,
+	);
 
 	return {
 		agent,
@@ -309,5 +336,6 @@ export async function answer(
 		toolCalls,
 		source,
 		suggestions: AGENTS[agent].suggestions,
+		...(uiActions.length > 0 ? { uiActions } : {}),
 	};
 }

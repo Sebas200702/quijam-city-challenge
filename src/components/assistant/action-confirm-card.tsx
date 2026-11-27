@@ -13,6 +13,7 @@ import { eventWhen } from "../../lib/assistant/tool-executor";
 import {
 	EVENT_CATEGORY_LABELS,
 	FORUM_CATEGORY_LABELS,
+	formatCop,
 	formatEventDay,
 	formatTime,
 } from "../../lib/community/community-labels";
@@ -106,10 +107,13 @@ export async function describeAction(
 			const args = call.args as AssistantToolArgs["create_event"];
 			const where =
 				(await placeName(store, args.place_slug)) ?? args.location_text ?? null;
+			const agenda = messages[getLanguage()].agenda;
 			const parts = [
 				localWhen(args.starts_at_local),
 				where,
 				EVENT_CATEGORY_LABELS[args.category],
+				args.capacity ? agenda.spotsLeft(args.capacity) : null,
+				args.price_cop ? formatCop(args.price_cop) : agenda.free,
 			].filter(Boolean);
 			return {
 				title: c.createEvent(parts.join(" · ")),

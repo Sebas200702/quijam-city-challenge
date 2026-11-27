@@ -22,7 +22,7 @@ const es: LocalCopy = {
 	needAccount:
 		"Para eso necesitas entrar a tu cuenta. Entra o créala y seguimos.",
 	createEvent:
-		"¡Qué buena! Llena el formulario con el nombre, la fecha y el lugar; antes de publicarse pasa por una revisión rápida.",
+		"¡Qué buena! Llena el formulario con el nombre, la fecha y el lugar; se publica al enviarlo y, si el sistema detecta algo, pasa a revisión.",
 	createEventLabel: "Publicar un evento",
 	confirmUnregister:
 		"Va, te ayudo a cancelar esa inscripción. Confírmame abajo.",
@@ -103,7 +103,7 @@ const en: LocalCopy = {
 	needAccount:
 		"You need to sign in for that. Sign in or create an account and we'll continue.",
 	createEvent:
-		"Great! Fill in the form with the name, date and place; it gets a quick review before it's published.",
+		"Great! Fill in the form with the name, date and place; it goes live when you send it and, if the system flags something, it goes to review.",
 	createEventLabel: "Publish an event",
 	confirmUnregister:
 		"Sure, I'll help you cancel that registration. Confirm below.",
@@ -189,7 +189,7 @@ const pt: LocalCopy = {
 	needAccount:
 		"Para isso você precisa entrar na sua conta. Entre ou crie uma e seguimos.",
 	createEvent:
-		"Que legal! Preencha o formulário com o nome, a data e o lugar; antes de publicar passa por uma revisão rápida.",
+		"Que legal! Preencha o formulário com o nome, a data e o lugar; é publicado ao enviar e, se o sistema detectar algo, passa por revisão.",
 	createEventLabel: "Publicar um evento",
 	confirmUnregister:
 		"Certo, eu te ajudo a cancelar essa inscrição. Confirme abaixo.",
@@ -271,7 +271,7 @@ const fr: LocalCopy = {
 	needAccount:
 		"Pour cela, tu dois te connecter à ton compte. Connecte-toi ou crée-le et on continue.",
 	createEvent:
-		"Super ! Remplis le formulaire avec le nom, la date et le lieu ; il passe par une vérification rapide avant d'être publié.",
+		"Super ! Remplis le formulaire avec le nom, la date et le lieu ; il est publié à l'envoi et, si le système détecte quelque chose, il passe en vérification.",
 	createEventLabel: "Publier un événement",
 	confirmUnregister:
 		"D'accord, je t'aide à annuler cette inscription. Confirme ci-dessous.",

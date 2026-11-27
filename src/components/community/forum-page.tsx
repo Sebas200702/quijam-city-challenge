@@ -8,6 +8,7 @@ import {
 	useId,
 	useState,
 } from "react";
+import { type GeoPoint, pointOf } from "../../lib/community/community-geo";
 import { FORUM_CATEGORY_LABELS } from "../../lib/community/community-labels";
 import { validateThreadInput } from "../../lib/community/community-rules";
 import type {
@@ -15,7 +16,11 @@ import type {
 	ForumThread,
 	PublishResult,
 } from "../../lib/community/community-types";
+import { readPrefill } from "../../lib/community/form-prefill";
 import { useT } from "../../lib/i18n/use-language";
+import { AgentMark } from "../agent-dock/agent-mark";
+import { usePublishScreen } from "../agent-dock/use-screen-context";
+import { useUiAction } from "../agent-dock/use-ui-action";
 import { AskQuillartButton } from "../assistant/ask-quillart-button";
 import { CommunityShell } from "./community-shell";
 import {
@@ -29,6 +34,7 @@ import {
 	PublishNotice,
 	textareaClass,
 } from "./community-ui";
+import { LazyPointPicker } from "./lazy-maps";
 import { ThreadCard } from "./thread-card";
 import { signInHref, useLoad, useSession, useStore } from "./use-community";
 
@@ -38,11 +44,13 @@ interface ForumLinks {
 	open: boolean;
 	placeId: string | null;
 	eventId: string | null;
+	/** `?titulo=&texto=&categoria=` (U16). */
+	prefill: Record<string, string>;
 }
 
 function readLinks(): ForumLinks {
 	if (typeof window === "undefined")
-		return { open: false, placeId: null, eventId: null };
+		return { open: false, placeId: null, eventId: null, prefill: {} };
 	const params = new URLSearchParams(window.location.search);
 	const placeId = params.get("lugar");
 	const eventId = params.get("evento");
@@ -50,7 +58,16 @@ function readLinks(): ForumLinks {
 		open: params.get("nuevo") === "1" || Boolean(placeId || eventId),
 		placeId: placeId || null,
 		eventId: eventId || null,
+		prefill: readPrefill("thread", window.location.search),
 	};
+}
+
+/** The new-thread form's starting text, and whether Quillart AI wrote it. */
+interface ThreadPrefill {
+	fields: Record<string, string>;
+	byAgent: boolean;
+	/** Changes on every prefill so the form starts again with the new text. */
+	version: number;
 }
 
 export default function ForumPage({ aiHref }: { aiHref?: string }) {
@@ -58,12 +75,41 @@ export default function ForumPage({ aiHref }: { aiHref?: string }) {
 	const [initial] = useState(readLinks);
 	const [category, setCategory] = useState<ForumCategory | null>(null);
 	const [formOpen, setFormOpen] = useState(initial.open);
+	const [prefill, setPrefill] = useState<ThreadPrefill>({
+		fields: initial.prefill,
+		byAgent: false,
+		version: 0,
+	});
 	const [notice, setNotice] = useState<PublishResult<ForumThread> | null>(null);
 	const { state, reload } = useLoad(
 		(store) => store.listThreads(category ? { category } : {}),
 		[category],
 		["forum"],
 	);
+
+	usePublishScreen({
+		route: "/foro",
+		title: t.forum.title,
+		...(category ? { filters: { categoria: category } } : {}),
+	});
+
+	useUiAction("form.prefill", (action) => {
+		if (action.form !== "thread") return null;
+		const before = { prefill, formOpen };
+		setPrefill({
+			fields: action.fields,
+			byAgent: true,
+			version: prefill.version + 1,
+		});
+		setFormOpen(true);
+		return {
+			labels: [t.dock.formFilled(Object.keys(action.fields).length)],
+			undo: () => {
+				setPrefill({ ...before.prefill, version: prefill.version + 2 });
+				setFormOpen(before.formOpen);
+			},
+		};
+	});
 
 	return (
 		<CommunityShell current="forum" aiHref={aiHref}>
@@ -94,6 +140,8 @@ export default function ForumPage({ aiHref }: { aiHref?: string }) {
 				<div className="flex min-w-0 flex-col gap-5">
 					{formOpen && (
 						<NewThreadForm
+							key={prefill.version}
+							prefill={prefill}
 							initialPlaceId={initial.placeId}
 							initialEventId={initial.eventId}
 							onCancel={() => setFormOpen(false)}
@@ -120,7 +168,7 @@ export default function ForumPage({ aiHref }: { aiHref?: string }) {
 
 					<fieldset className="min-w-0">
 						<legend className="q-eyebrow mb-2">{t.forum.filterByTopic}</legend>
-						<div className="flex gap-2 overflow-x-auto pb-1">
+						<div className="q-scroll-fade flex gap-2 overflow-x-auto pb-1">
 							<CategoryChip
 								label={t.forum.allTopics}
 								selected={category === null}
@@ -246,11 +294,13 @@ interface Attachment {
 }
 
 function NewThreadForm({
+	prefill,
 	initialPlaceId,
 	initialEventId,
 	onCancel,
 	onDone,
 }: {
+	prefill: ThreadPrefill;
 	initialPlaceId: string | null;
 	initialEventId: string | null;
 	onCancel: () => void;
@@ -260,17 +310,26 @@ function NewThreadForm({
 	const store = useStore();
 	const session = useSession();
 	const formId = useId();
-	const [title, setTitle] = useState("");
-	const [body, setBody] = useState("");
-	const [category, setCategory] = useState<ForumCategory>(
-		initialPlaceId ? "neighborhood" : "general",
-	);
+	const [title, setTitle] = useState(prefill.fields.title ?? "");
+	const [body, setBody] = useState(prefill.fields.body ?? "");
+	const [category, setCategory] = useState<ForumCategory>(() => {
+		const asked = prefill.fields.category;
+		if (asked && CATEGORIES.includes(asked as ForumCategory)) {
+			return asked as ForumCategory;
+		}
+		return initialPlaceId ? "neighborhood" : "general";
+	});
+	const filled = (field: string) =>
+		prefill.byAgent && prefill.fields[field] ? " q-agent-filled" : "";
 	const [place, setPlace] = useState<Attachment | null>(
 		initialPlaceId ? { id: initialPlaceId, name: null } : null,
 	);
 	const [event, setEvent] = useState<Attachment | null>(
 		initialEventId ? { id: initialEventId, name: null } : null,
 	);
+	// Optional point of what the conversation is about; the place or event lends theirs.
+	const [point, setPoint] = useState<GeoPoint | null>(null);
+	const [pointNote, setPointNote] = useState<string | null>(null);
 	const [busy, setBusy] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [rejected, setRejected] = useState<PublishResult<ForumThread> | null>(
@@ -284,6 +343,11 @@ function NewThreadForm({
 			.listPlaces()
 			.then((places) => {
 				const found = places.find((item) => item.id === initialPlaceId);
+				const lent = found ? pointOf({}, found) : null;
+				if (active && found && lent) {
+					setPoint((current) => current ?? lent);
+					setPointNote(t.geo.picker.fromPlace(found.name));
+				}
 				if (active)
 					setPlace((current) =>
 						current
@@ -297,7 +361,7 @@ function NewThreadForm({
 		return () => {
 			active = false;
 		};
-	}, [store, initialPlaceId]);
+	}, [store, initialPlaceId, t]);
 
 	useEffect(() => {
 		if (!initialEventId) return;
@@ -305,6 +369,11 @@ function NewThreadForm({
 		store
 			.getEvent(initialEventId)
 			.then((found) => {
+				const lent = found ? pointOf(found) : null;
+				if (active && found && lent) {
+					setPoint((current) => current ?? lent);
+					setPointNote(t.geo.picker.fromPlace(found.title));
+				}
 				if (active)
 					setEvent((current) =>
 						current
@@ -318,7 +387,7 @@ function NewThreadForm({
 		return () => {
 			active = false;
 		};
-	}, [store, initialEventId]);
+	}, [store, initialEventId, t]);
 
 	if (session.loading) return <Loading />;
 	if (!session.profile)
@@ -349,6 +418,8 @@ function NewThreadForm({
 			category,
 			placeId: place?.id ?? null,
 			eventId: event?.id ?? null,
+			latitude: point?.latitude ?? null,
+			longitude: point?.longitude ?? null,
 		};
 		const invalid = validateThreadInput(input);
 		setRejected(null);
@@ -377,6 +448,7 @@ function NewThreadForm({
 
 	return (
 		<form
+			id="thread-form"
 			onSubmit={submit}
 			className="q-card space-y-4 px-5 py-5"
 			aria-labelledby={`${formId}-heading`}
@@ -385,6 +457,7 @@ function NewThreadForm({
 			<h2 id={`${formId}-heading`} className="q-h3">
 				{t.forum.newThread}
 			</h2>
+			{prefill.byAgent && <AgentMark text={t.dock.filledByAgent} />}
 			{(place || event) && (
 				<div className="flex flex-wrap gap-2">
 					{place && (
@@ -406,7 +479,7 @@ function NewThreadForm({
 			<Field id={`${formId}-title`} label={t.forum.form.titleLabel}>
 				<input
 					id={`${formId}-title`}
-					className={inputClass}
+					className={`${inputClass}${filled("title")}`}
 					value={title}
 					maxLength={140}
 					required
@@ -417,7 +490,7 @@ function NewThreadForm({
 			<Field id={`${formId}-category`} label={t.forum.form.topic}>
 				<select
 					id={`${formId}-category`}
-					className={inputClass}
+					className={`${inputClass}${filled("category")}`}
 					value={category}
 					onChange={(change) =>
 						setCategory(change.target.value as ForumCategory)
@@ -437,13 +510,23 @@ function NewThreadForm({
 			>
 				<textarea
 					id={`${formId}-body`}
-					className={textareaClass}
+					className={`${textareaClass}${filled("body")}`}
 					value={body}
 					required
 					placeholder={t.forum.form.messagePlaceholder}
 					onChange={(change) => setBody(change.target.value)}
 				/>
 			</Field>
+			<LazyPointPicker
+				title={t.geo.picker.threadTitle}
+				hint={t.geo.picker.threadHint}
+				value={point}
+				note={pointNote}
+				onChange={(next) => {
+					setPoint(next);
+					setPointNote(null);
+				}}
+			/>
 			{error && <ErrorNote message={error} />}
 			{rejected && <PublishNotice result={rejected} />}
 			<div className="flex flex-wrap gap-2">

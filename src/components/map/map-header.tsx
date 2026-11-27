@@ -48,9 +48,17 @@ interface MapHeaderProps {
 	onSearch: (query: string) => boolean;
 	theme: Theme;
 	onToggleTheme: () => void;
-	visible: Record<LayerKey, boolean>;
-	counts: Record<LayerKey, number>;
-	onToggle: (key: LayerKey) => void;
+	/** Visibility by layer key: the corridor layers and the registered point layers. */
+	visible: Record<string, boolean>;
+	counts: Record<string, number>;
+	onToggle: (key: string) => void;
+	/** Chips of the point layers (places…), after the corridor ones. */
+	pointLayers?: {
+		key: string;
+		label: string;
+		tone: StatusTone;
+		Icon: LucideIcon;
+	}[];
 	/** "seed" means Supabase is out of reach: shows the offline badge. */
 	source?: CorridorDataSource;
 	/** The screen's single "datos de referencia" tag for the corridor seed (rule 9). Defaults to true. */
@@ -73,6 +81,7 @@ export function MapHeader({
 	onToggle,
 	source,
 	showReferenceTag = true,
+	pointLayers = [],
 	children,
 }: MapHeaderProps) {
 	const copy = useT().map;
@@ -146,22 +155,28 @@ export function MapHeader({
 				)}
 			</div>
 
-			<fieldset className="corridor-chips">
+			<fieldset className="corridor-chips q-scroll-fade">
 				<legend className="q-sr">{copy.layers}</legend>
-				{LAYER_TOGGLES.map(({ key, label, tone, Icon }) => (
+				{[
+					...pointLayers,
+					...LAYER_TOGGLES.map((toggle) => ({
+						...toggle,
+						label: toggle.label(copy),
+					})),
+				].map(({ key, label, tone, Icon }) => (
 					<button
 						key={key}
 						type="button"
 						className={`q-chip corridor-chip corridor-chip--${tone}`}
-						aria-pressed={visible[key]}
+						aria-pressed={visible[key] !== false}
 						// Named "Paraderos (7)", not "Paraderos7"; the count hides on narrow phones.
-						aria-label={`${label(copy)} (${counts[key]})`}
+						aria-label={`${label} (${counts[key] ?? 0})`}
 						onClick={() => onToggle(key)}
 					>
 						<Icon size={18} strokeWidth={1.75} aria-hidden="true" />
-						{label(copy)}
+						{label}
 						<span className="corridor-chip__count" aria-hidden="true">
-							{counts[key]}
+							{counts[key] ?? 0}
 						</span>
 					</button>
 				))}

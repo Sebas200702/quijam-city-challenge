@@ -1,21 +1,32 @@
 // Form to publish a community event; the moderation triage decides what happens next.
+// It can be filled without an account (the account is asked for on publishing,
+// keeping what was written) and arrive prefilled by Quillart AI or by the URL
+// (`?titulo=&descripcion=&categoria=&fecha=&hora=&lugar=`, U14).
 
 import { ArrowLeft, LogIn } from "lucide-react";
 import { type SyntheticEvent, useEffect, useState } from "react";
 import { askHref } from "../../lib/assistant/assistant-labels";
+import { type GeoPoint, pointOf } from "../../lib/community/community-geo";
 import { EVENT_CATEGORY_LABELS } from "../../lib/community/community-labels";
 import {
 	bogotaLocalToIso,
+	type EventInputField,
+	type EventInputIssue,
+	eventInputIssue,
 	isoToBogotaLocal,
-	validateEventInput,
 } from "../../lib/community/community-rules";
 import type {
 	CommunityEvent,
 	EventCategory,
 	NewEventInput,
+	Place,
 	PublishResult,
 } from "../../lib/community/community-types";
+import { readPrefill } from "../../lib/community/form-prefill";
 import { useT } from "../../lib/i18n/use-language";
+import { AgentMark } from "../agent-dock/agent-mark";
+import { usePublishScreen } from "../agent-dock/use-screen-context";
+import { useUiAction } from "../agent-dock/use-ui-action";
 import { CommunityShell } from "./community-shell";
 import {
 	ErrorNote,
@@ -27,7 +38,14 @@ import {
 	PublishNotice,
 	textareaClass,
 } from "./community-ui";
-import { signInHref, useLoad, useSession, useStore } from "./use-community";
+import { LazyPointPicker } from "./lazy-maps";
+import {
+	errorText,
+	signInHref,
+	useLoad,
+	useSession,
+	useStore,
+} from "./use-community";
 
 const CATEGORIES = Object.keys(EVENT_CATEGORY_LABELS) as EventCategory[];
 const OTHER_PLACE = "";
@@ -44,24 +62,107 @@ interface FormValues {
 	capacity: string;
 	isFree: boolean;
 	price: string;
+	/** Point of the meeting place on the AMB map (U15). */
+	point: GeoPoint | null;
+	/** True while the point is the catalog place's own, untouched. */
+	pointFromPlace: boolean;
+}
+
+/** The catalog place's point, when it is inside the AMB. */
+function placePoint(place: Place | undefined): GeoPoint | null {
+	return place ? pointOf({}, place) : null;
+}
+
+/** What was written before signing in, kept for this tab only. */
+const DRAFT_KEY = "quillart-event-draft";
+
+function savedDraft(): Partial<FormValues> {
+	try {
+		const raw = sessionStorage.getItem(DRAFT_KEY);
+		return raw ? (JSON.parse(raw) as Partial<FormValues>) : {};
+	} catch {
+		return {};
+	}
+}
+
+function saveDraft(values: FormValues | null) {
+	try {
+		if (values) sessionStorage.setItem(DRAFT_KEY, JSON.stringify(values));
+		else sessionStorage.removeItem(DRAFT_KEY);
+	} catch {
+		// Storage blocked: the form still works, the draft just is not kept.
+	}
+}
+
+/** Prefilled fields (URL or agent) on top of the form values. */
+function withPrefill(
+	values: FormValues,
+	fields: Record<string, string>,
+): FormValues {
+	return {
+		...values,
+		...(fields.title ? { title: fields.title } : {}),
+		...(fields.description ? { description: fields.description } : {}),
+		...(fields.category && fields.category in EVENT_CATEGORY_LABELS
+			? { category: fields.category as EventCategory }
+			: {}),
+		...(fields.date ? { date: fields.date } : {}),
+		...(fields.startTime ? { startTime: fields.startTime } : {}),
+		// A catalog place id or slug; resolved against the list once it loads.
+		...(fields.place ? { placeId: fields.place } : {}),
+		...(fields.locationText
+			? { locationText: fields.locationText, placeId: OTHER_PLACE }
+			: {}),
+		...(fields.capacity ? { capacity: fields.capacity } : {}),
+		// `costo=0` is a free event; any other amount is the entry price.
+		...(fields.price
+			? fields.price === "0"
+				? { isFree: true, price: "" }
+				: { isFree: false, price: fields.price }
+			: {}),
+	};
 }
 
 function initialValues(): FormValues {
-	const params = new URLSearchParams(window.location.search);
-	return {
+	const empty: FormValues = {
 		title: "",
 		description: "",
 		category: "community",
 		date: "",
 		startTime: "",
 		endTime: "",
-		placeId: params.get("lugar") ?? OTHER_PLACE,
+		placeId: OTHER_PLACE,
 		locationText: "",
 		capacity: "",
 		isFree: true,
 		price: "",
+		point: null,
+		pointFromPlace: false,
 	};
+	return withPrefill(
+		{ ...empty, ...savedDraft() },
+		readPrefill("event", window.location.search),
+	);
 }
+
+/** Control that shows the problem of `field`, so the form can focus it. */
+function controlId(field: EventInputField, values: FormValues): string {
+	if (field === "start") return values.date ? "event-start" : "event-date";
+	if (field === "place") return "event-location";
+	return `event-${field}`;
+}
+/** Form fields the agent filled, to mark them in gold. */
+const PREFILL_INPUTS: Record<string, keyof FormValues> = {
+	title: "title",
+	description: "description",
+	category: "category",
+	date: "date",
+	startTime: "startTime",
+	place: "placeId",
+	locationText: "locationText",
+	capacity: "capacity",
+	price: "price",
+};
 
 function toInput(values: FormValues): NewEventInput {
 	const startsAt = bogotaLocalToIso(`${values.date}T${values.startTime}`);
@@ -83,6 +184,8 @@ function toInput(values: FormValues): NewEventInput {
 		capacity,
 		isFree: values.isFree,
 		priceCop: values.isFree ? null : price,
+		latitude: values.point?.latitude ?? null,
+		longitude: values.point?.longitude ?? null,
 	};
 }
 
@@ -108,66 +211,153 @@ export default function EventForm({ aiHref }: EventFormProps) {
 			</PageTitle>
 			{session.loading ? (
 				<Loading />
-			) : session.profile ? (
-				<EventFormBody />
 			) : (
-				<div className="q-card space-y-3 p-5">
-					<p className="q-h3">{t.agenda.signInTitle}</p>
-					<p className="q-p q-muted">{t.agenda.signInText}</p>
-					<a href={signInHref()} className="q-btn q-btn--primary self-start">
-						<LogIn size={18} aria-hidden="true" />
-						{t.agenda.signIn}
-					</a>
-				</div>
+				<EventFormBody signedIn={session.profile !== null} />
 			)}
 		</CommunityShell>
 	);
 }
 
-function EventFormBody() {
+function EventFormBody({ signedIn }: { signedIn: boolean }) {
 	const t = useT();
 	const store = useStore();
 	const { state: placesState } = useLoad((s) => s.listPlaces(), []);
 	const [values, setValues] = useState<FormValues>(initialValues);
+	const [agentFilled, setAgentFilled] = useState<Set<keyof FormValues>>(
+		() => new Set(),
+	);
 	const [error, setError] = useState<string | null>(null);
+	const [issue, setIssue] = useState<EventInputIssue | null>(null);
 	const [submitting, setSubmitting] = useState(false);
 	const [result, setResult] = useState<PublishResult<CommunityEvent> | null>(
 		null,
 	);
 
-	// A `?lugar=` id that is not in the catalog falls back to a free-text address.
+	// A `?lugar=` id or slug resolves to the catalog place and lends its point
+	// to the picker; anything else falls back to a free-text address.
 	useEffect(() => {
 		if (placesState.status !== "ready") return;
-		setValues((current) =>
-			current.placeId &&
-			!placesState.data.some((place) => place.id === current.placeId)
-				? { ...current, placeId: OTHER_PLACE }
-				: current,
-		);
+		setValues((current) => {
+			if (!current.placeId) return current;
+			const place = placesState.data.find(
+				(item) => item.id === current.placeId || item.slug === current.placeId,
+			);
+			if (!place) return { ...current, placeId: OTHER_PLACE };
+			if (place.id === current.placeId && current.point) return current;
+			const point = current.point ?? placePoint(place);
+			return {
+				...current,
+				placeId: place.id,
+				point,
+				pointFromPlace: current.point ? current.pointFromPlace : point !== null,
+			};
+		});
 	}, [placesState]);
 
+	usePublishScreen({
+		route: "/agenda/nuevo",
+		title: t.agenda.formTitle,
+		draft: {
+			form: "event",
+			fields: {
+				title: values.title,
+				description: values.description,
+				category: values.category,
+				date: values.date,
+				startTime: values.startTime,
+				locationText: values.locationText,
+			},
+		},
+	});
+
+	// Quillart AI fills the form on screen; the person reviews and publishes.
+	useUiAction("form.prefill", (action) => {
+		if (action.form !== "event") return null;
+		const before = values;
+		const beforeFilled = agentFilled;
+		setValues(withPrefill(values, action.fields));
+		const filled = new Set(
+			Object.keys(action.fields).flatMap((key) =>
+				PREFILL_INPUTS[key] ? [PREFILL_INPUTS[key]] : [],
+			),
+		);
+		setAgentFilled(filled);
+		return {
+			labels: [t.dock.formFilled(filled.size)],
+			undo: () => {
+				setValues(before);
+				setAgentFilled(beforeFilled);
+			},
+		};
+	});
+
+	const places = placesState.status === "ready" ? placesState.data : [];
+	const chosenPlace = places.find((place) => place.id === values.placeId);
+
+	function choosePlace(placeId: string) {
+		const place = places.find((item) => item.id === placeId);
+		setValues((current) => {
+			// A point the person moved by hand stays; a borrowed one follows the place.
+			const keep = current.point && !current.pointFromPlace;
+			const point = keep ? current.point : placePoint(place);
+			return {
+				...current,
+				placeId,
+				point,
+				pointFromPlace: !keep && point !== null,
+			};
+		});
+		setError(null);
+	}
+
 	const today = isoToBogotaLocal(new Date().toISOString()).slice(0, 10);
+	const mark = (key: keyof FormValues) =>
+		agentFilled.has(key) ? " q-agent-filled" : "";
 
 	function set<K extends keyof FormValues>(key: K, value: FormValues[K]) {
 		setValues((current) => ({ ...current, [key]: value }));
 		setError(null);
+		setIssue(null);
 	}
+
+	// After a failed check, move to the field once its message is on screen,
+	// so the screen reader reads the label and the message together.
+	// biome-ignore lint/correctness/useExhaustiveDependencies: only a new check moves the focus.
+	useEffect(() => {
+		if (issue) document.getElementById(controlId(issue.field, values))?.focus();
+	}, [issue]);
+
+	/** The message for one control, when the last check pointed at it. */
+	const errorFor = (id: string) =>
+		issue && controlId(issue.field, values) === id ? issue.message : null;
 
 	async function handleSubmit(event: SyntheticEvent<HTMLFormElement>) {
 		event.preventDefault();
 		setError(null);
 		setResult(null);
+		if (!signedIn) {
+			// Ask for the account only now, keeping what was written (U14).
+			saveDraft(values);
+			window.location.assign(signInHref());
+			return;
+		}
 		const input = toInput(values);
-		const invalid = validateEventInput(input);
+		const invalid =
+			eventInputIssue(input) ??
+			(!values.placeId && !values.point
+				? { field: "point" as const, message: t.geo.picker.pointRequired }
+				: null);
 		if (invalid) {
-			setError(invalid);
+			setIssue(invalid);
 			return;
 		}
 		setSubmitting(true);
 		try {
-			setResult(await store.createEvent(input));
+			const published = await store.createEvent(input);
+			setResult(published);
+			if (published.outcome !== "rejected") saveDraft(null);
 		} catch (err) {
-			setError(err instanceof Error ? err.message : t.agenda.publishError);
+			setError(errorText(err, t.agenda.publishError));
 		} finally {
 			setSubmitting(false);
 		}
@@ -192,11 +382,21 @@ function EventFormBody() {
 	}
 
 	return (
-		<form onSubmit={handleSubmit} className="q-card space-y-5 p-5" noValidate>
-			<Field id="event-title" label={t.agenda.fieldTitle}>
+		<form
+			id="event-form"
+			onSubmit={handleSubmit}
+			className="q-card space-y-5 p-5"
+			noValidate
+		>
+			{agentFilled.size > 0 && <AgentMark text={t.dock.filledByAgent} />}
+			<Field
+				id="event-title"
+				error={errorFor("event-title")}
+				label={t.agenda.fieldTitle}
+			>
 				<input
 					id="event-title"
-					className={inputClass}
+					className={`${inputClass}${mark("title")}`}
 					value={values.title}
 					onChange={(e) => set("title", e.target.value)}
 					maxLength={120}
@@ -205,10 +405,14 @@ function EventFormBody() {
 				/>
 			</Field>
 
-			<Field id="event-description" label={t.agenda.fieldDescription}>
+			<Field
+				id="event-description"
+				error={errorFor("event-description")}
+				label={t.agenda.fieldDescription}
+			>
 				<textarea
 					id="event-description"
-					className={textareaClass}
+					className={`${textareaClass}${mark("description")}`}
 					value={values.description}
 					onChange={(e) => set("description", e.target.value)}
 					placeholder={t.agenda.descriptionPlaceholder}
@@ -219,7 +423,7 @@ function EventFormBody() {
 			<Field id="event-category" label={t.agenda.category}>
 				<select
 					id="event-category"
-					className={inputClass}
+					className={`${inputClass}${mark("category")}`}
 					value={values.category}
 					onChange={(e) => set("category", e.target.value as EventCategory)}
 				>
@@ -232,28 +436,40 @@ function EventFormBody() {
 			</Field>
 
 			<div className="grid gap-4 sm:grid-cols-3">
-				<Field id="event-date" label={t.agenda.fieldDate}>
+				<Field
+					id="event-date"
+					error={errorFor("event-date")}
+					label={t.agenda.fieldDate}
+				>
 					<input
 						id="event-date"
 						type="date"
-						className={inputClass}
+						className={`${inputClass}${mark("date")}`}
 						value={values.date}
 						min={today}
 						onChange={(e) => set("date", e.target.value)}
 						required
 					/>
 				</Field>
-				<Field id="event-start" label={t.agenda.fieldStart}>
+				<Field
+					id="event-start"
+					error={errorFor("event-start")}
+					label={t.agenda.fieldStart}
+				>
 					<input
 						id="event-start"
 						type="time"
-						className={inputClass}
+						className={`${inputClass}${mark("startTime")}`}
 						value={values.startTime}
 						onChange={(e) => set("startTime", e.target.value)}
 						required
 					/>
 				</Field>
-				<Field id="event-end" label={t.agenda.fieldEnd}>
+				<Field
+					id="event-end"
+					error={errorFor("event-end")}
+					label={t.agenda.fieldEnd}
+				>
 					<input
 						id="event-end"
 						type="time"
@@ -270,9 +486,9 @@ function EventFormBody() {
 					<Field id="event-place" label={t.agenda.fieldPlace}>
 						<select
 							id="event-place"
-							className={inputClass}
+							className={`${inputClass}${mark("placeId")}`}
 							value={values.placeId}
-							onChange={(e) => set("placeId", e.target.value)}
+							onChange={(e) => choosePlace(e.target.value)}
 						>
 							<option value={OTHER_PLACE}>{t.agenda.otherPlace}</option>
 							{places.map((place) => (
@@ -288,12 +504,13 @@ function EventFormBody() {
 			{!values.placeId && (
 				<Field
 					id="event-location"
+					error={errorFor("event-location")}
 					label={t.agenda.fieldLocation}
 					hint={t.agenda.locationHint}
 				>
 					<input
 						id="event-location"
-						className={inputClass}
+						className={`${inputClass}${mark("locationText")}`}
 						value={values.locationText}
 						onChange={(e) => set("locationText", e.target.value)}
 						autoComplete="street-address"
@@ -301,8 +518,34 @@ function EventFormBody() {
 				</Field>
 			)}
 
+			<div id="event-point" tabIndex={-1} className="space-y-2">
+				<LazyPointPicker
+					title={t.geo.picker.eventTitle}
+					value={values.point}
+					initialCenter={placePoint(chosenPlace)}
+					note={
+						values.pointFromPlace && chosenPlace
+							? t.geo.picker.fromPlace(chosenPlace.name)
+							: null
+					}
+					onChange={(point) => {
+						setValues((current) => ({
+							...current,
+							point,
+							pointFromPlace: false,
+						}));
+						setError(null);
+						setIssue(null);
+					}}
+				/>
+				{errorFor("event-point") && (
+					<ErrorNote message={errorFor("event-point") ?? ""} />
+				)}
+			</div>
+
 			<Field
 				id="event-capacity"
+				error={errorFor("event-capacity")}
 				label={t.agenda.fieldCapacity}
 				hint={t.agenda.capacityHint}
 			>
@@ -343,7 +586,11 @@ function EventFormBody() {
 			</fieldset>
 
 			{!values.isFree && (
-				<Field id="event-price" label={t.agenda.fieldPrice}>
+				<Field
+					id="event-price"
+					error={errorFor("event-price")}
+					label={t.agenda.fieldPrice}
+				>
 					<input
 						id="event-price"
 						type="number"
@@ -367,9 +614,16 @@ function EventFormBody() {
 					className="q-btn q-btn--primary q-btn--block"
 					disabled={submitting}
 				>
-					{submitting ? t.agenda.publishing : t.agenda.publishEvent}
+					{!signedIn && <LogIn size={18} aria-hidden="true" />}
+					{submitting
+						? t.agenda.publishing
+						: signedIn
+							? t.agenda.publishEvent
+							: t.agenda.signInTitle}
 				</button>
-				<p className="q-sm q-muted text-center">{t.agenda.moderationNote}</p>
+				<p className="q-sm q-muted text-center">
+					{signedIn ? t.agenda.moderationNote : t.agenda.signInText}
+				</p>
 			</div>
 			<p className="q-sm q-muted text-center">
 				{t.agenda.askQuillartPrefix}{" "}

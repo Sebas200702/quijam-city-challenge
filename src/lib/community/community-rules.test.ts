@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
 	bogotaLocalToIso,
+	eventInputIssue,
 	filterEvents,
 	isoToBogotaLocal,
 	isReservedDisplayName,
@@ -97,6 +98,24 @@ describe("validateEventInput", () => {
 		expect(validateEventInput({ ...validInput, capacity: 0 }, NOW)).toMatch(
 			/cupos/,
 		);
+	});
+});
+
+describe("eventInputIssue", () => {
+	it("names the field the message belongs to", () => {
+		expect(eventInputIssue(validInput, NOW)).toBeNull();
+		expect(eventInputIssue({ ...validInput, title: "a" }, NOW)?.field).toBe(
+			"title",
+		);
+		expect(eventInputIssue({ ...validInput, startsAt: "" }, NOW)?.field).toBe(
+			"start",
+		);
+		expect(
+			eventInputIssue({ ...validInput, isFree: false, priceCop: null }, NOW),
+		).toEqual({
+			field: "price",
+			message: "Indica el valor de la entrada en pesos.",
+		});
 	});
 });
 

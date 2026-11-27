@@ -13,7 +13,15 @@ const PIN_CLASS: Record<StatusTone, string> = {
 	neutral: "q-pin--event corridor-pin--muted",
 };
 
-export type PinGlyph = "transit" | "star" | "alert" | "water" | "store";
+export type PinGlyph =
+	| "transit"
+	| "star"
+	| "alert"
+	| "water"
+	| "store"
+	| "place"
+	| "event"
+	| "chat";
 
 const svg = (paths: string, size = 16) =>
 	`<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round">${paths}</svg>`;
@@ -32,6 +40,16 @@ const GLYPHS: Record<PinGlyph, string> = {
 	water: svg(
 		'<path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/>',
 	),
+	// Lucide "map-pin": a place of the catalog (park, nature, culture…).
+	place: svg(
+		'<path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/>',
+	),
+	// Lucide "calendar": a community event.
+	event: svg(
+		'<path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/>',
+	),
+	// Lucide "message-circle": a community conversation about a spot.
+	chat: svg('<path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/>'),
 	// Lucide "store"
 	store: svg(
 		'<path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4"/><path d="M2 7h20"/><path d="M22 7v3a2 2 0 0 1-2 2a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 16 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 12 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 8 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 4 12a2 2 0 0 1-2-2V7"/>',
@@ -136,4 +154,24 @@ export function setMarkerSelected(marker: L.Marker, selected: boolean) {
 	if (selected) element?.setAttribute("aria-current", "true");
 	else element?.removeAttribute("aria-current");
 	marker.setZIndexOffset(selected ? 1000 : 0);
+}
+
+/** A group of pins too close to tell apart: its count, ringed in its layer's colour. */
+export function clusterIcon({
+	count,
+	tone,
+}: {
+	count: number;
+	tone: StatusTone;
+}): L.DivIcon {
+	const cluster = document.createElement("span");
+	cluster.className = `corridor-cluster corridor-cluster--${tone}`;
+	cluster.setAttribute("aria-hidden", "true");
+	cluster.textContent = String(count);
+	return L.divIcon({
+		className: "corridor-cluster-icon",
+		html: cluster,
+		iconSize: [44, 44],
+		iconAnchor: [22, 22],
+	});
 }

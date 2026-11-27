@@ -3,10 +3,10 @@
 import ModerationPage from "../community/moderation-page";
 import { CityMfaGate } from "./city-mfa-gate";
 
-export function ModerationWithMfa({ aiHref }: { aiHref?: string }) {
+export function ModerationWithMfa() {
 	return (
 		<CityMfaGate>
-			<ModerationPage aiHref={aiHref} />
+			<ModerationPage />
 		</CityMfaGate>
 	);
 }

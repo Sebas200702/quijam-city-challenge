@@ -1,71 +1,9 @@
-/* Visitor map section: next-step card over the map, its notes and states.
+/* Visitor map section: the full-bleed map, its notes and states.
    Only layout glue lives here; look and feel come from design-system/quillart.css. */
 
 .visitor-map {
 	position: absolute;
 	inset: 0;
-}
-
-/* While the next-step card is up it is the one card at the bottom (rule 2): the map's
-   route card waits behind it and comes back with "Ver la ruta". */
-.visitor-map[data-next-step="open"] .corridor-app__detail {
-	visibility: hidden;
-}
-
-/* ── Next-step card and Guide bar ── */
-.visitor-bottom {
-	position: absolute;
-	left: 12px;
-	right: 12px;
-	bottom: 12px;
-	z-index: 1050;
-	display: flex;
-	flex-direction: column;
-	gap: 10px;
-	padding-bottom: env(safe-area-inset-bottom, 0px);
-	pointer-events: none;
-}
-.visitor-bottom > * {
-	pointer-events: auto;
-}
-@media (min-width: 640px) {
-	.visitor-bottom {
-		left: auto;
-		right: 16px;
-		bottom: 32px;
-		width: 400px;
-	}
-}
-.visitor-fact {
-	display: inline-flex;
-	align-items: center;
-	gap: 6px;
-}
-.visitor-fact svg {
-	flex: none;
-	color: var(--ink-muted);
-}
-.visitor-green {
-	align-self: flex-start;
-}
-.visitor-guide-bar {
-	width: 100%;
-	min-height: 58px;
-	font: inherit;
-	text-align: left;
-	text-decoration: none;
-	color: var(--ink-subtle);
-	background: var(--surface-raised);
-	box-shadow: var(--shadow-card);
-}
-.visitor-guide-bar:focus-visible {
-	outline: 2px solid var(--focus);
-	outline-offset: 2px;
-}
-.visitor-guide-bar__text {
-	flex: 1;
-	min-width: 0;
-	font-size: 15px;
 }
 
 /* ── Notes and states ── */

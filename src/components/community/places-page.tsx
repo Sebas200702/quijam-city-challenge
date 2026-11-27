@@ -1,9 +1,20 @@
-// "Lugares y naturaleza": the city's public spaces and natural areas.
+// "Lugares y naturaleza": the city's public spaces and natural areas. The kind
+// filter lives in the URL (`?tipo=`, plus `?q=` from Quillart AI), so it can be
+// shared and the agent can leave the list filtered (U13).
 
 import { Map as MapIcon } from "lucide-react";
-import { useState } from "react";
-import type { PlaceKind } from "../../lib/community/community-types";
+import { useEffect, useState } from "react";
+import type { Place, PlaceKind } from "../../lib/community/community-types";
+import {
+	activeFilters,
+	filtersSearch,
+	type PlacesFilters,
+	readPlacesFilters,
+} from "../../lib/community/list-filters";
 import { useT } from "../../lib/i18n/use-language";
+import { AgentMark } from "../agent-dock/agent-mark";
+import { usePublishScreen } from "../agent-dock/use-screen-context";
+import { useUiAction } from "../agent-dock/use-ui-action";
 import { AskQuillartButton } from "../assistant/ask-quillart-button";
 import { CommunityShell } from "./community-shell";
 import { EmptyState, Loaded, PageTitle } from "./community-ui";
@@ -22,9 +33,62 @@ const FILTERS: KindFilter[] = [
 	"sport",
 ];
 
+function normalize(text: string): string {
+	return text
+		.normalize("NFD")
+		.replace(/\p{Diacritic}/gu, "")
+		.toLowerCase();
+}
+
+function matchesQuery(place: Place, q: string): boolean {
+	if (!q) return true;
+	const haystack = normalize(`${place.name} ${place.neighborhood}`);
+	return normalize(q)
+		.split(/\s+/)
+		.filter((word) => word.length >= 3)
+		.every((word) => haystack.includes(word));
+}
+
 export function PlacesPage({ aiHref }: { aiHref?: string }) {
 	const t = useT();
-	const [filter, setFilter] = useState<KindFilter>("all");
+	const [filters, setFilters] = useState<PlacesFilters>(() =>
+		readPlacesFilters(window.location.search),
+	);
+	const [byAgent, setByAgent] = useState(false);
+	const filter: KindFilter = filters.tipo ?? "all";
+
+	const change = (next: PlacesFilters, agent = false) => {
+		setFilters(next);
+		setByAgent(agent);
+	};
+
+	useEffect(() => {
+		window.history.replaceState(
+			null,
+			"",
+			`${window.location.pathname}${filtersSearch({ tipo: filters.tipo, q: filters.q })}${window.location.hash}`,
+		);
+	}, [filters]);
+
+	usePublishScreen({
+		route: "/lugares",
+		title: t.places.title,
+		filters: activeFilters({ tipo: filters.tipo, q: filters.q }),
+	});
+
+	useUiAction("places.filter", (action) => {
+		const before = filters;
+		const next = { tipo: action.tipo ?? null, q: action.q ?? "" };
+		change(next, true);
+		return {
+			labels: [
+				next.tipo ? t.places.filters[next.tipo] : null,
+				next.q ? t.dock.searchFor(next.q) : null,
+			].filter((label): label is string => label !== null),
+			undo: () => change(before),
+		};
+	});
+
 	const { state } = useLoad(
 		async (store) => {
 			const [places, events] = await Promise.all([
@@ -78,7 +142,12 @@ export function PlacesPage({ aiHref }: { aiHref?: string }) {
 								key={option}
 								type="button"
 								aria-pressed={on}
-								onClick={() => setFilter(option)}
+								onClick={() =>
+									change({
+										tipo: option === "all" ? null : option,
+										q: filters.q,
+									})
+								}
 								className={`q-chip ${on ? "bg-[var(--action)]! text-[var(--on-action)]!" : ""}`}
 							>
 								{t.places.filters[option]}
@@ -87,13 +156,19 @@ export function PlacesPage({ aiHref }: { aiHref?: string }) {
 					})}
 				</div>
 			</fieldset>
+			{byAgent && (filters.tipo || filters.q) && (
+				<AgentMark
+					text={t.dock.filteredByAgent}
+					actionLabel={t.dock.clear}
+					onAction={() => change({ tipo: null, q: "" })}
+				/>
+			)}
 
 			<Loaded state={state} loadingLabel={t.places.loading}>
 				{({ places, upcoming }) => {
-					const visible =
-						filter === "all"
-							? places
-							: places.filter((place) => place.kind === filter);
+					const visible = places
+						.filter((place) => filter === "all" || place.kind === filter)
+						.filter((place) => matchesQuery(place, filters.q));
 					if (visible.length === 0)
 						return (
 							<EmptyState
@@ -104,7 +179,10 @@ export function PlacesPage({ aiHref }: { aiHref?: string }) {
 							</EmptyState>
 						);
 					return (
-						<ul className="grid grid-cols-1 gap-3 lg:grid-cols-2 lg:gap-4">
+						<ul
+							id="places-results"
+							className="grid grid-cols-1 gap-3 lg:grid-cols-2 lg:gap-4"
+						>
 							{visible.map((place) => (
 								<li key={place.id} className="grid">
 									<PlaceCard
