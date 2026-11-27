@@ -6,6 +6,7 @@ import type {
 	ForumThread,
 	NewEventInput,
 	NewThreadInput,
+	ProfilePatch,
 	SignUpInput,
 	ThreadQuery,
 } from "./community-types";
@@ -73,14 +74,65 @@ export function validatePostBody(body: string): string | null {
 	return null;
 }
 
-export function validateSignUp(input: SignUpInput): string | null {
-	if (input.displayName.trim().length < 2)
+/**
+ * Names nobody may use, so no account can pass for an authority or the
+ * platform. Same list as public.is_reserved_display_name() in the database.
+ */
+export const RESERVED_NAME_TERMS = [
+	"alcaldia",
+	"alcalde",
+	"gobernacion",
+	"gobierno",
+	"policia",
+	"bomberos",
+	"defensa civil",
+	"cruz roja",
+	"ejercito",
+	"armada",
+	"fiscalia",
+	"quillart",
+	"moderador",
+	"moderacion",
+	"administrador",
+	"admin",
+	"oficial",
+	"soporte",
+];
+
+export function isReservedDisplayName(name: string): boolean {
+	const normalized = name
+		.normalize("NFD")
+		.replace(/\p{Diacritic}/gu, "")
+		.toLowerCase()
+		.replace(/[^a-z0-9]+/g, " ")
+		.trim();
+	return RESERVED_NAME_TERMS.some((term) =>
+		new RegExp(`(^|\\s)${term}(\\s|$)`).test(normalized),
+	);
+}
+
+function validateDisplayName(name: string): string | null {
+	const trimmed = name.trim();
+	if (trimmed.length < 2)
 		return "Escribe cómo quieres que te vean (mínimo 2 caracteres).";
+	if (trimmed.length > 60) return "Tu nombre no puede pasar de 60 caracteres.";
+	if (isReservedDisplayName(trimmed))
+		return "Ese nombre está reservado para entidades oficiales. Usa tu nombre o un apodo.";
+	return null;
+}
+
+export function validateSignUp(input: SignUpInput): string | null {
+	const nameError = validateDisplayName(input.displayName);
+	if (nameError) return nameError;
 	if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.email.trim()))
 		return "Escribe un correo válido.";
 	if (input.password.length < 8)
 		return "La contraseña debe tener al menos 8 caracteres.";
 	return null;
+}
+
+export function validateProfilePatch(patch: ProfilePatch): string | null {
+	return validateDisplayName(patch.displayName);
 }
 
 /** Why a person cannot register right now, or null when they can. */

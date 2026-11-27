@@ -37,6 +37,8 @@ const LABEL_NAMES: Record<ModerationLabel, string> = {
 	sexual: "Contenido sexual",
 	spam: "Publicidad",
 	scam: "Posible estafa",
+	misinformation: "Posible desinformación",
+	impersonation: "Suplantación",
 	off_topic: "Fuera de tema",
 };
 

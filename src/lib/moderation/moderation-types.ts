@@ -14,6 +14,8 @@ export type ModerationLabel =
 	| "sexual"
 	| "spam"
 	| "scam"
+	| "misinformation"
+	| "impersonation"
 	| "off_topic";
 
 /** Does the message also carry something the city must act on? */

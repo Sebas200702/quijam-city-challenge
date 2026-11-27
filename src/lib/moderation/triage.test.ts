@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import type { DecisionResult, OpenJevClient } from "../openjev/openjev-types";
-import { applyModerationRules } from "./moderation-rules";
+import { applyModerationRules, isTrustedLink } from "./moderation-rules";
 import { triageContent } from "./triage";
 
 function jev(
@@ -161,5 +161,46 @@ describe("triageContent", () => {
 			client,
 		);
 		expect(decision).toMatchObject({ verdict: "publish", source: "rules" });
+	});
+});
+
+describe("trust and safety rules", () => {
+	it("holds chain-message alarms as possible misinformation", () => {
+		const findings = applyModerationRules({
+			kind: "thread",
+			title: "ALERTA MÁXIMA",
+			body: "Difundan: van a cerrar todos los puentes esta noche",
+		});
+		expect(findings.verdict).toBe("review");
+		expect(findings.labels).toContain("misinformation");
+	});
+
+	it("holds messages that speak as an official authority", () => {
+		const findings = applyModerationRules({
+			kind: "post",
+			body: "Comunicado oficial: la alcaldía regala boletas en el estadio",
+		});
+		expect(findings.verdict).toBe("review");
+		expect(findings.labels).toContain("impersonation");
+	});
+
+	it("holds external links but publishes official domains", () => {
+		expect(
+			applyModerationRules({
+				kind: "post",
+				body: "Inscríbanse aquí https://bit.ly/regalo",
+			}).verdict,
+		).toBe("review");
+		expect(
+			applyModerationRules({
+				kind: "post",
+				body: "Info en https://www.barranquilla.gov.co/cultura",
+			}).verdict,
+		).toBe("publish");
+	});
+
+	it("recognises trusted subdomains only", () => {
+		expect(isTrustedLink("https://cultura.barranquilla.gov.co/x")).toBe(true);
+		expect(isTrustedLink("https://barranquilla.gov.co.evil.com")).toBe(false);
 	});
 });
