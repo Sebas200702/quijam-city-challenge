@@ -99,6 +99,7 @@ Detalle en [`docs/`](docs/).
 | [`docs/27-comunidad-y-moderacion.md`](docs/27-comunidad-y-moderacion.md) | Comunidad (eventos, inscripciones, foro, lugares) y moderación por triaje con reglas duras y OpenJev; cola de la ciudad y puesta en marcha |
 | [`docs/28-quillart-ai.md`](docs/28-quillart-ai.md) | Quillart AI como puerta de entrada: orquestador, agentes especializados, confirmación de acciones y voz como conducto |
 | [`docs/29-gemini-live.md`](docs/29-gemini-live.md) | Conexión segura con Gemini Live: tokens efímeros emitidos por el servidor, variables de entorno y plan B de texto |
+| [`docs/30-auditoria-ui-ux.md`](docs/30-auditoria-ui-ux.md) | Auditoría UI/UX v2: hallazgos por severidad y brechas frente al enfoque nuevo (dock del agente, acciones en pantalla, contexto, georreferencia y mapa del Área Metropolitana) |
 | [`docs/feedback.md`](docs/feedback.md) | Registro de retroalimentación por sprint y validación con personas ajenas |
 
 ## Equipo
