@@ -6,7 +6,6 @@ import type {
 } from "../../../lib/city-dashboard-utils";
 import "./city-shell.css";
 import { CorridorZoneMap } from "./corridor-zone-map";
-import { DecisionsPlaceholder } from "./decisions-placeholder";
 import { DimensionKpis } from "./dimension-kpis";
 import { ShellNotice } from "./shell-notice";
 import { ShellState } from "./shell-state";
@@ -23,8 +22,8 @@ interface CommandCenterProps {
 	onDismissActionError: () => void;
 	onRetry: () => void;
 	clockLabel: string;
-	/** Decisor card from city/sections; an empty "Decisiones" panel by default. */
-	decisionSlot?: ReactNode;
+	/** Decisor card from city/sections: the diversion proposal or the active diversion. */
+	decisionSlot: ReactNode;
 	/** Higher-priority notice (an active arroyo); see ShellNotice. */
 	priorityNotice?: ReactNode;
 }
@@ -85,7 +84,7 @@ export function CommandCenter({
 							onDismissError={onDismissActionError}
 							priority={priorityNotice}
 						/>
-						{decisionSlot ?? <DecisionsPlaceholder />}
+						{decisionSlot}
 						<StatusRowsPanel
 							floodZones={floodZones}
 							reports={snapshot.reports}
