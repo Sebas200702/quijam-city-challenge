@@ -60,7 +60,8 @@ export function FloodAlertsSection({
 				rainSentAt={rainSentAt}
 				onRetry={onRetry}
 			/>
-			<div className="q-row" aria-label="Alertas de arroyo de la ciudad">
+			<fieldset className="q-row m-0 border-0 p-0">
+				<legend className="q-sr">Alertas de arroyo de la ciudad</legend>
 				{floodZones.map((zone) => (
 					<button
 						key={zone.id}
@@ -75,7 +76,7 @@ export function FloodAlertsSection({
 						{zone.name}
 					</button>
 				))}
-			</div>
+			</fieldset>
 		</section>
 	);
 }
