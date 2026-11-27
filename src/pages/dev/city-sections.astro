@@ -1,0 +1,31 @@
+---
+// Dev-only preview of the Centro de Mando sections for screenshots and review.
+// Pick a state with ?state=normal|loading|empty|error|offline.
+import {
+	CitySectionsPreview,
+	type PreviewState,
+} from "../../components/city/sections/city-sections-preview";
+import BaseLayout from "../../layouts/base-layout.astro";
+
+export const prerender = false;
+
+// Never served in production builds.
+if (!import.meta.env.DEV) {
+	return new Response(null, { status: 404 });
+}
+
+const STATES: PreviewState[] = [
+	"normal",
+	"loading",
+	"empty",
+	"error",
+	"offline",
+];
+const requested = Astro.url.searchParams.get("state") as PreviewState | null;
+const state: PreviewState =
+	requested && STATES.includes(requested) ? requested : "normal";
+---
+
+<BaseLayout title="Secciones del Centro de Mando · QUILLART" theme="dark">
+	<CitySectionsPreview client:load state={state} />
+</BaseLayout>

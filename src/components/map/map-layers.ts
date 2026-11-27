@@ -21,8 +21,42 @@ export interface CorridorLayers extends Record<LayerKey, L.LayerGroup> {
 	markers: Map<string, L.Marker>;
 }
 
-/** The corridor's two ends keep their name on the map; other pins show it when selected. */
+/** The corridor's two ends keep their name on the map; other pins show it when selected or near. */
 const LABELED_STOPS = new Set(["STOP-ESTADIO", "STOP-MALECON-SUR"]);
+
+/** Id of the SVG pattern that hatches arroyo zones; corridor-map.tsx renders it once. */
+export const FLOOD_HATCH_ID = "corridor-flood-hatch";
+
+/** Draws a route as a gold line on a dark edge (the QUILLART active route). */
+export function routeLine(
+	path: L.LatLngTuple[],
+	variant: "active" | "accessible",
+): L.Polyline[] {
+	return [
+		L.polyline(path, {
+			className: `corridor-plan-case corridor-plan-case--${variant}`,
+			interactive: false,
+		}),
+		L.polyline(path, {
+			className: `corridor-plan corridor-plan--${variant}`,
+			interactive: false,
+		}),
+	];
+}
+
+/** An arroyo zone: tinted circle, hatched in red when its alert is on. */
+export function floodCircle(
+	center: L.LatLngTuple,
+	radius: number,
+	tone: string,
+	live = false,
+): L.Circle {
+	return L.circle(center, {
+		radius,
+		className: `corridor-flood corridor-flood--${tone}${live ? " corridor-flood--live" : ""}`,
+		interactive: false,
+	});
+}
 
 export function buildCorridorLayers(
 	data: CorridorData,
@@ -36,6 +70,8 @@ export function buildCorridorLayers(
 		icon: L.DivIcon,
 	) => {
 		const item = L.marker(latLng, { icon, title })
+			// Leaflet gives the marker role="button"; name it for screen readers too.
+			.on("add", () => item.getElement()?.setAttribute("aria-label", title))
 			.on("click", () => onSelect(selection))
 			// Leaflet makes markers focusable but only popups react to Enter.
 			.on("keydown", (event) => {
@@ -50,6 +86,7 @@ export function buildCorridorLayers(
 
 	const path = corridorLine(data.stops);
 	return {
+		// The corridor itself stays quiet; the route the Decider picks is the gold one.
 		corridor: L.layerGroup([
 			L.polyline(path, {
 				className: "corridor-route-case",
@@ -62,11 +99,12 @@ export function buildCorridorLayers(
 				marker(
 					{ kind: "stop", code: stop.code },
 					[stop.latitude, stop.longitude],
-					stop.name,
+					`Paradero: ${stop.name}${stop.is_accessible ? ", accesible" : ""}`,
 					pinIcon({
 						tone: "green",
 						glyph: "transit",
 						label: stop.name,
+						status: stop.is_accessible ? "Accesible" : undefined,
 						labeled: LABELED_STOPS.has(stop.code),
 					}),
 				),
@@ -74,40 +112,40 @@ export function buildCorridorLayers(
 		),
 		floodZones: L.layerGroup(
 			data.floodZones.flatMap((zone) => {
-				const { tone } = floodZoneStatus(zone);
+				const { tone, label } = floodZoneStatus(zone);
 				const center: L.LatLngTuple = [zone.latitude, zone.longitude];
 				return [
-					L.circle(center, {
-						radius: zone.radius_meters,
-						className: `corridor-flood corridor-flood--${tone}`,
-						interactive: false,
-					}),
+					floodCircle(center, zone.radius_meters, tone),
 					marker(
 						{ kind: "floodZone", code: zone.code },
 						center,
-						zone.name,
+						`${zone.name}, ${label.toLowerCase()}`,
 						pinIcon({
 							tone,
 							glyph: tone === "red" ? "alert" : "water",
 							label: zone.name,
+							status: label,
+							labeled: tone === "red",
 						}),
 					),
 				];
 			}),
 		),
 		businesses: L.layerGroup(
-			data.businesses.map((business) =>
-				marker(
+			data.businesses.map((business) => {
+				const { tone, label } = businessStatus(business);
+				return marker(
 					{ kind: "business", code: business.code },
 					[business.latitude, business.longitude],
-					business.name,
+					`Negocio: ${business.name}, ${label.toLowerCase()}`,
 					pinIcon({
-						tone: businessStatus(business).tone,
-						glyph: "star",
+						tone,
+						glyph: business.is_open ? "star" : "store",
 						label: business.name,
+						status: label,
 					}),
-				),
-			),
+				);
+			}),
 		),
 		markers,
 	};
