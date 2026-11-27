@@ -138,3 +138,20 @@ Base: la asignación hecha por Sebastián en el tablero. Se completaron los issu
 
 - **Presencia anónima:** el conteo de jurados y visitantes conectados usa un canal público de Supabase Realtime Presence (`visitor-presence`) con un ID temporal (`vis_...`) en `sessionStorage`, sin registro ni datos personales. La identidad del conteo es la clave de presencia del canal.
 - **Generación de QR offline:** se adopta la dependencia `qrcode` para renderizar el QR directamente en el navegador sin servicios externos, manteniendo la operación sin conexión.
+
+## Arquitectura de información y roles (26 nov 2026)
+
+Ver [20-arquitectura-de-informacion.md](20-arquitectura-de-informacion.md). Issue #56.
+
+- **Cinco superficies separadas:** visitante (`/`), vendedor (`/vendedor`), anfitrión (`/anfitrion`), ciudad (`/ciudad`) y presentador (`/presentador`). No hay menú que cruce de una a otra.
+- **Tema:** claro en las tres apps de celular (se usan en la calle); oscuro en ciudad y presentador.
+- **Inicio del visitante:** mapa, Guía y una sola tarjeta "tu siguiente paso". Menú secundario: pasaporte, jerga, datos e idioma. `/mapa` se fusiona en `/`.
+- **Entrada:** visitante sin registro con sesión anónima de Supabase; vendedor por QR o enlace mágico; anfitrión y ciudad con Supabase Auth; presentador con llave de demo en cookie `httpOnly` (también entra un usuario `city`).
+- **Idioma:** se detecta del navegador entre español, inglés, portugués y francés; si no coincide, inglés. Se cambia en un toque y se guarda en el navegador.
+- **Avisos:** un solo hueco de aviso. Solo un arroyo activo en la ruta o la zona del visitante abre un modal; lo demás es tarjeta discreta, con prioridad arroyo > anfitrión > sugerencia de desvío > reporte.
+- **Roles:** `UserRole` pasa a `visitor | vendor | host | city | presenter`; guardia en `src/middleware.ts`; la seguridad real sigue en RLS. Se planifica, no se implementa en #56.
+- **`city-events`:** sin tipos nuevos. `desvio` queda solo como propuesta (no se edita la épica); mientras tanto la sugerencia de desvío usa `malecon_saturado` con `capacityPct >= 85`; asignaciones de anfitrión, negocio abierto y estado de reportes van por tablas con Realtime, no por el canal.
+- **Componentes QUILLART nuevos:** `.q-next-step`, `.q-alert` (y `--modal`), `.q-state`, `.q-sim-tag`, `.q-details`; `.q-sheet` se amplía con `--dock`, `--peek` y `--expanded`.
+- **Pausa del comité:** el comité de barrio no usa la app; pide la pausa por teléfono o mensaje y el operador de ciudad toca "Pausa del comité" en el tablero en su nombre. El registro guarda quién la pidió, quién la aplicó y la hora. El vendedor ve el aviso discreto "Desvío en pausa", también cuando un arroyo se activa en su zona con un desvío en curso (reglas 5 y 6 de [14-desvio-barrio-abajo.md](14-desvio-barrio-abajo.md)).
+- **Valores canónicos de la demo:** cobro abusivo 17:13, aguacero 17:18, Malecón saturado 17:45. Caso 2: arroyos Carrera 46 y La Felicidad, ruta accesible por la Vía 40, dupla de anfitriones de Troncal Murillo con punto de encuentro en Joaquín Barrios Polo (salida con rampa).
+- **Términos:** "Sello" (lo que guarda el visitante en su pasaporte) y "Negocio verificado" (insignia del negocio) son cosas distintas; el menú del vendedor dice "Dar sellos". Los estados del reporte son los del código: Abierto, En revisión, Resuelto, Descartado.
