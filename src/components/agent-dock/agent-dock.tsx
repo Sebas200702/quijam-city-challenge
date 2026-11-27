@@ -135,6 +135,12 @@ export default function AgentDock({ role }: AgentDockProps) {
 		[],
 	);
 
+	// A new message makes the old "Listo, lo dejé como estaba." stale.
+	// biome-ignore lint/correctness/useExhaustiveDependencies: clear on each new message.
+	useEffect(() => {
+		setUndone(false);
+	}, [messages.length]);
+
 	// "Pregúntale a Quillart" buttons open the dock on the same screen.
 	useEffect(
 		() =>

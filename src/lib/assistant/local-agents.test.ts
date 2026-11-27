@@ -140,6 +140,87 @@ describe("agenda", () => {
 		]);
 	});
 
+	it("drafts an event from a quoted title with capacity (dock QA)", () => {
+		const turn = answerLocally(
+			"agenda",
+			ask(
+				"Publica un evento 'Concierto gratis de música en vivo en el Malecón' el sábado a las 6 pm con 50 cupos",
+			),
+			signedIn,
+		);
+		expect(turn.toolCalls).toEqual([
+			{
+				name: "create_event",
+				args: {
+					title: "Concierto gratis de música en vivo en el Malecón",
+					description:
+						"Concierto gratis de música en vivo en el Malecón el sábado a las 6 pm con 50 cupos",
+					category: "music",
+					starts_at_local: "2026-11-28T18:00",
+					capacity: 50,
+					place_slug: "gran-malecon",
+				},
+			},
+		]);
+		expect(turn.text).not.toMatch(/Antes de salir/);
+		expect(turn.text).toMatch(/si el sistema detecta algo, pasa a revisión/);
+	});
+
+	it("reads typographic quotes, people, price and explicit dates", () => {
+		const turn = answerLocally(
+			"agenda",
+			ask(
+				"Quiero crear un evento “Noche de salsa” el 5 de diciembre a las 8 de la noche para 40 personas, la entrada cuesta $15.000",
+			),
+			signedIn,
+		);
+		expect(turn.toolCalls[0]).toMatchObject({
+			name: "create_event",
+			args: {
+				title: "Noche de salsa",
+				category: "music",
+				starts_at_local: "2026-12-05T20:00",
+				capacity: 40,
+				price_cop: 15000,
+			},
+		});
+	});
+
+	it("titles free text without quotes before the date and capacity", () => {
+		const turn = answerLocally(
+			"agenda",
+			ask(
+				"Publica un evento de yoga en el Parque Washington mañana a las 7 am, cupo de 25, gratis",
+			),
+			signedIn,
+		);
+		expect(turn.toolCalls[0]).toMatchObject({
+			name: "create_event",
+			args: {
+				title: "Yoga en el Parque Washington",
+				category: "sport",
+				starts_at_local: "2026-11-27T07:00",
+				capacity: 25,
+				place_slug: "parque-washington",
+			},
+		});
+		expect(
+			(turn.toolCalls[0].args as { price_cop?: number }).price_cop,
+		).toBeUndefined();
+	});
+
+	it("does not take a time with a colon as the event intro", () => {
+		const turn = answerLocally(
+			"agenda",
+			ask("Publica un evento de salsa el sábado a las 6:30 pm"),
+			signedIn,
+		);
+		expect(turn.toolCalls[0]).toMatchObject({
+			name: "create_event",
+			args: { title: "Salsa", starts_at_local: "2026-11-28T18:30" },
+		});
+	});
+
 	it("opens the form filled when the day or hour is missing (U14)", () => {
 		const turn = answerLocally(
 			"agenda",
@@ -210,6 +291,24 @@ describe("other agents", () => {
 		expect(
 			answerLocally("places", ask("parques para trotar"), signedIn).toolCalls,
 		).toEqual([{ name: "list_places", args: { kind: "park" } }]);
+	});
+
+	it("routes to a place when the person asks to be taken there (dock QA)", () => {
+		for (const text of [
+			"llévame al Malecón",
+			"quiero ir al Malecón",
+			"¿cómo llego al Gran Malecón?",
+			"ruta al Malecón",
+		]) {
+			for (const agent of ["mobility", "places"] as const) {
+				expect(answerLocally(agent, ask(text), signedIn).toolCalls).toEqual([
+					{ name: "get_directions", args: { place_slug: "gran-malecon" } },
+				]);
+			}
+		}
+		expect(
+			answerLocally("mobility", ask("llévame al estadio"), signedIn).toolCalls,
+		).toEqual([{ name: "plan_route", args: { destination: "estadio" } }]);
 	});
 
 	it("mobility plans corridor routes", () => {

@@ -55,6 +55,8 @@ export interface AssistantToolArgs {
 		place_slug?: string;
 		location_text?: string;
 		capacity?: number;
+		/** Entry price in pesos; absent means free. */
+		price_cop?: number;
 	};
 	create_thread: {
 		title: string;

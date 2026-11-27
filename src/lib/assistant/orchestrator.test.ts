@@ -46,6 +46,8 @@ describe("routeByKeywords", () => {
 		["¿En qué eventos estoy inscrito? mis inscripciones", "account"],
 		["Quiero ir a mi perfil", "account"],
 		["QUÉ HACER en Barranquilla", "places"],
+		["llévame al Malecón", "mobility"],
+		["Ruta al Gran Malecón", "mobility"],
 	])("%s → %s", (text, agent) => {
 		expect(routeByKeywords(text)).toBe(agent);
 	});
