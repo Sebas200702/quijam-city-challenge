@@ -9,4 +9,4 @@ for f in supabase/migrations/*.sql supabase/seed.sql; do psql -v ON_ERROR_STOP=1
 psql -d quillart_test -f supabase/tests/vendor-portal-test.sql   # cada línea "ok N"; un fallo se detiene con error
 ```
 
-Las pruebas simulan a cada persona con `set role authenticated` y `request.jwt.claim.sub`, igual que lo hace PostgREST.
+Las pruebas simulan a cada persona con `set role authenticated`, `request.jwt.claim.sub` y `request.jwt.claims`, igual que lo hace PostgREST. `pg_temp.act_as(uid, aal)` fija el nivel `aal` (por defecto `aal1`): una cuenta ciudad solo tiene permisos de ciudad con `aal2`.
