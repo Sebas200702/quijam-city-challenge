@@ -102,7 +102,7 @@ export default function CorridorMap({ data, source }: CorridorMapProps) {
 	});
 
 	const stops = useMemo(() => orderedStops(data.stops), [data.stops]);
-	const { state: city, lastEvent } = useCityState();
+	const { state: city, lastEvent, publish } = useCityState();
 	const flood = useFloodCountdown(lastEvent, data.floodZones);
 	const crowdByZone = useMemo(() => crowdByZoneFrom(city), [city]);
 	const [query, setQuery] = useState<RouteQuery>({
@@ -310,6 +310,9 @@ export default function CorridorMap({ data, source }: CorridorMapProps) {
 					<GuidePanel
 						onShowOnMap={showDestination}
 						onClose={() => setGuideOpen(false)}
+						onReportSaved={(reportId) =>
+							void publish({ type: "cobro_abusivo", reportId })
+						}
 					/>
 				</div>
 				{!guideOpen &&

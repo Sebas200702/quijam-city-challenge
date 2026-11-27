@@ -1,12 +1,17 @@
 import { CircleCheck, CloudOff, Send, X } from "lucide-react";
 import { useId, useState } from "react";
-import type { GuideLanguage } from "../../lib/guide/guide-local";
+import { formatFare, type GuideLanguage } from "../../lib/guide/guide-local";
 import { useLanguage } from "../../lib/i18n/use-language";
 import {
 	REPORT_TRANSPORT_MODES,
 	type ReportTransportMode,
 } from "../../lib/reports/overcharge-report";
-import type { TripPlan } from "../../lib/trip/trip-planner";
+import { evaluateOvercharge } from "../../lib/reports/overcharge-routes";
+import {
+	DESTINATIONS,
+	type TripPlan,
+	VISITOR_ORIGIN,
+} from "../../lib/trip/trip-planner";
 import { guideText } from "./guide-text";
 
 const PENDING_KEY = "quillart-pending-reports";
@@ -22,6 +27,7 @@ interface ReportFormProps {
 	plan: TripPlan;
 	language: GuideLanguage;
 	onClose: () => void;
+	onReportSaved?: (reportId: string) => void;
 }
 
 /** Keeps a report on the phone when the server cannot save it. */
@@ -34,7 +40,12 @@ function keepOnPhone(report: unknown) {
 	}
 }
 
-export function ReportForm({ plan, onClose }: ReportFormProps) {
+export function ReportForm({
+	plan,
+	language,
+	onClose,
+	onReportSaved,
+}: ReportFormProps) {
 	const text = guideText(useLanguage()).report;
 	const id = useId();
 	const [mode, setMode] = useState<ReportTransportMode>("taxi");
@@ -47,6 +58,11 @@ export function ReportForm({ plan, onClose }: ReportFormProps) {
 	// the green leg otherwise.
 	const segment =
 		mode === "taxi" ? (plan.taxi ?? plan.green) : (plan.green ?? plan.taxi);
+	const routeLabel = `${VISITOR_ORIGIN.name} → ${DESTINATIONS[plan.destination].name}`;
+	const comparison =
+		segment && charged.trim() !== ""
+			? evaluateOvercharge(Number(charged), segment.reference_fare_cop)
+			: null;
 
 	const submit = async (event: { preventDefault: () => void }) => {
 		event.preventDefault();
@@ -67,8 +83,12 @@ export function ReportForm({ plan, onClose }: ReportFormProps) {
 			});
 			if (response.ok) {
 				const body = (await response.json()) as {
+					reportId?: string;
 					overchargePercent: number | null;
 				};
+				if (body.reportId) {
+					onReportSaved?.(body.reportId);
+				}
 				setStatus({ kind: "saved", percent: body.overchargePercent });
 			} else if (response.status >= 500) {
 				keepOnPhone(report);
@@ -120,6 +140,28 @@ export function ReportForm({ plan, onClose }: ReportFormProps) {
 				{text.title}
 			</h3>
 
+			{segment && (
+				<div className="rounded-[var(--radius-md)] bg-[var(--bg)] p-3 text-sm">
+					<p className="q-sm q-muted">
+						{text.route}:{" "}
+						<strong className="text-[var(--ink)]">{routeLabel}</strong>
+					</p>
+					<p className="q-sm q-muted mt-1">
+						{text.referenceFare}:{" "}
+						<strong className="q-num text-[var(--green-text)]">
+							{formatFare(segment.reference_fare_cop, language)}
+						</strong>
+						{segment.fare_min_cop !== segment.fare_max_cop && (
+							<span>
+								{" "}
+								({formatFare(segment.fare_min_cop, language)} –{" "}
+								{formatFare(segment.fare_max_cop, language)})
+							</span>
+						)}
+					</p>
+				</div>
+			)}
+
 			<fieldset className="guide-report__field">
 				<legend className="q-sm q-muted">{text.vehicle}</legend>
 				<div className="q-seg">
@@ -152,6 +194,24 @@ export function ReportForm({ plan, onClose }: ReportFormProps) {
 					onChange={(event) => setCharged(event.target.value)}
 				/>
 			</label>
+
+			{comparison && (
+				<p
+					className={`q-sm ${
+						comparison.isOvercharge
+							? "text-[var(--red-text)]"
+							: "text-[var(--green-text)]"
+					}`}
+					aria-live="polite"
+				>
+					{comparison.isOvercharge
+						? text.overchargeEstimate(
+								comparison.percent,
+								formatFare(comparison.deltaCop, language),
+							)
+						: text.withinReference}
+				</p>
+			)}
 
 			<label className="guide-report__field" htmlFor={`${id}-driver`}>
 				<span className="q-sm q-muted">

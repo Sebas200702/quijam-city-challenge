@@ -1,4 +1,4 @@
-import { Accessibility, Leaf, MessageCircle } from "lucide-react";
+import { Accessibility, Flag, Leaf, MessageCircle } from "lucide-react";
 import type { ReactNode } from "react";
 import type { CorridorStop } from "../../lib/corridor/corridor-types";
 import { useT } from "../../lib/i18n/use-language";
@@ -41,6 +41,10 @@ export function RouteCard({
 	const fare = (cop: number) =>
 		cop === 0 ? t.map.route.free : `$${copFormatter.format(cop)}`;
 	const route = plan?.route ?? null;
+	const paidLeg = route?.legs.find((leg) => leg.fareCop > 0) ?? null;
+	const reportHref = paidLeg
+		? `/reportar?segment=${encodeURIComponent(paidLeg.code)}`
+		: "/reportar";
 	return (
 		<section className="q-card corridor-detail route-card" aria-live="polite">
 			{alert}
@@ -165,6 +169,15 @@ export function RouteCard({
 								</ul>
 							) : null}
 						</details>
+						{route ? (
+							<a
+								href={reportHref}
+								className="q-btn q-btn--ghost q-btn--sm min-h-11 justify-start px-3"
+							>
+								<Flag size={16} strokeWidth={1.75} aria-hidden="true" />
+								¿Te cobraron de más? Reportar cobro abusivo
+							</a>
+						) : null}
 					</>
 				) : null}
 			</div>

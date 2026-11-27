@@ -139,6 +139,13 @@ const es = {
 			bike: "Bici",
 		},
 		report: {
+			route: "Trayecto",
+			referenceFare: "Tarifa de referencia",
+			withinReference: "Dentro de la tarifa de referencia",
+			overchargeEstimate: (percent: number | null, deltaCop: string) =>
+				percent !== null
+					? `+${deltaCop} (+${percent} % sobre la referencia)`
+					: `+${deltaCop} sobre la referencia`,
 			title: "Reportar cobro abusivo",
 			vehicle: "¿En qué ibas?",
 			vehicles: {
@@ -305,6 +312,13 @@ const en: MapMessages = {
 			bike: "Bike",
 		},
 		report: {
+			route: "Route",
+			referenceFare: "Reference fare",
+			withinReference: "Within the reference fare",
+			overchargeEstimate: (percent: number | null, deltaCop: string) =>
+				percent !== null
+					? `+${deltaCop} (+${percent}% above reference)`
+					: `+${deltaCop} above reference`,
 			title: "Report an overcharge",
 			vehicle: "What were you riding?",
 			vehicles: {
@@ -468,6 +482,13 @@ const pt: MapMessages = {
 			bike: "Bicicleta",
 		},
 		report: {
+			route: "Trajeto",
+			referenceFare: "Tarifa de referência",
+			withinReference: "Dentro da tarifa de referência",
+			overchargeEstimate: (percent: number | null, deltaCop: string) =>
+				percent !== null
+					? `+${deltaCop} (+${percent}% acima da referência)`
+					: `+${deltaCop} acima da referência`,
 			title: "Denunciar cobrança abusiva",
 			vehicle: "No que você estava?",
 			vehicles: {
@@ -633,6 +654,13 @@ const fr: MapMessages = {
 			bike: "Vélo",
 		},
 		report: {
+			route: "Trajet",
+			referenceFare: "Tarif de référence",
+			withinReference: "Dans le tarif de référence",
+			overchargeEstimate: (percent: number | null, deltaCop: string) =>
+				percent !== null
+					? `+${deltaCop} (+${percent} % au-dessus de la référence)`
+					: `+${deltaCop} au-dessus de la référence`,
 			title: "Signaler une surfacturation",
 			vehicle: "Dans quoi étiez-vous ?",
 			vehicles: {

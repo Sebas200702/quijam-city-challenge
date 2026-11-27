@@ -29,9 +29,14 @@ type Message =
 interface GuidePanelProps {
 	onShowOnMap: (destination: DestinationKey) => void;
 	onClose: () => void;
+	onReportSaved?: (reportId: string) => void;
 }
 
-export function GuidePanel({ onShowOnMap, onClose }: GuidePanelProps) {
+export function GuidePanel({
+	onShowOnMap,
+	onClose,
+	onReportSaved,
+}: GuidePanelProps) {
 	const t = useT();
 	const inputId = useId();
 	const [messages, setMessages] = useState<Message[]>([
@@ -150,6 +155,7 @@ export function GuidePanel({ onShowOnMap, onClose }: GuidePanelProps) {
 										plan={message.answer.plan}
 										language={message.answer.language}
 										onClose={() => setReportingId(null)}
+										onReportSaved={onReportSaved}
 									/>
 								)}
 								{message.answer && (

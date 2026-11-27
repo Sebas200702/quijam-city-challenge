@@ -18,16 +18,16 @@ import type {
 import {
 	CITY_MODE_LABELS,
 	calculateOccupancyPercent,
+	calculateResolvedReportsRate,
 	calculateTotalVisitors,
-	formatCop,
 	formatFreshnessLabel,
 	getActiveFloodAlerts,
 	getDensityVisualState,
 	getSaturatedZones,
-	REPORT_STATUS_LABELS,
 	summarizeReportsByStatus,
 	ZONE_LABELS,
 } from "../lib/city-dashboard-utils";
+import { useCityState } from "../lib/city-events/use-city-state";
 import { subscribeVisitorPresence } from "../lib/presence/visitor-presence-service";
 import type {
 	PresenceConnectionState,
@@ -37,18 +37,12 @@ import { CityAuthGate } from "./city-auth-gate";
 import { CrowdSimPanel } from "./crowd-sim-panel";
 import { ImpactReportPanel } from "./impact-report-panel";
 import { JuryQrPanel } from "./jury-qr-panel";
+import { OverchargeInbox } from "./overcharge-inbox";
 
 const EMPTY_PRESENCE: VisitorPresenceSummary = {
 	connectedCount: 0,
 	qrCount: 0,
 };
-
-const STATUS_OPTIONS: ReportStatus[] = [
-	"open",
-	"in_review",
-	"resolved",
-	"dismissed",
-];
 
 type ThemeMode = "dark" | "light";
 
@@ -66,6 +60,7 @@ export function CityDashboard() {
 	const [nowMs, setNowMs] = useState(() => Date.now());
 	const [error, setError] = useState<string | null>(null);
 	const [busyId, setBusyId] = useState<string | null>(null);
+	const { state: cityEventsState, lastEvent: lastCityEvent } = useCityState();
 
 	const configured = isSupabaseConfigured();
 
@@ -158,6 +153,17 @@ export function CityDashboard() {
 			unsubscribePresence?.();
 		};
 	}, [configured, session, loadSnapshot]);
+
+	useEffect(() => {
+		if (
+			!configured ||
+			session?.role !== "city" ||
+			lastCityEvent?.type !== "cobro_abusivo"
+		) {
+			return;
+		}
+		void loadSnapshot();
+	}, [configured, session, lastCityEvent, loadSnapshot]);
 
 	async function handleSignIn(email: string, password: string) {
 		const nextSession = await signInCityOperator(email, password);
@@ -330,6 +336,7 @@ export function CityDashboard() {
 	const floodZones = snapshot?.floodZones ?? [];
 	const activeAlerts = getActiveFloodAlerts(floodZones);
 	const reportSummary = summarizeReportsByStatus(reports);
+	const resolvedReportsRate = calculateResolvedReportsRate(reportSummary);
 	const totalVisitors = calculateTotalVisitors(zones);
 	const saturatedZones = getSaturatedZones(zones);
 
@@ -420,15 +427,17 @@ export function CityDashboard() {
 					</article>
 
 					<article className="q-kpi">
-						<span className="q-kpi__label">Reportes de cobro abusivo</span>
+						<span className="q-kpi__label">Reportes resueltos</span>
 						<div className="q-kpi__row">
-							<span className="q-kpi__value">{reportSummary.total}</span>
+							<span className="q-kpi__value">
+								{reportSummary.resolved}/{reportSummary.total}
+							</span>
 							<span
 								className={`q-delta ${
 									reportSummary.open > 0 ? "q-delta--bad" : "q-delta--good"
 								}`}
 							>
-								{reportSummary.open} abierto(s)
+								{resolvedReportsRate} % · {reportSummary.open} nuevo(s)
 							</span>
 						</div>
 					</article>
@@ -588,104 +597,17 @@ export function CityDashboard() {
 					</div>
 				</section>
 
-				{/* Overcharge reports by status */}
-				<section className="q-card">
-					<div className="q-band q-band--gold" aria-hidden="true" />
-					<div className="q-card__head">
-						<div>
-							<p className="q-eyebrow">Tarifa justa · Control ciudadano</p>
-							<h2 className="q-h2 mt-1">
-								Reportes de cobro abusivo por estado
-							</h2>
-						</div>
-						<span className="q-badge q-badge--neutral">
-							{reportSummary.total} total
-						</span>
-					</div>
-
-					<div className="q-card__body">
-						<div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-							{STATUS_OPTIONS.map((status) => (
-								<div
-									key={status}
-									className="rounded-[var(--radius-md)] bg-[var(--bg)] p-4"
-								>
-									<p className="q-eyebrow">{REPORT_STATUS_LABELS[status]}</p>
-									<p className="q-num mt-1 text-2xl font-bold text-[var(--ink)]">
-										{reportSummary[status]}
-									</p>
-								</div>
-							))}
-						</div>
-
-						<div className="q-scroll rounded-[var(--radius-md)] bg-[var(--bg)]">
-							<table className="min-w-full divide-y divide-[var(--line)] text-left text-sm">
-								<thead>
-									<tr className="text-xs uppercase tracking-wider text-[var(--ink-muted)]">
-										<th className="px-4 py-3 font-semibold">Zona</th>
-										<th className="px-4 py-3 font-semibold">Modo</th>
-										<th className="px-4 py-3 font-semibold">Cobrado</th>
-										<th className="px-4 py-3 font-semibold">Referencia</th>
-										<th className="px-4 py-3 font-semibold">QR conductor</th>
-										<th className="px-4 py-3 font-semibold">Estado</th>
-									</tr>
-								</thead>
-								<tbody className="divide-y divide-[var(--line)]">
-									{reports.length === 0 ? (
-										<tr>
-											<td
-												colSpan={6}
-												className="px-4 py-6 text-center text-[var(--ink-muted)]"
-											>
-												No hay reportes registrados.
-											</td>
-										</tr>
-									) : (
-										reports.map((report) => (
-											<tr key={report.id}>
-												<td className="px-4 py-3 font-medium text-[var(--ink)]">
-													{ZONE_LABELS[report.zone]}
-												</td>
-												<td className="px-4 py-3 capitalize text-[var(--ink-muted)]">
-													{report.transport_mode}
-												</td>
-												<td className="q-num px-4 py-3 font-semibold text-[var(--red-text)]">
-													{formatCop(report.charged_fare_cop)}
-												</td>
-												<td className="q-num px-4 py-3 text-[var(--green-text)]">
-													{formatCop(report.reference_fare_cop)}
-												</td>
-												<td className="px-4 py-3 font-mono text-xs text-[var(--ink-muted)]">
-													{report.driver_qr_code ?? "Sin QR"}
-												</td>
-												<td className="px-4 py-3">
-													<select
-														aria-label={`Estado del reporte ${report.id}`}
-														value={report.status}
-														disabled={busyId === report.id}
-														onChange={(event) =>
-															void handleStatusChange(
-																report.id,
-																event.target.value as ReportStatus,
-															)
-														}
-														className="rounded-full border border-[var(--line-control)] bg-[var(--surface)] px-3 py-1.5 text-xs font-semibold text-[var(--ink)]"
-													>
-														{STATUS_OPTIONS.map((option) => (
-															<option key={option} value={option}>
-																{REPORT_STATUS_LABELS[option]}
-															</option>
-														))}
-													</select>
-												</td>
-											</tr>
-										))
-									)}
-								</tbody>
-							</table>
-						</div>
-					</div>
-				</section>
+				<OverchargeInbox
+					reports={reports}
+					summary={reportSummary}
+					isLoading={snapshot === null && error === null}
+					error={error}
+					busyId={busyId}
+					highlightedReportId={cityEventsState.lastOverchargeReportId}
+					nowMs={nowMs}
+					onStatusChange={handleStatusChange}
+					onRetry={() => void loadSnapshot()}
+				/>
 
 				<ImpactReportPanel />
 			</main>
