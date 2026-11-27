@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
 	guardRequest,
 	RATE_LIMIT_POLICIES,
@@ -97,5 +97,65 @@ describe("getClientKey", () => {
 		expect(getClientKey({ request: new Request("http://localhost") })).toBe(
 			"ip:unknown",
 		);
+	});
+
+	const behindProxy = (visitor: string | null) => {
+		const headers = new Headers();
+		if (visitor) headers.set("CF-Connecting-IP", visitor);
+		// Every request reaches the app from the same proxy container.
+		return {
+			request: new Request("http://localhost/api/test", { headers }),
+			clientAddress: "10.0.1.7",
+		};
+	};
+
+	it("uses the trusted proxy header for the visitor's address when configured", () => {
+		const header = "cf-connecting-ip";
+		expect(getClientKey(behindProxy("203.0.113.8"), header)).toBe(
+			getClientKey(contextFor("203.0.113.8")),
+		);
+		expect(getClientKey(behindProxy("203.0.113.8"), header)).not.toBe(
+			getClientKey(behindProxy("203.0.113.9"), header),
+		);
+		// Without the header (a request that skipped the proxy) the socket address is used.
+		expect(getClientKey(behindProxy(null), header)).toBe(
+			getClientKey(contextFor("10.0.1.7")),
+		);
+	});
+
+	it("ignores that header unless it is configured, so it cannot be spoofed", () => {
+		expect(getClientKey(behindProxy("203.0.113.8"), null)).toBe(
+			getClientKey(behindProxy("203.0.113.9"), null),
+		);
+	});
+});
+
+describe("guardRequest behind a proxy", () => {
+	beforeEach(() => resetRateLimiters());
+	afterEach(() => {
+		delete process.env.TRUSTED_CLIENT_IP_HEADER;
+	});
+
+	const viaProxy = (visitor: string) => ({
+		request: new Request("http://localhost/api/test", {
+			method: "POST",
+			headers: { "CF-Connecting-IP": visitor },
+		}),
+		clientAddress: "10.0.1.7",
+	});
+
+	it("limits each visitor on their own when TRUSTED_CLIENT_IP_HEADER is set", async () => {
+		process.env.TRUSTED_CLIENT_IP_HEADER = "CF-Connecting-IP";
+		for (let i = 0; i < RATE_LIMIT_POLICIES["guide-token"].limit; i++) {
+			expect(
+				await guardRequest(viaProxy("203.0.113.5"), "guide-token"),
+			).toBeNull();
+		}
+		expect(
+			await guardRequest(viaProxy("203.0.113.5"), "guide-token"),
+		).not.toBeNull();
+		expect(
+			await guardRequest(viaProxy("203.0.113.6"), "guide-token"),
+		).toBeNull();
 	});
 });

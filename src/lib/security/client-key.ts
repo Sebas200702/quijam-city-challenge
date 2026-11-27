@@ -30,10 +30,37 @@ export function hashKey(value: string): string {
 }
 
 /**
- * Prefers Astro's clientAddress (set by the Node adapter from the socket),
- * then the first x-forwarded-for value, then "unknown".
+ * Header that carries the visitor's address when the app runs behind a proxy
+ * that sets it (CF-Connecting-IP behind Cloudflare). Read at run time from
+ * TRUSTED_CLIENT_IP_HEADER, so it can be changed in Dokploy without a rebuild.
+ * Unset means no header is trusted: anyone can send it.
  */
-export function getClientKey(source: ClientKeySource): string {
-	const address = readClientAddress(source) ?? readForwardedFor(source.request);
+export function trustedClientIpHeader(): string | null {
+	const value =
+		typeof process === "undefined"
+			? undefined
+			: process.env.TRUSTED_CLIENT_IP_HEADER;
+	return value?.trim() ? value.trim().toLowerCase() : null;
+}
+
+function readHeader(request: Request, name: string): string | null {
+	const value = request.headers.get(name)?.split(",")[0]?.trim();
+	return value ? value : null;
+}
+
+/**
+ * Prefers the trusted proxy header when one is configured (behind Traefik the
+ * socket address is the proxy, the same for every visitor), then Astro's
+ * clientAddress (set by the Node adapter from the socket), then the first
+ * x-forwarded-for value, then "unknown".
+ */
+export function getClientKey(
+	source: ClientKeySource,
+	trustedHeader: string | null = trustedClientIpHeader(),
+): string {
+	const address =
+		(trustedHeader ? readHeader(source.request, trustedHeader) : null) ??
+		readClientAddress(source) ??
+		readForwardedFor(source.request);
 	return address ? `ip:${hashKey(address)}` : "ip:unknown";
 }
