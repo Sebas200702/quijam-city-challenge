@@ -13,6 +13,7 @@ import {
 	loadModerationQueue,
 	parseModerationRequest,
 } from "../../../lib/community/community-server";
+import { guardRequest } from "../../../lib/security/api-guard";
 import { getSupabaseAdmin } from "../../../lib/supabase-admin";
 
 export const prerender = false;
@@ -28,7 +29,10 @@ async function requireCity(request: Request) {
 }
 
 /** Moderation queue for the city role: held content and reports to follow up. */
-export const GET: APIRoute = async ({ request }) => {
+export const GET: APIRoute = async (context) => {
+	const limited = guardRequest(context, "moderation");
+	if (limited) return limited;
+	const { request } = context;
 	try {
 		const admin = await requireCity(request);
 		if (!admin) return notConfigured();
@@ -39,7 +43,10 @@ export const GET: APIRoute = async ({ request }) => {
 };
 
 /** Approve or remove held content, or close a city follow-up. */
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async (context) => {
+	const limited = guardRequest(context, "moderation");
+	if (limited) return limited;
+	const { request } = context;
 	try {
 		const admin = await requireCity(request);
 		if (!admin) return notConfigured();

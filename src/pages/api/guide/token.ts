@@ -8,6 +8,7 @@ import {
 	buildLiveTokenConfig,
 	DEFAULT_LIVE_MODEL,
 } from "../../../lib/guide/live-token-config";
+import { guardRequest } from "../../../lib/security/api-guard";
 
 export const prerender = false;
 
@@ -22,7 +23,10 @@ function json(body: unknown, status: number): Response {
 }
 
 /** Issues an ephemeral Gemini Live token. The real API key never leaves the server. */
-export const POST: APIRoute = async ({ url }) => {
+export const POST: APIRoute = async (context) => {
+	const limited = guardRequest(context, "guide-token");
+	if (limited) return limited;
+	const { url } = context;
 	const apiKey = import.meta.env.GEMINI_API_KEY;
 	if (!apiKey) {
 		return json({ error: "GEMINI_API_KEY is not set on the server." }, 500);

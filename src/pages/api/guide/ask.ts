@@ -5,6 +5,7 @@ import {
 	answerWithGemini,
 	type GuideAnswer,
 } from "../../../lib/guide/guide-answer";
+import { guardRequest } from "../../../lib/security/api-guard";
 
 export const prerender = false;
 
@@ -26,7 +27,10 @@ function json(body: unknown, status: number): Response {
  * The Guide's text answer for case 1. Uses Gemini when GEMINI_API_KEY is set
  * and falls back to the local Guide on any failure, so the demo always answers.
  */
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async (context) => {
+	const limited = guardRequest(context, "guide-ask");
+	if (limited) return limited;
+	const { request } = context;
 	let question: unknown;
 	try {
 		({ question } = (await request.json()) as { question?: unknown });

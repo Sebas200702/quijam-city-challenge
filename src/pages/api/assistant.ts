@@ -6,6 +6,7 @@ import {
 } from "../../lib/assistant/assistant-server";
 import { DEFAULT_TEXT_MODEL } from "../../lib/assistant/gemini-agent";
 import { getOpenJevClient } from "../../lib/openjev/openjev-server";
+import { guardRequest } from "../../lib/security/api-guard";
 
 export const prerender = false;
 
@@ -27,7 +28,10 @@ function json(body: unknown, status: number): Response {
  * specialized agent, which answers with Gemini when GEMINI_API_KEY is set and
  * with the local agents otherwise or on failure. Tool calls run in the browser.
  */
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async (context) => {
+	const limited = guardRequest(context, "assistant");
+	if (limited) return limited;
+	const { request } = context;
 	const raw = await request.text();
 	if (raw.length > MAX_BODY_BYTES) {
 		return json({ error: "The conversation is too long." }, 413);

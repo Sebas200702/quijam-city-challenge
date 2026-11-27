@@ -8,6 +8,7 @@ import { CommunityError } from "../../../lib/community/community-server";
 import type { ContentKind } from "../../../lib/moderation/moderation-types";
 import { triageContent } from "../../../lib/moderation/triage";
 import { getOpenJevClient } from "../../../lib/openjev/openjev-server";
+import { guardRequest } from "../../../lib/security/api-guard";
 
 export const prerender = false;
 
@@ -17,7 +18,10 @@ const KINDS: ContentKind[] = ["event", "thread", "post"];
  * Stateless triage for the on-device store (no Supabase): returns the decision
  * without storing anything. The cloud store uses /api/community/publish.
  */
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async (context) => {
+	const limited = guardRequest(context, "triage");
+	if (limited) return limited;
+	const { request } = context;
 	try {
 		const body = (await readJson(request)) as Record<string, unknown> | null;
 		const kind = body?.kind as ContentKind;
