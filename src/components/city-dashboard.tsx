@@ -77,6 +77,9 @@ const VERIFIED_OPEN_BUSINESSES = countVerifiedOpenBusinesses(
 	CORRIDOR_SEED.businesses,
 );
 
+/** Same key the layout's inline script reads, so the city keeps the theme it chose. */
+const THEME_STORAGE_KEY = "quillart-theme";
+
 export function CityDashboard() {
 	// Dev-only preview with fixtures (/ciudad?demo); always null in production builds.
 	const demo = useMemo(
@@ -84,7 +87,10 @@ export function CityDashboard() {
 			import.meta.env.DEV ? readShellDemoMode(window.location.search) : null,
 		[],
 	);
-	const [theme, setTheme] = useState<ShellTheme>("dark");
+	// Dark by default (the page asks for it), unless a saved choice already switched it.
+	const [theme, setTheme] = useState<ShellTheme>(() =>
+		document.documentElement.dataset.theme === "light" ? "light" : "dark",
+	);
 	const [session, setSession] = useState<CitySessionInfo | null>(null);
 	const [authLoading, setAuthLoading] = useState(true);
 	const [snapshot, setSnapshot] = useState<CityDashboardSnapshot | null>(null);
@@ -117,6 +123,23 @@ export function CityDashboard() {
 	useEffect(() => {
 		document.documentElement.dataset.theme = theme;
 	}, [theme]);
+
+	const changeTheme = (next: ShellTheme) => {
+		try {
+			localStorage.setItem(THEME_STORAGE_KEY, next);
+		} catch {
+			// Private mode or blocked storage: the theme still changes for this visit.
+		}
+		setTheme(next);
+	};
+
+	// The setup detail is for whoever deploys, not for the operator on screen.
+	useEffect(() => {
+		if (!configured)
+			console.warn(
+				"City dashboard: set PUBLIC_SUPABASE_URL and PUBLIC_SUPABASE_PUBLISHABLE_KEY in .env (see .env.example).",
+			);
+	}, [configured]);
 
 	useEffect(() => {
 		const timer = window.setInterval(() => setNowMs(Date.now()), 5000);
@@ -353,7 +376,7 @@ export function CityDashboard() {
 	const header = (
 		<CityShellHeader
 			theme={theme}
-			onThemeChange={setTheme}
+			onThemeChange={changeTheme}
 			operator={
 				isCity && session
 					? { email: session.email, onSignOut: () => void handleSignOut() }
@@ -372,8 +395,8 @@ export function CityDashboard() {
 				<main className="cs-main" style={{ maxWidth: 720 }}>
 					<ShellState
 						kind="setup"
-						title="Falta conectar Supabase"
-						text="Copia .env.example a .env y define PUBLIC_SUPABASE_URL y PUBLIC_SUPABASE_PUBLISHABLE_KEY."
+						title="El Centro de Mando no está disponible ahora"
+						text="Falta configurar la conexión con los datos de la ciudad. Avisa al equipo técnico de QUILLART."
 					/>
 				</main>
 			</>

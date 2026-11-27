@@ -146,11 +146,7 @@ export function LiveIndicatorsPanel({
 				: { className: "q-badge--neutral", label: "Conectando", live: false };
 
 	return (
-		<section
-			aria-labelledby="live-indicators-title"
-			aria-live="polite"
-			className="space-y-4"
-		>
+		<section aria-labelledby="live-indicators-title" className="space-y-4">
 			<div className="flex flex-wrap items-end justify-between gap-3">
 				<div>
 					<p className="q-eyebrow">Programa QUILLART · 5 dimensiones</p>
@@ -164,7 +160,6 @@ export function LiveIndicatorsPanel({
 						{statusBadge.live && <span className="q-dot" aria-hidden="true" />}
 						{statusBadge.label}
 					</span>
-					<span className="q-sim-tag">Corredor: datos de referencia</span>
 					{updatedAt && (
 						<span className="q-sm q-subtle">
 							{formatFreshnessLabel(updatedAt, nowMs)}

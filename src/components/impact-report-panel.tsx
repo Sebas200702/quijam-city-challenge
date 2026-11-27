@@ -189,7 +189,7 @@ export function ImpactReportPanel() {
 						</dl>
 						<button
 							type="button"
-							className="q-btn q-btn--primary q-btn--block"
+							className="q-btn q-btn--secondary q-btn--block"
 							onClick={() => void generate()}
 							disabled={loading || !online}
 							aria-busy={loading}
@@ -216,9 +216,12 @@ export function ImpactReportPanel() {
 
 					<div
 						className="min-w-0 rounded-[var(--radius-lg)] border border-[var(--line)] p-4 lg:p-5"
-						aria-live="polite"
 						aria-busy={loading}
 					>
+						{/* Only one line is announced; the report itself is read on demand. */}
+						<p className="q-sr" role="status">
+							{state.kind === "done" ? "Informe listo" : ""}
+						</p>
 						<PanelBody
 							state={state}
 							online={online}
