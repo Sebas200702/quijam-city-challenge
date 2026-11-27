@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { BadgeCheck, LogIn, UserPlus } from "lucide-react";
 import { type SyntheticEvent, useEffect, useState } from "react";
+import { useT } from "../../lib/i18n/use-language";
 import { isClaimCode } from "../../lib/vendor/vendor-logic";
 import {
 	claimBusiness,
@@ -9,6 +10,9 @@ import {
 	signUp,
 	vendorClient,
 } from "../../lib/vendor/vendor-service";
+import { CaptchaField } from "../community/captcha-field";
+import { ConsentNote } from "../community/consent-note";
+import { useCaptcha } from "../community/use-captcha";
 
 const ICON = { size: 20, strokeWidth: 1.75, "aria-hidden": true } as const;
 const CODE_KEY = "quillart-vendor-claim";
@@ -62,6 +66,8 @@ export default function VendorEntry() {
 	const [busy, setBusy] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [notice, setNotice] = useState<string | null>(null);
+	const captcha = useCaptcha();
+	const t = useT();
 
 	useEffect(() => {
 		const fromQr = new URLSearchParams(window.location.search).get("alta");
@@ -88,12 +94,18 @@ export default function VendorEntry() {
 	const submit = async (event: SyntheticEvent) => {
 		event.preventDefault();
 		if (!client) return;
+		if (captcha.missing) {
+			setError(t.profile.captchaRequired);
+			return;
+		}
 		setBusy(true);
 		setError(null);
+		const token = captcha.token;
+		captcha.reset();
 		try {
 			if (mode === "signin") {
-				await signIn(client, email, password);
-			} else if (!(await signUp(client, email, password, name))) {
+				await signIn(client, email, password, token);
+			} else if (!(await signUp(client, email, password, name, token))) {
 				setNotice(
 					"Te enviamos un correo para confirmar la cuenta. Ábrelo y vuelve aquí.",
 				);
@@ -198,6 +210,7 @@ export default function VendorEntry() {
 								onChange={(event) => setPassword(event.target.value)}
 							/>
 						</label>
+						<CaptchaField captcha={captcha} />
 						{error && (
 							<p role="alert" className="q-sm text-[var(--red-text)]">
 								{error}
@@ -208,10 +221,14 @@ export default function VendorEntry() {
 								{notice}
 							</p>
 						)}
+						{mode === "signup" && <ConsentNote id="vendor-signup-consent" />}
 						<button
 							type="submit"
 							className="q-btn q-btn--primary q-btn--block"
 							disabled={busy || client === undefined}
+							aria-describedby={
+								mode === "signup" ? "vendor-signup-consent" : undefined
+							}
 						>
 							{mode === "signin" ? <LogIn {...ICON} /> : <UserPlus {...ICON} />}
 							{busy

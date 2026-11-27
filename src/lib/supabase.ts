@@ -9,4 +9,8 @@ if (!url || !publishableKey) {
 	);
 }
 
-export const supabase = createClient(url, publishableKey);
+// PKCE, like the community client: email links come back with `?code=`, exchanged
+// on load only when this browser holds the matching code verifier.
+export const supabase = createClient(url, publishableKey, {
+	auth: { flowType: "pkce" },
+});

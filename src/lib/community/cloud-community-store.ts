@@ -4,6 +4,7 @@
 // moderation triage runs before anything is stored.
 
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { withCaptcha } from "../auth/captcha";
 import { checkAppealMessage } from "../moderation/appeal-rules";
 import type { ContentKind } from "../moderation/moderation-types";
 import {
@@ -141,14 +142,17 @@ export function createCloudCommunityStore(
 			const { data, error: authError } = await supabase.auth.signUp({
 				email: input.email.trim(),
 				password: input.password,
-				options: {
-					data: {
-						display_name: input.displayName.trim(),
-						neighborhood: input.neighborhood?.trim() || null,
-						is_visitor: input.isVisitor,
+				options: withCaptcha(
+					{
+						data: {
+							display_name: input.displayName.trim(),
+							neighborhood: input.neighborhood?.trim() || null,
+							is_visitor: input.isVisitor,
+						},
+						emailRedirectTo: `${window.location.origin}/perfil`,
 					},
-					emailRedirectTo: `${window.location.origin}/perfil`,
-				},
+					input.captchaToken,
+				),
 			});
 			if (authError) throw friendly(authError);
 			if (!data.session || !data.user)
@@ -159,10 +163,12 @@ export function createCloudCommunityStore(
 			};
 		},
 
-		async signIn(email, password) {
+		async signIn(email, password, captchaToken) {
+			const options = withCaptcha(undefined, captchaToken);
 			const { data, error } = await supabase.auth.signInWithPassword({
 				email: email.trim(),
 				password,
+				...(options ? { options } : {}),
 			});
 			if (error || !data.user) throw friendly(error);
 			const profile = await loadProfile(data.user.id, data.user.email ?? null);

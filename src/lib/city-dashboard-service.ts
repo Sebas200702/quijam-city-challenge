@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { withCaptcha } from "./auth/captcha";
 import type {
 	CityDashboardSnapshot,
 	CitySessionInfo,
@@ -78,9 +79,15 @@ export async function getCurrentCitySession(): Promise<CitySessionInfo | null> {
 export async function signInCityOperator(
 	email: string,
 	password: string,
+	captchaToken?: string | null,
 ): Promise<CitySessionInfo> {
 	const supabase = await getClient();
-	const { error } = await supabase.auth.signInWithPassword({ email, password });
+	const options = withCaptcha(undefined, captchaToken);
+	const { error } = await supabase.auth.signInWithPassword({
+		email,
+		password,
+		...(options ? { options } : {}),
+	});
 
 	if (error) {
 		throw new Error(error.message);

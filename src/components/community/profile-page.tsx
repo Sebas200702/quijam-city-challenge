@@ -8,12 +8,15 @@ import {
 	useEffect,
 	useState,
 } from "react";
+import { isOAuthReturn } from "../../lib/auth/google-auth";
+import { GOOGLE_AUTH_ENABLED } from "../../lib/auth/google-sign-in";
 import { initials } from "../../lib/community/community-labels";
 import { validateSignUp } from "../../lib/community/community-rules";
 import type { Profile } from "../../lib/community/community-types";
 import { useT } from "../../lib/i18n/use-language";
 import { AskQuillartButton } from "../assistant/ask-quillart-button";
 import { AppealsPanel } from "./appeals-panel";
+import { CaptchaField } from "./captcha-field";
 import { CommunityShell } from "./community-shell";
 import {
 	EmptyState,
@@ -24,9 +27,12 @@ import {
 	Loading,
 	PageTitle,
 } from "./community-ui";
+import { ConsentNote } from "./consent-note";
 import { EventCard } from "./event-card";
+import { GoogleSignInButton } from "./google-sign-in-button";
 import { MyDataPanel } from "./my-data-panel";
 import { ThreadCard } from "./thread-card";
+import { useCaptcha } from "./use-captcha";
 import { useLoad, useSession, useStore } from "./use-community";
 
 /** Only same-site paths: "/agenda/x" yes, "//evil.com" or "https://…" no. */
@@ -36,6 +42,10 @@ export function safeReturnPath(raw: string | null): string | null {
 		return null;
 	return raw;
 }
+
+/** Read at load, before supabase-js removes the OAuth tokens from the URL. */
+const OPENED_BY_OAUTH =
+	typeof window !== "undefined" && isOAuthReturn(window.location.search);
 
 function returnPath(): string | null {
 	if (typeof window === "undefined") return null;
@@ -52,16 +62,19 @@ function SubmitButton({
 	busy,
 	label,
 	busyLabel,
+	describedBy,
 }: {
 	busy: boolean;
 	label: string;
 	busyLabel: string;
+	describedBy?: string;
 }) {
 	return (
 		<button
 			type="submit"
 			disabled={busy}
 			aria-busy={busy}
+			aria-describedby={describedBy}
 			className="q-btn q-btn--primary q-btn--block mt-2"
 		>
 			{busy && <span className="q-star q-star--think" aria-hidden="true" />}
@@ -122,18 +135,25 @@ function SignInForm() {
 	const [password, setPassword] = useState("");
 	const [busy, setBusy] = useState(false);
 	const [error, setError] = useState<string | null>(null);
+	const captcha = useCaptcha();
 
 	async function handleSubmit(event: SyntheticEvent<HTMLFormElement>) {
 		event.preventDefault();
+		if (captcha.missing) {
+			setError(t.profile.captchaRequired);
+			return;
+		}
 		setBusy(true);
 		setError(null);
 		try {
-			await store.signIn(email.trim(), password);
+			await store.signIn(email.trim(), password, captcha.token);
 			const back = returnPath();
 			if (back) window.location.assign(back);
 		} catch (err) {
 			setError(errorText(err, t.profile.signInFailed));
 			setBusy(false);
+		} finally {
+			captcha.reset();
 		}
 	}
 
@@ -161,6 +181,7 @@ function SignInForm() {
 					className={inputClass}
 				/>
 			</Field>
+			<CaptchaField captcha={captcha} />
 			{error && <ErrorNote message={error} />}
 			<SubmitButton
 				busy={busy}
@@ -182,6 +203,7 @@ function SignUpForm() {
 	const [busy, setBusy] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [confirmEmail, setConfirmEmail] = useState<string | null>(null);
+	const captcha = useCaptcha();
 
 	async function handleSubmit(event: SyntheticEvent<HTMLFormElement>) {
 		event.preventDefault();
@@ -197,10 +219,17 @@ function SignUpForm() {
 			setError(invalid);
 			return;
 		}
+		if (captcha.missing) {
+			setError(t.profile.captchaRequired);
+			return;
+		}
 		setBusy(true);
 		setError(null);
 		try {
-			const result = await store.signUp(input);
+			const result = await store.signUp({
+				...input,
+				captchaToken: captcha.token,
+			});
 			if (result.needsConfirmation) {
 				setConfirmEmail(input.email);
 				setBusy(false);
@@ -211,6 +240,8 @@ function SignUpForm() {
 		} catch (err) {
 			setError(errorText(err, t.profile.signUpFailed));
 			setBusy(false);
+		} finally {
+			captcha.reset();
 		}
 	}
 
@@ -286,11 +317,14 @@ function SignUpForm() {
 				onChange={setIsVisitor}
 			/>
 			<PrivacyNote />
+			<CaptchaField captcha={captcha} />
 			{error && <ErrorNote message={error} />}
+			<ConsentNote id="signup-consent" />
 			<SubmitButton
 				busy={busy}
 				label={t.profile.signUp}
 				busyLabel={t.profile.signingUp}
+				describedBy="signup-consent"
 			/>
 		</form>
 	);
@@ -315,6 +349,12 @@ function AuthPanel() {
 				{t.profile.authIntro}
 			</PageTitle>
 			<section className="q-card mx-auto w-full max-w-md gap-5 p-5">
+				{GOOGLE_AUTH_ENABLED && (
+					<>
+						<GoogleSignInButton returnPath={returnPath()} />
+						<p className="q-sm q-muted text-center">{t.profile.emailDivider}</p>
+					</>
+				)}
 				<div
 					role="tablist"
 					aria-label={t.profile.accountLabel}
@@ -695,6 +735,12 @@ function SignedInView({ profile }: { profile: Profile }) {
 export function ProfilePage({ aiHref }: { aiHref?: string }) {
 	const t = useT();
 	const { profile, loading } = useSession();
+	// Back from Google with a session: return where the person was, like the email form.
+	useEffect(() => {
+		if (!profile || !OPENED_BY_OAUTH) return;
+		const back = returnPath();
+		if (back) window.location.assign(back);
+	}, [profile]);
 	return (
 		<CommunityShell current="profile" aiHref={aiHref}>
 			{loading ? (
