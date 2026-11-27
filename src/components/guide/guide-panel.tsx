@@ -23,6 +23,7 @@ import type {
 } from "../../lib/i18n/dictionaries/guide";
 import { VOICE_LOCALES } from "../../lib/i18n/languages";
 import { useLanguage, useT } from "../../lib/i18n/use-language";
+import { scrollBehavior } from "../../lib/reduced-motion";
 import type { DestinationKey } from "../../lib/trip/trip-planner";
 import { AskQuillartButton } from "../assistant/ask-quillart-button";
 import {
@@ -252,7 +253,10 @@ export function GuidePanel({
 	// Keep the latest message in view as the conversation grows.
 	// biome-ignore lint/correctness/useExhaustiveDependencies: scroll on every new message or form.
 	useEffect(() => {
-		endRef.current?.scrollIntoView({ block: "end", behavior: "smooth" });
+		endRef.current?.scrollIntoView({
+			block: "end",
+			behavior: scrollBehavior(),
+		});
 	}, [messages, thinking, reportingId]);
 
 	/** At most one state card at a time: a new turn replaces the last one. */
@@ -401,7 +405,8 @@ export function GuidePanel({
 								</span>
 							)}
 						</div>
-						<h2 className="q-h2" id={titleId}>
+						{/* tabIndex -1: the map moves focus here when it opens the panel. */}
+						<h2 className="q-h2" id={titleId} tabIndex={-1}>
 							{text.title}
 						</h2>
 					</div>

@@ -11,12 +11,15 @@ const { aiHref } = homeContent;
 <BaseLayout title="Quillart AI · Barranquilla" theme="light">
 	{/* Quillart AI is the entry point: the conversation comes first. `?q=` starts it with a question. */}
 	<div class="mx-auto flex min-h-[calc(100dvh-3px)] w-full max-w-md flex-col lg:max-w-6xl">
-		<main class="flex flex-1 flex-col gap-4 px-4 pt-4 pb-4 lg:gap-8 lg:px-8 lg:pt-6">
+		{/* The header sits outside <main> so it is the page's banner landmark. */}
+		<div class="px-4 pt-4 lg:px-8 lg:pt-6">
 			<HomeHeader
 				current="home"
 				aiHref={aiHref}
 				client:load
 			/>
+		</div>
+		<main class="flex flex-1 flex-col gap-4 px-4 pt-4 pb-4 lg:gap-8 lg:px-8 lg:pt-8">
 			<AssistantHome client:only="react">
 				<p slot="fallback" class="q-p q-muted mx-auto w-full max-w-3xl">
 					Cargando Quillart AI…

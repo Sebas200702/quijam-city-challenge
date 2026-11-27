@@ -506,7 +506,14 @@ export function RouteCard({
 				<span>{t.needAccessible}</span>
 			</label>
 
-			<div aria-live="polite">{body}</div>
+			{/* Not a live region: a route change would re-read the whole card. Only the
+			    one-line decision is announced; state blocks carry their own role. */}
+			<div>{body}</div>
+			<p className="q-sr" role="status">
+				{route && !loading
+					? `${t.goTo(destination)}: ${t.minutesShort(route.durationMinutes)}`
+					: ""}
+			</p>
 
 			{/* Sticky so the action stays in reach while the card scrolls on phones. */}
 			<div className="sticky bottom-0 z-[1] -mx-5 -mb-5 flex flex-col gap-2 bg-[var(--surface-raised)] px-5 pt-2 pb-5 empty:hidden">

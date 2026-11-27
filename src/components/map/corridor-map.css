@@ -35,6 +35,23 @@
 	position: absolute;
 	inset: 0;
 }
+/* Skip link: hidden until a keyboard reaches it, then a pill above the map. */
+.corridor-skip {
+	position: absolute;
+	top: 12px;
+	left: 12px;
+	z-index: 1200;
+	padding: 10px 16px;
+	border-radius: var(--radius-pill);
+	background: var(--surface-raised);
+	color: var(--ink);
+	font-weight: 600;
+	box-shadow: var(--shadow-card);
+	transform: translateY(-200%);
+}
+.corridor-skip:focus {
+	transform: none;
+}
 .corridor-panel {
 	position: absolute;
 	top: 12px;
@@ -748,7 +765,8 @@
 	padding: 0 8px;
 	background: var(--surface-raised, #fff);
 	color: inherit;
-	border: 1px solid var(--frame, #d0d5dd);
+	/* --line-control keeps the field edge at 3:1 or more (WCAG 1.4.11). */
+	border: 1px solid var(--line-control);
 }
 .route-card__toggle {
 	display: flex;

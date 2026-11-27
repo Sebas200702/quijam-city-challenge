@@ -52,6 +52,12 @@ export function ReportForm({
 	const [showErrors, setShowErrors] = useState(false);
 	const amountRef = useRef<HTMLInputElement>(null);
 	const driverRef = useRef<HTMLInputElement>(null);
+	const resultRef = useRef<HTMLDivElement>(null);
+	// The form gives way to its result: take focus there so it is not lost.
+	const done = status.kind === "saved" || status.kind === "offline";
+	useEffect(() => {
+		if (done) resultRef.current?.focus();
+	}, [done]);
 
 	// Reports kept on the phone earlier go out as soon as the form opens online.
 	const onSavedRef = useRef(onReportSaved);
@@ -140,8 +146,10 @@ export function ReportForm({
 	if (status.kind === "saved" || status.kind === "offline") {
 		return (
 			<div
+				ref={resultRef}
 				className={`guide-report guide-report--${status.kind}`}
 				role="status"
+				tabIndex={-1}
 			>
 				<ReportIllustration
 					kind={status.kind === "saved" ? "sent" : "saved"}
@@ -305,7 +313,9 @@ export function ReportForm({
 				<button
 					type="submit"
 					className="q-btn q-btn--primary q-btn--sm"
-					disabled={!segment || status.kind === "sending"}
+					// aria-disabled, not disabled, while sending: focus stays on the button.
+					disabled={!segment}
+					aria-disabled={status.kind === "sending"}
 					aria-busy={status.kind === "sending"}
 				>
 					<Send size={16} strokeWidth={1.75} aria-hidden="true" />

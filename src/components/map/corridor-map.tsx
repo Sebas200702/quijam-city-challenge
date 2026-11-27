@@ -34,6 +34,7 @@ import type {
 } from "../../lib/corridor/corridor-types";
 import { useT } from "../../lib/i18n/use-language";
 import type { VisitorContext } from "../../lib/notices/notice-types";
+import { prefersReducedMotion } from "../../lib/reduced-motion";
 import { DESTINATIONS, type DestinationKey } from "../../lib/trip/trip-planner";
 import { GuidePanel } from "../guide/guide-panel";
 import { NoticeSlot } from "../notices/notice-slot";
@@ -99,7 +100,9 @@ function flyToVisible(map: L.Map, latLng: L.LatLng, zoom: number) {
 	const { paddingTopLeft, paddingBottomRight } = overlayPadding(map);
 	const offset = paddingBottomRight.subtract(paddingTopLeft).divideBy(2);
 	const center = map.unproject(map.project(latLng, zoom).add(offset), zoom);
-	map.flyTo(center, zoom, { duration: 0.6 });
+	// "Reduce motion": jump straight there instead of flying.
+	if (prefersReducedMotion()) map.setView(center, zoom, { animate: false });
+	else map.flyTo(center, zoom, { duration: 0.6 });
 }
 
 function fitCorridor(map: L.Map, data: CorridorData) {
@@ -121,6 +124,9 @@ export default function CorridorMap({ data, source }: CorridorMapProps) {
 	const layersRef = useRef<CorridorLayers | null>(null);
 	const [selected, setSelected] = useState<Selection | null>(null);
 	const [guideOpen, setGuideOpen] = useState(false);
+	const guideRef = useRef<HTMLDivElement>(null);
+	/** What had focus when the Guide opened, to give it back on close. */
+	const guideOpenerRef = useRef<HTMLElement | null>(null);
 	const [legendOpen, setLegendOpen] = useState(false);
 	const [near, setNear] = useState(false);
 	const [tiles, setTiles] = useState<TileStatus>("loading");
@@ -195,7 +201,13 @@ export default function CorridorMap({ data, source }: CorridorMapProps) {
 	useEffect(() => {
 		const container = containerRef.current;
 		if (!container) return;
-		const map = L.map(container, { zoomControl: false });
+		const still = prefersReducedMotion();
+		const map = L.map(container, {
+			zoomControl: false,
+			zoomAnimation: !still,
+			fadeAnimation: !still,
+			markerZoomAnimation: !still,
+		});
 		// Tiles that load at least once mean the map works; errors alone mean it did not.
 		let anyTile = false;
 		const tileLayer = L.tileLayer(TILE_URL, {
@@ -335,6 +347,39 @@ export default function CorridorMap({ data, source }: CorridorMapProps) {
 		}
 	}, [flood.blocked, data.floodZones, t]);
 
+	// Focus follows the Guide: into its heading on open, back to what opened it on close
+	// (or to a visible "Ask" button when that one is gone), unless something else took it.
+	const guideWasOpen = useRef(false);
+	useEffect(() => {
+		const guide = guideRef.current;
+		if (guideOpen) {
+			guide?.querySelector<HTMLElement>("h2[tabindex]")?.focus();
+		} else if (guideWasOpen.current) {
+			const active = document.activeElement;
+			const lost =
+				!active || active === document.body || guide?.contains(active);
+			if (lost) {
+				const visible = (el: HTMLElement | null | undefined) =>
+					el?.isConnected && el.getClientRects().length > 0 ? el : null;
+				const root = guide?.closest(".corridor-app");
+				(
+					visible(guideOpenerRef.current) ??
+					visible(root?.querySelector<HTMLElement>(".corridor-guide-button")) ??
+					visible(root?.querySelector<HTMLElement>(".route-card__guide button"))
+				)?.focus();
+			}
+		}
+		guideWasOpen.current = guideOpen;
+	}, [guideOpen]);
+
+	const openGuide = () => {
+		guideOpenerRef.current =
+			document.activeElement instanceof HTMLElement
+				? document.activeElement
+				: null;
+		setGuideOpen(true);
+	};
+
 	const toggleLayer = (key: LayerKey) => {
 		setVisible((current) => ({ ...current, [key]: !current[key] }));
 		// A hidden layer cannot keep the selected point.
@@ -391,6 +436,11 @@ export default function CorridorMap({ data, source }: CorridorMapProps) {
 
 	return (
 		<div className={`corridor-app${near ? " corridor-app--near" : ""}`}>
+			<h1 className="q-sr">{t.mapAria}</h1>
+			{/* The map and its pins come first in the tab order: let keyboards skip them. */}
+			<a className="corridor-skip" href="#corridor-panel">
+				{t.skipToPanel}
+			</a>
 			<MapPatterns />
 			<section
 				ref={containerRef}
@@ -401,7 +451,7 @@ export default function CorridorMap({ data, source }: CorridorMapProps) {
 				tiles={tiles}
 				online={online}
 				onRetry={retryTiles}
-				onOpenGuide={() => setGuideOpen(true)}
+				onOpenGuide={openGuide}
 			/>
 
 			{/* The header carries the one "Datos de referencia" tag of the screen (rule 9). */}
@@ -414,7 +464,7 @@ export default function CorridorMap({ data, source }: CorridorMapProps) {
 				</div>
 			)}
 
-			<aside className="corridor-panel">
+			<aside id="corridor-panel" className="corridor-panel" tabIndex={-1}>
 				<MapHeader
 					pointNames={pointNames}
 					onSearch={search}
@@ -433,7 +483,7 @@ export default function CorridorMap({ data, source }: CorridorMapProps) {
 					type="button"
 					className="q-btn q-btn--primary corridor-guide-button"
 					aria-expanded={guideOpen}
-					onClick={() => setGuideOpen(true)}
+					onClick={openGuide}
 				>
 					<MessageCircle size={20} strokeWidth={1.75} aria-hidden="true" />
 					{t.askGuide}
@@ -498,7 +548,7 @@ export default function CorridorMap({ data, source }: CorridorMapProps) {
 
 			<div className="corridor-app__detail">
 				{/* Hidden, not unmounted, so the conversation survives "Ver en el mapa". */}
-				<div hidden={!guideOpen}>
+				<div ref={guideRef} hidden={!guideOpen}>
 					<GuidePanel
 						onShowOnMap={showDestination}
 						onClose={() => setGuideOpen(false)}
@@ -518,7 +568,7 @@ export default function CorridorMap({ data, source }: CorridorMapProps) {
 							detail={detail}
 							source={source}
 							onClose={() => setSelected(null)}
-							onOpenGuide={() => setGuideOpen(true)}
+							onOpenGuide={openGuide}
 						/>
 					) : (
 						<RouteCard
@@ -529,7 +579,7 @@ export default function CorridorMap({ data, source }: CorridorMapProps) {
 							loading={loading}
 							error={error}
 							alert={floodNotice.band}
-							onOpenGuide={() => setGuideOpen(true)}
+							onOpenGuide={openGuide}
 						/>
 					))}
 			</div>

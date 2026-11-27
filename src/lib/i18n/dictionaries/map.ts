@@ -114,6 +114,7 @@ const es = {
 	},
 	// Map: pins, controls, legend and base-map states.
 	mapAria: "Mapa del corredor",
+	skipToPanel: "Saltar al buscador y la ruta",
 	accessibleMode: "Modo accesible",
 	/** The current route, handed to the Mobility agent as a ready-made question. */
 	askRoutePrompt: (from: string, to: string) =>
@@ -340,6 +341,7 @@ const en: MapMessages = {
 		Cerrado: "Closed",
 	},
 	mapAria: "Corridor map",
+	skipToPanel: "Skip to search and route",
 	accessibleMode: "Accessible mode",
 	askRoutePrompt: (from, to) => `How do I get from ${from} to ${to}?`,
 	locate: "Go to where you are",
@@ -559,6 +561,7 @@ const pt: MapMessages = {
 		Cerrado: "Fechado",
 	},
 	mapAria: "Mapa do corredor",
+	skipToPanel: "Ir para a busca e a rota",
 	accessibleMode: "Modo acessível",
 	askRoutePrompt: (from, to) => `Como chego de ${from} a ${to}?`,
 	locate: "Ir para onde você está",
@@ -782,6 +785,7 @@ const fr: MapMessages = {
 		Cerrado: "Fermé",
 	},
 	mapAria: "Carte du corridor",
+	skipToPanel: "Aller à la recherche et à l’itinéraire",
 	accessibleMode: "Mode accessible",
 	askRoutePrompt: (from, to) => `Comment aller de ${from} à ${to} ?`,
 	locate: "Aller où vous êtes",

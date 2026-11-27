@@ -19,6 +19,7 @@ import {
 	WifiOff,
 	X,
 } from "lucide-react";
+import { useEffect, useRef } from "react";
 import type { SelectionDetail } from "../../lib/corridor/corridor-selection";
 import type {
 	CorridorDataSource,
@@ -168,6 +169,13 @@ export function DetailCard({
 	onOpenGuide,
 }: DetailCardProps) {
 	const copy = useT().map;
+	const headingRef = useRef<HTMLHeadingElement>(null);
+	const title = detail?.title;
+	// Each new selection moves focus to its heading: the card is read once, in order,
+	// instead of being re-announced as a whole live region.
+	useEffect(() => {
+		if (title) headingRef.current?.focus({ preventScroll: true });
+	}, [title]);
 	const offline = source === "seed" && (
 		<p className="mc-offline-note">
 			<OfflineArt className="mc-offline-note__art" />
@@ -241,7 +249,6 @@ export function DetailCard({
 	return (
 		<section
 			className="q-card q-card--raised q-card--frame corridor-detail mc-detail"
-			aria-live="polite"
 			aria-labelledby="corridor-detail-title"
 		>
 			<div className={`q-band ${BAND_CLASS[detail.status.tone]}`} />
@@ -254,7 +261,12 @@ export function DetailCard({
 				</span>
 				<div className="mc-detail-head__text">
 					<p className="q-eyebrow">{copy.eyebrow[detail.kind]}</p>
-					<h2 id="corridor-detail-title" className="q-h2">
+					<h2
+						id="corridor-detail-title"
+						className="q-h2"
+						ref={headingRef}
+						tabIndex={-1}
+					>
 						{detail.title}
 					</h2>
 				</div>
