@@ -116,10 +116,10 @@ Reglas: nunca blanco sobre oro; como texto, rojo y verde usan su variante
 
 | Componente | Clases | Notas |
 |---|---|---|
-| Botón | `.q-btn` + `--primary` `--secondary` `--alert` `--ghost`, `--sm` `--lg` `--icon` `--block` | Píldora, mínimo 48px. Primary una vez por vista; Alert solo para seguridad o acciones irreversibles. Carga: `aria-busy="true"` y la estrella |
+| Botón | `.q-btn` + `--primary` `--secondary` `--alert` `--ghost`, `--sm` `--lg` `--icon` `--block` | Píldora, 48px de alto (`--sm` 44px, `--lg` 56px); nunca menos de 44px. Primary una vez por vista; Alert solo para seguridad o acciones irreversibles. Carga: `aria-busy="true"` y la estrella |
 | Badge | `.q-badge` + `--live` `--high` `--optimal` `--alert` `--event` `--active` `--neutral`, `--solid` | Una o dos palabras en mayúsculas. Máximo dos juntos |
 | Densidad | `.q-meter` + `--green` `--gold` `--red` | Verde < 60 ≤ oro < 85 ≤ rojo. `role="meter"` y la palabra de estado |
-| Segmentado | `.q-seg`, `.q-seg__opt.is-on` | Modo, tema, idioma. Botones con `aria-pressed` |
+| Segmentado | `.q-seg`, `.q-seg__opt.is-on` | Modo, tema, idioma. Botones con `aria-pressed`, cada opción de 44px de alto como mínimo |
 | Header | `.q-header` | Logo, modo (Turista / Lo que la ciudad aprende), tema, idioma |
 | Card | `.q-card` + `--raised` `--frame` `--active` `--dismissed` | Cabecera, cuerpo y pie con `__head` `__body` `__foot` |
 | Pin de mapa | `.q-pin` + `--fluid` `--event` `--alert`, `.is-selected` | Glifo propio: flechas, estrella, signo de exclamación |
@@ -202,9 +202,11 @@ usan tokens existentes: ningún color nuevo.
 ### Accesibilidad común
 
 - Áreas táctiles de 44 px o más (botones, cerrar, `summary`, `__grab`).
-- Foco visible con `--focus` en todos los controles nuevos.
-- Con `prefers-reduced-motion: reduce` se apagan las transiciones de la hoja y
-  del chevron de `.q-details`, además de las animaciones existentes.
+- Foco visible con `--focus` en todos los controles, incluidos `select`,
+  `textarea` y `summary`.
+- Con `prefers-reduced-motion: reduce` se apagan todas las transiciones de los
+  componentes (botones, chips, segmentado, pines, medidores, progreso del viaje,
+  hoja, cerrar de la alerta y chevron de `.q-details`) y todas las animaciones.
 - Contraste: texto `--ink` y `--ink-muted` sobre `--gold-soft`, `--green-soft`
   y `--red-soft` supera 4,5:1 en ambos temas (calculado, falta medir).
 

@@ -4,7 +4,7 @@
 /* ── Base ── */
 .q-root { box-sizing: border-box; background: var(--bg); color: var(--ink); font-family: var(--font-sans); font-size: 15px; line-height: 22px; -webkit-font-smoothing: antialiased; }
 .q-root *, .q-root *::before, .q-root *::after { box-sizing: border-box; }
-.q-root :where(button, input, a, [tabindex]):focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.q-root :where(button, input, select, textarea, summary, a, [tabindex]):focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 .q-sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 
 /* ── Type ── */
@@ -93,7 +93,7 @@ svg.q-star-svg polygon { fill: currentColor; }
 /* ── Button: pills ── */
 .q-btn { font: inherit; font-weight: 600; font-size: 15px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 0 22px; border-radius: var(--radius-pill); border: 0; cursor: pointer; white-space: nowrap; text-decoration: none; transition: background-color .2s, box-shadow .2s, color .2s, transform .2s; }
 .q-btn:active:not(:disabled) { transform: scale(.98); }
-.q-btn--sm { min-height: 40px; padding: 0 16px; font-size: 13px; }
+.q-btn--sm { min-height: 44px; padding: 0 16px; font-size: 13px; }
 .q-btn--lg { min-height: 56px; padding: 0 26px; font-size: 16px; }
 .q-btn--block { width: 100%; }
 .q-btn--icon { width: 48px; padding: 0; }
@@ -137,7 +137,7 @@ svg.q-star-svg polygon { fill: currentColor; }
 
 /* ── Segmented control ── */
 .q-seg { display: inline-flex; gap: 2px; padding: 4px; border-radius: var(--radius-pill); background: var(--line); }
-.q-seg__opt { font: inherit; font-weight: 600; font-size: 13px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; border: 0; background: transparent; color: var(--ink-muted); border-radius: var(--radius-pill); cursor: pointer; padding: 0 14px; min-height: 40px; min-width: 44px; transition: background-color .2s, color .2s; }
+.q-seg__opt { font: inherit; font-weight: 600; font-size: 13px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; border: 0; background: transparent; color: var(--ink-muted); border-radius: var(--radius-pill); cursor: pointer; padding: 0 14px; min-height: 44px; min-width: 44px; transition: background-color .2s, color .2s; }
 @media (min-width: 1024px) { .q-seg__opt:hover { color: var(--ink); } }
 .q-seg__opt.is-on { background: var(--action); color: var(--on-action); box-shadow: var(--action-glow); }
 
@@ -342,5 +342,5 @@ svg.q-star-svg polygon { fill: currentColor; }
 
 @media (prefers-reduced-motion: reduce) {
   .q-star--think, .q-star--pulse, .q-dot, .q-user__pulse, .q-thinking__dots i { animation: none; }
-  .q-btn, .q-pin__head, .q-meter__fill, .q-sheet--dock, .q-details > summary::after { transition: none; }
+  .q-btn, .q-chip, .q-seg__opt, .q-pin__head, .q-meter__fill, .q-trip__fill, .q-sheet--dock, .q-alert__close, .q-details > summary::after { transition: none; }
 }
