@@ -4,7 +4,9 @@ import type {
 	FloodRiskLevel,
 	FloodZone,
 	OverchargeReport,
+	ReportFilter,
 	ReportStatus,
+	ReportStatusAction,
 	ReportStatusSummary,
 	ZoneVisitorCount,
 } from "./city-dashboard-types";
@@ -36,11 +38,105 @@ export const CITY_MODE_LABELS: Record<CityMode, string> = {
 };
 
 export const REPORT_STATUS_LABELS: Record<ReportStatus, string> = {
-	open: "Abierto",
+	open: "Nuevo",
 	in_review: "En revisión",
 	resolved: "Resuelto",
 	dismissed: "Descartado",
 };
+
+export const REPORT_TRANSPORT_LABELS: Record<
+	OverchargeReport["transport_mode"],
+	string
+> = {
+	taxi: "Taxi",
+	bus: "Bus",
+	informal: "Informal",
+	other: "Otro",
+};
+
+export function calculateResolvedReportsRate(
+	summary: ReportStatusSummary,
+): number {
+	if (summary.total <= 0) {
+		return 0;
+	}
+	return Math.round((summary.resolved / summary.total) * 100);
+}
+
+export function filterReportsByStatus(
+	reports: readonly OverchargeReport[],
+	filter: ReportFilter,
+): OverchargeReport[] {
+	if (filter === "all") {
+		return [...reports];
+	}
+	return reports.filter((report) => report.status === filter);
+}
+
+export function getReportStatusActions(
+	status: ReportStatus,
+): ReportStatusAction[] {
+	switch (status) {
+		case "open":
+			return [
+				{
+					nextStatus: "in_review",
+					label: "Revisar",
+					emphasis: "primary",
+				},
+				{
+					nextStatus: "resolved",
+					label: "Resolver",
+					emphasis: "secondary",
+				},
+			];
+		case "in_review":
+			return [
+				{
+					nextStatus: "resolved",
+					label: "Marcar resuelto",
+					emphasis: "primary",
+				},
+				{
+					nextStatus: "dismissed",
+					label: "Descartar",
+					emphasis: "ghost",
+				},
+			];
+		case "resolved":
+		case "dismissed":
+			return [
+				{
+					nextStatus: "in_review",
+					label: "Reabrir",
+					emphasis: "ghost",
+				},
+			];
+	}
+}
+
+export function formatRelativeReportTime(
+	createdAtIso: string,
+	nowMs: number = Date.now(),
+): string {
+	const diffSeconds = Math.max(
+		0,
+		Math.floor((nowMs - new Date(createdAtIso).getTime()) / 1000),
+	);
+	if (diffSeconds < 60) {
+		return "Hace un momento";
+	}
+	const diffMinutes = Math.floor(diffSeconds / 60);
+	if (diffMinutes < 60) {
+		return `Hace ${diffMinutes} min`;
+	}
+	const diffHours = Math.floor(diffMinutes / 60);
+	if (diffHours < 24) {
+		return `Hace ${diffHours} h`;
+	}
+	const diffDays = Math.floor(diffHours / 24);
+	return `Hace ${diffDays} d`;
+}
 
 export function summarizeReportsByStatus(
 	reports: readonly OverchargeReport[],

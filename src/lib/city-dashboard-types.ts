@@ -11,6 +11,14 @@ export type SaturationLevel = "normal" | "high" | "saturated";
 
 export type ReportStatus = "open" | "in_review" | "resolved" | "dismissed";
 
+export type ReportFilter = "all" | ReportStatus;
+
+export interface ReportStatusAction {
+	nextStatus: ReportStatus;
+	label: string;
+	emphasis: "primary" | "secondary" | "ghost";
+}
+
 export type FloodRiskLevel = "low" | "moderate" | "high" | "critical";
 
 export type UserRole = "visitor" | "vendor" | "city";
@@ -29,6 +37,7 @@ export interface ZoneVisitorCount {
 export interface OverchargeReport {
 	id: string;
 	segment_id: string | null;
+	route_label?: string | null;
 	zone: CorridorZone;
 	transport_mode: "taxi" | "bus" | "informal" | "other";
 	charged_fare_cop: number;

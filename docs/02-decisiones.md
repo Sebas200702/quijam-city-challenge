@@ -175,3 +175,9 @@ Cambios de producto frente a la épica #57:
 - Se pasó de "sin red social" a una comunidad moderada por triaje (reglas + OpenJev + revisión humana), que responde al riesgo original: "una red social nueva arranca vacía y exige moderación". No arranca vacía: la semilla trae lugares reales de la ciudad y una agenda inicial publicada por el equipo ("Agenda QUILLART").
 - OpenJev pasó de decidir solo rutas y desvíos a moderar contenido y enrutar la conversación entre agentes.
 - El Guía pasó de un chat con un solo agente a un orquestador con seis agentes especializados.
+
+## Flujo de cobro abusivo (26 nov 2026)
+
+- **ID generado en servidor sin romper RLS:** `POST /api/reports` genera `reportId` con `crypto.randomUUID()` antes de insertar en `overcharge_reports` (sin `.select()`), preservando la política anónima de RLS mientras permite emitir `{ type: "cobro_abusivo", reportId }` en el canal compartido `city-events`.
+- **Una sola fuente de tarifas:** el formulario dedicado `/reportar`, el formulario dentro del Guía y la bandeja del tablero consumen los trayectos y tarifas oficiales desde `route_segments` (con respaldo en la semilla local marcada como datos de referencia).
+- **Vocabulario consistente en bandeja:** el valor de base de datos `'open'` se mantiene sin migración destructiva y se muestra en la interfaz como **Nuevo**, siguiendo el flujo **Nuevo → En revisión → Resuelto** que actualiza en vivo el indicador de reportes resueltos en `/ciudad`.

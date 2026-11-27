@@ -8,6 +8,30 @@ import type {
 	UserRole,
 	ZoneVisitorCount,
 } from "./city-dashboard-types";
+import { formatRouteLabel } from "./reports/overcharge-routes";
+
+const OVERCHARGE_REPORT_SELECT =
+	"id, segment_id, zone, transport_mode, charged_fare_cop, reference_fare_cop, driver_qr_code, notes, status, is_simulated, created_at, updated_at, segment:route_segments(origin:stops!origin_stop_id(name), destination:stops!destination_stop_id(name))";
+
+interface RawOverchargeReportRow extends OverchargeReport {
+	segment?: {
+		origin?: { name: string } | null;
+		destination?: { name: string } | null;
+	} | null;
+}
+
+function normalizeReportRow(row: RawOverchargeReportRow): OverchargeReport {
+	const { segment, ...rest } = row;
+	const originName = segment?.origin?.name;
+	const destinationName = segment?.destination?.name;
+	return {
+		...rest,
+		route_label:
+			originName && destinationName
+				? formatRouteLabel(originName, destinationName)
+				: null,
+	};
+}
 
 export type RealtimeStatus = "connecting" | "live" | "error";
 
@@ -85,7 +109,7 @@ export async function fetchCityDashboardSnapshot(): Promise<CityDashboardSnapsho
 			.order("active_visitors", { ascending: false }),
 		supabase
 			.from("overcharge_reports")
-			.select("*")
+			.select(OVERCHARGE_REPORT_SELECT)
 			.order("created_at", { ascending: false })
 			.limit(50),
 		supabase.from("flood_zones").select("*").order("name", { ascending: true }),
@@ -101,9 +125,12 @@ export async function fetchCityDashboardSnapshot(): Promise<CityDashboardSnapsho
 		throw new Error(`Error cargando arroyos: ${floodsRes.error.message}`);
 	}
 
+	const rawReports = (reportsRes.data ??
+		[]) as unknown as RawOverchargeReportRow[];
+
 	return {
 		zones: (zonesRes.data ?? []) as ZoneVisitorCount[],
-		reports: (reportsRes.data ?? []) as OverchargeReport[],
+		reports: rawReports.map(normalizeReportRow),
 		floodZones: (floodsRes.data ?? []) as FloodZone[],
 		lastUpdatedAt: new Date().toISOString(),
 	};

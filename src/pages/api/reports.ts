@@ -61,8 +61,11 @@ export const POST: APIRoute = async (context) => {
 	if (!segment.data?.origin)
 		return json({ error: "Unknown route segment." }, 400);
 
+	const reportId = crypto.randomUUID();
+
 	// No .select() after insert: visitors cannot read other people's reports.
 	const insert = await supabase.from("overcharge_reports").insert({
+		id: reportId,
 		segment_id: segment.data.id,
 		zone: segment.data.origin.zone,
 		transport_mode: report.transportMode,
@@ -80,6 +83,7 @@ export const POST: APIRoute = async (context) => {
 	return json(
 		{
 			saved: true,
+			reportId,
 			referenceFareCop: segment.data.reference_fare_cop,
 			overchargePercent: overchargePercent(
 				report.chargedFareCop,
