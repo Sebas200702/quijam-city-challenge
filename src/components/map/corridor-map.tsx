@@ -427,6 +427,7 @@ export default function CorridorMap({ data, source }: CorridorMapProps) {
 						businesses: data.businesses.length,
 					}}
 					onToggle={toggleLayer}
+					source={source}
 				/>
 				<button
 					type="button"
