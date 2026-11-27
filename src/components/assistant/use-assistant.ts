@@ -35,6 +35,10 @@ import {
 import { declinedResult, runTool } from "../../lib/assistant/tool-executor";
 import { type UiNavigation, uiBus } from "../../lib/assistant/ui-action-bus";
 import { withOfflineGuide } from "../../lib/guide/guide-offline";
+import {
+	type ConduitResult,
+	conduitResultOf,
+} from "../../lib/guide/live-conduit";
 import { messages as dictionaries } from "../../lib/i18n/messages";
 import { getLanguage } from "../../lib/i18n/use-language";
 import { useSession, useStore } from "../community/use-community";
@@ -403,8 +407,12 @@ export function useAssistant() {
 		uiBus().follow(next);
 	}, []);
 
+	/** Runs the loop; resolves with the final conversation, or null if it failed. */
 	const converse = useCallback(
-		async (history: AssistantMessage[], rounds: number): Promise<void> => {
+		async (
+			history: AssistantMessage[],
+			rounds: number,
+		): Promise<AssistantMessage[] | null> => {
 			busy.current = true;
 			setLoading(true);
 			setError(null);
@@ -420,13 +428,13 @@ export function useAssistant() {
 				if (abort.current?.signal.aborted) {
 					abort.current = null;
 					setStopped(true);
-					return;
+					return null;
 				}
 				setError({
 					message: dictionaries[getLanguage()].chat.connectionError,
 					retry: () => void converse(history, rounds),
 				});
-				return;
+				return null;
 			}
 			const turn: AssistantMessage = {
 				role: "assistant",
@@ -436,7 +444,7 @@ export function useAssistant() {
 			};
 			let next = [...history, turn];
 			setDraft(null);
-			setMessages(next);
+			commit(next);
 			setSuggestions(response.suggestions ?? []);
 
 			// The agent changes the screen the person is on (whitelisted again here).
@@ -474,7 +482,7 @@ export function useAssistant() {
 				};
 				if (results.length > 0) {
 					// Show the read results now; they are sent with the actions' outcome.
-					setMessages([...next, { role: "tool", results }]);
+					commit([...next, { role: "tool", results }]);
 				}
 				const known: AssistantMessage[] =
 					results.length > 0 ? [...next, { role: "tool", results }] : next;
@@ -482,21 +490,21 @@ export function useAssistant() {
 					actions.map((call) => toPending(call, response.agent, known)),
 				);
 				finish(known);
-				return;
+				return known;
 			}
 
 			if (results.length > 0) {
 				next = [...next, { role: "tool", results }];
-				setMessages(next);
+				commit(next);
 				const onlyLinks = reads.every((call) => call.name === "open_page");
 				if (!onlyLinks && rounds < MAX_ROUNDS) {
-					await converse(next, rounds + 1);
-					return;
+					return converse(next, rounds + 1);
 				}
 			}
 			finish(next);
+			return next;
 		},
-		[request, store, toPending, finish],
+		[commit, request, store, toPending, finish],
 	);
 
 	/** Answers one pending action; when none is left, the loop continues. */
@@ -659,13 +667,16 @@ export function useAssistant() {
 		[settle],
 	);
 
-	/** Sends a message; false (nothing sent) while an answer is still coming. */
-	const send = useCallback(
-		async (text: string): Promise<boolean> => {
+	/**
+	 * Adds the person's message to the conversation and returns it, or null
+	 * (nothing sent) while an answer is still coming or an action runs.
+	 */
+	const begin = useCallback(
+		(text: string): AssistantMessage[] | null => {
 			const clean = text.trim();
 			// Wait for a confirmed action to finish: it may already have happened.
-			if (!clean || busy.current || runningIds.current.size > 0) return false;
-			let history = messages;
+			if (!clean || busy.current || runningIds.current.size > 0) return null;
+			let history = messagesRef.current;
 			const open = batch.current;
 			if (open) {
 				// A new message means "not now" for the actions still waiting.
@@ -681,12 +692,38 @@ export function useAssistant() {
 				...history,
 				{ role: "user", text: clean },
 			];
-			setMessages(next);
+			commit(next);
 			setSuggestions([]);
+			return next;
+		},
+		[commit],
+	);
+
+	/** Sends a message; false (nothing sent) while an answer is still coming. */
+	const send = useCallback(
+		async (text: string): Promise<boolean> => {
+			const next = begin(text);
+			if (!next) return false;
 			void converse(next, 0);
 			return true;
 		},
-		[converse, messages],
+		[begin, converse],
+	);
+
+	/**
+	 * The Gemini Live conduit: sends the request exactly like a typed message
+	 * (orchestrator, uiActions, confirmation cards) and waits for the answer.
+	 * Null when nothing was sent or the answer failed.
+	 */
+	const ask = useCallback(
+		async (text: string): Promise<ConduitResult | null> => {
+			const next = begin(text);
+			if (!next) return null;
+			const final = await converse(next, 0);
+			if (!final) return null;
+			return conduitResultOf(final.slice(next.length), batch.current);
+		},
+		[begin, converse],
 	);
 
 	/** "Detener" (U20): cancels the answer being written. */
@@ -719,6 +756,7 @@ export function useAssistant() {
 		signedIn: profile !== null,
 		sessionLoading,
 		send,
+		ask,
 		stop,
 		confirm,
 		cancel,
