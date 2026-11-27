@@ -11,6 +11,9 @@ export const SECONDARY_MENU_HREFS: Record<
 	data: "/datos",
 };
 
+/** Privacy policy (Ley 1581 de 2012): a quiet link under the menu tiles, not a tile. */
+export const PRIVACY_HREF = "/privacidad";
+
 /**
  * First trip the map section suggests. Keep it equal to the default query of the map's
  * route card (src/components/map/corridor-map.tsx) so "Ver la ruta" shows the same route.

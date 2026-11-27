@@ -8,6 +8,7 @@ import {
 	Sun,
 	WifiOff,
 } from "lucide-react";
+import { PRIVACY_HREF } from "../../lib/home-content";
 import type {
 	VisitorMenuItemId,
 	VisitorShellCopy,
@@ -100,6 +101,11 @@ export function VisitorMenuSheet({
 					})}
 				</ul>
 			</nav>
+			<p className="q-sm visitor-note">
+				<a className="q-muted underline" href={PRIVACY_HREF}>
+					{copy.privacyLink}
+				</a>
+			</p>
 			{online ? null : (
 				<p className="q-sm q-muted visitor-note">
 					<WifiOff size={16} strokeWidth={1.75} aria-hidden="true" />
