@@ -2,6 +2,7 @@
 
 import { messages } from "../i18n/messages";
 import { getLanguage } from "../i18n/use-language";
+import { validatePoint } from "./community-geo";
 import type {
 	CommunityEvent,
 	EventQuery,
@@ -49,6 +50,8 @@ export function validateEventInput(
 	}
 	if (!input.placeId && !input.locationText?.trim())
 		return validation().eventPlaceMissing;
+	const pointError = validatePoint(input.latitude, input.longitude);
+	if (pointError) return pointError;
 	if (
 		input.capacity !== null &&
 		(!Number.isInteger(input.capacity) || input.capacity < 1)
@@ -63,7 +66,7 @@ export function validateThreadInput(input: NewThreadInput): string | null {
 	if (input.title.trim().length < 4) return validation().titleMin4;
 	if (input.title.trim().length > 140) return validation().titleMax140;
 	if (input.body.trim().length < 2) return "Escribe tu mensaje.";
-	return null;
+	return validatePoint(input.latitude, input.longitude);
 }
 
 export function validatePostBody(body: string): string | null {

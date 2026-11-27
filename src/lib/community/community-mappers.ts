@@ -1,6 +1,7 @@
 // Maps Supabase rows (snake_case) to the community types, and moderation
 // decisions to what gets stored and told to the author.
 
+import type { MunicipalityKey } from "../geo/amb-boundary";
 import type {
 	ModerationDecision,
 	ModerationStatus,
@@ -16,9 +17,9 @@ import type {
 export const PLACE_COLUMNS =
 	"id, slug, name, kind, neighborhood, description, address, latitude, longitude, is_accessible, is_free, opening_hours";
 export const EVENT_COLUMNS =
-	"id, title, description, category, starts_at, ends_at, place_id, location_text, capacity, registered_count, is_free, price_cop, organizer_id, organizer_name, organizer_verified, status, moderation_status, triage_priority, created_at";
+	"id, title, description, category, starts_at, ends_at, place_id, location_text, latitude, longitude, municipality, capacity, registered_count, is_free, price_cop, organizer_id, organizer_name, organizer_verified, status, moderation_status, triage_priority, created_at";
 export const THREAD_COLUMNS =
-	"id, title, body, category, place_id, event_id, author_id, author_name, reply_count, last_activity_at, city_verified_at, moderation_status, triage_priority, created_at";
+	"id, title, body, category, place_id, event_id, latitude, longitude, municipality, author_id, author_name, reply_count, last_activity_at, city_verified_at, moderation_status, triage_priority, created_at";
 export const POST_COLUMNS =
 	"id, thread_id, body, author_id, author_name, moderation_status, triage_priority, created_at";
 
@@ -29,6 +30,8 @@ const strOrNull = (value: unknown): string | null =>
 	value === null || value === undefined ? null : String(value);
 const numOrNull = (value: unknown): number | null =>
 	value === null || value === undefined ? null : Number(value);
+const municipalityOrNull = (value: unknown): MunicipalityKey | null =>
+	typeof value === "string" ? (value as MunicipalityKey) : null;
 
 export function toPlace(row: Row): Place {
 	return {
@@ -57,6 +60,9 @@ export function toEvent(row: Row): CommunityEvent {
 		endsAt: strOrNull(row.ends_at),
 		placeId: strOrNull(row.place_id),
 		locationText: strOrNull(row.location_text),
+		latitude: numOrNull(row.latitude),
+		longitude: numOrNull(row.longitude),
+		municipality: municipalityOrNull(row.municipality),
 		capacity: numOrNull(row.capacity),
 		registeredCount: Number(row.registered_count ?? 0),
 		isFree: Boolean(row.is_free),
@@ -80,6 +86,9 @@ export function toThread(row: Row): ForumThread {
 		category: row.category as ForumThread["category"],
 		placeId: strOrNull(row.place_id),
 		eventId: strOrNull(row.event_id),
+		latitude: numOrNull(row.latitude),
+		longitude: numOrNull(row.longitude),
+		municipality: municipalityOrNull(row.municipality),
 		authorId: strOrNull(row.author_id),
 		authorName: str(row.author_name),
 		replyCount: Number(row.reply_count ?? 0),

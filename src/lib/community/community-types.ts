@@ -1,5 +1,6 @@
 // Shared types for the community layer: places, events, registrations and forum.
 
+import type { MunicipalityKey } from "../geo/amb-boundary";
 import type {
 	ContentKind,
 	ModerationLabel,
@@ -7,6 +8,17 @@ import type {
 	ModerationStatus,
 	TriagePriority,
 } from "../moderation/moderation-types";
+
+/**
+ * Optional point of a public place on the AMB map (docs/30, U08). Never a person's
+ * location: it is where the event happens or what the conversation is about.
+ */
+export interface MapPointFields {
+	latitude?: number | null;
+	longitude?: number | null;
+	/** AMB municipality of the point, set when it is stored. */
+	municipality?: MunicipalityKey | null;
+}
 
 /** Moderation state every piece of user content carries. */
 export interface Moderated {
@@ -49,7 +61,7 @@ export type EventCategory =
 
 export type EventStatus = "published" | "cancelled";
 
-export interface CommunityEvent extends Moderated {
+export interface CommunityEvent extends Moderated, MapPointFields {
 	id: string;
 	title: string;
 	description: string;
@@ -82,6 +94,9 @@ export interface NewEventInput {
 	capacity: number | null;
 	isFree: boolean;
 	priceCop: number | null;
+	/** Point picked on the map; without one, the catalog place lends its own. */
+	latitude?: number | null;
+	longitude?: number | null;
 }
 
 export interface EventQuery {
@@ -103,7 +118,7 @@ export type ForumCategory =
 	| "visitors"
 	| "neighborhood";
 
-export interface ForumThread extends Moderated {
+export interface ForumThread extends Moderated, MapPointFields {
 	id: string;
 	title: string;
 	body: string;
@@ -125,6 +140,9 @@ export interface NewThreadInput {
 	category: ForumCategory;
 	placeId: string | null;
 	eventId: string | null;
+	/** Optional point of what the conversation is about (a corner, a park). */
+	latitude?: number | null;
+	longitude?: number | null;
 }
 
 export interface ThreadQuery {

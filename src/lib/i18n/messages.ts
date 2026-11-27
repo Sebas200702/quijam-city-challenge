@@ -3,6 +3,7 @@
 
 import { agenda } from "./dictionaries/agenda";
 import { forum } from "./dictionaries/forum";
+import { geo } from "./dictionaries/geo";
 import { guide } from "./dictionaries/guide";
 import { inbox } from "./dictionaries/inbox";
 import { landing } from "./dictionaries/landing";
@@ -78,6 +79,7 @@ export type Messages = BaseMessages & {
 	forum: (typeof forum)[Language];
 	places: (typeof places)[Language];
 	map: (typeof map)[Language];
+	geo: (typeof geo)[Language];
 	offline: (typeof offline)[Language];
 	notifications: (typeof notifications)[Language];
 	guide: (typeof guide)[Language];
@@ -260,6 +262,7 @@ function build(language: Language): Messages {
 		forum: forum[language],
 		places: places[language],
 		map: map[language],
+		geo: geo[language],
 		offline: offline[language],
 		notifications: notifications[language],
 		guide: guide[language],

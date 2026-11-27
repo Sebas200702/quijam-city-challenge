@@ -14,6 +14,7 @@ import type {
 import { triageContent } from "../moderation/triage";
 import { applyTrustPolicy } from "../moderation/trust-policy";
 import type { OpenJevClient } from "../openjev/openjev-types";
+import { resolvePoint, type StoredPoint } from "./community-geo";
 import {
 	EVENT_COLUMNS,
 	moderationColumns,
@@ -131,6 +132,33 @@ export async function isCityUser(
 	return data?.role === "city";
 }
 
+/**
+ * The point to store with an event or a thread: the one picked on the map (already
+ * checked inside the AMB by the validation), else the catalog place's own point.
+ */
+async function storedPointFor(
+	admin: SupabaseClient,
+	input: {
+		placeId: string | null;
+		latitude?: number | null;
+		longitude?: number | null;
+	},
+): Promise<StoredPoint> {
+	const picked = resolvePoint(input);
+	if (picked.latitude !== null || !input.placeId) return picked;
+	const { data: place } = await admin
+		.from("places")
+		.select("latitude, longitude")
+		.eq("id", input.placeId)
+		.maybeSingle();
+	return resolvePoint(
+		input,
+		place
+			? { latitude: Number(place.latitude), longitude: Number(place.longitude) }
+			: null,
+	);
+}
+
 export async function publishContent(
 	admin: SupabaseClient,
 	author: Author,
@@ -160,9 +188,11 @@ export async function publishContent(
 		);
 		if (decision.verdict === "reject")
 			return publishResult<never>(decision, null);
+		const point = await storedPointFor(admin, input);
 		const { data, error } = await admin
 			.from("events")
 			.insert({
+				...point,
 				title: input.title.trim(),
 				description: input.description.trim(),
 				category: input.category,
@@ -192,9 +222,11 @@ export async function publishContent(
 		);
 		if (decision.verdict === "reject")
 			return publishResult<never>(decision, null);
+		const point = await storedPointFor(admin, input);
 		const { data, error } = await admin
 			.from("forum_threads")
 			.insert({
+				...point,
 				title: input.title.trim(),
 				body: input.body.trim(),
 				category: input.category,

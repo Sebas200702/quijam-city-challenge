@@ -1,4 +1,5 @@
 import type { APIRoute } from "astro";
+import { isInsideAmb } from "../../lib/geo/amb-boundary";
 import {
 	overchargePercent,
 	parseOverchargeReport,
@@ -46,14 +47,16 @@ export const POST: APIRoute = async (context) => {
 
 	const segment = await supabase
 		.from("route_segments")
-		.select("id, reference_fare_cop, origin:stops!origin_stop_id(zone)")
+		.select(
+			"id, reference_fare_cop, origin:stops!origin_stop_id(zone, latitude, longitude)",
+		)
 		.eq("code", report.segmentCode)
 		.maybeSingle()
 		.overrideTypes<
 			{
 				id: string;
 				reference_fare_cop: number;
-				origin: { zone: string } | null;
+				origin: { zone: string; latitude: number; longitude: number } | null;
 			},
 			{ merge: false }
 		>();
@@ -62,12 +65,19 @@ export const POST: APIRoute = async (context) => {
 		return json({ error: "Unknown route segment." }, 400);
 
 	const reportId = crypto.randomUUID();
+	// Approximate point for the city map: the start of the segment, a public stop,
+	// never where the visitor was (docs/30, §6.4).
+	const { origin } = segment.data;
+	const point = isInsideAmb(origin.latitude, origin.longitude)
+		? { latitude: origin.latitude, longitude: origin.longitude }
+		: {};
 
 	// No .select() after insert: visitors cannot read other people's reports.
 	const insert = await supabase.from("overcharge_reports").insert({
 		id: reportId,
 		segment_id: segment.data.id,
-		zone: segment.data.origin.zone,
+		zone: origin.zone,
+		...point,
 		transport_mode: report.transportMode,
 		charged_fare_cop: report.chargedFareCop,
 		reference_fare_cop: segment.data.reference_fare_cop,
