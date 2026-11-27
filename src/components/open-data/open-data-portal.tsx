@@ -88,7 +88,7 @@ function DatasetCard({
 							href={dataset.licenseUrl}
 							target="_blank"
 							rel="noreferrer"
-							className="font-semibold text-[var(--ink)] underline-offset-2 hover:underline"
+							className="inline-flex min-h-11 items-center font-semibold text-[var(--ink)] underline-offset-2 hover:underline"
 						>
 							{dataset.license}
 						</a>
@@ -353,7 +353,7 @@ export function OpenDataPortal({
 									href={catalog.licenseUrl}
 									target="_blank"
 									rel="noreferrer"
-									className="q-sm text-[var(--green-text)] underline-offset-2 hover:underline"
+									className="q-sm inline-flex min-h-11 items-center text-[var(--green-text)] underline-offset-2 hover:underline"
 								>
 									Ver términos de uso
 								</a>
