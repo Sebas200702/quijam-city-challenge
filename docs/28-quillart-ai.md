@@ -58,6 +58,14 @@ La respuesta trae `routedBy` (`continuation`, `keywords`, `openjev` o `gemini`) 
 
 La llave de Gemini nunca sale del servidor.
 
+## Idiomas (#93)
+
+El navegador envía `context.language` (`es`, `en`, `pt` o `fr`, el idioma elegido en la interfaz).
+
+- **Gemini:** el contexto le dice que responda en ese idioma, salvo que la persona escriba en otro; las reglas comunes nombran los cuatro idiomas.
+- **Agente local:** sus frases y etiquetas de botones salen de `local-copy.ts`, una tabla por idioma. Sin idioma, responde en español, igual que antes.
+- **Orquestador:** además de las palabras clave en español e inglés, reconoce palabras en portugués y francés (lista aparte, sin palabras del español, para que el enrutamiento en español no cambie). A OpenJev se le avisa que el mensaje puede venir en cualquiera de los cuatro idiomas.
+
 ## Ejecución de herramientas en el navegador
 
 `tool-executor.ts` corre cada herramienta **en el navegador con la sesión de la persona**, contra la misma capa de comunidad que usan las pantallas (`src/lib/community/`). Consecuencias:
@@ -108,6 +116,6 @@ bun run dev
 ## Por construir
 
 - Gemini Live con herramientas: voz en tiempo real usando los mismos agentes y la misma regla de confirmación.
-- Multilenguaje de Quillart AI y de la comunidad (ver #48).
+- Multilenguaje de la moderación de la comunidad: reglas duras con términos básicos en inglés, portugués y francés, y aviso de idioma a OpenJev en el triaje (#93; Quillart AI ya responde en los cuatro idiomas).
 - Recordatorios de eventos y notificaciones.
 - Medir el enrutamiento: qué agente eligió el orquestador frente al que la persona necesitaba.

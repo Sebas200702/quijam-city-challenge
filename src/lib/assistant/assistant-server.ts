@@ -26,7 +26,8 @@ import {
 	isActionTool,
 } from "./assistant-types";
 import { type GeminiAgentOptions, runGeminiAgent } from "./gemini-agent";
-import { answerLocally, EMERGENCY_TEXT } from "./local-agents";
+import { answerLocally } from "./local-agents";
+import { localCopy } from "./local-copy";
 import { routeMessage } from "./orchestrator";
 
 export const MAX_MESSAGES = 30;
@@ -243,19 +244,20 @@ export function enforceAccount(
 	const hasProfileLink = kept.some(
 		(call) => call.name === "open_page" && call.args.path === PROFILE_PATH,
 	);
+	const copy = localCopy(context.language);
 	const toolCalls: ToolCallDraft[] = hasProfileLink
 		? kept
 		: [
 				...kept,
 				{
 					name: "open_page",
-					args: { path: PROFILE_PATH, label: "Entrar o crear cuenta" },
+					args: { path: PROFILE_PATH, label: copy.signInLabel },
 				},
 			];
 	// Keep an emergency reminder (Línea 123) if the model gave one.
-	const emergency = /\b123\b/.test(turn.text) ? `${EMERGENCY_TEXT} ` : "";
+	const emergency = /\b123\b/.test(turn.text) ? `${copy.emergency} ` : "";
 	return {
-		text: `${emergency}Para eso necesitas entrar a tu cuenta. Entra o créala y seguimos.`,
+		text: `${emergency}${copy.needAccount}`,
 		toolCalls,
 	};
 }

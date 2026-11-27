@@ -1,14 +1,16 @@
 // The specialized agents without a model: deterministic tool calls derived
-// from the text, and short Spanish wrap-ups of tool results. Used when
-// GEMINI_API_KEY is missing or Gemini fails, so Quillart AI always answers.
+// from the text, and short wrap-ups of tool results in the person's language
+// (Spanish by default). Used when GEMINI_API_KEY is missing or Gemini fails,
+// so Quillart AI always answers.
 
-import { EVENT_CATEGORY_LABELS } from "../community/community-labels";
 import type {
 	EventCategory,
 	ForumCategory,
 	PlaceKind,
 } from "../community/community-types";
 import { detectDestination } from "../guide/guide-local";
+import type { Language } from "../i18n/languages";
+import { messages as dictionaries } from "../i18n/messages";
 import { type AgentTurn, PROFILE_PATH } from "./assistant-agents";
 import { hasAnyKeyword, matchPlace, normalizeText } from "./assistant-text";
 import {
@@ -19,6 +21,8 @@ import {
 	type AssistantToolResult,
 	isActionTool,
 } from "./assistant-types";
+import { LOCAL_COPY, localCopy } from "./local-copy";
+import type { LocalCopy } from "./local-copy-types";
 import { latestUserText } from "./orchestrator";
 
 const BOGOTA_OFFSET_MS = -5 * 60 * 60 * 1000;
@@ -47,12 +51,33 @@ const WEEKDAYS: [string, number][] = [
 /** "hoy" → 0, "mañana" → 1, "el finde" → until Sunday, "el sábado" → until Saturday. */
 export function daysAheadFrom(text: string, nowIso: string): number | null {
 	const normalized = normalizeText(text);
-	if (hasAnyKeyword(normalized, ["hoy", "today", "esta noche", "tonight"])) {
+	if (
+		hasAnyKeyword(normalized, [
+			"hoy",
+			"today",
+			"esta noche",
+			"tonight",
+			"hoje",
+			"esta noite",
+			"aujourd hui",
+			"ce soir",
+		])
+	) {
 		return 0;
 	}
-	if (hasAnyKeyword(normalized, ["pasado manana"])) return 2;
-	if (hasAnyKeyword(normalized, ["manana", "tomorrow"])) return 1;
-	if (hasAnyKeyword(normalized, ["fin de semana", "finde", "weekend"])) {
+	if (hasAnyKeyword(normalized, ["pasado manana", "apres demain"])) return 2;
+	if (hasAnyKeyword(normalized, ["manana", "tomorrow", "amanha", "demain"])) {
+		return 1;
+	}
+	if (
+		hasAnyKeyword(normalized, [
+			"fin de semana",
+			"finde",
+			"weekend",
+			"fim de semana",
+			"week end",
+		])
+	) {
 		return daysUntil(0, nowIso);
 	}
 	for (const [name, weekday] of WEEKDAYS) {
@@ -70,6 +95,8 @@ const EVENT_CATEGORY_WORDS: Record<EventCategory, string[]> = {
 		"musica",
 		"music",
 		"concierto*",
+		"concert",
+		"concerts",
 		"baile*",
 		"bailar",
 		"salsa",
@@ -184,13 +211,13 @@ function pickEventId(text: string, ids: string[]): string | null {
 	return ids.length === 1 ? ids[0] : null;
 }
 
-function signInTurn(reason: string): AgentTurn {
+function signInTurn(copy: LocalCopy, reason: string): AgentTurn {
 	return {
-		text: `${reason} Primero entra a tu cuenta o créala, es rapidito.`,
+		text: copy.signIn(reason),
 		toolCalls: [
 			{
 				name: "open_page",
-				args: { path: PROFILE_PATH, label: "Entrar o crear cuenta" },
+				args: { path: PROFILE_PATH, label: copy.signInLabel },
 			},
 		],
 	};
@@ -204,6 +231,8 @@ const REGISTER_WORDS = [
 	"reservame",
 	"sign me up",
 	"register",
+	"inscrev*",
+	"inscrire*",
 ];
 const UNREGISTER_WORDS = [
 	"cancelar mi inscripcion",
@@ -229,6 +258,7 @@ function agendaTurn(
 	messages: AssistantMessage[],
 	context: AssistantContext,
 ): AgentTurn {
+	const copy = localCopy(context.language);
 	const normalized = normalizeText(text);
 
 	if (
@@ -236,14 +266,14 @@ function agendaTurn(
 		hasAnyKeyword(normalized, ["evento*", "plan", "actividad*", "event"])
 	) {
 		if (!context.signedIn) {
-			return signInTurn("Para publicar un evento necesitas una cuenta.");
+			return signInTurn(copy, copy.reasons.createEvent);
 		}
 		return {
-			text: "¡Qué buena! Llena el formulario con el nombre, la fecha y el lugar; antes de publicarse pasa por una revisión rápida.",
+			text: copy.createEvent,
 			toolCalls: [
 				{
 					name: "open_page",
-					args: { path: "/agenda/nuevo", label: "Publicar un evento" },
+					args: { path: "/agenda/nuevo", label: copy.createEventLabel },
 				},
 			],
 		};
@@ -253,18 +283,18 @@ function agendaTurn(
 	if (wantsOut || hasAnyKeyword(normalized, REGISTER_WORDS)) {
 		const eventId = pickEventId(text, recentEventIds(messages));
 		if (!context.signedIn) {
-			return signInTurn("Para inscribirte necesitas una cuenta.");
+			return signInTurn(copy, copy.reasons.register);
 		}
 		if (eventId) {
 			return wantsOut
 				? {
-						text: "Va, te ayudo a cancelar esa inscripción. Confírmame abajo.",
+						text: copy.confirmUnregister,
 						toolCalls: [
 							{ name: "unregister_from_event", args: { event_id: eventId } },
 						],
 					}
 				: {
-						text: "¡De una! Confírmame abajo y te inscribo.",
+						text: copy.confirmRegister,
 						toolCalls: [
 							{ name: "register_for_event", args: { event_id: eventId } },
 						],
@@ -272,7 +302,7 @@ function agendaTurn(
 		}
 		if (wantsOut) {
 			return {
-				text: "Dime de cuál plan te quieres salir y te ayudo.",
+				text: copy.whichToLeave,
 				toolCalls: [],
 			};
 		}
@@ -285,16 +315,17 @@ function agendaTurn(
 	if (category) args.category = category;
 	const place = matchPlace(text);
 	if (place) args.place_slug = place.slug;
-	const what = category
-		? `planes de ${EVENT_CATEGORY_LABELS[category].toLowerCase()}`
-		: "planes";
+	const label = category
+		? dictionaries[context.language ?? "es"].shared.eventCategories[category]
+		: null;
 	return {
-		text: `Déjame buscar ${what} para ti.`,
+		text: copy.searchEvents(label),
 		toolCalls: [{ name: "search_events", args }],
 	};
 }
 
 function communityTurn(text: string, context: AssistantContext): AgentTurn {
+	const copy = localCopy(context.language);
 	const normalized = normalizeText(text);
 	if (
 		hasAnyKeyword(normalized, [
@@ -311,14 +342,14 @@ function communityTurn(text: string, context: AssistantContext): AgentTurn {
 		])
 	) {
 		if (!context.signedIn) {
-			return signInTurn("Para escribir en el foro necesitas una cuenta.");
+			return signInTurn(copy, copy.reasons.forum);
 		}
 		return {
-			text: "Abre una conversación nueva: cuéntale a la comunidad tu tema con respeto y pasa por moderación antes de salir.",
+			text: copy.newThread,
 			toolCalls: [
 				{
 					name: "open_page",
-					args: { path: "/foro?nuevo=1", label: "Abrir conversación" },
+					args: { path: "/foro?nuevo=1", label: copy.newThreadLabel },
 				},
 			],
 		};
@@ -329,7 +360,7 @@ function communityTurn(text: string, context: AssistantContext): AgentTurn {
 	const place = matchPlace(text);
 	if (place) args.place_slug = place.slug;
 	return {
-		text: "Mira de qué se está hablando en la comunidad.",
+		text: copy.listThreads,
 		toolCalls: [{ name: "list_threads", args }],
 	};
 }
@@ -343,51 +374,55 @@ const DIRECTIONS_WORDS = [
 	"donde queda",
 	"how do i get",
 	"directions",
+	"como chego",
+	"como chegar",
+	"comment aller",
+	"itineraire",
 ];
 
-function placesTurn(text: string): AgentTurn {
+function placesTurn(text: string, copy: LocalCopy): AgentTurn {
 	const normalized = normalizeText(text);
 	const place = matchPlace(text);
 	if (place) {
 		if (hasAnyKeyword(normalized, DIRECTIONS_WORDS)) {
 			return {
-				text: `Te muestro cómo llegar a ${place.name}.`,
+				text: copy.directionsTo(place.name),
 				toolCalls: [
 					{ name: "get_directions", args: { place_slug: place.slug } },
 				],
 			};
 		}
 		return {
-			text: `Te cuento de ${place.name}.`,
+			text: copy.aboutPlace(place.name),
 			toolCalls: [{ name: "get_place", args: { place_slug: place.slug } }],
 		};
 	}
 	const kind = firstMatch(normalized, PLACE_KIND_WORDS);
 	return {
-		text: "Estos son lugares de la ciudad que te pueden gustar.",
+		text: copy.listPlaces,
 		toolCalls: [{ name: "list_places", args: kind ? { kind } : {} }],
 	};
 }
 
-function mobilityTurn(text: string): AgentTurn {
+function mobilityTurn(text: string, copy: LocalCopy): AgentTurn {
 	const destination = detectDestination(text);
 	if (destination) {
 		return {
-			text: "Te armo la ruta desde el Gran Malecón.",
+			text: copy.routeFromMalecon,
 			toolCalls: [{ name: "plan_route", args: { destination } }],
 		};
 	}
 	const place = matchPlace(text);
 	if (place) {
 		return {
-			text: `Te muestro cómo llegar a ${place.name}.`,
+			text: copy.directionsTo(place.name),
 			toolCalls: [{ name: "get_directions", args: { place_slug: place.slug } }],
 		};
 	}
 	return {
-		text: "¿Pa' dónde vas? Te ayudo con el estadio, Barrio Abajo, el centro o cualquier lugar del mapa.",
+		text: copy.whereTo,
 		toolCalls: [
-			{ name: "open_page", args: { path: "/mapa", label: "Ver el mapa" } },
+			{ name: "open_page", args: { path: "/mapa", label: copy.mapLabel } },
 		],
 	};
 }
@@ -405,23 +440,31 @@ const EMERGENCY_WORDS = [
 	"fire",
 	"auxilio",
 	"ayuda urgente",
+	"urgence*",
+	"ferido*",
+	"blesse*",
+	"perigo*",
+	"danger*",
+	"incendie",
+	"au secours",
 ];
 
-export const EMERGENCY_TEXT =
-	"Si alguien está en peligro, llama ya a la Línea 123.";
+/** The Spanish emergency reminder; other languages live in LOCAL_COPY. */
+export const EMERGENCY_TEXT = LOCAL_COPY.es.emergency;
 
 const MAX_REPORT_LENGTH = 1000;
 
 function cityReportsTurn(text: string, context: AssistantContext): AgentTurn {
+	const copy = localCopy(context.language);
 	const emergency = hasAnyKeyword(normalizeText(text), EMERGENCY_WORDS);
-	const prefix = emergency ? `${EMERGENCY_TEXT} ` : "";
+	const prefix = emergency ? `${copy.emergency} ` : "";
 	if (!context.signedIn) {
-		const turn = signInTurn("Para enviar el reporte necesitas una cuenta.");
+		const turn = signInTurn(copy, copy.reasons.report);
 		return { ...turn, text: `${prefix}${turn.text}` };
 	}
 	const place = matchPlace(text);
 	return {
-		text: `${prefix}Preparé tu reporte para la ciudad; revísalo y confírmalo abajo.`,
+		text: `${prefix}${copy.reportReady}`,
 		toolCalls: [
 			{
 				name: "report_issue",
@@ -435,9 +478,10 @@ function cityReportsTurn(text: string, context: AssistantContext): AgentTurn {
 }
 
 function accountTurn(text: string, context: AssistantContext): AgentTurn {
+	const copy = localCopy(context.language);
 	const normalized = normalizeText(text);
 	if (!context.signedIn) {
-		return signInTurn("Aún no has entrado a tu cuenta.");
+		return signInTurn(copy, copy.reasons.notSignedIn);
 	}
 	if (
 		hasAnyKeyword(normalized, [
@@ -447,21 +491,26 @@ function accountTurn(text: string, context: AssistantContext): AgentTurn {
 			"cerrar sesion",
 			"nombre",
 			"contrasena",
+			"profil",
+			"conta",
+			"compte",
+			"senha",
+			"mot de passe",
 		]) &&
 		!hasAnyKeyword(normalized, ["inscripcion*", "inscrit*", "mis eventos"])
 	) {
 		return {
-			text: "Ahí puedes ver y editar tu perfil.",
+			text: copy.profile,
 			toolCalls: [
 				{
 					name: "open_page",
-					args: { path: PROFILE_PATH, label: "Ir a mi perfil" },
+					args: { path: PROFILE_PATH, label: copy.profileLabel },
 				},
 			],
 		};
 	}
 	return {
-		text: "Te muestro los planes en los que estás inscrito.",
+		text: copy.myRegistrations,
 		toolCalls: [{ name: "my_registrations", args: {} }],
 	};
 }
@@ -476,102 +525,103 @@ function countIn(summary: Record<string, unknown>): number | null {
 	return null;
 }
 
-function plural(count: number, one: string, many: string): string {
-	return count === 1 ? `1 ${one}` : `${count} ${many}`;
-}
-
 function failed(result: AssistantToolResult): boolean {
 	return typeof result.summary.error === "string";
 }
 
-function publishText(result: AssistantToolResult, done: string): string {
+function publishText(
+	result: AssistantToolResult,
+	done: string,
+	copy: LocalCopy,
+): string {
 	const outcome = result.summary.outcome;
-	if (outcome === "held") {
-		return "Quedó en revisión: un moderador lo mira pronto y te avisamos.";
-	}
-	if (outcome === "rejected") {
-		return "No se publicó porque no cumple las normas de la comunidad.";
-	}
+	if (outcome === "held") return copy.wrapUp.held;
+	if (outcome === "rejected") return copy.wrapUp.rejected;
 	return done;
 }
 
-/** One short Spanish sentence for a tool result; "" when nothing to add. */
-export function wrapUpResult(result: AssistantToolResult): string {
+/** One short sentence for a tool result in the language; "" when nothing to add. */
+export function wrapUpResult(
+	result: AssistantToolResult,
+	language?: Language,
+): string {
+	const copy = localCopy(language);
+	const words = copy.wrapUp;
 	// The chat already shows the error or moderation notice; keep this short.
-	if (failed(result)) {
-		return "Uy, no se pudo completar. ¿Probamos de otra forma?";
-	}
+	if (failed(result)) return words.failed;
 	if (result.summary.outcome === "rejected") {
-		return publishText(result, "");
+		return publishText(result, "", copy);
 	}
 	if (result.declined) {
-		return isActionTool(result.name)
-			? "Listo, no hice nada. ¿Te ayudo con otra cosa?"
-			: "";
+		return isActionTool(result.name) ? words.declined : "";
 	}
 	const count = countIn(result.summary);
 	switch (result.name) {
 		case "search_events":
 			return count === 0
-				? "No encontré planes con eso. ¿Probamos otra fecha o categoría?"
+				? words.eventsNone
 				: count === null
-					? "Aquí tienes los planes que encontré."
-					: `Encontré ${plural(count, "plan", "planes")}. ¿Te inscribo en alguno?`;
+					? words.eventsSome
+					: words.eventsCount(count);
 		case "get_event":
-			return "Aquí tienes los detalles del evento.";
+			return words.eventDetails;
 		case "my_registrations":
 			return count === 0
-				? "Todavía no estás inscrito en ningún plan. ¿Buscamos uno?"
+				? words.registrationsNone
 				: count === null
-					? "Estas son tus inscripciones."
-					: `Tienes ${plural(count, "inscripción", "inscripciones")}.`;
+					? words.registrationsSome
+					: words.registrationsCount(count);
 		case "list_places":
 			return count === 0
-				? "No encontré lugares con eso. ¿Busco de otro tipo?"
+				? words.placesNone
 				: count === null
-					? "Estos son los lugares que encontré."
-					: `Encontré ${plural(count, "lugar", "lugares")} para ti.`;
+					? words.placesSome
+					: words.placesCount(count);
 		case "get_place":
-			return typeof result.summary.name === "string"
-				? `Aquí tienes la info de ${result.summary.name}.`
-				: "Aquí tienes la info del lugar.";
+			return words.placeInfo(
+				typeof result.summary.name === "string" ? result.summary.name : null,
+			);
 		case "get_directions":
-			return "Aquí tienes cómo llegar.";
+			return words.directions;
 		case "list_threads":
 			return count === 0
-				? "Todavía no hay conversaciones de eso. ¿Abres una?"
+				? words.threadsNone
 				: count === null
-					? "Estas son las conversaciones de la comunidad."
-					: `Encontré ${plural(count, "conversación", "conversaciones")}.`;
+					? words.threadsSome
+					: words.threadsCount(count);
 		case "plan_route":
 			return result.summary.flood_alert === true
-				? "Ojo: hay alerta de arroyo en la ruta. Nunca cruces un arroyo crecido."
-				: "Esta es la ruta sugerida por el corredor verde.";
+				? words.floodAlert
+				: words.route;
 		case "register_for_event":
 			return result.summary.outcome === "already_registered"
-				? "Ya estabas inscrito en ese plan. ¡Nos vemos allá!"
-				: "¡Listo, quedaste inscrito! Te esperamos.";
+				? words.alreadyRegistered
+				: words.registered;
 		case "unregister_from_event":
-			return "Listo, cancelé tu inscripción.";
+			return words.unregistered;
 		case "create_event":
-			return publishText(result, "¡Listo, tu evento quedó publicado!");
+			return publishText(result, words.eventPublished, copy);
 		case "create_thread":
-			return publishText(result, "¡Listo, tu conversación quedó publicada!");
+			return publishText(result, words.threadPublished, copy);
 		case "reply_to_thread":
-			return publishText(result, "¡Listo, tu respuesta quedó publicada!");
+			return publishText(result, words.replyPublished, copy);
 		case "report_issue":
-			return publishText(
-				result,
-				"Listo, tu reporte llegó a la ciudad y quedó en el foro. ¡Gracias por avisar!",
-			);
+			return publishText(result, words.reportSent, copy);
 		case "open_page":
 			return "";
 	}
 }
 
-export function wrapUpResults(results: AssistantToolResult[]): string {
-	const sentences = [...new Set(results.map(wrapUpResult).filter(Boolean))];
-	return sentences.slice(0, 3).join(" ") || "Listo. ¿Te ayudo con algo más?";
+export function wrapUpResults(
+	results: AssistantToolResult[],
+	language?: Language,
+): string {
+	const sentences = [
+		...new Set(
+			results.map((result) => wrapUpResult(result, language)).filter(Boolean),
+		),
+	];
+	return sentences.slice(0, 3).join(" ") || localCopy(language).wrapUp.fallback;
 }
 
 /** One local agent turn: a wrap-up after tool results, or tool calls from the text. */
@@ -582,7 +632,10 @@ export function answerLocally(
 ): AgentTurn {
 	const latest = messages.at(-1);
 	if (latest?.role === "tool") {
-		return { text: wrapUpResults(latest.results), toolCalls: [] };
+		return {
+			text: wrapUpResults(latest.results, context.language),
+			toolCalls: [],
+		};
 	}
 	const text = latestUserText(messages);
 	switch (agent) {
@@ -591,9 +644,9 @@ export function answerLocally(
 		case "community":
 			return communityTurn(text, context);
 		case "places":
-			return placesTurn(text);
+			return placesTurn(text, localCopy(context.language));
 		case "mobility":
-			return mobilityTurn(text);
+			return mobilityTurn(text, localCopy(context.language));
 		case "city_reports":
 			return cityReportsTurn(text, context);
 		case "account":
