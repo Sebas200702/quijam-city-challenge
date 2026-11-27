@@ -37,6 +37,7 @@ Cada página HTML lleva la cabecera `Content-Security-Policy`. El middleware cal
 | Directiva | Permite | Por qué |
 |---|---|---|
 | `script-src` | `'self'` y los hashes de la página. En `/prueba-guia`, también `blob:` | El AudioWorklet de la prueba de voz se carga desde un `blob:` |
+| `frame-src` | `'self'`. En `/perfil`, también `challenges.cloudflare.com` (y en `script-src`) | El CAPTCHA Turnstile de los formularios de cuenta carga su script y un iframe de Cloudflare |
 | `style-src` | `'self'`, `'unsafe-inline'`, Google Fonts (CSS) | Astro y React escriben atributos `style`; el CSS inyectado es mucho menos riesgoso que un script |
 | `font-src` | `'self'`, `fonts.gstatic.com` | Inter y Space Grotesk |
 | `img-src` | `'self'`, `data:`, `blob:`, `tile.openstreetmap.org` | Teselas de Leaflet, QR e ilustraciones |
@@ -88,7 +89,11 @@ Las IP se guardan como un hash SHA-256 recortado, nunca en claro.
 Hay que hacerla en los paneles de Supabase y Dokploy antes de abrir al público:
 
 1. **Segundo factor (MFA) para el rol ciudad:** Supabase → Authentication → Multi-Factor. Activar TOTP y pedirlo a las cuentas con rol `city`.
-2. **CAPTCHA en el registro:** Supabase → Authentication → Attack Protection → CAPTCHA (hCaptcha o Turnstile). Requiere pasar el token desde el formulario de registro (pendiente en la interfaz).
+2. **CAPTCHA en el registro (Cloudflare Turnstile):**
+   1. En Cloudflare → Turnstile, crear el sitio con los dominios `quillart.dev`, `quillart.tech` y `localhost` (modo *Managed*). Da una *site key* (pública) y una *secret key*.
+   2. Poner la *secret key* en Supabase → Authentication → Attack Protection → CAPTCHA, proveedor Turnstile. Desde ese momento Supabase exige el token en registro, inicio de sesión y recuperación de contraseña.
+   3. Poner la *site key* en Dokploy como argumento de construcción (*build args*) `PUBLIC_TURNSTILE_SITE_KEY` y reconstruir: se lee al compilar. Sin ella no aparece el widget y los formularios funcionan como antes.
+   - En el código: `src/lib/auth/captcha.ts` (clave, idioma del widget y `withCaptcha()`, que agrega `options.captchaToken` a las llamadas de Supabase Auth) y `src/components/community/turnstile-widget.tsx` (widget accesible, carga explícita del script solo en `/perfil`, se reinicia tras cada intento). Pendiente: pasar el token desde `store.signUp`/`store.signIn` (`src/lib/community/cloud-community-store.ts`) y montar el widget en los formularios de `/perfil`. Activar el paso 2 solo cuando eso esté publicado, o el registro fallará.
 3. **Confirmación de correo:** dejar activa "Confirm email" para que no se creen cuentas con correos ajenos.
 4. **IP real detrás del proxy:** detrás de Traefik, la dirección del socket es la del proxy y es la misma para todas las personas, así que compartirían un solo límite de uso. Con `TRUSTED_CLIENT_IP_HEADER=CF-Connecting-IP` en las variables de Dokploy (se lee en tiempo de ejecución), el límite usa la IP que pone Cloudflare. Sin la variable no se confía en ninguna cabecera, porque cualquiera puede enviarla. Mientras el servidor acepte conexiones que no pasan por Cloudflare, alguien puede inventar esa cabecera para saltarse el límite; para cerrarlo, limitar el origen a los rangos de IP de Cloudflare en Traefik. Código: `src/lib/security/client-key.ts`.
 5. **Verificar organizadores:** `update public.profiles set is_verified_organizer = true where id = '<uuid>';` en el editor SQL, después de validar a la organización.

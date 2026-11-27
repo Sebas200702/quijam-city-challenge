@@ -11,6 +11,7 @@ interface ImportMetaEnv {
 	readonly GEMINI_TEXT_MODEL?: string;
 	readonly CSP_MODE?: string;
 	readonly DEMO_PRESENTER_KEY?: string;
+	readonly PUBLIC_TURNSTILE_SITE_KEY?: string;
 }
 
 interface ImportMeta {

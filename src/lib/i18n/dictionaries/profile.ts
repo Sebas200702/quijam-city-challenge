@@ -16,6 +16,11 @@ const es = {
 	signIn: "Entrar",
 	signingIn: "Entrando…",
 	signUpFailed: "No pudimos crear tu cuenta. Intenta de nuevo.",
+	captchaLabel: "Verificación de seguridad",
+	captchaHint: "Confirma que eres una persona antes de continuar.",
+	captchaRequired: "Completa la verificación de seguridad para continuar.",
+	captchaFailed:
+		"No pudimos cargar la verificación de seguridad. Recarga la página e intenta de nuevo.",
 	almostDone: "¡Casi listo! Te enviamos un correo a",
 	almostDoneRest:
 		"Abre el enlace para confirmar tu cuenta y después entra con tu correo y contraseña.",
@@ -115,6 +120,11 @@ const en: ProfileMessages = {
 	signIn: "Sign in",
 	signingIn: "Signing in…",
 	signUpFailed: "We couldn't create your account. Please try again.",
+	captchaLabel: "Security check",
+	captchaHint: "Confirm you are a person before continuing.",
+	captchaRequired: "Complete the security check to continue.",
+	captchaFailed:
+		"We couldn't load the security check. Reload the page and try again.",
 	almostDone: "Almost done! We sent an email to",
 	almostDoneRest:
 		"Open the link to confirm your account, then sign in with your email and password.",
@@ -212,6 +222,11 @@ const pt: ProfileMessages = {
 	signIn: "Entrar",
 	signingIn: "Entrando…",
 	signUpFailed: "Não conseguimos criar sua conta. Tente novamente.",
+	captchaLabel: "Verificação de segurança",
+	captchaHint: "Confirme que você é uma pessoa antes de continuar.",
+	captchaRequired: "Conclua a verificação de segurança para continuar.",
+	captchaFailed:
+		"Não conseguimos carregar a verificação de segurança. Recarregue a página e tente novamente.",
 	almostDone: "Quase pronto! Enviamos um e-mail para",
 	almostDoneRest:
 		"Abra o link para confirmar sua conta e depois entre com seu e-mail e senha.",
@@ -309,6 +324,11 @@ const fr: ProfileMessages = {
 	signIn: "Se connecter",
 	signingIn: "Connexion…",
 	signUpFailed: "Impossible de créer votre compte. Veuillez réessayer.",
+	captchaLabel: "Vérification de sécurité",
+	captchaHint: "Confirmez que vous êtes une personne avant de continuer.",
+	captchaRequired: "Terminez la vérification de sécurité pour continuer.",
+	captchaFailed:
+		"Impossible de charger la vérification de sécurité. Rechargez la page et réessayez.",
 	almostDone: "Presque terminé ! Nous avons envoyé un e-mail à",
 	almostDoneRest:
 		"Ouvrez le lien pour confirmer votre compte, puis connectez-vous avec votre e-mail et votre mot de passe.",
