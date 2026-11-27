@@ -72,20 +72,9 @@ const LAYER_OF: Record<SelectionKind, LayerKey> = {
 /** What the base map is doing: the pins and lines come with the page, the tiles from the network. */
 type TileStatus = "loading" | "ready" | "error";
 
-/**
- * Window event that opens the Guide from outside the map (the visitor home's Guide bar).
- * The listener calls preventDefault() so the sender knows it was handled.
- */
-export const OPEN_GUIDE_EVENT = "quillart:open-guide";
-
 interface CorridorMapProps {
 	data: CorridorData;
 	source: CorridorDataSource;
-	/**
-	 * "full" (default): the map brings its own chrome, including the "Datos simulados 2034" tag.
-	 * "embedded": a page shell around the map already shows the logo and the one sim tag.
-	 */
-	chrome?: "full" | "embedded";
 	/**
 	 * Contextual notices and the arroyo modal (epic #57, rules 2 to 4). Rendered at the map
 	 * root, above the card, the Guide and the detail, so a safety alert is never hidden.
@@ -125,7 +114,6 @@ function fitCorridor(map: L.Map, data: CorridorData) {
 export default function CorridorMap({
 	data,
 	source,
-	chrome = "full",
 	notices,
 }: CorridorMapProps) {
 	const containerRef = useRef<HTMLElement>(null);
@@ -214,16 +202,6 @@ export default function CorridorMap({
 			tileLayerRef.current = null;
 		};
 	}, [data]);
-
-	// The page shell (visitor home) opens the Guide with a window event.
-	useEffect(() => {
-		const open = (event: Event) => {
-			event.preventDefault();
-			setGuideOpen(true);
-		};
-		window.addEventListener(OPEN_GUIDE_EVENT, open);
-		return () => window.removeEventListener(OPEN_GUIDE_EVENT, open);
-	}, []);
 
 	useEffect(() => {
 		const update = () => setOnline(navigator.onLine);
@@ -371,9 +349,7 @@ export default function CorridorMap({
 	};
 
 	return (
-		<div
-			className={`corridor-app corridor-app--${chrome}${near ? " corridor-app--near" : ""}`}
-		>
+		<div className={`corridor-app${near ? " corridor-app--near" : ""}`}>
 			<MapPatterns />
 			<section
 				ref={containerRef}
@@ -387,17 +363,15 @@ export default function CorridorMap({
 				onOpenGuide={() => setGuideOpen(true)}
 			/>
 
-			<div className="corridor-maptags">
-				{chrome === "full" && (
-					<span className="q-sim-tag">Datos simulados 2034</span>
-				)}
-				{query.accessibleMode && (
+			{/* The card below already carries the one "Datos de referencia" tag (rule 9). */}
+			{query.accessibleMode && (
+				<div className="corridor-maptags">
 					<span className="q-badge q-badge--optimal corridor-maptags__badge">
 						<Accessibility size={14} strokeWidth={1.75} aria-hidden="true" />
 						Modo accesible
 					</span>
-				)}
-			</div>
+				</div>
+			)}
 
 			<aside className="corridor-panel">
 				<MapHeader

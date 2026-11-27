@@ -116,7 +116,7 @@
 	}
 }
 
-/* ── Map chrome: simulated-data tag, controls, legend, status ── */
+/* ── Map chrome: accessible-mode badge, controls, legend, status ── */
 .corridor-maptags {
 	position: absolute;
 	top: 132px;
@@ -127,10 +127,6 @@
 	align-items: center;
 	gap: 6px;
 	pointer-events: none;
-}
-.corridor-maptags .q-sim-tag {
-	background: var(--surface-raised);
-	box-shadow: var(--shadow-card);
 }
 .corridor-maptags__badge {
 	height: 28px;
