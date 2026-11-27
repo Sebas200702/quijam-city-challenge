@@ -1,0 +1,13 @@
+---
+import { OpenDataPortal } from "../components/open-data/open-data-portal";
+import BaseLayout from "../layouts/base-layout.astro";
+import { homeContent } from "../lib/home-content";
+import { loadOpenDataCatalog } from "../lib/open-data/open-data-server";
+
+const initialCatalog = await loadOpenDataCatalog();
+const { aiHref } = homeContent;
+---
+
+<BaseLayout title="Portal de datos abiertos · QUILLART" theme="light">
+	<OpenDataPortal client:load initialCatalog={initialCatalog} aiHref={aiHref} />
+</BaseLayout>
