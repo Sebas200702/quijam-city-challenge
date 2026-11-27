@@ -4,7 +4,7 @@ import {
 	RATE_LIMIT_POLICIES,
 	resetRateLimiters,
 } from "./api-guard";
-import { getClientKey } from "./client-key";
+import { getClientKey, trustedClientIpHeader } from "./client-key";
 
 function contextFor(ip: string, forwardedFor?: string) {
 	const headers = new Headers();
@@ -132,8 +132,10 @@ describe("getClientKey", () => {
 
 describe("guardRequest behind a proxy", () => {
 	beforeEach(() => resetRateLimiters());
+	const previous = process.env.TRUSTED_CLIENT_IP_HEADER;
 	afterEach(() => {
-		delete process.env.TRUSTED_CLIENT_IP_HEADER;
+		if (previous === undefined) delete process.env.TRUSTED_CLIENT_IP_HEADER;
+		else process.env.TRUSTED_CLIENT_IP_HEADER = previous;
 	});
 
 	const viaProxy = (visitor: string) => ({
@@ -142,6 +144,14 @@ describe("guardRequest behind a proxy", () => {
 			headers: { "CF-Connecting-IP": visitor },
 		}),
 		clientAddress: "10.0.1.7",
+	});
+
+	it("ignores an invalid header name instead of failing every request", async () => {
+		process.env.TRUSTED_CLIENT_IP_HEADER = "CF-Connecting-IP:";
+		expect(trustedClientIpHeader()).toBeNull();
+		expect(
+			await guardRequest(viaProxy("203.0.113.5"), "guide-token"),
+		).toBeNull();
 	});
 
 	it("limits each visitor on their own when TRUSTED_CLIENT_IP_HEADER is set", async () => {

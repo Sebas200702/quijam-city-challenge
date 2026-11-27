@@ -36,12 +36,18 @@ export function hashKey(value: string): string {
  * Unset means no header is trusted: anyone can send it.
  */
 export function trustedClientIpHeader(): string | null {
-	const value =
+	const value = (
 		typeof process === "undefined"
 			? undefined
-			: process.env.TRUSTED_CLIENT_IP_HEADER;
-	return value?.trim() ? value.trim().toLowerCase() : null;
+			: process.env.TRUSTED_CLIENT_IP_HEADER
+	)?.trim();
+	// Headers.get throws on an invalid name (a pasted "CF-Connecting-IP:"):
+	// ignore it rather than failing every request to the API.
+	return value && HEADER_NAME.test(value) ? value : null;
 }
+
+/** An HTTP header name (RFC 9110 token). */
+const HEADER_NAME = /^[!#$%&'*+.^_`|~0-9A-Za-z-]+$/;
 
 function readHeader(request: Request, name: string): string | null {
 	const value = request.headers.get(name)?.split(",")[0]?.trim();
