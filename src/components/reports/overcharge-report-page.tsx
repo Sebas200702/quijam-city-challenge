@@ -1,30 +1,42 @@
 import {
 	AlertTriangle,
 	ArrowLeft,
+	CircleAlert,
 	CircleCheck,
 	CloudOff,
 	RefreshCw,
 	Send,
 	ShieldCheck,
 } from "lucide-react";
-import { useEffect, useId, useMemo, useState } from "react";
+import {
+	useCallback,
+	useEffect,
+	useId,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
 import { formatCop } from "../../lib/city-dashboard-utils";
 import { useCityState } from "../../lib/city-events/use-city-state";
+import {
+	type FareAmountResult,
+	isValidDriverCode,
+	parseFareAmount,
+} from "../../lib/reports/fare-amount";
 import {
 	REPORT_TRANSPORT_MODES,
 	type ReportTransportMode,
 } from "../../lib/reports/overcharge-report";
 import type {
 	OverchargeSubmitResponse,
-	PendingOverchargeReport,
 	SelectableFareRoute,
 } from "../../lib/reports/overcharge-report-types";
 import {
 	evaluateOvercharge,
 	queuePendingReport,
 	readPendingReports,
-	writePendingReports,
 } from "../../lib/reports/overcharge-routes";
+import { sendPendingReports } from "../../lib/reports/pending-report-sync";
 
 const VEHICLE_LABELS: Record<ReportTransportMode, string> = {
 	taxi: "Taxi",
@@ -32,6 +44,17 @@ const VEHICLE_LABELS: Record<ReportTransportMode, string> = {
 	informal: "Informal",
 	other: "Otro",
 };
+
+const AMOUNT_ERRORS: Record<
+	Extract<FareAmountResult, { ok: false }>["reason"],
+	string
+> = {
+	empty: "Escribe cuánto te cobraron. Ejemplo: 35000.",
+	format: "Escribe cuánto te cobraron, solo con números. Ejemplo: 35000.",
+	range: "Revisa el monto: debe estar entre $1 y $2.000.000.",
+};
+const DRIVER_CODE_ERROR =
+	"El código solo lleva letras, números y guiones. Ejemplo: DRV-104.";
 
 type FormStatus =
 	| { kind: "idle" }
@@ -50,6 +73,27 @@ type FormStatus =
 interface OverchargeReportPageProps {
 	routes: SelectableFareRoute[];
 	initialSegmentCode: string | null;
+}
+
+const INPUT_CLASS =
+	"min-h-11 w-full rounded-[var(--radius-md)] border border-[var(--line-control)] bg-[var(--surface-raised)] px-3.5 py-2.5 text-[15px] text-[var(--ink)]";
+const INVALID_CLASS = "border-2 border-[var(--red)]";
+
+function FieldError({ id, message }: { id: string; message: string }) {
+	return (
+		<p
+			id={id}
+			className="flex items-start gap-1.5 text-sm font-semibold text-[var(--red-text)]"
+		>
+			<CircleAlert
+				size={16}
+				strokeWidth={1.75}
+				className="mt-0.5 shrink-0"
+				aria-hidden="true"
+			/>
+			{message}
+		</p>
+	);
 }
 
 export function OverchargeReportPage({
@@ -82,11 +126,34 @@ export function OverchargeReportPage({
 	const [isOnline, setIsOnline] = useState(true);
 	const [pendingCount, setPendingCount] = useState(0);
 	const [syncingPending, setSyncingPending] = useState(false);
+	const [showErrors, setShowErrors] = useState(false);
+	const amountRef = useRef<HTMLInputElement>(null);
+	const driverRef = useRef<HTMLInputElement>(null);
 
+	const syncPendingQueue = useCallback(async () => {
+		setSyncingPending(true);
+		const remaining = await sendPendingReports({
+			onSaved: (reportId) => void publish({ type: "cobro_abusivo", reportId }),
+		});
+		setPendingCount(remaining);
+		setSyncingPending(false);
+		if (remaining === 0) {
+			setStatus((current) =>
+				current.kind === "offline" ? { kind: "idle" } : current,
+			);
+		}
+	}, [publish]);
+
+	// Reports kept on the phone go out by themselves on load and whenever the
+	// connection comes back; "Reenviar ahora" stays as a manual fallback.
 	useEffect(() => {
 		setIsOnline(navigator.onLine);
 		setPendingCount(readPendingReports().length);
-		const onOnline = () => setIsOnline(true);
+		if (navigator.onLine) void syncPendingQueue();
+		const onOnline = () => {
+			setIsOnline(true);
+			void syncPendingQueue();
+		};
 		const onOffline = () => setIsOnline(false);
 		window.addEventListener("online", onOnline);
 		window.addEventListener("offline", onOffline);
@@ -94,7 +161,7 @@ export function OverchargeReportPage({
 			window.removeEventListener("online", onOnline);
 			window.removeEventListener("offline", onOffline);
 		};
-	}, []);
+	}, [syncPendingQueue]);
 
 	const selectedRoute = useMemo(
 		() =>
@@ -104,11 +171,16 @@ export function OverchargeReportPage({
 		[routes, segmentCode],
 	);
 
-	const chargedNumber = Number(charged);
+	const amount = parseFareAmount(charged);
+	const chargedCop = amount.ok ? amount.value : null;
 	const comparison = useMemo(() => {
-		if (!selectedRoute || !charged.trim()) return null;
-		return evaluateOvercharge(chargedNumber, selectedRoute.referenceFareCop);
-	}, [selectedRoute, charged, chargedNumber]);
+		if (!selectedRoute || chargedCop === null) return null;
+		return evaluateOvercharge(chargedCop, selectedRoute.referenceFareCop);
+	}, [selectedRoute, chargedCop]);
+	const amountError =
+		showErrors && !amount.ok ? AMOUNT_ERRORS[amount.reason] : null;
+	const driverError =
+		showErrors && !isValidDriverCode(driverCode) ? DRIVER_CODE_ERROR : null;
 
 	function handleRouteChange(nextCode: string) {
 		setSegmentCode(nextCode);
@@ -122,66 +194,29 @@ export function OverchargeReportPage({
 		setCharged("");
 		setDriverCode("");
 		setNotes("");
+		setShowErrors(false);
 		setStatus({ kind: "idle" });
-	}
-
-	async function syncPendingQueue() {
-		const queued = readPendingReports();
-		if (queued.length === 0 || syncingPending) return;
-		setSyncingPending(true);
-		const remaining: PendingOverchargeReport[] = [];
-
-		for (const item of queued) {
-			try {
-				const response = await fetch("/api/reports", {
-					method: "POST",
-					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify({
-						segmentCode: item.segmentCode,
-						transportMode: item.transportMode,
-						chargedFareCop: item.chargedFareCop,
-						driverQrCode: item.driverQrCode,
-						notes: item.notes,
-					}),
-				});
-				if (response.ok) {
-					const body = (await response.json()) as OverchargeSubmitResponse;
-					if (body.reportId) {
-						void publish({ type: "cobro_abusivo", reportId: body.reportId });
-					}
-				} else if (response.status >= 500) {
-					remaining.push(item);
-				}
-			} catch {
-				remaining.push(item);
-			}
-		}
-
-		writePendingReports(remaining);
-		setPendingCount(remaining.length);
-		setSyncingPending(false);
-		if (remaining.length === 0 && status.kind === "offline") {
-			setStatus({ kind: "idle" });
-		}
 	}
 
 	async function handleSubmit(event: { preventDefault: () => void }) {
 		event.preventDefault();
-		if (!selectedRoute) return;
+		if (!selectedRoute || status.kind === "sending") return;
 
-		const amount = Math.round(Number(charged));
-		if (!Number.isInteger(amount) || amount <= 0) {
-			setStatus({
-				kind: "error",
-				message: "Ingresa un monto cobrado válido en pesos colombianos (COP).",
-			});
+		// Field errors say how to fix them; focus goes to the first one.
+		setShowErrors(true);
+		if (!amount.ok) {
+			amountRef.current?.focus();
+			return;
+		}
+		if (!isValidDriverCode(driverCode)) {
+			driverRef.current?.focus();
 			return;
 		}
 
 		const payload = {
 			segmentCode: selectedRoute.segmentCode,
 			transportMode: vehicle,
-			chargedFareCop: amount,
+			chargedFareCop: amount.value,
 			driverQrCode: driverCode.trim(),
 			notes: notes.trim(),
 		};
@@ -214,7 +249,7 @@ export function OverchargeReportPage({
 					reportId: body.reportId,
 					percent: body.overchargePercent,
 					routeLabel: selectedRoute.label,
-					chargedCop: amount,
+					chargedCop: amount.value,
 					referenceCop: body.referenceFareCop,
 				});
 				return;
@@ -410,8 +445,8 @@ export function OverchargeReportPage({
 					<div className="q-card__body space-y-4">
 						<p className="q-p q-muted">
 							No pudimos conectarnos con el servidor en este momento. Guardamos
-							tu reporte ({status.queuedCount} en cola) para enviarlo cuando
-							vuelva la señal.
+							tu reporte ({status.queuedCount} en cola) y lo enviamos solo
+							cuando vuelva la señal.
 						</p>
 						<div className="q-row">
 							<button
@@ -445,7 +480,11 @@ export function OverchargeReportPage({
 						</div>
 					</div>
 
-					<form className="q-card__body space-y-5" onSubmit={handleSubmit}>
+					<form
+						className="q-card__body space-y-5"
+						onSubmit={handleSubmit}
+						noValidate
+					>
 						<label className="block space-y-1.5" htmlFor={`${id}-route`}>
 							<span className="q-sm font-semibold text-[var(--ink)]">
 								Trayecto del corredor
@@ -512,19 +551,25 @@ export function OverchargeReportPage({
 									Monto cobrado (COP)
 								</span>
 								<input
+									ref={amountRef}
 									id={`${id}-charged`}
-									type="number"
+									type="text"
 									inputMode="numeric"
-									min={1}
-									max={2_000_000}
-									step={1}
+									autoComplete="off"
 									required
 									placeholder="Ej. 55000"
+									aria-invalid={amountError !== null}
+									aria-describedby={
+										amountError ? `${id}-charged-error` : undefined
+									}
 									value={charged}
 									onChange={(event) => setCharged(event.target.value)}
-									className="min-h-11 w-full rounded-[var(--radius-md)] border border-[var(--line-control)] bg-[var(--surface-raised)] px-3.5 py-2.5 text-[15px] text-[var(--ink)]"
+									className={`${INPUT_CLASS} ${amountError ? INVALID_CLASS : ""}`}
 								/>
 							</label>
+							{amountError && (
+								<FieldError id={`${id}-charged-error`} message={amountError} />
+							)}
 
 							{comparison && (
 								<div
@@ -571,16 +616,24 @@ export function OverchargeReportPage({
 								</span>
 							</span>
 							<input
+								ref={driverRef}
 								id={`${id}-driver`}
 								type="text"
 								maxLength={40}
-								pattern="[A-Za-z0-9\-]+"
+								autoComplete="off"
 								placeholder="Ej. DRV-104"
+								aria-invalid={driverError !== null}
+								aria-describedby={
+									driverError ? `${id}-driver-error` : undefined
+								}
 								value={driverCode}
 								onChange={(event) => setDriverCode(event.target.value)}
-								className="min-h-11 w-full rounded-[var(--radius-md)] border border-[var(--line-control)] bg-[var(--surface-raised)] px-3.5 py-2.5 text-[15px] text-[var(--ink)]"
+								className={`${INPUT_CLASS} ${driverError ? INVALID_CLASS : ""}`}
 							/>
 						</label>
+						{driverError && (
+							<FieldError id={`${id}-driver-error`} message={driverError} />
+						)}
 
 						<label className="block space-y-1.5" htmlFor={`${id}-notes`}>
 							<span className="q-sm font-semibold text-[var(--ink)]">
