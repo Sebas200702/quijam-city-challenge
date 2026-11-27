@@ -3,6 +3,7 @@ import type { DecisionResult, OpenJevClient } from "../openjev/openjev-types";
 import type { AssistantContext, AssistantMessage } from "./assistant-types";
 import {
 	isFollowUp,
+	keywordScores,
 	MIN_ROUTING_CONFIDENCE,
 	routeByKeywords,
 	routeMessage,
@@ -173,5 +174,49 @@ describe("routeMessage", () => {
 			openJev: null,
 		});
 		expect(decision.agent).toBe("community");
+	});
+});
+
+describe("multilingual keywords", () => {
+	it.each([
+		["Quais eventos tem no fim de semana?", "agenda"],
+		["Quels événements ce week-end ?", "agenda"],
+		["O que se fala no fórum da comunidade?", "community"],
+		["Qu'est-ce qu'on dit dans la communauté ?", "community"],
+		["Praias e natureza para visitar", "places"],
+		["Une plage ou un musée à visiter", "places"],
+		["Como chego ao estádio de ônibus?", "mobility"],
+		["Comment aller au stade en bus ?", "mobility"],
+		["Tem um buraco enorme na rua", "city_reports"],
+		["Il y a un nid de poule dans la rue", "city_reports"],
+		["Quero ver meu perfil", "account"],
+		["Je veux voir mon profil", "account"],
+	])("%s → %s", (text, agent) => {
+		expect(routeByKeywords(text)).toBe(agent);
+	});
+
+	it("keeps the Spanish keyword scores unchanged", () => {
+		expect(
+			keywordScores("¿Qué planes hay este fin de semana cerca del parque?"),
+		).toEqual({
+			agenda: 3,
+			community: 0,
+			places: 1,
+			mobility: 0,
+			city_reports: 0,
+			account: 0,
+		});
+	});
+
+	it("tells OpenJev the message may come in another language", async () => {
+		const { client, decide } = fakeOpenJev("community", 0.8);
+		await routeMessage([user("hola")], context, { openJev: client });
+		const [, schema] = decide.mock.calls[0] as unknown as [
+			unknown,
+			{ agent: { instructions: string } },
+		];
+		expect(schema.agent.instructions).toMatch(
+			/Spanish, English, Portuguese or French/,
+		);
 	});
 });
