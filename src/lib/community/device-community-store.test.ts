@@ -227,9 +227,7 @@ describe("device store corroboration", () => {
 		const ids: string[] = [];
 		for (const name of ["Ana", "Beto"]) {
 			await signUp(store, name);
-			const { record } = await store.createThread(
-				hueco("place-gran-malecon"),
-			);
+			const { record } = await store.createThread(hueco("place-gran-malecon"));
 			ids.push(record?.id ?? "");
 		}
 		let queue = await store.listModerationQueue();

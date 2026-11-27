@@ -55,6 +55,8 @@ const EVENT_LABEL: Record<CityEvent["type"], string> = {
 	modo_ciudad: "Modo de ciudad",
 	tiempo: "Hora",
 	reiniciar: "Reiniciar demo",
+	anfitrion_asignado: "Anfitrión asignado",
+	anfitrion_estado: "Estado del anfitrión",
 };
 
 interface LogEntry {
@@ -88,6 +90,12 @@ function describe(event: CityEvent): string {
 			return `${event.hour}:00`;
 		case "reiniciar":
 			return "estado inicial";
+		case "anfitrion_asignado":
+			return `${event.need} en ${event.meetingPointCode}`;
+		case "anfitrion_estado":
+			return event.etaMin === undefined
+				? event.status
+				: `${event.status}, ${event.etaMin} min`;
 	}
 }
 

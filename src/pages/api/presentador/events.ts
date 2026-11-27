@@ -26,7 +26,7 @@ function json(body: unknown, status: number): Response {
  * epic's contract and broadcast by the server over Supabase Realtime.
  */
 export const POST: APIRoute = async (context) => {
-	const limited = guardRequest(context, "presenter-events");
+	const limited = await guardRequest(context, "presenter-events");
 	if (limited) return limited;
 	const access = await presenterAccess(context.request, context.cookies);
 	if (!access)

@@ -258,7 +258,8 @@ export function PassportView() {
 		);
 	}
 
-	const count = state.status === "ready" ? (passport?.stamps.length ?? 0) : null;
+	const count =
+		state.status === "ready" ? (passport?.stamps.length ?? 0) : null;
 
 	return (
 		<MenuShell online={online}>

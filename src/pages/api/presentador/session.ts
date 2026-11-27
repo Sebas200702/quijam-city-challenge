@@ -32,7 +32,7 @@ export const GET: APIRoute = async ({ request, cookies }) => {
 
 /** Exchanges the demo key for an 8-hour httpOnly cookie. Rate limited against guessing. */
 export const POST: APIRoute = async (context) => {
-	const limited = guardRequest(context, "presenter-session");
+	const limited = await guardRequest(context, "presenter-session");
 	if (limited) return limited;
 	const key = readDemoKey();
 	if (!isUsableKey(key)) {

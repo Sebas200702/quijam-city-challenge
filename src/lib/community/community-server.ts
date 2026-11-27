@@ -511,7 +511,8 @@ export async function applyModeration(
 		console.error("[moderation] audit log failed", logError.message);
 
 	// A held risk report that the city approves may now corroborate others.
-	if (action === "approve" && kind === "thread") await corroborateRisk(admin, id);
+	if (action === "approve" && kind === "thread")
+		await corroborateRisk(admin, id);
 
 	// Deciding on removed content closes its appeal: approving overturns, removing upholds.
 	if (action === "approve" || action === "remove") {

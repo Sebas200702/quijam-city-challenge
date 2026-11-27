@@ -1,5 +1,6 @@
 import { Accessibility, MapPin, UserCheck } from "lucide-react";
 import { useState } from "react";
+import type { HostAssignment } from "../../lib/city-events/city-events-types";
 import {
 	DEMO_MEETING_POINT_LABEL,
 	demoAssignmentEvent,
@@ -7,7 +8,6 @@ import {
 	hostActionEvent,
 	nextHostAction,
 } from "../../lib/city-events/host-flow";
-import type { HostAssignment } from "../../lib/city-events/city-events-types";
 import { useCityState } from "../../lib/city-events/use-city-state";
 
 const ACTION_LABEL: Record<HostAction, string> = {

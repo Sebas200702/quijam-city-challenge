@@ -33,7 +33,7 @@ export const POST: APIRoute = async (context) => {
 	if (typeof code !== "string" || !BUSINESS_CODE.test(code)) {
 		return json({ error: "Unknown business." }, 400);
 	}
-	const limited = guardRequest(context, "vendor-visit", code);
+	const limited = await guardRequest(context, "vendor-visit", code);
 	if (limited) return limited;
 
 	const admin = getSupabaseAdmin();

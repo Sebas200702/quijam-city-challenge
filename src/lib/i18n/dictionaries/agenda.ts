@@ -98,10 +98,12 @@ const es = {
 	cancelRegistration: "Cancelar inscripción",
 	registering: "Inscribiendo…",
 	register: "Inscribirme",
-	waitlistHint: "Los cupos se agotaron. Anótate en la lista de espera y entras solo si alguien libera un cupo.",
+	waitlistHint:
+		"Los cupos se agotaron. Anótate en la lista de espera y entras solo si alguien libera un cupo.",
 	joinWaitlist: "Anotarme en la lista de espera",
 	joiningWaitlist: "Anotando…",
-	waitlistText: "Estás en la lista de espera. Si se libera un cupo, entras solo y lo verás aquí.",
+	waitlistText:
+		"Estás en la lista de espera. Si se libera un cupo, entras solo y lo verás aquí.",
 	leaveWaitlist: "Salir de la lista de espera",
 	leavingWaitlist: "Saliendo…",
 	registrationLabel: "Inscripción",
@@ -213,10 +215,12 @@ const en: AgendaMessages = {
 	cancelRegistration: "Cancel registration",
 	registering: "Registering…",
 	register: "Register",
-	waitlistHint: "This event is full. Join the waiting list and you get in automatically if someone frees a spot.",
+	waitlistHint:
+		"This event is full. Join the waiting list and you get in automatically if someone frees a spot.",
 	joinWaitlist: "Join the waiting list",
 	joiningWaitlist: "Joining…",
-	waitlistText: "You're on the waiting list. If a spot frees up you get in automatically and you'll see it here.",
+	waitlistText:
+		"You're on the waiting list. If a spot frees up you get in automatically and you'll see it here.",
 	leaveWaitlist: "Leave the waiting list",
 	leavingWaitlist: "Leaving…",
 	registrationLabel: "Registration",
@@ -326,10 +330,12 @@ const pt: AgendaMessages = {
 	cancelRegistration: "Cancelar inscrição",
 	registering: "Inscrevendo…",
 	register: "Inscrever-me",
-	waitlistHint: "As vagas acabaram. Entre na lista de espera e você entra sozinho se alguém liberar uma vaga.",
+	waitlistHint:
+		"As vagas acabaram. Entre na lista de espera e você entra sozinho se alguém liberar uma vaga.",
 	joinWaitlist: "Entrar na lista de espera",
 	joiningWaitlist: "Entrando…",
-	waitlistText: "Você está na lista de espera. Se uma vaga for liberada, você entra sozinho e verá aqui.",
+	waitlistText:
+		"Você está na lista de espera. Se uma vaga for liberada, você entra sozinho e verá aqui.",
 	leaveWaitlist: "Sair da lista de espera",
 	leavingWaitlist: "Saindo…",
 	registrationLabel: "Inscrição",
@@ -441,10 +447,12 @@ const fr: AgendaMessages = {
 	cancelRegistration: "Annuler l'inscription",
 	registering: "Inscription…",
 	register: "Je m'inscris",
-	waitlistHint: "Il n'y a plus de places. Inscrivez-vous sur la liste d'attente : vous entrez automatiquement si une place se libère.",
+	waitlistHint:
+		"Il n'y a plus de places. Inscrivez-vous sur la liste d'attente : vous entrez automatiquement si une place se libère.",
 	joinWaitlist: "Rejoindre la liste d'attente",
 	joiningWaitlist: "Inscription…",
-	waitlistText: "Vous êtes sur la liste d'attente. Si une place se libère, vous entrez automatiquement et vous le verrez ici.",
+	waitlistText:
+		"Vous êtes sur la liste d'attente. Si une place se libère, vous entrez automatiquement et vous le verrez ici.",
 	leaveWaitlist: "Quitter la liste d'attente",
 	leavingWaitlist: "Sortie…",
 	registrationLabel: "Inscription",

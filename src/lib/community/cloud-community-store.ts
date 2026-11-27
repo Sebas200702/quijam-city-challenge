@@ -4,6 +4,7 @@
 // moderation triage runs before anything is stored.
 
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { checkAppealMessage } from "../moderation/appeal-rules";
 import type { ContentKind } from "../moderation/moderation-types";
 import {
 	EVENT_COLUMNS,
@@ -23,7 +24,6 @@ import {
 	validateSignUp,
 	validateThreadInput,
 } from "./community-rules";
-import { checkAppealMessage } from "../moderation/appeal-rules";
 import type {
 	AppealStatus,
 	CommunityEvent,
@@ -298,7 +298,8 @@ export function createCloudCommunityStore(
 
 		async joinWaitlist(eventId) {
 			const userId = await currentUserId();
-			if (!userId) throw new Error("Inicia sesión para anotarte en la lista de espera.");
+			if (!userId)
+				throw new Error("Inicia sesión para anotarte en la lista de espera.");
 			const { error } = await supabase.rpc("join_waitlist", {
 				p_event_id: eventId,
 			});

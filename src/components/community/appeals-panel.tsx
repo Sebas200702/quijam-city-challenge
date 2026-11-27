@@ -4,7 +4,10 @@
 import { useState } from "react";
 import type { RemovedContentItem } from "../../lib/community/community-types";
 import { useT } from "../../lib/i18n/use-language";
-import { APPEAL_MAX_LENGTH, canAppeal } from "../../lib/moderation/appeal-rules";
+import {
+	APPEAL_MAX_LENGTH,
+	canAppeal,
+} from "../../lib/moderation/appeal-rules";
 import { ErrorNote } from "./community-ui";
 import { useLoad, useStore } from "./use-community";
 

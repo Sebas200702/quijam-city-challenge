@@ -97,7 +97,10 @@ describe("crowdByZoneFrom", () => {
 			status: "en_camino",
 			etaMin: 6,
 		});
-		expect(state.hostAssignment).toMatchObject({ status: "en_camino", etaMin: 6 });
+		expect(state.hostAssignment).toMatchObject({
+			status: "en_camino",
+			etaMin: 6,
+		});
 
 		state = reduceCityEvent(state, {
 			type: "anfitrion_estado",
@@ -128,6 +131,8 @@ describe("crowdByZoneFrom", () => {
 			need: "movilidad_reducida",
 			meetingPointCode: "STOP-MURILLO-SUR",
 		});
-		expect(reduceCityEvent(assigned, { type: "reiniciar" }).hostAssignment).toBeNull();
+		expect(
+			reduceCityEvent(assigned, { type: "reiniciar" }).hostAssignment,
+		).toBeNull();
 	});
 });

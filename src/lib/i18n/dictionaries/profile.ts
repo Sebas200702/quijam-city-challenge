@@ -65,7 +65,8 @@ const es = {
 	checkingSession: "Revisando tu sesión…",
 	appeals: {
 		title: "Contenido retirado",
-		intro: "Si crees que fue un error, pide una segunda revisión. Solo se puede una vez.",
+		intro:
+			"Si crees que fue un error, pide una segunda revisión. Solo se puede una vez.",
 		appeal: "Pedir segunda revisión",
 		reasonLabel: "Por qué debemos revisarlo",
 		send: "Enviar apelación",
@@ -163,7 +164,8 @@ const en: ProfileMessages = {
 	checkingSession: "Checking your session…",
 	appeals: {
 		title: "Removed content",
-		intro: "If you think it was a mistake, ask for a second review. You can do it once.",
+		intro:
+			"If you think it was a mistake, ask for a second review. You can do it once.",
 		appeal: "Ask for a second review",
 		reasonLabel: "Why should we review it",
 		send: "Send appeal",
@@ -259,7 +261,8 @@ const pt: ProfileMessages = {
 	checkingSession: "Verificando sua sessão…",
 	appeals: {
 		title: "Conteúdo removido",
-		intro: "Se acha que foi um erro, peça uma segunda revisão. Só é possível uma vez.",
+		intro:
+			"Se acha que foi um erro, peça uma segunda revisão. Só é possível uma vez.",
 		appeal: "Pedir segunda revisão",
 		reasonLabel: "Por que devemos revisar",
 		send: "Enviar apelação",
@@ -359,7 +362,8 @@ const fr: ProfileMessages = {
 	checkingSession: "Vérification de votre session…",
 	appeals: {
 		title: "Contenu retiré",
-		intro: "Si vous pensez que c'est une erreur, demandez un second examen. Une seule fois.",
+		intro:
+			"Si vous pensez que c'est une erreur, demandez un second examen. Une seule fois.",
 		appeal: "Demander un second examen",
 		reasonLabel: "Pourquoi réexaminer",
 		send: "Envoyer le recours",

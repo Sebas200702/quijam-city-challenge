@@ -2,17 +2,17 @@
 // in this browser only. Moderation still runs: the server triage endpoint
 // (rules + OpenJev) when reachable, the hard rules in the browser otherwise.
 
+import { checkAppealMessage } from "../moderation/appeal-rules";
+import {
+	CORROBORATION_WINDOW_HOURS,
+	reportsToEscalate,
+} from "../moderation/corroboration";
 import type {
 	ContentKind,
 	ModerationDecision,
 	ModerationLabel,
 	ModerationSource,
 } from "../moderation/moderation-types";
-import { checkAppealMessage } from "../moderation/appeal-rules";
-import {
-	CORROBORATION_WINDOW_HOURS,
-	reportsToEscalate,
-} from "../moderation/corroboration";
 import { triageContent } from "../moderation/triage";
 import {
 	applyTrustPolicy,
@@ -133,7 +133,10 @@ function corroborateThreads(data: DeviceData, seed: ForumThread) {
 
 /** A freed spot goes to the first person waiting, in order of arrival. */
 function promoteFromWaitlist(data: DeviceData, event: CommunityEvent) {
-	if (isEventFull(event) || !canJoinWaitlist({ ...event, registeredCount: event.capacity ?? 0 }))
+	if (
+		isEventFull(event) ||
+		!canJoinWaitlist({ ...event, registeredCount: event.capacity ?? 0 })
+	)
 		return;
 	const next = (data.waitlist ?? [])
 		.filter((item) => item.eventId === event.id)
@@ -763,17 +766,20 @@ export function createDeviceCommunityStore(): CommunityStore {
 			return [
 				...data.events
 					.filter(
-						(e) => e.organizerId === account.id && e.moderationStatus === "removed",
+						(e) =>
+							e.organizerId === account.id && e.moderationStatus === "removed",
 					)
 					.map((e) => item("event", e.id, e.title)),
 				...data.threads
 					.filter(
-						(t) => t.authorId === account.id && t.moderationStatus === "removed",
+						(t) =>
+							t.authorId === account.id && t.moderationStatus === "removed",
 					)
 					.map((t) => item("thread", t.id, t.title)),
 				...data.posts
 					.filter(
-						(p) => p.authorId === account.id && p.moderationStatus === "removed",
+						(p) =>
+							p.authorId === account.id && p.moderationStatus === "removed",
 					)
 					.map((p) => item("post", p.id, p.body)),
 			];

@@ -17,7 +17,11 @@ describe("parseStampCode", () => {
 	});
 
 	it("reads an event code with accents", () => {
-		const raw = buildEventStampCode("e1", "Siembra en la Ciénaga", "Las Flores");
+		const raw = buildEventStampCode(
+			"e1",
+			"Siembra en la Ciénaga",
+			"Las Flores",
+		);
 		expect(parseStampCode(raw)).toEqual({
 			kind: "evento",
 			id: "e1",
@@ -48,7 +52,9 @@ describe("stampFromCode", () => {
 	});
 
 	it("rejects an unknown business", () => {
-		expect(stampFromCode({ kind: "negocio", code: "BIZ-NOPE" }, now)).toBeNull();
+		expect(
+			stampFromCode({ kind: "negocio", code: "BIZ-NOPE" }, now),
+		).toBeNull();
 	});
 
 	it("gives a green event a reward", () => {

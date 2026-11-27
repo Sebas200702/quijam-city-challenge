@@ -145,7 +145,8 @@ const es = {
 		decidedBy: "Decidió:",
 		approve: "Aprobar",
 		appealsTitle: "Apelaciones",
-		appealsHint: "Quien publicó pidió una segunda revisión de contenido retirado. Decide con calma: es la última instancia.",
+		appealsHint:
+			"Quien publicó pidió una segunda revisión de contenido retirado. Decide con calma: es la última instancia.",
 		appealBadge: "Apelación",
 		appealSays: "La persona dice:",
 		restore: "Restituir",
@@ -320,7 +321,8 @@ const en: ForumMessages = {
 		decidedBy: "Decided by:",
 		approve: "Approve",
 		appealsTitle: "Appeals",
-		appealsHint: "The author asked for a second review of removed content. Decide carefully: this is the last step.",
+		appealsHint:
+			"The author asked for a second review of removed content. Decide carefully: this is the last step.",
 		appealBadge: "Appeal",
 		appealSays: "The person says:",
 		restore: "Restore",
@@ -496,7 +498,8 @@ const pt: ForumMessages = {
 		decidedBy: "Decidido por:",
 		approve: "Aprovar",
 		appealsTitle: "Apelações",
-		appealsHint: "Quem publicou pediu uma segunda revisão de conteúdo removido. Decida com calma: é a última instância.",
+		appealsHint:
+			"Quem publicou pediu uma segunda revisão de conteúdo removido. Decida com calma: é a última instância.",
 		appealBadge: "Apelação",
 		appealSays: "A pessoa diz:",
 		restore: "Restaurar",
@@ -673,7 +676,8 @@ const fr: ForumMessages = {
 		decidedBy: "Décision :",
 		approve: "Approuver",
 		appealsTitle: "Recours",
-		appealsHint: "L'auteur a demandé un second examen d'un contenu retiré. Décidez avec soin : c'est la dernière étape.",
+		appealsHint:
+			"L'auteur a demandé un second examen d'un contenu retiré. Décidez avec soin : c'est la dernière étape.",
 		appealBadge: "Recours",
 		appealSays: "La personne dit :",
 		restore: "Rétablir",

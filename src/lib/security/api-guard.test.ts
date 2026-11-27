@@ -29,7 +29,10 @@ describe("guardRequest", () => {
 
 	it("returns a 429 JSON response with Retry-After once over the limit", async () => {
 		await exhaust("203.0.113.5", "guide-token");
-		const response = await guardRequest(contextFor("203.0.113.5"), "guide-token");
+		const response = await guardRequest(
+			contextFor("203.0.113.5"),
+			"guide-token",
+		);
 		expect(response).not.toBeNull();
 		if (!response) return;
 		expect(response.status).toBe(429);
@@ -48,13 +51,19 @@ describe("guardRequest", () => {
 		expect(
 			await guardRequest(contextFor("203.0.113.5"), "guide-token"),
 		).not.toBeNull();
-		expect(await guardRequest(contextFor("203.0.113.6"), "guide-token")).toBeNull();
+		expect(
+			await guardRequest(contextFor("203.0.113.6"), "guide-token"),
+		).toBeNull();
 	});
 
 	it("keys user policies on the user id, not the address", async () => {
 		for (let i = 0; i < RATE_LIMIT_POLICIES["publish-user"].limit; i++) {
 			expect(
-				await guardRequest(contextFor(`198.51.100.${i}`), "publish-user", "user-1"),
+				await guardRequest(
+					contextFor(`198.51.100.${i}`),
+					"publish-user",
+					"user-1",
+				),
 			).toBeNull();
 		}
 		expect(

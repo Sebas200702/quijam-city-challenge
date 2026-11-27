@@ -7,9 +7,7 @@ interface BarcodeDetectorLike {
 
 declare global {
 	interface Window {
-		BarcodeDetector?: new (opts: {
-			formats: string[];
-		}) => BarcodeDetectorLike;
+		BarcodeDetector?: new (opts: { formats: string[] }) => BarcodeDetectorLike;
 	}
 }
 
@@ -29,7 +27,8 @@ export function StampScanner({
 	const [manual, setManual] = useState("");
 
 	useEffect(() => {
-		if (!window.BarcodeDetector || !navigator.mediaDevices?.getUserMedia) return;
+		if (!window.BarcodeDetector || !navigator.mediaDevices?.getUserMedia)
+			return;
 		let stream: MediaStream | null = null;
 		let timer = 0;
 		let stopped = false;
@@ -82,7 +81,6 @@ export function StampScanner({
 					<X size={16} strokeWidth={1.75} aria-hidden="true" />
 				</button>
 			</div>
-			{/* biome-ignore lint/a11y/useMediaCaption: live camera preview has no audio */}
 			<video
 				ref={videoRef}
 				className="vm-scanner__video"

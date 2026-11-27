@@ -34,7 +34,7 @@ function violationsFrom(body: unknown): Violation[] {
 
 /** Logs CSP violations so they can be fixed before or after enforcing the policy. */
 export const POST: APIRoute = async (context) => {
-	const limited = guardRequest(context, "csp-report");
+	const limited = await guardRequest(context, "csp-report");
 	if (limited) return limited;
 
 	const text = await context.request.text();

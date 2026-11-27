@@ -2,7 +2,8 @@ import type { CityEvent, HostAssignment } from "./city-events-types";
 
 /** Demo meeting point for case 2 (Troncal Murillo, ramp exit). */
 export const DEMO_MEETING_POINT_CODE = "STOP-MURILLO-SUR";
-export const DEMO_MEETING_POINT_LABEL = "Joaquín Barrios Polo, salida con rampa";
+export const DEMO_MEETING_POINT_LABEL =
+	"Joaquín Barrios Polo, salida con rampa";
 /** Minutes the host needs to reach the meeting point in the demo. */
 export const DEMO_HOST_ETA_MIN = 6;
 
