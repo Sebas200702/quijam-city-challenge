@@ -1,18 +1,49 @@
-/* The Guide: a QUILLART card (q-card, q-msg, q-chip, q-prompt) with the trip
-   card and the report form. Only layout lives here. */
+/* The Guide: a QUILLART card (q-card, q-msg, q-chip, q-prompt, q-state) with
+   voice first, text as fallback, the trip card and the report form. Only
+   layout, the mic and the illustrations live here. */
 
 .guide-panel {
 	display: flex;
 	flex-direction: column;
-	max-height: min(72dvh, 680px);
+	max-height: min(80dvh, 720px);
+}
+.guide-panel__head {
+	align-items: center;
+	padding: 16px 16px 0 20px;
 }
 .guide-panel__title {
 	display: flex;
 	align-items: center;
 	gap: 12px;
+	min-width: 0;
 }
-.guide-panel .q-card__head .q-btn {
-	margin: -8px -12px 0 0;
+.guide-panel__heading {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	min-width: 0;
+}
+.guide-panel__eyebrow {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px;
+}
+.guide-panel__actions {
+	display: flex;
+	flex: none;
+	align-items: center;
+	margin: -4px -8px 0 0;
+}
+.guide-panel__offline {
+	height: 22px;
+}
+.guide-panel__offline svg {
+	flex: none;
+}
+.guide-panel__star {
+	width: 16px;
+	height: 16px;
 }
 .guide-panel__log {
 	display: flex;
@@ -32,6 +63,49 @@
 	max-width: none;
 	min-width: 0;
 }
+/* The one "reference data" tag of the screen, like a date separator in a chat. */
+.guide-panel__sim {
+	align-self: center;
+}
+.guide-panel__log .q-msg--ai {
+	align-items: flex-start;
+}
+.guide-panel__log .q-msg__col > .q-btn {
+	align-self: flex-start;
+}
+.guide-panel__saved {
+	align-self: flex-start;
+}
+.guide-panel__empty {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+.guide-panel__empty > .q-badge {
+	align-self: flex-start;
+}
+.guide-panel__illus {
+	align-self: center;
+	width: 150px;
+	max-width: 60%;
+}
+.guide-panel__illus--sm {
+	width: 120px;
+}
+.guide-panel__state {
+	min-height: 0;
+	padding: 16px 12px;
+	border-radius: var(--radius-lg);
+	background: var(--bg);
+}
+.guide-panel__thinking {
+	margin: 0 0 0 40px;
+}
+.guide-panel__think {
+	width: 16px;
+	height: 16px;
+	color: var(--gold-text);
+}
 .guide-panel__foot {
 	display: flex;
 	flex-direction: column;
@@ -41,11 +115,123 @@
 .guide-panel__chips {
 	display: flex;
 	gap: 8px;
+	min-width: 0;
+	margin: 0;
+	padding: 0;
+	border: 0;
 	overflow-x: auto;
 	scrollbar-width: none;
 }
+.guide-panel__chips--wrap {
+	flex-wrap: wrap;
+	overflow-x: visible;
+}
 .guide-panel__chips .q-chip {
 	flex: none;
+}
+.guide-panel__chips .q-chip svg {
+	flex: none;
+}
+
+/* ── Coastal slang, glossed inline ── */
+.guide-slang {
+	font-weight: 600;
+	text-decoration: underline dotted;
+	text-underline-offset: 3px;
+}
+.guide-gloss {
+	color: var(--ink-muted);
+}
+
+/* ── Voice: the primary action ── */
+.guide-voice {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+.guide-voice__mic {
+	flex: none;
+	width: 64px;
+	height: 64px;
+	padding: 0;
+	border-radius: 50%;
+}
+.guide-voice__mic--live {
+	animation: guide-mic-ring 1.6s ease-out infinite;
+}
+.guide-voice__status {
+	flex: 1;
+	min-width: 0;
+	font-size: 14px;
+	line-height: 20px;
+}
+@keyframes guide-mic-ring {
+	from {
+		box-shadow: 0 0 0 0 color-mix(in srgb, var(--gold) 60%, transparent);
+	}
+	to {
+		box-shadow: 0 0 0 14px color-mix(in srgb, var(--gold) 0%, transparent);
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.guide-voice__mic--live {
+		animation: none;
+		box-shadow: 0 0 0 4px var(--gold);
+	}
+}
+
+/* ── Illustrations: flat shapes coloured with tokens ── */
+.guide-ill {
+	display: block;
+	height: auto;
+}
+.guide-ill .il-bg {
+	fill: var(--illus);
+}
+.guide-ill .il-gold {
+	fill: var(--gold);
+}
+.guide-ill .il-goldsoft {
+	fill: var(--gold-soft);
+}
+.guide-ill .il-green {
+	fill: var(--green);
+}
+.guide-ill .il-red {
+	fill: var(--red);
+}
+.guide-ill .il-ink {
+	fill: var(--ink);
+}
+.guide-ill .il-surface {
+	fill: var(--surface-raised);
+}
+.guide-ill .il-onred {
+	fill: var(--on-red);
+}
+.guide-ill .il-ring {
+	stroke: var(--line-control);
+	stroke-width: 2.5;
+}
+.guide-ill .il-line {
+	fill: none;
+	stroke: var(--ink);
+	stroke-width: 2.5;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+}
+.guide-ill .il-line--gold {
+	stroke: var(--gold-text);
+}
+.guide-ill .il-line--muted {
+	stroke: var(--ink-muted);
+}
+.guide-ill .il-line--onred {
+	stroke: var(--on-red);
+}
+.guide-ill .il-line--dashed {
+	stroke: var(--ink-subtle);
+	stroke-dasharray: 5 6;
 }
 
 /* ── Trip card ── */
