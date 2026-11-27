@@ -6,6 +6,8 @@
 .q-root *, .q-root *::before, .q-root *::after { box-sizing: border-box; }
 .q-root :where(button, input, select, textarea, summary, a, [tabindex]):focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 .q-sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+/* Headings and regions that receive focus from code (tabindex="-1") need no ring: they are not controls. */
+.q-root [tabindex="-1"]:focus-visible { outline: none; }
 
 /* ── Type ── */
 .q-display-xl { margin: 0; font-family: var(--font-display); font-size: 56px; line-height: 60px; font-weight: 700; letter-spacing: -0.02em; }
@@ -168,6 +170,8 @@ svg.q-star-svg polygon { fill: currentColor; }
 .q-pin__glyph { display: grid; place-items: center; font-family: var(--font-display); font-weight: 700; font-size: 18px; line-height: 1; }
 .q-pin--fluid .q-pin__head { background: var(--green); color: var(--on-green); }
 .q-pin--event .q-pin__head { background: var(--gold); color: var(--on-gold); }
+/* Light map land is pale: a gold pin needs a dark ring to stand out (WCAG 1.4.11). */
+[data-theme="light"] .q-pin--event .q-pin__head { border-color: var(--gold-text); }
 .q-pin--alert .q-pin__head { background: var(--red); color: var(--on-red); }
 .q-pin.is-selected .q-pin__head { transform: scale(1.14); }
 @media (min-width: 1024px) { .q-pin:hover .q-pin__head { transform: scale(1.14); } }
