@@ -10,8 +10,8 @@ const links = [
 ];
 ---
 
-<header class="mx-auto flex w-full max-w-6xl items-center gap-3 px-4 py-3 lg:gap-6 lg:px-8">
-	<a href="/" class="q-logo min-w-0 flex-1" aria-label="QUILLART, inicio" data-i18n-attr="aria-label:landing.header.homeLabel">
+<header class="landing-header mx-auto flex w-full max-w-6xl items-center gap-2 px-3 sm:gap-3 sm:px-4 py-3 lg:gap-6 lg:px-8">
+	<a href="/" class="q-logo flex-1 shrink-0" aria-label="QUILLART, inicio" data-i18n-attr="aria-label:landing.header.homeLabel">
 		<span class="q-logo__tile" aria-hidden="true">
 			<span class="q-star" style="width: 22px; height: 22px"></span>
 		</span>
@@ -40,3 +40,17 @@ const links = [
 		<svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
 	</a>
 </header>
+
+<style is:global>
+	/* Phones: keep the logo whole. The language stays reachable from the menu sheet. */
+	@media (max-width: 639px) {
+		.landing-header .visitor-chip-btn {
+			display: none;
+		}
+	}
+	@media (max-width: 359px) {
+		.landing-header .q-logo__tile {
+			display: none;
+		}
+	}
+</style>
