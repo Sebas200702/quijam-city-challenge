@@ -13,15 +13,6 @@ import { detectDestination } from "../guide/guide-local";
 import type { Language } from "../i18n/languages";
 import { messages as dictionaries } from "../i18n/messages";
 import { type AgentTurn, PROFILE_PATH } from "./assistant-agents";
-import {
-	capacityFromText,
-	dateFromText,
-	priceFromText,
-	quotedTitle,
-	timeFromText,
-	titleFromBody,
-	withoutQuotes,
-} from "./event-text";
 import { hasAnyKeyword, matchPlace, normalizeText } from "./assistant-text";
 import {
 	type AssistantAgentId,
@@ -31,6 +22,15 @@ import {
 	type AssistantToolResult,
 	isActionTool,
 } from "./assistant-types";
+import {
+	capacityFromText,
+	dateFromText,
+	priceFromText,
+	quotedTitle,
+	timeFromText,
+	titleFromBody,
+	withoutQuotes,
+} from "./event-text";
 import { LOCAL_COPY, localCopy } from "./local-copy";
 import type { LocalCopy } from "./local-copy-types";
 import { latestUserText } from "./orchestrator";
@@ -381,7 +381,7 @@ function agendaTurn(
 		const draft = eventDraftFromText(text, context);
 		if (draft.title && draft.starts_at_local) {
 			return {
-				text: "Te armé el evento con lo que me dijiste: revisa el texto exacto y confírmalo abajo. Se publica al confirmar; si el sistema detecta algo, pasa a revisión.",
+				text: copy.eventDrafted,
 				toolCalls: [
 					{
 						name: "create_event",
@@ -391,7 +391,7 @@ function agendaTurn(
 			};
 		}
 		return {
-			text: "Te dejé el formulario lleno con lo que me dijiste; complétalo con la fecha y la hora y publícalo.",
+			text: copy.eventFormFilled,
 			toolCalls: [
 				{
 					name: "open_page",
@@ -617,13 +617,13 @@ function cityReportsTurn(text: string, context: AssistantContext): AgentTurn {
 	if (!emergency && hasAnyKeyword(normalizedText, OVERCHARGE_WORDS)) {
 		// Fares have their own form (no account needed): open it filled.
 		return {
-			text: "Te dejé el reporte de cobro casi listo: revisa el tramo y el monto y envíalo.",
+			text: copy.fareReportReady,
 			toolCalls: [
 				{
 					name: "open_page",
 					args: {
 						path: overchargeReportPath(text),
-						label: "Reportar el cobro",
+						label: copy.fareReportLabel,
 					},
 				},
 			],

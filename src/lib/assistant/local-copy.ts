@@ -21,9 +21,15 @@ const es: LocalCopy = {
 	},
 	needAccount:
 		"Para eso necesitas entrar a tu cuenta. Entra o créala y seguimos.",
+	actionKept:
+		"Te dejé la acción lista con el texto exacto. Entra a tu cuenta o créala para confirmarla; cuando vuelvas, sigue aquí.",
 	createEvent:
 		"¡Qué buena! Llena el formulario con el nombre, la fecha y el lugar; se publica al enviarlo y, si el sistema detecta algo, pasa a revisión.",
 	createEventLabel: "Publicar un evento",
+	eventDrafted:
+		"Te armé el evento con lo que me dijiste: revisa el texto exacto y confírmalo abajo. Se publica al confirmar; si el sistema detecta algo, pasa a revisión.",
+	eventFormFilled:
+		"Te dejé el formulario lleno con lo que me dijiste; complétalo con la fecha y la hora y publícalo.",
 	confirmUnregister:
 		"Va, te ayudo a cancelar esa inscripción. Confírmame abajo.",
 	confirmRegister: "¡De una! Confírmame abajo y te inscribo.",
@@ -44,6 +50,9 @@ const es: LocalCopy = {
 	emergency: "Si alguien está en peligro, llama ya a la Línea 123.",
 	reportReady:
 		"Preparé tu reporte para la ciudad; revísalo y confírmalo abajo.",
+	fareReportReady:
+		"Te dejé el reporte de cobro casi listo: revisa el tramo y el monto y envíalo.",
+	fareReportLabel: "Reportar el cobro",
 	profile: "Ahí puedes ver y editar tu perfil.",
 	profileLabel: "Ir a mi perfil",
 	myRegistrations: "Te muestro los planes en los que estás inscrito.",
@@ -102,9 +111,15 @@ const en: LocalCopy = {
 	},
 	needAccount:
 		"You need to sign in for that. Sign in or create an account and we'll continue.",
+	actionKept:
+		"I left the action ready with the exact text. Sign in or create an account to confirm it; when you come back, it will be right here.",
 	createEvent:
 		"Great! Fill in the form with the name, date and place; it goes live when you send it and, if the system flags something, it goes to review.",
 	createEventLabel: "Publish an event",
+	eventDrafted:
+		"I put the event together from what you told me: check the exact text and confirm it below. It goes live when you confirm; if the system flags something, it goes to review.",
+	eventFormFilled:
+		"I filled in the form with what you told me; add the date and time and publish it.",
 	confirmUnregister:
 		"Sure, I'll help you cancel that registration. Confirm below.",
 	confirmRegister: "Sure! Confirm below and I'll register you.",
@@ -125,6 +140,9 @@ const en: LocalCopy = {
 	emergency: "If someone is in danger, call Línea 123 now.",
 	reportReady:
 		"I prepared your report for the city; check it and confirm below.",
+	fareReportReady:
+		"I left the fare report almost ready: check the route and the amount and send it.",
+	fareReportLabel: "Report the fare",
 	profile: "There you can see and edit your profile.",
 	profileLabel: "Go to my profile",
 	myRegistrations: "Here are the plans you're registered for.",
@@ -188,9 +206,15 @@ const pt: LocalCopy = {
 	},
 	needAccount:
 		"Para isso você precisa entrar na sua conta. Entre ou crie uma e seguimos.",
+	actionKept:
+		"Deixei a ação pronta com o texto exato. Entre na sua conta ou crie uma para confirmá-la; quando voltar, ela estará aqui.",
 	createEvent:
 		"Que legal! Preencha o formulário com o nome, a data e o lugar; é publicado ao enviar e, se o sistema detectar algo, passa por revisão.",
 	createEventLabel: "Publicar um evento",
+	eventDrafted:
+		"Montei o evento com o que você me disse: revise o texto exato e confirme abaixo. Ele é publicado ao confirmar; se o sistema detectar algo, passa por revisão.",
+	eventFormFilled:
+		"Deixei o formulário preenchido com o que você me disse; complete a data e a hora e publique.",
 	confirmUnregister:
 		"Certo, eu te ajudo a cancelar essa inscrição. Confirme abaixo.",
 	confirmRegister: "Claro! Confirme abaixo e eu te inscrevo.",
@@ -210,6 +234,9 @@ const pt: LocalCopy = {
 	mapLabel: "Ver o mapa",
 	emergency: "Se alguém estiver em perigo, ligue já para a Línea 123.",
 	reportReady: "Preparei seu relato para a cidade; revise e confirme abaixo.",
+	fareReportReady:
+		"Deixei o relato de cobrança quase pronto: revise o trajeto e o valor e envie.",
+	fareReportLabel: "Relatar a cobrança",
 	profile: "Aí você pode ver e editar seu perfil.",
 	profileLabel: "Ir para meu perfil",
 	myRegistrations: "Eu te mostro os planos em que você está inscrito.",
@@ -270,9 +297,15 @@ const fr: LocalCopy = {
 	},
 	needAccount:
 		"Pour cela, tu dois te connecter à ton compte. Connecte-toi ou crée-le et on continue.",
+	actionKept:
+		"J'ai préparé l'action avec le texte exact. Connecte-toi ou crée un compte pour la confirmer ; à ton retour, elle t'attendra ici.",
 	createEvent:
 		"Super ! Remplis le formulaire avec le nom, la date et le lieu ; il est publié à l'envoi et, si le système détecte quelque chose, il passe en vérification.",
 	createEventLabel: "Publier un événement",
+	eventDrafted:
+		"J'ai préparé l'événement avec ce que tu m'as dit : vérifie le texte exact et confirme-le ci-dessous. Il est publié à la confirmation ; si le système détecte un problème, il passe en vérification.",
+	eventFormFilled:
+		"J'ai rempli le formulaire avec ce que tu m'as dit ; ajoute la date et l'heure, puis publie-le.",
 	confirmUnregister:
 		"D'accord, je t'aide à annuler cette inscription. Confirme ci-dessous.",
 	confirmRegister: "Avec plaisir ! Confirme ci-dessous et je t'inscris.",
@@ -293,6 +326,9 @@ const fr: LocalCopy = {
 	emergency: "Si quelqu'un est en danger, appelle tout de suite la Línea 123.",
 	reportReady:
 		"J'ai préparé ton signalement pour la ville ; vérifie-le et confirme ci-dessous.",
+	fareReportReady:
+		"J'ai presque terminé le signalement du tarif : vérifie le trajet et le montant, puis envoie-le.",
+	fareReportLabel: "Signaler le tarif",
 	profile: "Là, tu peux voir et modifier ton profil.",
 	profileLabel: "Aller à mon profil",
 	myRegistrations: "Je te montre les sorties auxquelles tu es inscrit.",

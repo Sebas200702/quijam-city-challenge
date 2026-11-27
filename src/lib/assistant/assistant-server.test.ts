@@ -10,7 +10,6 @@ import {
 	toolDeclarationsFor,
 } from "./assistant-agents";
 import {
-	ACTION_KEPT_TEXT,
 	AssistantRequestError,
 	answer,
 	enforceAccount,
@@ -306,7 +305,9 @@ describe("answer with a (fake) Gemini", () => {
 				args: { event_id: "e-1" },
 			},
 		]);
-		expect(response.text).toBe(ACTION_KEPT_TEXT);
+		expect(response.text).toBe(
+			"Te dejé la acción lista con el texto exacto. Entra a tu cuenta o créala para confirmarla; cuando vuelvas, sigue aquí.",
+		);
 		expect(response.text).not.toMatch(/te inscribí/);
 	});
 });
@@ -463,6 +464,21 @@ describe("enforceAccount language", () => {
 		expect(turn.toolCalls).toEqual([
 			{ name: "open_page", args: { path: "/perfil", label } },
 		]);
+	});
+
+	it("keeps a pending action in the chosen language (S5)", () => {
+		const registerTurn: AgentTurn = {
+			text: "Done, you're in!",
+			toolCalls: [{ name: "register_for_event", args: { event_id: "e-1" } }],
+		};
+		const turn = enforceAccount(registerTurn, {
+			...anonymous,
+			language: "en",
+		});
+		expect(turn.text).toBe(
+			"I left the action ready with the exact text. Sign in or create an account to confirm it; when you come back, it will be right here.",
+		);
+		expect(turn.toolCalls).toEqual(registerTurn.toolCalls);
 	});
 
 	it("keeps the Spanish text unchanged", () => {

@@ -4,7 +4,6 @@
 // through the confirmation card with the exact, editable text.
 
 import type { EventCategory, PlaceKind } from "../community/community-types";
-import type { DestinationKey } from "../trip/trip-planner";
 import type { ScreenFormId } from "./screen-context-types";
 
 /** Agenda date filter, as in `/agenda?fecha=` (shared URL contract). */
@@ -56,7 +55,12 @@ export type UiAction = UiActionBase &
 				lugar?: string;
 		  }
 		| { type: "map.drop"; pins: MapPin[] }
-		| { type: "map.showRoute"; destino: DestinationKey; accesible?: boolean }
+		| {
+				type: "map.showRoute";
+				/** A named destination, a stop code or a catalog place slug. */
+				destino: string;
+				accesible?: boolean;
+		  }
 		| {
 				type: "form.prefill";
 				form: ScreenFormId;

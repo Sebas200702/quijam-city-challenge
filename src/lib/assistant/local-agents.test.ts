@@ -508,3 +508,73 @@ describe("reply language", () => {
 		);
 	});
 });
+
+describe("drafts in the chosen language (S5)", () => {
+	const draftAsk = ask(
+		"Quiero publicar un evento: limpieza del arroyo en Rebolo el sábado a las 8 am",
+	);
+	const formAsk = ask("Quiero publicar un evento de limpieza");
+	const fareAsk = ask("Me cobraron 25.000 en un taxi al estadio");
+
+	it.each([
+		[
+			"es",
+			"Te armé el evento con lo que me dijiste: revisa el texto exacto y confírmalo abajo. Se publica al confirmar; si el sistema detecta algo, pasa a revisión.",
+		],
+		[
+			"en",
+			"I put the event together from what you told me: check the exact text and confirm it below. It goes live when you confirm; if the system flags something, it goes to review.",
+		],
+	] as const)("an event draft card speaks %s", (language, text) => {
+		const turn = answerLocally("agenda", draftAsk, { ...signedIn, language });
+		expect(turn.text).toBe(text);
+		expect(turn.toolCalls[0]?.name).toBe("create_event");
+	});
+
+	it.each([
+		[
+			"es",
+			"Te dejé el formulario lleno con lo que me dijiste; complétalo con la fecha y la hora y publícalo.",
+			"Publicar un evento",
+		],
+		[
+			"en",
+			"I filled in the form with what you told me; add the date and time and publish it.",
+			"Publish an event",
+		],
+	] as const)("a partial event draft speaks %s", (language, text, label) => {
+		const turn = answerLocally("agenda", formAsk, { ...signedIn, language });
+		expect(turn.text).toBe(text);
+		expect(turn.toolCalls).toEqual([
+			{
+				name: "open_page",
+				args: { path: expect.stringMatching(/^\/agenda\/nuevo/), label },
+			},
+		]);
+	});
+
+	it.each([
+		[
+			"es",
+			"Te dejé el reporte de cobro casi listo: revisa el tramo y el monto y envíalo.",
+			"Reportar el cobro",
+		],
+		[
+			"en",
+			"I left the fare report almost ready: check the route and the amount and send it.",
+			"Report the fare",
+		],
+	] as const)("a fare report draft speaks %s", (language, text, label) => {
+		const turn = answerLocally("city_reports", fareAsk, {
+			...signedIn,
+			language,
+		});
+		expect(turn.text).toBe(text);
+		expect(turn.toolCalls).toEqual([
+			{
+				name: "open_page",
+				args: { path: "/reportar?monto=25000&vehiculo=taxi", label },
+			},
+		]);
+	});
+});

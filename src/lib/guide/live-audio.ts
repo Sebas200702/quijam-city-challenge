@@ -14,6 +14,21 @@ import {
 // while a blob: worklet is only allowed on /prueba-guia.
 export const CAPTURE_WORKLET_URL = "/live-capture-worklet.js";
 
+/**
+ * After a page load (Live resumed on the next page) the browser starts audio
+ * suspended until the person touches the page: resume on the first gesture.
+ */
+function resumeOnGesture(context: AudioContext): void {
+	if (context.state !== "suspended") return;
+	const resume = () => {
+		void context.resume();
+		window.removeEventListener("pointerdown", resume);
+		window.removeEventListener("keydown", resume);
+	};
+	window.addEventListener("pointerdown", resume);
+	window.addEventListener("keydown", resume);
+}
+
 export interface Microphone {
 	stop: () => void;
 }
@@ -24,6 +39,7 @@ export async function startMicrophone(
 ): Promise<Microphone> {
 	const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 	const context = new AudioContext({ sampleRate: INPUT_SAMPLE_RATE });
+	resumeOnGesture(context);
 	try {
 		await context.audioWorklet.addModule(CAPTURE_WORKLET_URL);
 		const node = new AudioWorkletNode(context, "capture");
@@ -56,6 +72,7 @@ export class LivePlayback {
 	play(base64: string): void {
 		if (!this.context) {
 			this.context = new AudioContext({ sampleRate: OUTPUT_SAMPLE_RATE });
+			resumeOnGesture(this.context);
 		}
 		const context = this.context;
 		const samples = base64Pcm16ToFloat(base64);

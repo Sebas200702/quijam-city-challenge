@@ -36,20 +36,22 @@ import type {
 	ScreenRole,
 } from "../../lib/assistant/screen-context-types";
 import { type UiChange, uiBus } from "../../lib/assistant/ui-action-bus";
+import { confirmedActionNote } from "../../lib/guide/live-conduit";
+import { markLiveResume, takeLiveResume } from "../../lib/guide/live-resume";
 import type { Messages } from "../../lib/i18n/messages";
 import { useLanguage, useT } from "../../lib/i18n/use-language";
 import { scrollBehavior } from "../../lib/reduced-motion";
+import { ActionConfirmCard } from "../assistant/action-confirm-card";
+import { AiAvatar, MessageView } from "../assistant/assistant-chat";
+import { LIVE_VOICE_TEXT } from "../assistant/live-voice-text";
+import { useAnswerAnnouncement } from "../assistant/use-answer-announcement";
+import { useAssistant } from "../assistant/use-assistant";
+import { useLiveVoice } from "../assistant/use-live-voice";
+import { useVoiceConduit } from "../assistant/voice-conduit";
 import { ErrorNote } from "../community/community-ui";
 import { BottomNav } from "../home/bottom-nav";
 import type { NavSection } from "../home/nav-sections";
 import { useOnline } from "../map/use-route-plan";
-import { ActionConfirmCard } from "../assistant/action-confirm-card";
-import { AiAvatar, MessageView } from "../assistant/assistant-chat";
-import { useAnswerAnnouncement } from "../assistant/use-answer-announcement";
-import { LIVE_VOICE_TEXT } from "../assistant/live-voice-text";
-import { useAssistant } from "../assistant/use-assistant";
-import { useLiveVoice } from "../assistant/use-live-voice";
-import { useVoiceConduit } from "../assistant/voice-conduit";
 import { onDockRequest } from "./dock-control";
 import { useScreenContext } from "./use-screen-context";
 import "./agent-dock.css";
@@ -92,6 +94,14 @@ interface AgentDockProps {
 	role: ScreenRole;
 }
 
+function sessionStore(): Storage | null {
+	try {
+		return window.sessionStorage;
+	} catch {
+		return null;
+	}
+}
+
 export default function AgentDock({ role }: AgentDockProps) {
 	const t = useT();
 	const assistant = useAssistant();
@@ -103,6 +113,10 @@ export default function AgentDock({ role }: AgentDockProps) {
 	const live = useLiveVoice(assistant);
 	const liveText = LIVE_VOICE_TEXT[useLanguage()];
 	const [open, setOpen] = useState(false);
+	/** Live came back on this page after a result opened it (S4). */
+	const [liveResumed, setLiveResumed] = useState(false);
+	/** A card action confirmed or cancelled while Live is on; Live hears its outcome. */
+	const [settledCall, setSettledCall] = useState<string | null>(null);
 	const [shared, setShared] = useState(isScreenShared);
 	const [text, setText] = useState("");
 	const [changes, setChanges] = useState<UiChange[]>([]);
@@ -151,6 +165,37 @@ export default function AgentDock({ role }: AgentDockProps) {
 		[assistant.send],
 	);
 
+	// A result that opens another page reloads it and ends Live: mark it on
+	// the way out and reopen it on the next page (no client router here).
+	useEffect(() => {
+		if (!live.active) return;
+		const leave = () => markLiveResume(sessionStore(), Date.now());
+		window.addEventListener("pagehide", leave);
+		return () => window.removeEventListener("pagehide", leave);
+	}, [live.active]);
+
+	useEffect(() => {
+		if (takeLiveResume(sessionStore(), Date.now())) setLiveResumed(true);
+	}, []);
+
+	// Runs one render after the mark is taken, so the restored conversation
+	// goes to Live as its history.
+	// biome-ignore lint/correctness/useExhaustiveDependencies: start once per resume.
+	useEffect(() => {
+		if (!liveResumed) return;
+		setOpen(true);
+		void live.start();
+	}, [liveResumed]);
+
+	// Runs after the confirmed action and its follow-up answer are in `messages`.
+	// biome-ignore lint/correctness/useExhaustiveDependencies: once per settled call.
+	useEffect(() => {
+		if (!settledCall) return;
+		setSettledCall(null);
+		const note = confirmedActionNote(messages, settledCall);
+		if (note) live.notify(note);
+	}, [settledCall]);
+
 	// An action waiting for confirmation always shows its card.
 	useEffect(() => {
 		if (pending.length > 0) setOpen(true);
@@ -192,6 +237,13 @@ export default function AgentDock({ role }: AgentDockProps) {
 			document.documentElement.style.removeProperty("--q-dock-space");
 		};
 	}, []);
+
+	/** Confirms or cancels a card; with Live on, Live is told the outcome. */
+	const settleCard = async (callId: string, how: "confirm" | "cancel") => {
+		const wasLive = live.status === "live";
+		await assistant[how](callId);
+		if (wasLive) setSettledCall(callId);
+	};
 
 	const expand = () => {
 		focusAfter.current = "input";
@@ -348,8 +400,8 @@ export default function AgentDock({ role }: AgentDockProps) {
 									<ActionConfirmCard
 										action={action}
 										signedIn={signedIn}
-										onConfirm={() => void assistant.confirm(action.call.id)}
-										onCancel={() => void assistant.cancel(action.call.id)}
+										onConfirm={() => void settleCard(action.call.id, "confirm")}
+										onCancel={() => void settleCard(action.call.id, "cancel")}
 									/>
 								</div>
 							))}
@@ -428,6 +480,7 @@ export default function AgentDock({ role }: AgentDockProps) {
 						) : live.status === "connecting" || live.status === "live" ? (
 							<p className="q-sm q-muted" role="status">
 								{live.status === "live" ? liveText.live : liveText.connecting}
+								{liveResumed && ` ${t.dock.liveResumed}`}
 							</p>
 						) : null}
 						<form className="q-dock__prompt" onSubmit={submit}>

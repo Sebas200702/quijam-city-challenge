@@ -15,7 +15,6 @@ import {
 	isPlaceKind,
 } from "../community/list-filters";
 import { PLACES } from "../community/places-catalog";
-import { DESTINATIONS, type DestinationKey } from "../trip/trip-planner";
 import { normalizeText } from "./assistant-text";
 import type { AssistantToolArgs, AssistantToolCall } from "./assistant-types";
 import { DRAFT_FIELDS, screenThreadId } from "./screen-context";
@@ -187,16 +186,15 @@ export function sanitizeUiAction(value: unknown): UiAction | null {
 			return pins.length > 0 ? { ...base, type: "map.drop", pins } : null;
 		}
 		case "map.showRoute": {
-			if (
-				typeof value.destino !== "string" ||
-				!Object.hasOwn(DESTINATIONS, value.destino)
-			) {
-				return null;
-			}
+			// Named destinations, stop codes and place slugs: the map resolves it
+			// (resolveRouteTarget) and ignores a key it cannot place.
+			const destino =
+				typeof value.destino === "string" ? value.destino.trim() : "";
+			if (!/^[a-z0-9][a-z0-9_-]{0,79}$/i.test(destino)) return null;
 			return {
 				...base,
 				type: "map.showRoute",
-				destino: value.destino as DestinationKey,
+				destino,
 				...(value.accesible === true ? { accesible: true } : {}),
 			};
 		}

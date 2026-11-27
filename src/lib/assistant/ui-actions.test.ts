@@ -48,8 +48,12 @@ describe("sanitizeUiAction (whitelist)", () => {
 			sanitizeUiAction({ type: "agenda.filter", categoria: "drugs" }),
 		).toBeNull();
 		expect(
-			sanitizeUiAction({ type: "map.showRoute", destino: "miami" }),
+			sanitizeUiAction({ type: "map.showRoute", destino: "<script>" }),
 		).toBeNull();
+		// The map resolves place slugs and stop codes beyond the 3 named destinations.
+		expect(
+			sanitizeUiAction({ type: "map.showRoute", destino: "parque-cultural" }),
+		).toEqual({ type: "map.showRoute", destino: "parque-cultural" });
 		expect(
 			sanitizeUiAction({ type: "places.filter", tipo: "park", onclick: "x" }),
 		).toEqual({ type: "places.filter", tipo: "park" });
