@@ -214,6 +214,23 @@ export default function AgentDock({ role }: AgentDockProps) {
 		if (await assistant.send(text)) setText("");
 	};
 
+	/** The dock is live: the mic opens Gemini Live; browser dictation is the fallback. */
+	const toggleVoice = () => {
+		if (live.active) {
+			live.stop();
+			return;
+		}
+		if (voice.listening) {
+			voice.stop();
+			return;
+		}
+		if (live.status === "fallback" && voice.canListen) {
+			voice.start();
+			return;
+		}
+		void live.start();
+	};
+
 	const undo = () => {
 		for (const change of [...changes].reverse()) change.undo();
 		setChanges([]);
@@ -428,21 +445,7 @@ export default function AgentDock({ role }: AgentDockProps) {
 							<button
 								type="button"
 								className="q-dock__icon"
-								onClick={() => {
-									if (live.active) {
-										live.stop();
-										return;
-									}
-									if (voice.listening) {
-										voice.stop();
-										return;
-									}
-									if (live.status === "fallback" && voice.canListen) {
-										voice.start();
-										return;
-									}
-									void live.start();
-								}}
+								onClick={toggleVoice}
 								aria-pressed={live.active || voice.listening}
 								disabled={loading && !live.active}
 							>
@@ -508,6 +511,21 @@ export default function AgentDock({ role }: AgentDockProps) {
 								{loading ? t.chat.thinking : slimText}
 							</span>
 							<span className="q-sr">{t.dock.expand}</span>
+						</button>
+						<button
+							type="button"
+							className="q-dock__mic"
+							onClick={toggleVoice}
+							aria-pressed={live.active || voice.listening}
+						>
+							{live.active || voice.listening ? (
+								<MicOff size={20} aria-hidden="true" />
+							) : (
+								<Mic size={20} aria-hidden="true" />
+							)}
+							<span className="q-sr">
+								{live.active ? liveText.stop : liveText.start}
+							</span>
 						</button>
 						{chips.length > 0 && (
 							<button type="button" className="q-dock__undo" onClick={undo}>

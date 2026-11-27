@@ -274,14 +274,16 @@
 	font: inherit;
 	flex: 1 1 auto;
 	min-width: 0;
-	min-height: 44px;
+	min-height: 52px;
 	display: flex;
 	flex-direction: column;
 	justify-content: center;
 	gap: 1px;
-	padding: 0;
-	border: 0;
-	background: none;
+	padding: 4px 18px;
+	border: 1.5px solid var(--gold-text);
+	border-radius: 999px;
+	background: var(--surface);
+	box-shadow: var(--glow-gold);
 	color: var(--ink);
 	text-align: left;
 	cursor: pointer;
@@ -337,12 +339,32 @@ body[data-dock="overlay"]:has(.q-dock) {
 	padding-bottom: 0;
 }
 
+.q-dock__mic {
+	flex: none;
+	width: 48px;
+	height: 48px;
+	display: grid;
+	place-items: center;
+	border-radius: 999px;
+	border: 1px solid var(--on-gold);
+	background: var(--gold);
+	color: var(--on-gold);
+	cursor: pointer;
+}
+
+.q-dock__mic[aria-pressed="true"] {
+	background: var(--red);
+	color: var(--on-red);
+	border-color: var(--red);
+}
+
 @media (min-width: 1024px) {
 	.q-dock {
-		left: auto;
-		right: 24px;
-		bottom: 24px;
-		width: 400px;
+		left: 50%;
+		right: auto;
+		bottom: 20px;
+		width: min(760px, calc(100vw - 48px));
+		transform: translateX(-50%);
 	}
 
 	.q-dock__panel {
