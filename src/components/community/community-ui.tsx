@@ -3,6 +3,7 @@
 import type { ReactNode } from "react";
 import type { PublishResult } from "../../lib/community/community-types";
 import { useT } from "../../lib/i18n/use-language";
+import { SuggestedTag } from "../prefill/prefill-ui";
 import type { LoadState } from "./use-community";
 
 export const inputClass =
@@ -14,18 +15,24 @@ export function Field({
 	id,
 	label,
 	hint,
+	suggested = false,
 	children,
 }: {
 	id: string;
 	label: string;
 	hint?: string;
+	/** The value came from the URL (Quillart AI): show the "suggested" tag. */
+	suggested?: boolean;
 	children: ReactNode;
 }) {
 	return (
 		<div className="space-y-1.5">
-			<label htmlFor={id} className="q-eyebrow block">
-				{label}
-			</label>
+			<div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+				<label htmlFor={id} className="q-eyebrow block">
+					{label}
+				</label>
+				{suggested && <SuggestedTag fieldId={id} />}
+			</div>
 			{children}
 			{hint && <p className="q-sm q-muted">{hint}</p>}
 		</div>

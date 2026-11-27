@@ -102,6 +102,13 @@ const es = {
 		report: (place: string) =>
 			`Reportar a la ciudad${place ? ` en ${place}` : ""}`,
 	},
+	prefill: {
+		suggested: "Sugerido por Quillart AI",
+		notice: (count: number) =>
+			count === 1
+				? "Quillart AI llenó 1 campo por ti. Revísalo y cámbialo si quieres: nada se envía hasta que tú lo hagas."
+				: `Quillart AI llenó ${count} campos por ti. Revísalos y cámbialos si quieres: nada se envía hasta que tú lo hagas.`,
+	},
 };
 
 export type SharedMessages = typeof es;
@@ -207,6 +214,13 @@ const en: SharedMessages = {
 		report: (place: string) =>
 			`Report to the city${place ? ` at ${place}` : ""}`,
 	},
+	prefill: {
+		suggested: "Suggested by Quillart AI",
+		notice: (count: number) =>
+			count === 1
+				? "Quillart AI filled in 1 field for you. Check it and change it if you like: nothing is sent until you do."
+				: `Quillart AI filled in ${count} fields for you. Check them and change them if you like: nothing is sent until you do.`,
+	},
 };
 
 const pt: SharedMessages = {
@@ -308,6 +322,13 @@ const pt: SharedMessages = {
 		reply: (thread: string) => `Responder em «${thread}»`,
 		report: (place: string) =>
 			`Denunciar à cidade${place ? ` em ${place}` : ""}`,
+	},
+	prefill: {
+		suggested: "Sugerido pela Quillart AI",
+		notice: (count: number) =>
+			count === 1
+				? "A Quillart AI preencheu 1 campo para você. Revise e altere se quiser: nada é enviado até você enviar."
+				: `A Quillart AI preencheu ${count} campos para você. Revise e altere se quiser: nada é enviado até você enviar.`,
 	},
 };
 
@@ -416,6 +437,13 @@ const fr: SharedMessages = {
 		reply: (thread: string) => `Répondre dans « ${thread} »`,
 		report: (place: string) =>
 			`Signaler à la ville${place ? ` à ${place}` : ""}`,
+	},
+	prefill: {
+		suggested: "Suggéré par Quillart AI",
+		notice: (count: number) =>
+			count === 1
+				? "Quillart AI a rempli 1 champ pour vous. Vérifiez-le et modifiez-le si besoin : rien n’est envoyé sans vous."
+				: `Quillart AI a rempli ${count} champs pour vous. Vérifiez-les et modifiez-les si besoin : rien n’est envoyé sans vous.`,
 	},
 };
 

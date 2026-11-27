@@ -73,6 +73,9 @@ const es = {
 			"Usa las canecas y ayuda a que los juegos sigan en buen estado.",
 		],
 	},
+	searchLabel: "Buscar lugares",
+	searchPlaceholder: "Busca un lugar o un barrio",
+	seeAll: "Ver todos los lugares",
 };
 
 export type PlacesMessages = typeof es;
@@ -147,6 +150,9 @@ const en: PlacesMessages = {
 			"Use the bins and help keep the playground equipment in good shape.",
 		],
 	},
+	searchLabel: "Search places",
+	searchPlaceholder: "Search for a place or a neighborhood",
+	seeAll: "See all places",
 };
 
 const pt: PlacesMessages = {
@@ -219,6 +225,9 @@ const pt: PlacesMessages = {
 			"Use as lixeiras e ajude a manter os brinquedos em bom estado.",
 		],
 	},
+	searchLabel: "Buscar lugares",
+	searchPlaceholder: "Busque um lugar ou um bairro",
+	seeAll: "Ver todos os lugares",
 };
 
 const fr: PlacesMessages = {
@@ -292,6 +301,9 @@ const fr: PlacesMessages = {
 			"Utilisez les poubelles et aidez à garder les jeux en bon état.",
 		],
 	},
+	searchLabel: "Rechercher des lieux",
+	searchPlaceholder: "Cherchez un lieu ou un quartier",
+	seeAll: "Voir tous les lieux",
 };
 
 export const places: Record<Language, PlacesMessages> = { es, en, pt, fr };

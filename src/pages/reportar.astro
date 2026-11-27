@@ -6,10 +6,15 @@ import BaseLayout from "../layouts/base-layout.astro";
 import { loadCorridorData } from "../lib/corridor/corridor-data";
 import { homeContent } from "../lib/home-content";
 import { buildSelectableFareRoutes } from "../lib/reports/overcharge-routes";
+import { parseParams } from "../lib/url-state/params";
+import { REPORT_FORM_SCHEMA } from "../lib/url-state/schemas";
 
 const { data } = await loadCorridorData();
 const routes = buildSelectableFareRoutes(data);
-const initialSegmentCode = Astro.url.searchParams.get("segment");
+// ?segment=&monto=&vehiculo=&codigo=&notas= arrive from links and Quillart AI:
+// untrusted, so they are cleaned here and only prefill the form.
+const draft = parseParams(REPORT_FORM_SCHEMA, Astro.url.searchParams);
+const initialSegmentCode = draft.segment || null;
 const { aiHref } = homeContent;
 ---
 
@@ -25,6 +30,7 @@ const { aiHref } = homeContent;
 				client:load
 				routes={routes}
 				initialSegmentCode={initialSegmentCode}
+				draft={draft}
 			/>
 		</main>
 		<BottomNav client:load current="map" aiHref={aiHref} />

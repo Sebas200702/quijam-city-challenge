@@ -1,4 +1,6 @@
 // Community forum: intro, rules, category filter, thread list and the new-thread form.
+// The form opens from the URL (?nuevo=1, ?lugar=, ?evento=) and takes a draft
+// (?titulo=&cuerpo=&categoria=, see THREAD_FORM_SCHEMA) shown as suggested.
 
 import { CalendarDays, MapPin, Plus, X } from "lucide-react";
 import {
@@ -16,7 +18,15 @@ import type {
 	PublishResult,
 } from "../../lib/community/community-types";
 import { useT } from "../../lib/i18n/use-language";
+import { prefilledKeys, type UrlValues } from "../../lib/url-state/params";
+import { THREAD_FORM_SCHEMA } from "../../lib/url-state/schemas";
+import { readUrlState } from "../../lib/url-state/use-url-state";
 import { AskQuillartButton } from "../assistant/ask-quillart-button";
+import {
+	PrefillNotice,
+	suggestedProps,
+	usePrefill,
+} from "../prefill/prefill-ui";
 import { CommunityShell } from "./community-shell";
 import {
 	EmptyState,
@@ -34,23 +44,16 @@ import { signInHref, useLoad, useSession, useStore } from "./use-community";
 
 const CATEGORIES = Object.keys(FORUM_CATEGORY_LABELS) as ForumCategory[];
 
+type ThreadDraft = UrlValues<typeof THREAD_FORM_SCHEMA>;
+
 interface ForumLinks {
 	open: boolean;
-	placeId: string | null;
-	eventId: string | null;
+	draft: ThreadDraft;
 }
 
 function readLinks(): ForumLinks {
-	if (typeof window === "undefined")
-		return { open: false, placeId: null, eventId: null };
-	const params = new URLSearchParams(window.location.search);
-	const placeId = params.get("lugar");
-	const eventId = params.get("evento");
-	return {
-		open: params.get("nuevo") === "1" || Boolean(placeId || eventId),
-		placeId: placeId || null,
-		eventId: eventId || null,
-	};
+	const draft = readUrlState(THREAD_FORM_SCHEMA);
+	return { open: prefilledKeys(draft).size > 0, draft };
 }
 
 export default function ForumPage({ aiHref }: { aiHref?: string }) {
@@ -94,8 +97,7 @@ export default function ForumPage({ aiHref }: { aiHref?: string }) {
 				<div className="flex min-w-0 flex-col gap-5">
 					{formOpen && (
 						<NewThreadForm
-							initialPlaceId={initial.placeId}
-							initialEventId={initial.eventId}
+							draft={initial.draft}
 							onCancel={() => setFormOpen(false)}
 							onDone={(result) => {
 								setNotice(result);
@@ -245,14 +247,14 @@ interface Attachment {
 	name: string | null;
 }
 
+type DraftField = "title" | "body" | "category";
+
 function NewThreadForm({
-	initialPlaceId,
-	initialEventId,
+	draft,
 	onCancel,
 	onDone,
 }: {
-	initialPlaceId: string | null;
-	initialEventId: string | null;
+	draft: ThreadDraft;
 	onCancel: () => void;
 	onDone: (result: PublishResult<ForumThread>) => void;
 }) {
@@ -260,11 +262,26 @@ function NewThreadForm({
 	const store = useStore();
 	const session = useSession();
 	const formId = useId();
-	const [title, setTitle] = useState("");
-	const [body, setBody] = useState("");
+	const initialPlaceId = draft.lugar || null;
+	const initialEventId = draft.evento || null;
+	const [title, setTitle] = useState(draft.titulo);
+	const [body, setBody] = useState(draft.cuerpo);
 	const [category, setCategory] = useState<ForumCategory>(
-		initialPlaceId ? "neighborhood" : "general",
+		draft.categoria || (initialPlaceId ? "neighborhood" : "general"),
 	);
+	const prefill = usePrefill<DraftField>(
+		(
+			[
+				["title", draft.titulo],
+				["body", draft.cuerpo],
+				["category", draft.categoria],
+			] as const
+		)
+			.filter(([, value]) => value.trim() !== "")
+			.map(([field]) => field),
+	);
+	const suggested = (field: DraftField, id: string, className: string) =>
+		suggestedProps(prefill.isSuggested(field), id, className);
 	const [place, setPlace] = useState<Attachment | null>(
 		initialPlaceId ? { id: initialPlaceId, name: null } : null,
 	);
@@ -385,6 +402,7 @@ function NewThreadForm({
 			<h2 id={`${formId}-heading`} className="q-h3">
 				{t.forum.newThread}
 			</h2>
+			<PrefillNotice count={prefill.total} />
 			{(place || event) && (
 				<div className="flex flex-wrap gap-2">
 					{place && (
@@ -403,25 +421,37 @@ function NewThreadForm({
 					)}
 				</div>
 			)}
-			<Field id={`${formId}-title`} label={t.forum.form.titleLabel}>
+			<Field
+				id={`${formId}-title`}
+				label={t.forum.form.titleLabel}
+				suggested={prefill.isSuggested("title")}
+			>
 				<input
 					id={`${formId}-title`}
-					className={inputClass}
+					{...suggested("title", `${formId}-title`, inputClass)}
 					value={title}
 					maxLength={140}
 					required
 					placeholder={t.forum.form.titlePlaceholder}
-					onChange={(change) => setTitle(change.target.value)}
+					onChange={(change) => {
+						setTitle(change.target.value);
+						prefill.accept("title");
+					}}
 				/>
 			</Field>
-			<Field id={`${formId}-category`} label={t.forum.form.topic}>
+			<Field
+				id={`${formId}-category`}
+				label={t.forum.form.topic}
+				suggested={prefill.isSuggested("category")}
+			>
 				<select
 					id={`${formId}-category`}
-					className={inputClass}
+					{...suggested("category", `${formId}-category`, inputClass)}
 					value={category}
-					onChange={(change) =>
-						setCategory(change.target.value as ForumCategory)
-					}
+					onChange={(change) => {
+						setCategory(change.target.value as ForumCategory);
+						prefill.accept("category");
+					}}
 				>
 					{CATEGORIES.map((value) => (
 						<option key={value} value={value}>
@@ -434,14 +464,18 @@ function NewThreadForm({
 				id={`${formId}-body`}
 				label={t.forum.form.message}
 				hint={t.forum.form.messageHint}
+				suggested={prefill.isSuggested("body")}
 			>
 				<textarea
 					id={`${formId}-body`}
-					className={textareaClass}
+					{...suggested("body", `${formId}-body`, textareaClass)}
 					value={body}
 					required
 					placeholder={t.forum.form.messagePlaceholder}
-					onChange={(change) => setBody(change.target.value)}
+					onChange={(change) => {
+						setBody(change.target.value);
+						prefill.accept("body");
+					}}
 				/>
 			</Field>
 			{error && <ErrorNote message={error} />}

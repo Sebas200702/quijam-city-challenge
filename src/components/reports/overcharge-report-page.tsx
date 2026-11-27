@@ -37,7 +37,20 @@ import {
 	readPendingReports,
 } from "../../lib/reports/overcharge-routes";
 import { sendPendingReports } from "../../lib/reports/pending-report-sync";
+import type { UrlValues } from "../../lib/url-state/params";
+import type { REPORT_FORM_SCHEMA } from "../../lib/url-state/schemas";
+import {
+	PrefillNotice,
+	SUGGESTED_CLASS,
+	SuggestedTag,
+	usePrefill,
+} from "../prefill/prefill-ui";
 import { ReportIllustration } from "./report-illustration";
+
+/** Draft read from the URL by the page (see REPORT_FORM_SCHEMA). */
+export type ReportDraft = UrlValues<typeof REPORT_FORM_SCHEMA>;
+
+type DraftField = "route" | "vehicle" | "amount" | "driver" | "notes";
 
 type FormStatus =
 	| { kind: "idle" }
@@ -56,6 +69,8 @@ type FormStatus =
 interface OverchargeReportPageProps {
 	routes: SelectableFareRoute[];
 	initialSegmentCode: string | null;
+	/** Fields that came in the URL (Quillart AI or a shared link). */
+	draft?: Partial<ReportDraft>;
 }
 
 const INPUT_CLASS =
@@ -82,6 +97,7 @@ function FieldError({ id, message }: { id: string; message: string }) {
 export function OverchargeReportPage({
 	routes,
 	initialSegmentCode,
+	draft = {},
 }: OverchargeReportPageProps) {
 	const t = useT().reports;
 	const id = useId();
@@ -101,11 +117,36 @@ export function OverchargeReportPage({
 		initialRoute?.segmentCode ?? "",
 	);
 	const [vehicle, setVehicle] = useState<ReportTransportMode>(
-		initialRoute?.defaultVehicle ?? "taxi",
+		draft.vehiculo || initialRoute?.defaultVehicle || "taxi",
 	);
-	const [charged, setCharged] = useState("");
-	const [driverCode, setDriverCode] = useState("");
-	const [notes, setNotes] = useState("");
+	const [charged, setCharged] = useState(draft.monto ?? "");
+	const [driverCode, setDriverCode] = useState(draft.codigo ?? "");
+	const [notes, setNotes] = useState(draft.notas ?? "");
+	const prefill = usePrefill<DraftField>(
+		(
+			[
+				["route", initialRoute && initialRoute.segmentCode === draft.segment],
+				["vehicle", Boolean(draft.vehiculo)],
+				["amount", Boolean(draft.monto)],
+				["driver", Boolean(draft.codigo)],
+				["notes", Boolean(draft.notas)],
+			] as const
+		)
+			.filter(([, on]) => on)
+			.map(([field]) => field),
+	);
+	// The tag sits inside each <label>, so it is already part of the name:
+	// only the background changes here.
+	const suggested = (
+		field: DraftField,
+		className: string,
+		describedBy?: string,
+	) => ({
+		className: prefill.isSuggested(field)
+			? `${className} ${SUGGESTED_CLASS}`
+			: className,
+		"aria-describedby": describedBy,
+	});
 	const [status, setStatus] = useState<FormStatus>({ kind: "idle" });
 	const [isOnline, setIsOnline] = useState(true);
 	const [pendingCount, setPendingCount] = useState(0);
@@ -168,6 +209,8 @@ export function OverchargeReportPage({
 
 	function handleRouteChange(nextCode: string) {
 		setSegmentCode(nextCode);
+		prefill.accept("route");
+		prefill.accept("vehicle");
 		const nextRoute = routes.find((route) => route.segmentCode === nextCode);
 		if (nextRoute) {
 			setVehicle(nextRoute.defaultVehicle);
@@ -175,6 +218,8 @@ export function OverchargeReportPage({
 	}
 
 	function resetForm() {
+		for (const field of ["amount", "driver", "notes"] as const)
+			prefill.accept(field);
 		setCharged("");
 		setDriverCode("");
 		setNotes("");
@@ -464,15 +509,19 @@ export function OverchargeReportPage({
 						onSubmit={handleSubmit}
 						noValidate
 					>
+						<PrefillNotice count={prefill.total} />
 						<label className="block space-y-1.5" htmlFor={`${id}-route`}>
-							<span className="q-sm font-semibold text-[var(--ink)]">
+							<span className="q-sm flex flex-wrap items-center gap-2 font-semibold text-[var(--ink)]">
 								{t.form.route}
+								{prefill.isSuggested("route") && (
+									<SuggestedTag fieldId={`${id}-route`} />
+								)}
 							</span>
 							<select
 								id={`${id}-route`}
 								value={selectedRoute.segmentCode}
 								onChange={(event) => handleRouteChange(event.target.value)}
-								className="min-h-11 w-full rounded-[var(--radius-md)] border border-[var(--line-control)] bg-[var(--surface-raised)] px-3.5 py-2.5 text-[15px] text-[var(--ink)]"
+								{...suggested("route", INPUT_CLASS)}
 							>
 								{routes.map((route) => (
 									<option key={route.segmentCode} value={route.segmentCode}>
@@ -506,8 +555,11 @@ export function OverchargeReportPage({
 						</div>
 
 						<fieldset className="m-0 border-0 p-0 space-y-2">
-							<legend className="q-sm font-semibold text-[var(--ink)]">
+							<legend className="q-sm flex flex-wrap items-center gap-2 font-semibold text-[var(--ink)]">
 								{t.form.vehicleLegend}
+								{prefill.isSuggested("vehicle") && (
+									<SuggestedTag fieldId={`${id}-vehicle`} />
+								)}
 							</legend>
 							<div className="q-seg w-full">
 								{REPORT_TRANSPORT_MODES.map((option) => (
@@ -515,7 +567,10 @@ export function OverchargeReportPage({
 										key={option}
 										type="button"
 										aria-pressed={vehicle === option}
-										onClick={() => setVehicle(option)}
+										onClick={() => {
+											setVehicle(option);
+											prefill.accept("vehicle");
+										}}
 										className={`q-seg__opt min-h-11 flex-1 ${
 											vehicle === option ? "is-on" : ""
 										}`}
@@ -528,8 +583,11 @@ export function OverchargeReportPage({
 
 						<div className="space-y-2">
 							<label className="block space-y-1.5" htmlFor={`${id}-charged`}>
-								<span className="q-sm font-semibold text-[var(--ink)]">
+								<span className="q-sm flex flex-wrap items-center gap-2 font-semibold text-[var(--ink)]">
 									{t.form.amountLabel}
+									{prefill.isSuggested("amount") && (
+										<SuggestedTag fieldId={`${id}-charged`} />
+									)}
 								</span>
 								<input
 									ref={amountRef}
@@ -540,12 +598,16 @@ export function OverchargeReportPage({
 									required
 									placeholder={t.form.amountPlaceholder}
 									aria-invalid={amountError !== null}
-									aria-describedby={
-										amountError ? `${id}-charged-error` : undefined
-									}
 									value={charged}
-									onChange={(event) => setCharged(event.target.value)}
-									className={`${INPUT_CLASS} ${amountError ? INVALID_CLASS : ""}`}
+									onChange={(event) => {
+										setCharged(event.target.value);
+										prefill.accept("amount");
+									}}
+									{...suggested(
+										"amount",
+										`${INPUT_CLASS} ${amountError ? INVALID_CLASS : ""}`,
+										amountError ? `${id}-charged-error` : undefined,
+									)}
 								/>
 							</label>
 							{amountError && (
@@ -595,6 +657,12 @@ export function OverchargeReportPage({
 								<span className="font-normal text-[var(--ink-muted)]">
 									{t.form.optional}
 								</span>
+								{prefill.isSuggested("driver") && (
+									<>
+										{" "}
+										<SuggestedTag fieldId={`${id}-driver`} />
+									</>
+								)}
 							</span>
 							<input
 								ref={driverRef}
@@ -604,12 +672,16 @@ export function OverchargeReportPage({
 								autoComplete="off"
 								placeholder={t.form.driverPlaceholder}
 								aria-invalid={driverError !== null}
-								aria-describedby={
-									driverError ? `${id}-driver-error` : undefined
-								}
 								value={driverCode}
-								onChange={(event) => setDriverCode(event.target.value)}
-								className={`${INPUT_CLASS} ${driverError ? INVALID_CLASS : ""}`}
+								onChange={(event) => {
+									setDriverCode(event.target.value);
+									prefill.accept("driver");
+								}}
+								{...suggested(
+									"driver",
+									`${INPUT_CLASS} ${driverError ? INVALID_CLASS : ""}`,
+									driverError ? `${id}-driver-error` : undefined,
+								)}
 							/>
 						</label>
 						{driverError && (
@@ -622,6 +694,12 @@ export function OverchargeReportPage({
 								<span className="font-normal text-[var(--ink-muted)]">
 									{t.form.optional}
 								</span>
+								{prefill.isSuggested("notes") && (
+									<>
+										{" "}
+										<SuggestedTag fieldId={`${id}-notes`} />
+									</>
+								)}
 							</span>
 							<textarea
 								id={`${id}-notes`}
@@ -629,8 +707,11 @@ export function OverchargeReportPage({
 								maxLength={280}
 								placeholder={t.form.notesPlaceholder}
 								value={notes}
-								onChange={(event) => setNotes(event.target.value)}
-								className="min-h-11 w-full rounded-[var(--radius-md)] border border-[var(--line-control)] bg-[var(--surface-raised)] px-3.5 py-2.5 text-[15px] text-[var(--ink)]"
+								onChange={(event) => {
+									setNotes(event.target.value);
+									prefill.accept("notes");
+								}}
+								{...suggested("notes", INPUT_CLASS)}
 							/>
 						</label>
 

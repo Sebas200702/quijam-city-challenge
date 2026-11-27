@@ -1,9 +1,11 @@
 // "Lugares y naturaleza": the city's public spaces and natural areas.
+// Search and kind live in the URL (?q=&tipo=) so a link can open them filtered.
 
-import { Map as MapIcon } from "lucide-react";
-import { useState } from "react";
-import type { PlaceKind } from "../../lib/community/community-types";
+import { Map as MapIcon, Search } from "lucide-react";
+import type { Place, PlaceKind } from "../../lib/community/community-types";
 import { useT } from "../../lib/i18n/use-language";
+import { PLACES_SCHEMA } from "../../lib/url-state/schemas";
+import { useUrlState } from "../../lib/url-state/use-url-state";
 import { AskQuillartButton } from "../assistant/ask-quillart-button";
 import { CommunityShell } from "./community-shell";
 import { EmptyState, Loaded, PageTitle } from "./community-ui";
@@ -22,9 +24,31 @@ const FILTERS: KindFilter[] = [
 	"sport",
 ];
 
+/** Lowercase without accents, so "cienaga" finds "Ciénaga". */
+function fold(text: string): string {
+	return text
+		.normalize("NFD")
+		.replace(/\p{Diacritic}/gu, "")
+		.toLowerCase();
+}
+
+function matchesSearch(place: Place, query: string): boolean {
+	if (!query) return true;
+	const haystack = fold(
+		`${place.name} ${place.neighborhood} ${place.description}`,
+	);
+	return fold(query)
+		.split(/\s+/)
+		.every((word) => haystack.includes(word));
+}
+
 export function PlacesPage({ aiHref }: { aiHref?: string }) {
 	const t = useT();
-	const [filter, setFilter] = useState<KindFilter>("all");
+	const [params, setParams] = useUrlState(PLACES_SCHEMA);
+	const filter: KindFilter = params.tipo || "all";
+	const setFilter = (value: KindFilter) =>
+		setParams({ tipo: value === "all" ? "" : value });
+	const query = params.q.trim();
 	const { state } = useLoad(
 		async (store) => {
 			const [places, events] = await Promise.all([
@@ -68,6 +92,27 @@ export function PlacesPage({ aiHref }: { aiHref?: string }) {
 				/>
 			</div>
 
+			<div>
+				<label htmlFor="places-search" className="q-sr">
+					{t.places.searchLabel}
+				</label>
+				<div className="q-search">
+					<Search
+						size={20}
+						aria-hidden="true"
+						className="ml-2 shrink-0 text-[var(--ink-muted)]"
+					/>
+					<input
+						id="places-search"
+						type="search"
+						value={params.q}
+						onChange={(event) => setParams({ q: event.target.value })}
+						placeholder={t.places.searchPlaceholder}
+						autoComplete="off"
+					/>
+				</div>
+			</div>
+
 			<fieldset>
 				<legend className="sr-only">{t.places.filterLegend}</legend>
 				<div className="flex flex-wrap gap-2">
@@ -90,15 +135,25 @@ export function PlacesPage({ aiHref }: { aiHref?: string }) {
 
 			<Loaded state={state} loadingLabel={t.places.loading}>
 				{({ places, upcoming }) => {
-					const visible =
-						filter === "all"
-							? places
-							: places.filter((place) => place.kind === filter);
+					const visible = places.filter(
+						(place) =>
+							(filter === "all" || place.kind === filter) &&
+							matchesSearch(place, query),
+					);
 					if (visible.length === 0)
 						return (
 							<EmptyState
 								illustration="/illustrations/among-nature.svg"
 								title={t.places.emptyTitle}
+								action={
+									<button
+										type="button"
+										className="q-btn q-btn--secondary"
+										onClick={() => setParams({ q: "", tipo: "" })}
+									>
+										{t.places.seeAll}
+									</button>
+								}
 							>
 								{t.places.emptyText}
 							</EmptyState>

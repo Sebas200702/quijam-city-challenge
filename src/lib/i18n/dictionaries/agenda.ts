@@ -117,6 +117,13 @@ const es = {
 	copyLinkPrompt: "Copia el enlace del evento:",
 	linkCopied: "Enlace copiado",
 	share: "Compartir",
+	// Date filter
+	filterByDate: "Filtrar por fecha",
+	when: "Cuándo",
+	whenAny: "Cualquier día",
+	whenToday: "Hoy",
+	whenTomorrow: "Mañana",
+	whenWeekend: "Este finde",
 };
 
 export type AgendaMessages = typeof es;
@@ -234,6 +241,13 @@ const en: AgendaMessages = {
 	copyLinkPrompt: "Copy the event link:",
 	linkCopied: "Link copied",
 	share: "Share",
+	// Date filter
+	filterByDate: "Filter by date",
+	when: "When",
+	whenAny: "Any day",
+	whenToday: "Today",
+	whenTomorrow: "Tomorrow",
+	whenWeekend: "This weekend",
 };
 
 const pt: AgendaMessages = {
@@ -349,6 +363,13 @@ const pt: AgendaMessages = {
 	copyLinkPrompt: "Copie o link do evento:",
 	linkCopied: "Link copiado",
 	share: "Compartilhar",
+	// Date filter
+	filterByDate: "Filtrar por data",
+	when: "Quando",
+	whenAny: "Qualquer dia",
+	whenToday: "Hoje",
+	whenTomorrow: "Amanhã",
+	whenWeekend: "Este fim de semana",
 };
 
 const fr: AgendaMessages = {
@@ -466,6 +487,13 @@ const fr: AgendaMessages = {
 	copyLinkPrompt: "Copiez le lien de l'événement :",
 	linkCopied: "Lien copié",
 	share: "Partager",
+	// Date filter
+	filterByDate: "Filtrer par date",
+	when: "Quand",
+	whenAny: "N’importe quel jour",
+	whenToday: "Aujourd’hui",
+	whenTomorrow: "Demain",
+	whenWeekend: "Ce week-end",
 };
 
 export const agenda: Record<Language, AgendaMessages> = { es, en, pt, fr };

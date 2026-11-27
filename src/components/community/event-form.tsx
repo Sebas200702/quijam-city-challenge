@@ -1,4 +1,7 @@
 // Form to publish a community event; the moderation triage decides what happens next.
+// A draft can arrive in the URL (?titulo=&fecha=&hora=&lugar=&costo=&cupos=&descripcion=,
+// see EVENT_FORM_SCHEMA): those fields show as suggested and nothing is sent
+// until the person presses "Publicar".
 
 import { ArrowLeft, LogIn } from "lucide-react";
 import { type SyntheticEvent, useEffect, useState } from "react";
@@ -16,6 +19,15 @@ import type {
 	PublishResult,
 } from "../../lib/community/community-types";
 import { useT } from "../../lib/i18n/use-language";
+import type { UrlValues } from "../../lib/url-state/params";
+import { EVENT_FORM_SCHEMA } from "../../lib/url-state/schemas";
+import { readUrlState } from "../../lib/url-state/use-url-state";
+import {
+	PrefillNotice,
+	SuggestedTag,
+	suggestedProps,
+	usePrefill,
+} from "../prefill/prefill-ui";
 import { CommunityShell } from "./community-shell";
 import {
 	ErrorNote,
@@ -46,22 +58,41 @@ interface FormValues {
 	price: string;
 }
 
-function initialValues(): FormValues {
-	const params = new URLSearchParams(window.location.search);
+type EventDraft = UrlValues<typeof EVENT_FORM_SCHEMA>;
+
+function initialValues(draft: EventDraft): FormValues {
 	return {
-		title: "",
-		description: "",
-		category: "community",
-		date: "",
-		startTime: "",
+		title: draft.titulo,
+		description: draft.descripcion,
+		category: draft.categoria || "community",
+		date: draft.fecha,
+		startTime: draft.hora,
 		endTime: "",
-		placeId: params.get("lugar") ?? OTHER_PLACE,
+		placeId: draft.lugar || OTHER_PLACE,
 		locationText: "",
-		capacity: "",
-		isFree: true,
-		price: "",
+		capacity: draft.cupos,
+		isFree: draft.costo === "" || draft.costo === "0",
+		price: draft.costo === "0" ? "" : draft.costo,
 	};
 }
+
+/** Form fields filled by the draft (`lugar` may end up as either place field). */
+function suggestedFields(draft: EventDraft): (keyof FormValues)[] {
+	const map: [keyof EventDraft, (keyof FormValues)[]][] = [
+		["titulo", ["title"]],
+		["descripcion", ["description"]],
+		["categoria", ["category"]],
+		["fecha", ["date"]],
+		["hora", ["startTime"]],
+		["lugar", ["placeId", "locationText"]],
+		["cupos", ["capacity"]],
+		["costo", ["isFree", "price"]],
+	];
+	return map.flatMap(([param, fields]) => (draft[param] ? fields : []));
+}
+
+/** A database id that is not in the catalog is dropped, not shown as an address. */
+const LOOKS_LIKE_ID = /^[0-9a-f]{8}-[0-9a-f-]{27}$/i;
 
 function toInput(values: FormValues): NewEventInput {
 	const startsAt = bogotaLocalToIso(`${values.date}T${values.startTime}`);
@@ -128,22 +159,39 @@ function EventFormBody() {
 	const t = useT();
 	const store = useStore();
 	const { state: placesState } = useLoad((s) => s.listPlaces(), []);
-	const [values, setValues] = useState<FormValues>(initialValues);
+	const [draft] = useState(() => readUrlState(EVENT_FORM_SCHEMA));
+	const [values, setValues] = useState<FormValues>(() => initialValues(draft));
+	const prefill = usePrefill(suggestedFields(draft));
+	const suggested = (key: keyof FormValues, id: string, className: string) =>
+		suggestedProps(prefill.isSuggested(key), id, className);
 	const [error, setError] = useState<string | null>(null);
 	const [submitting, setSubmitting] = useState(false);
 	const [result, setResult] = useState<PublishResult<CommunityEvent> | null>(
 		null,
 	);
 
-	// A `?lugar=` id that is not in the catalog falls back to a free-text address.
+	// `?lugar=` is a place id or slug; anything else becomes a free-text address.
 	useEffect(() => {
 		if (placesState.status !== "ready") return;
-		setValues((current) =>
-			current.placeId &&
-			!placesState.data.some((place) => place.id === current.placeId)
-				? { ...current, placeId: OTHER_PLACE }
-				: current,
-		);
+		setValues((current) => {
+			if (!current.placeId) return current;
+			const match = placesState.data.find(
+				(place) =>
+					place.id === current.placeId || place.slug === current.placeId,
+			);
+			if (match)
+				return match.id === current.placeId
+					? current
+					: { ...current, placeId: match.id };
+			const address = LOOKS_LIKE_ID.test(current.placeId)
+				? ""
+				: current.placeId;
+			return {
+				...current,
+				placeId: OTHER_PLACE,
+				locationText: current.locationText || address,
+			};
+		});
 	}, [placesState]);
 
 	const today = isoToBogotaLocal(new Date().toISOString()).slice(0, 10);
@@ -151,6 +199,8 @@ function EventFormBody() {
 	function set<K extends keyof FormValues>(key: K, value: FormValues[K]) {
 		setValues((current) => ({ ...current, [key]: value }));
 		setError(null);
+		prefill.accept(key);
+		if (key === "isFree") prefill.accept("price");
 	}
 
 	async function handleSubmit(event: SyntheticEvent<HTMLFormElement>) {
@@ -193,10 +243,15 @@ function EventFormBody() {
 
 	return (
 		<form onSubmit={handleSubmit} className="q-card space-y-5 p-5" noValidate>
-			<Field id="event-title" label={t.agenda.fieldTitle}>
+			<PrefillNotice count={prefill.total} />
+			<Field
+				id="event-title"
+				label={t.agenda.fieldTitle}
+				suggested={prefill.isSuggested("title")}
+			>
 				<input
 					id="event-title"
-					className={inputClass}
+					{...suggested("title", "event-title", inputClass)}
 					value={values.title}
 					onChange={(e) => set("title", e.target.value)}
 					maxLength={120}
@@ -205,10 +260,14 @@ function EventFormBody() {
 				/>
 			</Field>
 
-			<Field id="event-description" label={t.agenda.fieldDescription}>
+			<Field
+				id="event-description"
+				label={t.agenda.fieldDescription}
+				suggested={prefill.isSuggested("description")}
+			>
 				<textarea
 					id="event-description"
-					className={textareaClass}
+					{...suggested("description", "event-description", textareaClass)}
 					value={values.description}
 					onChange={(e) => set("description", e.target.value)}
 					placeholder={t.agenda.descriptionPlaceholder}
@@ -216,10 +275,14 @@ function EventFormBody() {
 				/>
 			</Field>
 
-			<Field id="event-category" label={t.agenda.category}>
+			<Field
+				id="event-category"
+				label={t.agenda.category}
+				suggested={prefill.isSuggested("category")}
+			>
 				<select
 					id="event-category"
-					className={inputClass}
+					{...suggested("category", "event-category", inputClass)}
 					value={values.category}
 					onChange={(e) => set("category", e.target.value as EventCategory)}
 				>
@@ -232,22 +295,30 @@ function EventFormBody() {
 			</Field>
 
 			<div className="grid gap-4 sm:grid-cols-3">
-				<Field id="event-date" label={t.agenda.fieldDate}>
+				<Field
+					id="event-date"
+					label={t.agenda.fieldDate}
+					suggested={prefill.isSuggested("date")}
+				>
 					<input
 						id="event-date"
 						type="date"
-						className={inputClass}
+						{...suggested("date", "event-date", inputClass)}
 						value={values.date}
 						min={today}
 						onChange={(e) => set("date", e.target.value)}
 						required
 					/>
 				</Field>
-				<Field id="event-start" label={t.agenda.fieldStart}>
+				<Field
+					id="event-start"
+					label={t.agenda.fieldStart}
+					suggested={prefill.isSuggested("startTime")}
+				>
 					<input
 						id="event-start"
 						type="time"
-						className={inputClass}
+						{...suggested("startTime", "event-start", inputClass)}
 						value={values.startTime}
 						onChange={(e) => set("startTime", e.target.value)}
 						required
@@ -267,7 +338,11 @@ function EventFormBody() {
 
 			<Loaded state={placesState} loadingLabel={t.agenda.loadingPlaces}>
 				{(places) => (
-					<Field id="event-place" label={t.agenda.fieldPlace}>
+					<Field
+						id="event-place"
+						label={t.agenda.fieldPlace}
+						suggested={prefill.isSuggested("placeId")}
+					>
 						<select
 							id="event-place"
 							className={inputClass}
@@ -290,6 +365,7 @@ function EventFormBody() {
 					id="event-location"
 					label={t.agenda.fieldLocation}
 					hint={t.agenda.locationHint}
+					suggested={prefill.isSuggested("locationText")}
 				>
 					<input
 						id="event-location"
@@ -305,6 +381,7 @@ function EventFormBody() {
 				id="event-capacity"
 				label={t.agenda.fieldCapacity}
 				hint={t.agenda.capacityHint}
+				suggested={prefill.isSuggested("capacity")}
 			>
 				<input
 					id="event-capacity"
@@ -312,14 +389,19 @@ function EventFormBody() {
 					inputMode="numeric"
 					min={1}
 					step={1}
-					className={inputClass}
+					{...suggested("capacity", "event-capacity", inputClass)}
 					value={values.capacity}
 					onChange={(e) => set("capacity", e.target.value)}
 				/>
 			</Field>
 
 			<fieldset className="space-y-2">
-				<legend className="q-eyebrow">{t.agenda.entry}</legend>
+				<legend className="q-eyebrow flex flex-wrap items-center gap-x-2 gap-y-1">
+					{t.agenda.entry}
+					{prefill.isSuggested("isFree") && (
+						<SuggestedTag fieldId="event-entry" />
+					)}
+				</legend>
 				<div className="q-seg">
 					<button
 						type="button"
@@ -343,14 +425,18 @@ function EventFormBody() {
 			</fieldset>
 
 			{!values.isFree && (
-				<Field id="event-price" label={t.agenda.fieldPrice}>
+				<Field
+					id="event-price"
+					label={t.agenda.fieldPrice}
+					suggested={prefill.isSuggested("price")}
+				>
 					<input
 						id="event-price"
 						type="number"
 						inputMode="numeric"
 						min={1}
 						step={500}
-						className={inputClass}
+						{...suggested("price", "event-price", inputClass)}
 						value={values.price}
 						onChange={(e) => set("price", e.target.value)}
 						placeholder={t.agenda.pricePlaceholder}

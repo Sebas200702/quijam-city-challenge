@@ -1,14 +1,22 @@
-// Agenda: upcoming community events grouped by day, with search and categories.
+// Agenda: upcoming community events grouped by day, with search, categories
+// and a date filter. The filters live in the URL (?q=&categoria=&fecha=) so a
+// link or Quillart AI can open the agenda already filtered.
 
 import { Plus, Search } from "lucide-react";
 import { useEffect, useState } from "react";
-import { EVENT_CATEGORY_LABELS } from "../../lib/community/community-labels";
+import { matchesWhen } from "../../lib/community/agenda-when";
+import {
+	EVENT_CATEGORY_LABELS,
+	formatEventDay,
+} from "../../lib/community/community-labels";
 import { isoToBogotaLocal } from "../../lib/community/community-rules";
 import type {
 	CommunityEvent,
 	EventCategory,
 } from "../../lib/community/community-types";
 import { useT } from "../../lib/i18n/use-language";
+import { AGENDA_SCHEMA } from "../../lib/url-state/schemas";
+import { useUrlState } from "../../lib/url-state/use-url-state";
 import { AskQuillartButton } from "../assistant/ask-quillart-button";
 import { CommunityShell } from "./community-shell";
 import { EmptyState, Loaded, PageTitle } from "./community-ui";
@@ -60,8 +68,14 @@ export interface AgendaPageProps {
 export default function AgendaPage({ aiHref }: AgendaPageProps) {
 	const t = useT();
 	const { profile } = useSession();
-	const [search, setSearch] = useState("");
-	const [category, setCategory] = useState<EventCategory | null>(null);
+	const [filters, setFilters] = useUrlState(AGENDA_SCHEMA);
+	const search = filters.q;
+	const category: EventCategory | null = filters.categoria || null;
+	const when = filters.fecha;
+	const setCategory = (value: EventCategory | null) =>
+		setFilters({ categoria: value ?? "" });
+	const setWhen = (value: string) =>
+		setFilters({ fecha: value === when ? "" : value });
 	const query = useDebounced(search.trim());
 
 	const { state } = useLoad(
@@ -81,7 +95,14 @@ export default function AgendaPage({ aiHref }: AgendaPageProps) {
 		["events"],
 	);
 
-	const filtering = query !== "" || category !== null;
+	const filtering = query !== "" || category !== null || when !== "";
+	const whenOptions: [string, string][] = [
+		["hoy", t.agenda.whenToday],
+		["manana", t.agenda.whenTomorrow],
+		["finde", t.agenda.whenWeekend],
+	];
+	if (/^\d{4}-/.test(when))
+		whenOptions.push([when, formatEventDay(`${when}T17:00:00Z`)]);
 	const publishLink = (
 		<a href="/agenda/nuevo" className="q-btn q-btn--primary">
 			<Plus size={18} aria-hidden="true" />
@@ -118,7 +139,7 @@ export default function AgendaPage({ aiHref }: AgendaPageProps) {
 						id="agenda-search"
 						type="search"
 						value={search}
-						onChange={(event) => setSearch(event.target.value)}
+						onChange={(event) => setFilters({ q: event.target.value })}
 						placeholder={t.agenda.searchPlaceholder}
 						autoComplete="off"
 					/>
@@ -142,10 +163,32 @@ export default function AgendaPage({ aiHref }: AgendaPageProps) {
 						/>
 					))}
 				</fieldset>
+				<fieldset
+					className="-mx-4 flex min-w-0 gap-2 overflow-x-auto px-4 pb-1 lg:mx-0 lg:flex-wrap lg:px-0"
+					aria-label={t.agenda.filterByDate}
+				>
+					<legend className="q-sr">{t.agenda.when}</legend>
+					<CategoryChip
+						label={t.agenda.whenAny}
+						active={when === ""}
+						onClick={() => setFilters({ fecha: "" })}
+					/>
+					{whenOptions.map(([value, label]) => (
+						<CategoryChip
+							key={value}
+							label={label}
+							active={when === value}
+							onClick={() => setWhen(value)}
+						/>
+					))}
+				</fieldset>
 			</section>
 
 			<Loaded state={state} loadingLabel={t.agenda.loading}>
-				{({ events, placeNames, registered }) => {
+				{({ events: loaded, placeNames, registered }) => {
+					const events = loaded.filter((event) =>
+						matchesWhen(event.startsAt, when),
+					);
 					if (events.length === 0) {
 						return filtering ? (
 							<EmptyState
@@ -155,10 +198,9 @@ export default function AgendaPage({ aiHref }: AgendaPageProps) {
 									<button
 										type="button"
 										className="q-btn q-btn--secondary"
-										onClick={() => {
-											setSearch("");
-											setCategory(null);
-										}}
+										onClick={() =>
+											setFilters({ q: "", categoria: "", fecha: "" })
+										}
 									>
 										{t.agenda.seeAllPlans}
 									</button>
