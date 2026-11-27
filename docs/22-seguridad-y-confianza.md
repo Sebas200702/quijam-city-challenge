@@ -93,6 +93,24 @@ Estado: **hecho en el código** (issue #124: "MFA (TOTP) activado y exigido a la
 
 Efecto al aplicar la migración: las cuentas ciudad que aún no registraron su factor pierden los permisos de ciudad (lectura de datos del tablero, moderación, informe) hasta que entren a `/ciudad` o `/moderacion` y completen el registro. Avisarles antes.
 
+### Orden de despliegue
+
+Hasta aplicar la migración, la base **no** exige `aal2` a las escrituras directas por PostgREST (incluido el cambio de roles en `user_profiles`, política `user_profiles_city_manage`): solo lo exigen las rutas del servidor. Por eso #124 sigue abierto hasta el paso 3.
+
+1. **Desplegar la interfaz y el servidor** (esta rama). Las rutas de ciudad ya piden el segundo factor.
+2. **Cada operador inscribe su factor** entrando a `/ciudad` y escaneando el QR. Hacerlo pronto y confirmarlo con cada persona: mientras una cuenta ciudad no tenga factor, quien conozca solo su contraseña puede inscribir un factor propio y dejar fuera al operador legítimo. Comprobar en Supabase → Authentication → Users que cada cuenta ciudad tiene un factor TOTP verificado.
+3. **Aplicar la migración** `20261128000006_city_mfa_aal2.sql`. Antes, correr las pruebas locales de `supabase/tests/` (casos 7e/7f y 8e/8f cubren ciudad con y sin segundo factor).
+
+### Recuperación si se pierde el autenticador
+
+Cada cuenta ciudad tiene **un solo factor TOTP y no hay códigos de respaldo**. Si el operador pierde el teléfono o borra la app:
+
+1. La persona avisa a quien administra el proyecto de Supabase, por un canal ya conocido (no basta un correo nuevo).
+2. El administrador confirma la identidad por un segundo medio (llamada o en persona).
+3. El administrador borra el factor en Supabase → Authentication → Users → la cuenta → Multi-Factor (o con la API de administración `auth.admin.mfa.deleteFactor`). Solo un administrador puede hacerlo.
+4. El operador entra de nuevo con su contraseña a `/ciudad` e inscribe un factor nuevo de inmediato (ver el riesgo del paso 2 del despliegue). Si hay dudas sobre la contraseña, cambiarla antes.
+5. Dejar registro de quién pidió el cambio, quién lo aprobó y cuándo.
+
 ## Configuración que no está en el código
 
 Hay que hacerla en los paneles de Supabase y Dokploy antes de abrir al público:
