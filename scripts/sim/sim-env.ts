@@ -5,7 +5,9 @@ import { createClient } from "@supabase/supabase-js";
 const url = process.env.PUBLIC_SUPABASE_URL;
 const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
 if (!url || !key) {
-	console.error("Set PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in .env first.");
+	console.error(
+		"Set PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in .env first.",
+	);
 	process.exit(1);
 }
 
