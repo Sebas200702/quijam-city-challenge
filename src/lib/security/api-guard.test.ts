@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
 	guardRequest,
 	RATE_LIMIT_POLICIES,
@@ -148,7 +148,12 @@ describe("guardRequest behind a proxy", () => {
 
 	it("ignores an invalid header name instead of failing every request", async () => {
 		process.env.TRUSTED_CLIENT_IP_HEADER = "CF-Connecting-IP:";
+		const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
 		expect(trustedClientIpHeader()).toBeNull();
+		expect(warn).toHaveBeenCalledWith(
+			expect.stringContaining("TRUSTED_CLIENT_IP_HEADER"),
+		);
+		warn.mockRestore();
 		expect(
 			await guardRequest(viaProxy("203.0.113.5"), "guide-token"),
 		).toBeNull();

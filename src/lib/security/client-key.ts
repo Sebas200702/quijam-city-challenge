@@ -29,6 +29,9 @@ export function hashKey(value: string): string {
 	return createHash("sha256").update(value).digest("hex").slice(0, 16);
 }
 
+/** An HTTP header name (RFC 9110 token). */
+const HEADER_NAME = /^[!#$%&'*+.^_`|~0-9A-Za-z-]+$/;
+
 /**
  * Header that carries the visitor's address when the app runs behind a proxy
  * that sets it (CF-Connecting-IP behind Cloudflare). Read at run time from
@@ -41,13 +44,25 @@ export function trustedClientIpHeader(): string | null {
 			? undefined
 			: process.env.TRUSTED_CLIENT_IP_HEADER
 	)?.trim();
+	if (!value) return null;
 	// Headers.get throws on an invalid name (a pasted "CF-Connecting-IP:"):
-	// ignore it rather than failing every request to the API.
-	return value && HEADER_NAME.test(value) ? value : null;
+	// ignore it rather than failing every request to the API, but say so,
+	// because every visitor then shares the proxy's address as one key.
+	if (!HEADER_NAME.test(value)) {
+		warnInvalidHeaderOnce(value);
+		return null;
+	}
+	return value;
 }
 
-/** An HTTP header name (RFC 9110 token). */
-const HEADER_NAME = /^[!#$%&'*+.^_`|~0-9A-Za-z-]+$/;
+let warnedInvalidHeader = false;
+function warnInvalidHeaderOnce(value: string): void {
+	if (warnedInvalidHeader) return;
+	warnedInvalidHeader = true;
+	console.warn(
+		`[security] TRUSTED_CLIENT_IP_HEADER "${value}" is not a valid header name; rate limits fall back to the socket address.`,
+	);
+}
 
 function readHeader(request: Request, name: string): string | null {
 	const value = request.headers.get(name)?.split(",")[0]?.trim();
