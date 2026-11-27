@@ -134,6 +134,14 @@ Base: la asignación hecha por Sebastián en el tablero. Se completaron los issu
 - **Guía del caso 1:** `trip-planner` de #64 se mantiene para las respuestas multilingües; usa el mismo núcleo del Decisor (reglas duras y puntaje). Mapa y Guía coinciden en el caso 1.
 - **Alerta de arroyos:** cuenta regresiva de #62 y banner de #63 sobre el mapa. Los planificadores duplicados de #62 (`route-options`, `route-recalc`, semilla propia) no se traen.
 
+## Identidad: el intérprete de la ciudad (26 nov 2026)
+
+- El jurado nos catalogó como "gemelo digital". Se define una identidad propia: **QUILLART, el intérprete de la ciudad**. Ver [20-identidad.md](20-identidad.md).
+- Se abandona el lema "sistema nervioso urbano" y la arquitectura pasa a "escuchar, interpretar, acompañar".
+- "Centro de Mando" pasa a "Lo que la ciudad aprende".
+- La demo abre siempre desde el celular de una persona; el tablero y el simulador solo se muestran al cierre, como impacto.
+- El intérprete trabaja en dos direcciones y le da el mismo peso al barranquillero que al visitante: el Mundial es la vitrina y el día a día es el propósito. Respuestas para el equipo en [21-respuestas.md](21-respuestas.md).
+
 ## QR del jurado y presencia en vivo (26 nov 2026)
 
 - **Presencia anónima:** el conteo de jurados y visitantes conectados usa un canal público de Supabase Realtime Presence (`visitor-presence`) con un ID temporal (`vis_...`) en `sessionStorage`, sin registro ni datos personales. La identidad del conteo es la clave de presencia del canal.

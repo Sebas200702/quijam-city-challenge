@@ -1,8 +1,8 @@
 # Diseño actual
 
-Nombre del producto: **QUILLART** (Quilla + Smart + Art). Lema provisional: Tu guía inteligente por Barranquilla.
+Nombre del producto: **QUILLART** (Quilla + Smart + Art). Identidad: **el intérprete de la ciudad** (ver [20-identidad.md](20-identidad.md)).
 
-Es el sistema nervioso digital de Barranquilla como sede del Mundial: turismo inteligente, cartografía en tiempo real, un guía conversacional (**Quillart AI**) y un motor de decisiones urbanas (**Decision Engine**).
+Interpreta el saber local de Barranquilla para quien la visita en el Mundial: el idioma, el precio justo, el peligro de los arroyos y el barrio. Lo hace con un guía conversacional (**Quillart AI**), un motor de decisiones (**Decisor**) y una red de anfitriones en la calle. No es un gemelo digital.
 
 ## Problema central
 
@@ -14,23 +14,23 @@ En 2034 Barranquilla recibe más visitantes de los que su información y sus ser
 2. **Red de anfitriones y negocios verificados:** duplas de adulto mayor y joven bilingüe; comités de barrio.
 3. **Plataforma:** aplicación web para el visitante, QR en paraderos y estaciones, tablero para la ciudad.
 
-## Arquitectura: sentidos, cerebro, músculos
+## Arquitectura: escuchar, interpretar, acompañar
 
-- **Sentidos (captar):** datos abiertos institucionales, clima y arroyos, reportes de actores verificados.
-- **Cerebro (decidir):** tres agentes.
+- **Escuchar:** datos abiertos institucionales, clima y arroyos, y lo que saben y reportan actores verificados (anfitriones, vendedores, visitantes).
+- **Interpretar:** tres agentes.
   - **Guía:** asistente conversacional multilingüe; también traduce la jerga costeña.
   - **Recomendador:** sugiere qué hacer según los gustos del visitante; prioriza eventos ambientales y negocios de barrio.
   - **Decisor:** modelo de decisión de pesos abiertos (OpenJev). Elige la mejor ruta para el visitante y propone a la ciudad a dónde desviar multitudes.
-- **Músculos (actuar):** aplicación web, QR y WhatsApp, tablero de ciudad, anfitriones en calle.
+- **Acompañar:** aplicación web, QR y WhatsApp, anfitriones en calle y, para la ciudad, "Lo que la ciudad aprende".
 
 ## Sistema de diseño (QUILLART Design System)
 
-Dirección estética: **Tropical Cyber-Clean**, la calidez del Caribe con la precisión de un centro de mando.
+Dirección estética: **Tropical Cyber-Clean**, la calidez del Caribe con la precisión de un buen anfitrión.
 
 **Modos de la plataforma**
 
 - **Turista** (claro por defecto, también oscuro): mapa + tarjeta de punto de interés + Quillart AI. Lenguaje cercano, una acción primaria por vista; permite habla local ("trancón", "¡Ajá!").
-- **Centro de Mando** (recomendado oscuro): mapa con tráfico, tarjetas de decisión, KPIs, badge EN VIVO. Denso y sobrio, sin habla local.
+- **Lo que la ciudad aprende** (antes "Centro de Mando"; recomendado oscuro): mapa con tráfico, tarjetas de decisión, KPIs, badge EN VIVO. Denso y sobrio, sin habla local.
 
 **Principios**
 
