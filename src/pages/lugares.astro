@@ -1,0 +1,11 @@
+---
+import { PlacesPage } from "../components/community/places-page";
+import BaseLayout from "../layouts/base-layout.astro";
+import { homeContent } from "../lib/home-content";
+
+const { aiHref } = homeContent;
+---
+
+<BaseLayout title="Lugares y naturaleza · QUILLART">
+	<PlacesPage client:only="react" aiHref={aiHref} />
+</BaseLayout>
