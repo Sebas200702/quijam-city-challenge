@@ -1,25 +1,43 @@
 import {
 	Bus,
 	Droplets,
+	Languages,
 	type LucideIcon,
 	Moon,
 	Search,
+	SearchX,
 	Store,
 	Sun,
+	WifiOff,
 } from "lucide-react";
 import { useId, useState } from "react";
-import type { StatusTone } from "../../lib/corridor/corridor-types";
+import type {
+	CorridorDataSource,
+	StatusTone,
+} from "../../lib/corridor/corridor-types";
+import { MAP_COPY, type MapCopy, type MapLang } from "./map-chrome-copy";
+import "./map-chrome.css";
 import type { LayerKey } from "./map-layers";
 
 const LAYER_TOGGLES: {
 	key: LayerKey;
-	label: string;
+	label: (copy: MapCopy) => string;
 	tone: StatusTone;
 	Icon: LucideIcon;
 }[] = [
-	{ key: "stops", label: "Paraderos", tone: "green", Icon: Bus },
-	{ key: "floodZones", label: "Arroyos", tone: "red", Icon: Droplets },
-	{ key: "businesses", label: "Negocios", tone: "gold", Icon: Store },
+	{ key: "stops", label: (c) => c.layerStops, tone: "green", Icon: Bus },
+	{
+		key: "floodZones",
+		label: (c) => c.layerFlood,
+		tone: "red",
+		Icon: Droplets,
+	},
+	{
+		key: "businesses",
+		label: (c) => c.layerBusinesses,
+		tone: "gold",
+		Icon: Store,
+	},
 ];
 
 export type Theme = "light" | "dark";
@@ -33,9 +51,20 @@ interface MapHeaderProps {
 	visible: Record<LayerKey, boolean>;
 	counts: Record<LayerKey, number>;
 	onToggle: (key: LayerKey) => void;
+	/** Copy language. Defaults to Spanish. */
+	lang?: MapLang;
+	/** Shows the one-tap language button when given. */
+	onToggleLang?: () => void;
+	/** "seed" means Supabase is out of reach: shows the offline badge. */
+	source?: CorridorDataSource;
+	/** The screen's single "datos de referencia" tag for the corridor seed (rule 9). Defaults to true. */
+	showReferenceTag?: boolean;
 }
 
-/** QUILLART search bar (q-search) and layer chips (q-chip) over the map. */
+/**
+ * Compact header over the map, reachable with one thumb: QUILLART search bar
+ * (q-search), layer chips (q-chip) and the screen's single "datos de referencia" tag.
+ */
 export function MapHeader({
 	pointNames,
 	onSearch,
@@ -44,7 +73,12 @@ export function MapHeader({
 	visible,
 	counts,
 	onToggle,
+	lang = "es",
+	onToggleLang,
+	source,
+	showReferenceTag = true,
 }: MapHeaderProps) {
+	const copy = MAP_COPY[lang];
 	const listId = useId();
 	const [query, setQuery] = useState("");
 	const [missed, setMissed] = useState<string | null>(null);
@@ -57,24 +91,28 @@ export function MapHeader({
 	return (
 		<>
 			<form
-				className="q-search"
-				aria-label="Buscar en el corredor"
+				className="q-search mc-search"
+				aria-label={copy.searchForm}
 				onSubmit={submit}
 			>
 				<span className="q-logo__tile corridor-search__logo" aria-hidden="true">
 					<span className="q-star" />
 				</span>
 				<label htmlFor={`${listId}-input`} className="q-sr">
-					Buscar un paradero, arroyo o negocio
+					{copy.searchLabel}
 				</label>
 				<input
 					id={`${listId}-input`}
 					type="search"
 					list={listId}
-					placeholder="¿Para dónde vas?"
+					placeholder={copy.searchPlaceholder}
 					autoComplete="off"
+					enterKeyHint="search"
 					value={query}
-					onChange={(event) => setQuery(event.target.value)}
+					onChange={(event) => {
+						setQuery(event.target.value);
+						if (missed) setMissed(null);
+					}}
 				/>
 				<datalist id={listId}>
 					{pointNames.map((name) => (
@@ -83,14 +121,23 @@ export function MapHeader({
 				</datalist>
 				<button type="submit" className="q-btn q-btn--ghost q-btn--icon">
 					<Search size={20} strokeWidth={1.75} aria-hidden="true" />
-					<span className="q-sr">Buscar</span>
+					<span className="q-sr">{copy.searchButton}</span>
 				</button>
+				{onToggleLang && (
+					<button
+						type="button"
+						className="q-btn q-btn--ghost mc-lang"
+						aria-label={copy.langButton}
+						onClick={onToggleLang}
+					>
+						<Languages size={18} strokeWidth={1.75} aria-hidden="true" />
+						<span aria-hidden="true">{lang.toUpperCase()}</span>
+					</button>
+				)}
 				<button
 					type="button"
 					className="q-btn q-btn--ghost q-btn--icon"
-					aria-label={
-						theme === "light" ? "Usar tema oscuro" : "Usar tema claro"
-					}
+					aria-label={theme === "light" ? copy.themeToDark : copy.themeToLight}
 					onClick={onToggleTheme}
 				>
 					{theme === "light" ? (
@@ -101,12 +148,20 @@ export function MapHeader({
 				</button>
 			</form>
 
-			<p className="corridor-search-miss" role="status">
-				{missed ? `No encontramos «${missed}» en el corredor.` : ""}
-			</p>
+			{/* Always mounted so screen readers hear the miss when it appears. */}
+			<div className="mc-miss-region" role="status">
+				{missed && (
+					<p className="mc-miss">
+						<SearchX size={18} strokeWidth={1.75} aria-hidden="true" />
+						<span>
+							<strong>{copy.searchMiss(missed)}</strong> {copy.searchTry}
+						</span>
+					</p>
+				)}
+			</div>
 
 			<fieldset className="corridor-chips">
-				<legend className="q-sr">Capas del mapa</legend>
+				<legend className="q-sr">{copy.layers}</legend>
 				{LAYER_TOGGLES.map(({ key, label, tone, Icon }) => (
 					<button
 						key={key}
@@ -116,11 +171,25 @@ export function MapHeader({
 						onClick={() => onToggle(key)}
 					>
 						<Icon size={18} strokeWidth={1.75} aria-hidden="true" />
-						{label}
+						{label(copy)}
 						<span className="corridor-chip__count">{counts[key]}</span>
 					</button>
 				))}
 			</fieldset>
+
+			{(showReferenceTag || source === "seed") && (
+				<div className="mc-meta">
+					{showReferenceTag && (
+						<span className="q-sim-tag">{copy.referenceTag}</span>
+					)}
+					{source === "seed" && (
+						<span className="q-badge q-badge--neutral mc-offline">
+							<WifiOff size={14} strokeWidth={1.75} aria-hidden="true" />
+							{copy.offline}
+						</span>
+					)}
+				</div>
+			)}
 		</>
 	);
 }

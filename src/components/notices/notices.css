@@ -1,0 +1,60 @@
+/* Notice slot and arroyo modal: layout on top of QUILLART .q-alert (design-system/quillart.css). */
+
+.q-notice-slot:empty {
+	display: none;
+}
+
+/* Rule 7: every target at least 44px, also the small action buttons. */
+.q-notice .q-btn {
+	min-height: 44px;
+}
+
+.q-notice__illus {
+	flex: none;
+	align-self: center;
+	width: 72px;
+}
+
+.q-notice__illus svg,
+.q-notice-modal__illus svg {
+	display: block;
+	width: 100%;
+	height: auto;
+}
+
+.q-notice-modal__head {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+}
+
+.q-notice-modal__illus {
+	flex: none;
+	width: 132px;
+}
+
+.q-notice-modal__eyebrow {
+	color: var(--red-text);
+}
+
+.q-notice-modal__timer {
+	margin: 6px 0 0;
+	font-family: var(--font-display);
+	font-size: 32px;
+	line-height: 36px;
+	font-weight: 700;
+	font-variant-numeric: tabular-nums;
+	color: var(--red-text);
+}
+
+.q-notice-band {
+	border-radius: 0;
+	border-bottom: 2px solid var(--red);
+}
+
+@media (min-width: 600px) {
+	.q-notice-modal__illus {
+		width: 160px;
+	}
+}

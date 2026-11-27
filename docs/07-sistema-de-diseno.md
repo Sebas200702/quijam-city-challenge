@@ -116,10 +116,10 @@ Reglas: nunca blanco sobre oro; como texto, rojo y verde usan su variante
 
 | Componente | Clases | Notas |
 |---|---|---|
-| Botón | `.q-btn` + `--primary` `--secondary` `--alert` `--ghost`, `--sm` `--lg` `--icon` `--block` | Píldora, mínimo 48px. Primary una vez por vista; Alert solo para seguridad o acciones irreversibles. Carga: `aria-busy="true"` y la estrella |
+| Botón | `.q-btn` + `--primary` `--secondary` `--alert` `--ghost`, `--sm` `--lg` `--icon` `--block` | Píldora, 48px de alto (`--sm` 44px, `--lg` 56px); nunca menos de 44px. Primary una vez por vista; Alert solo para seguridad o acciones irreversibles. Carga: `aria-busy="true"` y la estrella |
 | Badge | `.q-badge` + `--live` `--high` `--optimal` `--alert` `--event` `--active` `--neutral`, `--solid` | Una o dos palabras en mayúsculas. Máximo dos juntos |
 | Densidad | `.q-meter` + `--green` `--gold` `--red` | Verde < 60 ≤ oro < 85 ≤ rojo. `role="meter"` y la palabra de estado |
-| Segmentado | `.q-seg`, `.q-seg__opt.is-on` | Modo, tema, idioma. Botones con `aria-pressed` |
+| Segmentado | `.q-seg`, `.q-seg__opt.is-on` | Modo, tema, idioma. Botones con `aria-pressed`, cada opción de 44px de alto como mínimo |
 | Header | `.q-header` | Logo, modo (Turista / Lo que la ciudad aprende), tema, idioma |
 | Card | `.q-card` + `--raised` `--frame` `--active` `--dismissed` | Cabecera, cuerpo y pie con `__head` `__body` `__foot` |
 | Pin de mapa | `.q-pin` + `--fluid` `--event` `--alert`, `.is-selected` | Glifo propio: flechas, estrella, signo de exclamación |
@@ -135,18 +135,19 @@ Revertir. Toda decisión se puede revertir.
 
 ## Componentes de navegación por rol (issue #56)
 
-Sostienen las reglas de UX de la épica #57 y la arquitectura de
-[20-arquitectura-de-informacion.md](20-arquitectura-de-informacion.md). Solo
+Sostienen las reglas de UX de la épica #57 (con las reglas 2, 5 y 9 actualizadas
+el 27 nov en la épica #79) y la arquitectura de
+[26-arquitectura-de-informacion.md](26-arquitectura-de-informacion.md). Solo
 usan tokens existentes: ningún color nuevo.
 
 | Componente | Clases | Cuándo usarlo |
 |---|---|---|
-| Tu siguiente paso | `.q-next-step`, `__head` `__eyebrow` `__title` `__why` `__facts` | La única tarjeta de acción en la pantalla de inicio del visitante, del vendedor y del anfitrión. Un título con verbo, una frase de por qué y un solo `.q-btn--primary.q-btn--block` |
+| Tu siguiente paso | `.q-next-step`, `__head` `__eyebrow` `__title` `__why` `__facts` | Tarjeta de acción concreta: dentro de la conversación de Quillart AI o del mapa (`/mapa`) para la persona, y como inicio del vendedor y del anfitrión. Un título con verbo, una frase de por qué y un solo `.q-btn--primary.q-btn--block` |
 | Aviso | `.q-alert` + `--info` `--safe` `--alert`, `__icon` `__body` `__title` `__text` `__actions` `__close` | Tarjeta discreta para todo lo que no es seguridad: desvío, anfitrión en camino, reporte enviado. Máximo uno visible a la vez |
 | Aviso de seguridad | `.q-backdrop` > `.q-alert.q-alert--alert.q-alert--modal` | Solo para un arroyo activo que toca la ruta o la zona del visitante. Es la única interrupción permitida |
 | Hoja inferior | `.q-sheet` + `--dock` `--peek` `--expanded`, `__grab` `__handle` `__head` `__body` `__more` | Detalle sobre el mapa (ruta, negocio, menú secundario). En `--peek` se oculta `__more` |
 | Estado | `.q-state` + `--loading` `--empty` `--error` `--offline`, `__glyph` `__title` `__text` `__action` | Ocupa el área completa cuando no hay contenido que mostrar. Cada pantalla tiene los cuatro |
-| Datos simulados | `.q-sim-tag` | Una vez por pantalla, cerca del mapa o del título. Nunca en cada tarjeta |
+| Datos de referencia | `.q-sim-tag` | Texto "Datos de referencia". Solo sobre la semilla del corredor (paraderos, tarifas, arroyos, conteos), una vez por pantalla, cerca del mapa o del título. Nunca en cada tarjeta ni sobre lo que publican las personas (regla 9). El texto lo pone el componente; la clase solo da la forma |
 | Ver detalles | `.q-details` (sobre `<details>`), `__body` | Probabilidades, confianza y fuentes del Decisor. Cerrado por defecto |
 
 ### Tu siguiente paso
@@ -202,9 +203,11 @@ usan tokens existentes: ningún color nuevo.
 ### Accesibilidad común
 
 - Áreas táctiles de 44 px o más (botones, cerrar, `summary`, `__grab`).
-- Foco visible con `--focus` en todos los controles nuevos.
-- Con `prefers-reduced-motion: reduce` se apagan las transiciones de la hoja y
-  del chevron de `.q-details`, además de las animaciones existentes.
+- Foco visible con `--focus` en todos los controles, incluidos `select`,
+  `textarea` y `summary`.
+- Con `prefers-reduced-motion: reduce` se apagan todas las transiciones de los
+  componentes (botones, chips, segmentado, pines, medidores, progreso del viaje,
+  hoja, cerrar de la alerta y chevron de `.q-details`) y todas las animaciones.
 - Contraste: texto `--ink` y `--ink-muted` sobre `--gold-soft`, `--green-soft`
   y `--red-soft` supera 4,5:1 en ambos temas (calculado, falta medir).
 

@@ -176,6 +176,25 @@ Cambios de producto frente a la épica #57:
 - OpenJev pasó de decidir solo rutas y desvíos a moderar contenido y enrutar la conversación entre agentes.
 - El Guía pasó de un chat con un solo agente a un orquestador con seis agentes especializados.
 
+## Flujo de cobro abusivo (26 nov 2026)
+
+- **ID generado en servidor sin romper RLS:** `POST /api/reports` genera `reportId` con `crypto.randomUUID()` antes de insertar en `overcharge_reports` (sin `.select()`), preservando la política anónima de RLS mientras permite emitir `{ type: "cobro_abusivo", reportId }` en el canal compartido `city-events`.
+- **Una sola fuente de tarifas:** el formulario dedicado `/reportar`, el formulario dentro del Guía y la bandeja del tablero consumen los trayectos y tarifas oficiales desde `route_segments` (con respaldo en la semilla local marcada como datos de referencia).
+- **Vocabulario consistente en bandeja:** el valor de base de datos `'open'` se mantiene sin migración destructiva y se muestra en la interfaz como **Nuevo**, siguiendo el flujo **Nuevo → En revisión → Resuelto** que actualiza en vivo el indicador de reportes resueltos en `/ciudad`.
+
+## Arquitectura de información alineada con la dirección del 27 nov (27 nov 2026)
+
+Ver [26-arquitectura-de-informacion.md](26-arquitectura-de-informacion.md). Issues #56 y #140. Trae a `main` el documento de #137 (que se fusionó en `feat/quillart-ux-components` y no llegó a `main`) y lo reescribe con las reglas 2, 5 y 9 actualizadas.
+
+- **Número 26:** sigue la propuesta de #141 (20 y 21 repetidos). Los enlaces a los demás documentos usan los nombres actuales; #141 los actualiza al renumerar.
+- **Inicio de la persona = Quillart AI en `/inicio`.** `/` es la landing pública. El mapa, la tarjeta "tu siguiente paso" y el antiguo Guía dejan de ser el inicio: el mapa es un apartado (`/mapa`) y una tarjeta de sección dentro del inicio; "tu siguiente paso" es una tarjeta dentro de la conversación o del mapa; el Guía es Quillart AI. El mapa es la vista de lo que responde el agente de Movilidad, no un segundo asistente.
+- **Cinco superficies, igual que en #137:** persona (`/inicio`), vendedor (`/vendedor`, #49), anfitrión (`/anfitrion`, #50), ciudad (`/ciudad` y `/moderacion`) y presentador (`/presentador`, #41). Se mantienen el presupuesto de interrupciones, la matriz superficie × `city-events`, el glosario y el guion de prueba con 2 personas.
+- **Entrada:** se navega sin cuenta. La cuenta de la comunidad (`profiles`) se pide solo para participar; `is_verified_organizer` es una marca de confianza que pone la ciudad, no un rol; el rol operativo sigue en `user_profiles.role` (`visitor`, `vendor`, `city`). Ya no se propone sesión anónima obligatoria para la persona.
+- **Roles:** `host` y `presenter` quedan como propuesta para #50 y #41. La guardia de rutas se suma al `src/middleware.ts` existente con `sequence()`, sin tocar las cabeceras de seguridad, y necesita la sesión en cookies (`@supabase/ssr`); mientras tanto siguen las puertas del cliente y la validación en las API.
+- **Datos de referencia:** `.q-sim-tag` se documenta con el texto "Datos de referencia", solo sobre la semilla del corredor y una vez por pantalla. El texto lo ponen los componentes (no vive en el CSS); en `main` ya dice "Datos de referencia" en todos. El simulador se llama "Ensayo de escenarios" y el tablero "Lo que la ciudad aprende".
+- **`city-events`:** sin tipos nuevos. `cobro_abusivo` lo publica hoy el navegador después de que `POST /api/reports` devuelve el `reportId` (#142); cuando el canal sea privado lo publicará el servidor. `desvio` sigue como propuesta.
+- **Glosario:** los estados del reporte de cobro son los del código: Nuevo, En revisión, Resuelto, Descartado (reemplaza la línea de #137 que pedía "Abierto"). Se suman Quillart AI, agente, Confirmar, cuenta, organizador verificado, sin confirmar, moderación, datos de referencia y Ensayo de escenarios.
+
 ## Portal de datos abiertos (27 nov 2026)
 
 - **Seis conjuntos con separación de origen (regla 9):** `/datos` y `/api/datos/` publican bajo licencia **CC BY 4.0** dos conjuntos de la plataforma ciudadana (`lugares` y `eventos` publicados) y cuatro conjuntos del corredor piloto (`paraderos`, `tarifas-y-tramos`, `arroyos` y `negocios-verificados`), marcados explícitamente como **datos de referencia** (no como datos oficiales).

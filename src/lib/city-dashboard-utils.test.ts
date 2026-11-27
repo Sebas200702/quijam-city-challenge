@@ -5,13 +5,25 @@ import type {
 	ZoneVisitorCount,
 } from "./city-dashboard-types";
 import {
+	buildDimensionKpis,
+	CITY_MODE_BADGES,
 	calculateOccupancyPercent,
+	calculateResolvedReportsRate,
 	calculateTotalVisitors,
+	countVerifiedOpenBusinesses,
+	crowdDotCount,
+	filterReportsByStatus,
 	formatCop,
 	formatFreshnessLabel,
+	formatLastDataLabel,
+	formatRelativeReportTime,
 	getActiveFloodAlerts,
+	getConnectionView,
 	getDensityVisualState,
+	getReportStatusActions,
 	getSaturatedZones,
+	REPORT_STATUS_LABELS,
+	SATURATION_GLYPHS,
 	summarizeReportsByStatus,
 } from "./city-dashboard-utils";
 
@@ -185,5 +197,129 @@ describe("city-dashboard-utils", () => {
 		expect(formatFreshnessLabel("2026-11-26T18:00:00Z", base + 125000)).toBe(
 			"Actualizado hace 2 min",
 		);
+	});
+
+	it("uses consistent Spanish labels for inbox states and calculates resolved rate", () => {
+		expect(REPORT_STATUS_LABELS).toEqual({
+			open: "Nuevo",
+			in_review: "En revisión",
+			resolved: "Resuelto",
+			dismissed: "Descartado",
+		});
+
+		const summary = summarizeReportsByStatus(sampleReports);
+		expect(calculateResolvedReportsRate(summary)).toBe(33);
+		expect(
+			calculateResolvedReportsRate({
+				open: 0,
+				in_review: 0,
+				resolved: 0,
+				dismissed: 0,
+				total: 0,
+			}),
+		).toBe(0);
+	});
+
+	it("filters reports by status and returns valid workflow transitions", () => {
+		expect(filterReportsByStatus(sampleReports, "all")).toHaveLength(3);
+		expect(
+			filterReportsByStatus(sampleReports, "open").map((r) => r.id),
+		).toEqual(["r1"]);
+		expect(
+			filterReportsByStatus(sampleReports, "in_review").map((r) => r.id),
+		).toEqual(["r2"]);
+		expect(
+			filterReportsByStatus(sampleReports, "resolved").map((r) => r.id),
+		).toEqual(["r3"]);
+
+		expect(
+			getReportStatusActions("open").map((action) => action.nextStatus),
+		).toEqual(["in_review", "resolved"]);
+		expect(
+			getReportStatusActions("in_review").map((action) => action.nextStatus),
+		).toEqual(["resolved", "dismissed"]);
+		expect(
+			getReportStatusActions("resolved").map((action) => action.nextStatus),
+		).toEqual(["in_review"]);
+	});
+
+	it("formats relative report arrival times in Spanish", () => {
+		const base = new Date("2026-11-26T18:00:00Z").getTime();
+		expect(
+			formatRelativeReportTime("2026-11-26T18:00:00Z", base + 20_000),
+		).toBe("Hace un momento");
+		expect(
+			formatRelativeReportTime("2026-11-26T18:00:00Z", base + 5 * 60_000),
+		).toBe("Hace 5 min");
+		expect(
+			formatRelativeReportTime("2026-11-26T18:00:00Z", base + 2 * 3_600_000),
+		).toBe("Hace 2 h");
+	});
+});
+
+describe("city dashboard shell helpers", () => {
+	it("labels the city mode badge in plain words", () => {
+		expect(CITY_MODE_BADGES.world_cup).toBe("Modo Mundial");
+	});
+
+	it("pairs each density tone with a shape glyph", () => {
+		expect(SATURATION_GLYPHS).toEqual({ green: "○", gold: "◐", red: "●" });
+	});
+
+	it("formats the last known data label for the offline state", () => {
+		const base = new Date("2026-11-26T18:00:00Z").getTime();
+		expect(formatLastDataLabel("2026-11-26T18:00:00Z", base + 30000)).toBe(
+			"Último dato hace 30 s",
+		);
+		expect(formatLastDataLabel("2026-11-26T18:00:00Z", base + 480000)).toBe(
+			"Último dato hace 8 min",
+		);
+	});
+
+	it("treats a lost realtime channel or network as offline", () => {
+		expect(getConnectionView("live", true)).toBe("live");
+		expect(getConnectionView("connecting", true)).toBe("connecting");
+		expect(getConnectionView("error", true)).toBe("offline");
+		expect(getConnectionView("live", false)).toBe("offline");
+	});
+
+	it("caps crowd dots so the map stays legible", () => {
+		expect(crowdDotCount(0)).toBe(0);
+		expect(crowdDotCount(4200)).toBe(42);
+		expect(crowdDotCount(90000)).toBe(48);
+	});
+
+	it("counts only verified businesses that are open", () => {
+		expect(
+			countVerifiedOpenBusinesses([
+				{ is_verified: true, is_open: true },
+				{ is_verified: true, is_open: false },
+				{ is_verified: false, is_open: true },
+			]),
+		).toBe(1);
+	});
+
+	it("builds one indicator per dimension from loaded data", () => {
+		const kpis = buildDimensionKpis({
+			zones: sampleZones,
+			reports: sampleReports,
+			floodZones: sampleFloods,
+			connectedVisitors: 12,
+			qrVisitors: 4,
+			verifiedOpenBusinesses: 9,
+		});
+		expect(kpis.map((kpi) => kpi.key)).toEqual([
+			"territorio",
+			"sostenibilidad",
+			"ciudad_inteligente",
+			"ciudadania",
+			"economia",
+		]);
+		expect(kpis[0].caption).toContain("1 zona saturada");
+		expect(kpis[1].value).toBe("2");
+		expect(kpis[1].tone).toBe("bad");
+		expect(kpis[3]).toMatchObject({ value: "1", unit: "de 3", tone: "bad" });
+		expect(kpis[3].caption).toBe("reportes resueltos · 33 %");
+		expect(kpis[4].value).toBe("9");
 	});
 });
