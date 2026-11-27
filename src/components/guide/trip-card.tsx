@@ -13,12 +13,12 @@ import {
 } from "lucide-react";
 import type { TransportMode } from "../../lib/corridor/corridor-types";
 import { formatFare, type GuideLanguage } from "../../lib/guide/guide-local";
+import { useT } from "../../lib/i18n/use-language";
 import {
 	DESTINATIONS,
 	type TripPlan,
 	VISITOR_ORIGIN,
 } from "../../lib/trip/trip-planner";
-import { guideText } from "./guide-text";
 
 const MODE_ICONS: Record<TransportMode, LucideIcon> = {
 	transmetro: TramFront,
@@ -29,53 +29,6 @@ const MODE_ICONS: Record<TransportMode, LucideIcon> = {
 };
 
 const STROKE = 1.75;
-
-/** Card-only copy. Same rule as guide-text: Spanish for Spanish, English for the rest. */
-const COPY = {
-	es: {
-		eyebrow: "Ruta propuesta",
-		showRoute: "Ver la ruta",
-		accessible: "Accesible",
-		whyGreen: "Es la opción verde con mejor tiempo y tarifa.",
-		whyFlood: "Evitamos un tramo con alerta de arroyo; esta ruta va seca.",
-		whyTaxi:
-			"No pasa transporte público directo; el taxi verificado es seguro.",
-		noRouteTitle: "Ahora no hay una ruta segura",
-		noRouteText:
-			"Espera en un lugar seco o pregúntale al Guía por otra salida.",
-		taxi: "Taxi verificado",
-		range: "rango justo",
-		details: "Ver detalles",
-		confidence: "Confianza de la ruta",
-		distance: "Distancia",
-		access: "Silla de ruedas",
-		yes: "Sí",
-		no: "No",
-		sources: "Fuente: datos de referencia del corredor y alertas de arroyos.",
-		levels: ["Baja", "Media", "Alta"],
-	},
-	en: {
-		eyebrow: "Suggested route",
-		showRoute: "See the route",
-		accessible: "Accessible",
-		whyGreen: "It is the green option with the best time and fare.",
-		whyFlood: "We avoided a leg with a flood alert; this route stays dry.",
-		whyTaxi:
-			"No direct public transport; the verified taxi is the safe option.",
-		noRouteTitle: "No safe route right now",
-		noRouteText: "Wait somewhere dry or ask the Guide for another way.",
-		taxi: "Verified taxi",
-		range: "fair range",
-		details: "See details",
-		confidence: "Route confidence",
-		distance: "Distance",
-		access: "Wheelchair",
-		yes: "Yes",
-		no: "No",
-		sources: "Source: corridor reference data and flood alerts.",
-		levels: ["Low", "Medium", "High"],
-	},
-} as const;
 
 interface TripCardProps {
 	plan: TripPlan;
@@ -91,8 +44,8 @@ export function TripCard({
 	onShowOnMap,
 	onReport,
 }: TripCardProps) {
-	const text = guideText(language);
-	const copy = language === "es" ? COPY.es : COPY.en;
+	const text = useT().guide;
+	const copy = text.trip;
 	const { green, taxi } = plan;
 	const destination = DESTINATIONS[plan.destination].name;
 	const GreenIcon = green ? MODE_ICONS[green.transport_mode] : CarTaxiFront;

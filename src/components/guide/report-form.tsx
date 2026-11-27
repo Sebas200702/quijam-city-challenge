@@ -1,7 +1,7 @@
 import { CircleAlert, Send, X } from "lucide-react";
 import { useEffect, useId, useRef, useState } from "react";
 import { formatFare, type GuideLanguage } from "../../lib/guide/guide-local";
-import { useLanguage } from "../../lib/i18n/use-language";
+import { useT } from "../../lib/i18n/use-language";
 import {
 	isValidDriverCode,
 	parseFareAmount,
@@ -21,7 +21,6 @@ import {
 	VISITOR_ORIGIN,
 } from "../../lib/trip/trip-planner";
 import { ReportIllustration } from "../reports/report-illustration";
-import { guideText } from "./guide-text";
 
 type Status =
 	| { kind: "idle" }
@@ -43,7 +42,7 @@ export function ReportForm({
 	onClose,
 	onReportSaved,
 }: ReportFormProps) {
-	const text = guideText(useLanguage()).report;
+	const text = useT().guide.report;
 	const id = useId();
 	const [mode, setMode] = useState<ReportTransportMode>("taxi");
 	const [charged, setCharged] = useState("");

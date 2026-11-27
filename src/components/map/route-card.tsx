@@ -18,6 +18,8 @@ import {
 } from "lucide-react";
 import { type ReactNode, useEffect, useState } from "react";
 import type { CorridorStop } from "../../lib/corridor/corridor-types";
+import type { MapMessages } from "../../lib/i18n/dictionaries/map";
+import { useT } from "../../lib/i18n/use-language";
 import type { PlanResponse } from "../../lib/routing/plan-route";
 import type { Itinerary, TransportMode } from "../../lib/routing/routing-types";
 import { AskQuillartButton } from "../assistant/ask-quillart-button";
@@ -29,37 +31,22 @@ import {
 	useOnline,
 } from "./use-route-plan";
 
-const copFormatter = new Intl.NumberFormat("es-CO", {
-	maximumFractionDigits: 0,
-});
-const fare = (cop: number) =>
-	cop === 0 ? "Gratis" : `$${copFormatter.format(cop)}`;
-const clock = new Intl.DateTimeFormat("es-CO", {
-	hour: "2-digit",
-	minute: "2-digit",
-	hour12: false,
-});
+/** Fare in pesos, formatted for the chosen language. */
+const makeFare = (t: MapMessages) => {
+	const formatter = new Intl.NumberFormat(t.locale, {
+		maximumFractionDigits: 0,
+	});
+	return (cop: number) => (cop === 0 ? t.free : `$${formatter.format(cop)}`);
+};
 /** "Estadio Metropolitano (Acceso Norte)" -> "Estadio Metropolitano". */
 const shortName = (name: string) => name.replace(/\s*\(.*\)\s*$/, "");
 
-const REASON_LABEL = {
-	"active-flood": "cruza un arroyo activo",
-	"not-accessible": "no es accesible",
-} as const;
-
-const MODES: Record<
-	TransportMode,
-	{ icon: LucideIcon; label: string; tile: string }
-> = {
-	transmetro: { icon: TramFront, label: "Transmetro", tile: "q-tile--gold" },
-	bus: { icon: Bus, label: "Bus", tile: "q-tile--gold" },
-	taxi_verified: {
-		icon: CarTaxiFront,
-		label: "Taxi verificado",
-		tile: "q-tile--gold",
-	},
-	walk: { icon: Footprints, label: "Camina", tile: "" },
-	bike: { icon: Bike, label: "Bici", tile: "q-tile--green" },
+const MODES: Record<TransportMode, { icon: LucideIcon; tile: string }> = {
+	transmetro: { icon: TramFront, tile: "q-tile--gold" },
+	bus: { icon: Bus, tile: "q-tile--gold" },
+	taxi_verified: { icon: CarTaxiFront, tile: "q-tile--gold" },
+	walk: { icon: Footprints, tile: "" },
+	bike: { icon: Bike, tile: "q-tile--green" },
 };
 
 const STROKE = 1.75;
@@ -144,13 +131,14 @@ function Legs({
 	/** Mentions accessible legs only when the visitor asked for them. */
 	accessible: boolean;
 }) {
+	const t = useT().map;
 	return (
-		<ol className="m-0 flex list-none flex-col gap-2 p-0" aria-label="Tramos">
+		<ol className="m-0 flex list-none flex-col gap-2 p-0" aria-label={t.legs}>
 			{route.legs.map((leg) => {
 				const mode = MODES[leg.mode];
 				const Icon = mode.icon;
-				const to = names.get(leg.destinationStopCode) ?? "tu destino";
-				const from = names.get(leg.originStopCode) ?? "tu punto";
+				const to = names.get(leg.destinationStopCode) ?? t.yourDestination;
+				const from = names.get(leg.originStopCode) ?? t.yourPoint;
 				return (
 					<li key={leg.code} className="flex items-center gap-3">
 						<span
@@ -162,14 +150,19 @@ function Legs({
 						</span>
 						<span className="flex min-w-0 flex-1 flex-col">
 							<b className="text-[15px] leading-5">
-								{mode.label} hacia {to}
+								{t.legTo(t.modes[leg.mode], to)}
 							</b>
 							<small className="q-muted text-[13px] leading-[18px]">
-								Desde {from} · {leg.distanceKm.toLocaleString("es-CO")} km
-								{accessible && leg.isAccessible ? " · accesible" : ""}
+								{t.legFrom(
+									from,
+									leg.distanceKm.toLocaleString(t.locale),
+									accessible && leg.isAccessible,
+								)}
 							</small>
 						</span>
-						<span className="q-num font-semibold">{leg.minutes} min</span>
+						<span className="q-num font-semibold">
+							{t.minutesShort(leg.minutes)}
+						</span>
 					</li>
 				);
 			})}
@@ -190,6 +183,17 @@ export function RouteCard({
 	onStart,
 	showSimTag = true,
 }: RouteCardProps) {
+	const t = useT().map;
+	const fare = makeFare(t);
+	const clock = new Intl.DateTimeFormat(t.locale, {
+		hour: "2-digit",
+		minute: "2-digit",
+		hour12: false,
+	});
+	const reasonLabel = {
+		"active-flood": t.reasonFlood,
+		"not-accessible": t.reasonNotAccessible,
+	} as const;
 	const online = useOnline();
 	const age = usePlanAge(plan);
 	const names = new Map(stops.map((stop) => [stop.code, shortName(stop.name)]));
@@ -212,25 +216,25 @@ export function RouteCard({
 		: Navigation;
 	const badge = route
 		? route.isGreen && route.accessible
-			? "Ruta verde · accesible"
+			? t.badgeGreenAccessible
 			: route.isGreen
-				? "Ruta verde"
+				? t.badgeGreen
 				: route.accessible
-					? "Ruta accesible"
+					? t.badgeAccessible
 					: null
 		: null;
 	const arrival = route
 		? clock.format(new Date(Date.now() + route.durationMinutes * 60_000))
 		: "";
-	const destination = names.get(query.destination) ?? "tu destino";
+	const destination = names.get(query.destination) ?? t.yourDestination;
 
 	let body: ReactNode;
 	if (sameStop) {
 		body = (
 			<StateBlock
 				kind="empty"
-				title="Elige a dónde vas"
-				text="Tu punto de partida y tu destino son el mismo. Cambia uno para ver la ruta."
+				title={t.sameStopTitle}
+				text={t.sameStopText}
 				glyph={<StateArt src="/illustrations/undraw-location-search.svg" />}
 			/>
 		);
@@ -238,12 +242,8 @@ export function RouteCard({
 		body = (
 			<StateBlock
 				kind="loading"
-				title={
-					query.accessibleMode
-						? "Calculando tu ruta accesible"
-						: "Calculando tu ruta"
-				}
-				text="Revisamos tiempo, tarifas y arroyos."
+				title={query.accessibleMode ? t.loadingTitleAccessible : t.loadingTitle}
+				text={t.loadingText}
 				glyph={
 					<span className="q-state__glyph" aria-hidden="true">
 						<span className="q-star q-star--think" />
@@ -255,8 +255,8 @@ export function RouteCard({
 		body = online ? (
 			<StateBlock
 				kind="error"
-				title="No pudimos calcular la ruta"
-				text="Revisa tu señal e inténtalo otra vez."
+				title={t.errorTitle}
+				text={t.errorText}
 				glyph={<StateArt src="/illustrations/live-map.svg" />}
 			>
 				<button
@@ -265,14 +265,14 @@ export function RouteCard({
 					onClick={retry}
 				>
 					<RotateCw size={18} strokeWidth={STROKE} aria-hidden="true" />
-					Reintentar
+					{t.retry}
 				</button>
 			</StateBlock>
 		) : (
 			<StateBlock
 				kind="offline"
-				title="Sin conexión"
-				text="Cuando vuelva la señal calculamos tu ruta. El Guía funciona sin conexión."
+				title={t.offlineTitle}
+				text={t.offlineText}
 				glyph={
 					<span className="q-state__glyph" aria-hidden="true">
 						<WifiOff size={28} strokeWidth={STROKE} />
@@ -284,16 +284,12 @@ export function RouteCard({
 		body = (
 			<StateBlock
 				kind="empty"
-				title={
-					query.accessibleMode
-						? "No hay ruta accesible ahora"
-						: "No hay ruta segura ahora"
-				}
-				text={routeWhy(plan)}
+				title={query.accessibleMode ? t.noRouteAccessible : t.noRouteSafe}
+				text={routeWhy(plan, t)}
 				glyph={<StateArt src="/illustrations/walking.svg" />}
 			>
 				{/* Hands off to the mobility agent in Quillart AI instead of a dead end. */}
-				<AskQuillartButton prompt={`¿Cómo llego a ${destination}?`} />
+				<AskQuillartButton prompt={t.askHowToGet(destination)} />
 			</StateBlock>
 		);
 	} else if (plan && route) {
@@ -306,9 +302,9 @@ export function RouteCard({
 				<div className="flex items-center gap-3">
 					<div className="flex min-w-0 flex-1 flex-col gap-1.5">
 						<h2 className="q-next-step__title" id="route-card-title">
-							Ve a {destination}
+							{t.goTo(destination)}
 						</h2>
-						<p className="q-next-step__why">{routeWhy(plan)}</p>
+						<p className="q-next-step__why">{routeWhy(plan, t)}</p>
 					</div>
 					<span
 						className="q-tile q-tile--green"
@@ -322,20 +318,22 @@ export function RouteCard({
 				<dl className="q-next-step__facts">
 					<div>
 						<dt>
-							<Clock size={13} strokeWidth={STROKE} aria-hidden="true" /> Tiempo
+							<Clock size={13} strokeWidth={STROKE} aria-hidden="true" />{" "}
+							{t.factTime}
 						</dt>
-						<dd>{route.durationMinutes} min</dd>
+						<dd>{t.minutesShort(route.durationMinutes)}</dd>
 					</div>
 					<div>
 						<dt>
 							<Ticket size={13} strokeWidth={STROKE} aria-hidden="true" />{" "}
-							Tarifa de referencia
+							{t.factFare}
 						</dt>
 						<dd>{fare(route.fareCop)}</dd>
 					</div>
 					<div>
 						<dt>
-							<Flag size={13} strokeWidth={STROKE} aria-hidden="true" /> Llegas
+							<Flag size={13} strokeWidth={STROKE} aria-hidden="true" />{" "}
+							{t.factArrival}
 						</dt>
 						<dd>{arrival}</dd>
 					</div>
@@ -352,30 +350,30 @@ export function RouteCard({
 							className="flex-none text-[var(--gold-text)]"
 						/>
 						<span>
-							Taxi verificado: {taxi.durationMinutes} min, tarifa de referencia{" "}
+							{t.taxiBefore(taxi.durationMinutes)}{" "}
 							<strong className="q-num">{fare(taxi.fareCop)}</strong>
 						</span>
 					</p>
 				) : null}
 
 				<details className="q-details">
-					<summary>Ver detalles</summary>
+					<summary>{t.details}</summary>
 					<div className="q-details__body">
 						<dl className="m-0 flex flex-col gap-1.5">
 							{plan.chosenBy === "openjev" ? (
 								<div className="flex justify-between gap-3">
-									<dt>Confianza de la ruta</dt>
+									<dt>{t.confidence}</dt>
 									<dd className="q-num m-0">
-										{confidenceLabel(plan.confidence)}
+										{confidenceLabel(plan.confidence, t)}
 									</dd>
 								</div>
 							) : null}
 							<div className="flex justify-between gap-3">
-								<dt>Cómo la elegimos</dt>
+								<dt>{t.howChosen}</dt>
 								<dd className="m-0 text-right">
 									{plan.chosenBy === "openjev"
-										? "Modelo de decisión OpenJev"
-										: "Tiempo, tarifa y congestión"}
+										? t.chosenByModel
+										: t.chosenByRules}
 								</dd>
 							</div>
 						</dl>
@@ -383,7 +381,7 @@ export function RouteCard({
 							<ul className="m-0 flex list-none flex-col gap-1 p-0">
 								{plan.discarded.map((item) => (
 									<li key={item.id}>
-										Descartada: {item.label} ({REASON_LABEL[item.reason]})
+										{t.discarded(item.label, reasonLabel[item.reason])}
 									</li>
 								))}
 							</ul>
@@ -392,15 +390,16 @@ export function RouteCard({
 							<ul className="m-0 flex list-none flex-col gap-1 p-0">
 								{plan.alternatives.map((item) => (
 									<li key={item.id}>
-										Otra opción: {item.label}, {item.durationMinutes} min,{" "}
-										{fare(item.fareCop)}
+										{t.alternative(
+											item.label,
+											item.durationMinutes,
+											fare(item.fareCop),
+										)}
 									</li>
 								))}
 							</ul>
 						) : null}
-						<p className="m-0">
-							Fuente: datos de referencia del corredor y alertas de arroyos.
-						</p>
+						<p className="m-0">{t.source}</p>
 					</div>
 				</details>
 
@@ -409,26 +408,24 @@ export function RouteCard({
 					className="q-btn q-btn--ghost q-btn--sm min-h-11 justify-start px-3"
 				>
 					<Flag size={16} strokeWidth={STROKE} aria-hidden="true" />
-					¿Te cobraron de más? Reportar cobro abusivo
+					{t.reportOvercharge}
 				</a>
 
 				{!online ? (
 					<p className="q-sm q-muted m-0 flex items-start gap-2">
 						<WifiOff size={16} strokeWidth={STROKE} aria-hidden="true" />
-						Sin conexión: ruta guardada{" "}
-						{age === 0 ? "hace un momento" : `hace ${age} min`}. Puedes seguirla
-						igual.
+						{t.offlineSaved(age)}
 					</p>
 				) : error ? (
 					<p className="q-sm q-muted m-0 flex items-center gap-2">
-						No pudimos actualizar la ruta.
+						{t.updateFailed}
 						<button
 							type="button"
 							className="q-btn q-btn--ghost q-btn--sm"
 							onClick={retry}
 						>
 							<RotateCw size={16} strokeWidth={STROKE} aria-hidden="true" />
-							Reintentar
+							{t.retry}
 						</button>
 					</p>
 				) : null}
@@ -440,13 +437,13 @@ export function RouteCard({
 		<section
 			className="q-next-step corridor-detail route-card"
 			aria-labelledby={route ? "route-card-title" : undefined}
-			aria-label={route ? undefined : "Tu siguiente paso"}
+			aria-label={route ? undefined : t.nextStep}
 		>
 			{alert}
 			<div className="q-next-step__head flex-wrap">
 				<p className="q-next-step__eyebrow whitespace-nowrap">
 					<span className="q-star" aria-hidden="true" />
-					{recalculated ? "Ruta recalculada" : "Tu siguiente paso"}
+					{recalculated ? t.recalculated : t.nextStep}
 				</p>
 				{badge ? (
 					<span className="q-badge q-badge--optimal">
@@ -467,8 +464,8 @@ export function RouteCard({
 			<div className="route-card__fields">
 				<label>
 					<span className="q-sm q-muted inline-flex items-center gap-1">
-						<MapPin size={14} strokeWidth={STROKE} aria-hidden="true" /> Estás
-						en
+						<MapPin size={14} strokeWidth={STROKE} aria-hidden="true" />{" "}
+						{t.youAreAt}
 					</span>
 					<select
 						value={query.origin}
@@ -485,7 +482,8 @@ export function RouteCard({
 				</label>
 				<label>
 					<span className="q-sm q-muted inline-flex items-center gap-1">
-						<Flag size={14} strokeWidth={STROKE} aria-hidden="true" /> Vas a
+						<Flag size={14} strokeWidth={STROKE} aria-hidden="true" />{" "}
+						{t.youGoTo}
 					</span>
 					<select
 						value={query.destination}
@@ -511,13 +509,13 @@ export function RouteCard({
 					}
 				/>
 				<Accessibility size={18} strokeWidth={STROKE} aria-hidden="true" />
-				<span>Necesito una ruta accesible</span>
+				<span>{t.needAccessible}</span>
 			</label>
 
 			<div aria-live="polite">{body}</div>
 
 			{showSimTag ? (
-				<span className="q-sim-tag self-start">Datos de referencia</span>
+				<span className="q-sim-tag self-start">{t.referenceTag}</span>
 			) : null}
 
 			{/* Sticky so the action stays in reach while the card scrolls on phones. */}
@@ -529,7 +527,7 @@ export function RouteCard({
 						onClick={onStart}
 					>
 						<Navigation size={20} strokeWidth={STROKE} aria-hidden="true" />
-						{query.accessibleMode ? "Empezar ruta accesible" : "Empezar ruta"}
+						{query.accessibleMode ? t.startAccessible : t.start}
 					</button>
 				) : null}
 				<div className="route-card__guide">
@@ -539,7 +537,7 @@ export function RouteCard({
 						onClick={onOpenGuide}
 					>
 						<MessageCircle size={20} strokeWidth={STROKE} aria-hidden="true" />
-						Pregúntale al Guía · Ask the Guide
+						{t.askGuideBilingual}
 					</button>
 				</div>
 			</div>

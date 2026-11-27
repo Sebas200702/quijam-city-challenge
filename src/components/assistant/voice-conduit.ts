@@ -1,11 +1,13 @@
 // Voice is only a conduit for Quillart AI: the browser's speech-to-text in
-// (es-CO by default, or the visitor's language) and text-to-speech out. Text
+// (in the interface language) and text-to-speech out. Text
 // always works; when the browser has no support, the hook says so and the
 // chat hides the voice controls.
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { VOICE_LOCALES } from "../../lib/i18n/languages";
+import { messages } from "../../lib/i18n/messages";
+import { getLanguage } from "../../lib/i18n/use-language";
 
-const LANG = "es-CO";
 const SPEAK_KEY = "quillart-read-aloud";
 
 interface RecognitionAlternative {
@@ -83,8 +85,11 @@ function voiceFor(lang: string): SpeechSynthesisVoice | null {
 	);
 }
 
-/** Reads text aloud; `lang` is a BCP 47 tag, Spanish (es-CO) by default. */
-export function speak(text: string, lang: string = LANG): void {
+/** Reads text aloud; `lang` is a BCP 47 tag, the interface language by default. */
+export function speak(
+	text: string,
+	lang: string = VOICE_LOCALES[getLanguage()],
+): void {
 	if (!canSpeak()) return;
 	const clean = speakable(text);
 	if (!clean) return;
@@ -122,7 +127,7 @@ export interface VoiceConduit {
 	listening: boolean;
 	/** What the person is saying, before the final result. */
 	interim: string;
-	/** Spanish message when the microphone failed, or null. */
+	/** Message (in the interface language) when the microphone failed, or null. */
 	error: string | null;
 	/** The browser's error code behind `error` (e.g. "not-allowed"), or null. */
 	errorCode: string | null;
@@ -132,22 +137,31 @@ export interface VoiceConduit {
 	setReadAloud(value: boolean): void;
 }
 
-const ERRORS: Record<string, string> = {
-	"not-allowed": "Necesitamos permiso para usar el micrófono.",
-	"service-not-allowed": "Necesitamos permiso para usar el micrófono.",
-	"audio-capture": "No encontramos un micrófono.",
-	network: "El dictado por voz necesita internet.",
-};
+/** The message for a browser error code, in the language chosen right now. */
+function errorMessage(code: string): string {
+	const text = messages[getLanguage()].guide.voice;
+	switch (code) {
+		case "not-allowed":
+		case "service-not-allowed":
+			return text.micPermission;
+		case "audio-capture":
+			return text.noMic;
+		case "network":
+			return text.needsInternet;
+		default:
+			return text.generic;
+	}
+}
 
 interface VoiceConduitOptions {
-	/** BCP 47 language to listen for; es-CO by default. */
+	/** BCP 47 language to listen for; the interface language by default. */
 	lang?: string;
 }
 
 /** Speech-to-text that calls `onFinal` with what the person said. */
 export function useVoiceConduit(
 	onFinal: (text: string) => void,
-	{ lang = LANG }: VoiceConduitOptions = {},
+	{ lang = VOICE_LOCALES[getLanguage()] }: VoiceConduitOptions = {},
 ): VoiceConduit {
 	const [support, setSupport] = useState({ listen: false, speak: false });
 	const [listening, setListening] = useState(false);
@@ -203,8 +217,7 @@ export function useVoiceConduit(
 			if (event.error !== "no-speech" && event.error !== "aborted")
 				setError({
 					code: event.error,
-					message:
-						ERRORS[event.error] ?? "No pudimos escucharte. Escribe tu mensaje.",
+					message: errorMessage(event.error),
 				});
 		};
 		instance.onend = () => {
@@ -221,7 +234,10 @@ export function useVoiceConduit(
 			instance.start();
 			setListening(true);
 		} catch {
-			setError({ code: "start", message: "No pudimos activar el micrófono." });
+			setError({
+				code: "start",
+				message: messages[getLanguage()].guide.voice.cannotStart,
+			});
 		}
 	}, [lang]);
 

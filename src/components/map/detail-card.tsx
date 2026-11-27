@@ -19,35 +19,28 @@ import {
 	WifiOff,
 	X,
 } from "lucide-react";
-import {
-	type SelectionDetail,
-	STOP_TYPE_LABELS,
-	ZONE_LABELS,
-} from "../../lib/corridor/corridor-selection";
+import type { SelectionDetail } from "../../lib/corridor/corridor-selection";
 import type {
-	BusinessCategory,
 	CorridorDataSource,
 	StatusTone,
-	StopType,
 } from "../../lib/corridor/corridor-types";
-import {
-	CATEGORY_LABELS_EN,
-	MAP_COPY,
-	type MapCopy,
-	type MapLang,
-	SERVICE_HINTS,
-	STOP_TYPE_LABELS_EN,
-	ZONE_LABELS_EN,
-} from "./map-chrome-copy";
+import type { MapMessages } from "../../lib/i18n/dictionaries/map";
+import { useT } from "../../lib/i18n/use-language";
 import "./map-chrome.css";
 import { CorridorArt, HostPairArt, OfflineArt } from "./map-illustrations";
+import {
+	CATEGORY_BY_LABEL,
+	factLabel,
+	STOP_TYPE_BY_LABEL,
+	statusWord,
+	ZONE_BY_LABEL,
+} from "./map-labels";
 import {
 	CATEGORY_ICONS,
 	SERVICE_ICONS,
 	SERVICE_TONES,
 	ServiceTag,
 	STOP_TYPE_ICONS,
-	serviceLabel,
 } from "./service-icon";
 
 const BADGE_CLASS: Record<StatusTone, string> = {
@@ -64,69 +57,34 @@ const BAND_CLASS: Record<StatusTone, string> = {
 	neutral: "q-band--gold",
 };
 
-/** Spanish labels from corridor-selection, read back to pick icons and English copy. */
-const CATEGORY_BY_LABEL: Record<string, BusinessCategory> = {
-	"Comida popular": "food_popular",
-	Artesanías: "crafts",
-	Cultura: "culture",
-	"Evento ambiental": "eco_event",
-	Café: "coffee",
-};
-const STOP_TYPE_BY_LABEL = Object.fromEntries(
-	Object.entries(STOP_TYPE_LABELS).map(([key, label]) => [label, key]),
-) as Record<string, StopType>;
-const ZONE_EN_BY_LABEL = Object.fromEntries(
-	Object.entries(ZONE_LABELS).map(([key, label]) => [
-		label,
-		ZONE_LABELS_EN[key as keyof typeof ZONE_LABELS_EN],
-	]),
-) as Record<string, string>;
-
-const FACT_LABELS_EN: Record<string, string> = {
-	Tipo: "Type",
-	Zona: "Area",
-	Categoría: "Category",
-	Radio: "Radius",
-};
-
-const STATUS_LABELS_EN: Record<string, string> = {
-	Accesible: "Accessible",
-	"Acceso limitado": "Limited access",
-	"Alerta activa": "Active alert",
-	"Riesgo bajo": "Low risk",
-	"Riesgo moderado": "Moderate risk",
-	"Riesgo alto": "High risk",
-	"Riesgo crítico": "Critical risk",
-};
-
 /** Icon and translated value of each fact the selection describes. */
 function describeFact(
 	fact: { label: string; value: string },
-	lang: MapLang,
+	copy: MapMessages,
 ): { Icon: LucideIcon; label: string; value: string } {
-	const en = lang === "en";
-	const label = en ? (FACT_LABELS_EN[fact.label] ?? fact.label) : fact.label;
+	const label = factLabel(copy, fact.label);
 	const stopType = STOP_TYPE_BY_LABEL[fact.value];
 	const category = CATEGORY_BY_LABEL[fact.value];
 	if (fact.label === "Tipo" && stopType) {
 		return {
 			Icon: STOP_TYPE_ICONS[stopType],
 			label,
-			value: en ? STOP_TYPE_LABELS_EN[stopType] : fact.value,
+			value: copy.stopTypes[stopType],
 		};
 	}
 	if (fact.label === "Categoría" && category) {
 		return {
 			Icon: CATEGORY_ICONS[category],
 			label,
-			value: en ? CATEGORY_LABELS_EN[category] : fact.value,
+			value: copy.categories[category],
 		};
 	}
 	if (fact.label === "Zona") {
+		const zone = ZONE_BY_LABEL[fact.value];
 		return {
 			Icon: MapPin,
 			label,
-			value: en ? (ZONE_EN_BY_LABEL[fact.value] ?? fact.value) : fact.value,
+			value: zone ? copy.zones[zone] : fact.value,
 		};
 	}
 	if (fact.label === "Radio")
@@ -155,14 +113,9 @@ interface StatusView {
 }
 
 /** The status as word plus glyph, never colour alone. */
-function statusView(
-	detail: SelectionDetail,
-	copy: MapCopy,
-	lang: MapLang,
-): StatusView {
+function statusView(detail: SelectionDetail, copy: MapMessages): StatusView {
 	const { tone, label } = detail.status;
-	const word =
-		lang === "en" ? (STATUS_LABELS_EN[label] ?? label) : (label as string);
+	const word = statusWord(copy, label);
 	if (detail.kind === "business") {
 		const open = tone !== "neutral";
 		return open
@@ -186,7 +139,7 @@ function statusView(
 function primaryAction(
 	detail: SelectionDetail,
 	status: StatusView,
-	copy: MapCopy,
+	copy: MapMessages,
 ): { Icon: LucideIcon; label: string } {
 	if (detail.kind === "floodZone")
 		return { Icon: Route, label: copy.safeRoute };
@@ -201,8 +154,6 @@ interface DetailCardProps {
 	source: CorridorDataSource;
 	onClose: () => void;
 	onOpenGuide: () => void;
-	/** Copy language. Defaults to Spanish. */
-	lang?: MapLang;
 }
 
 /**
@@ -215,9 +166,8 @@ export function DetailCard({
 	source,
 	onClose,
 	onOpenGuide,
-	lang = "es",
 }: DetailCardProps) {
-	const copy = MAP_COPY[lang];
+	const copy = useT().map;
 	const offline = source === "seed" && (
 		<p className="mc-offline-note">
 			<OfflineArt className="mc-offline-note__art" />
@@ -275,10 +225,10 @@ export function DetailCard({
 		);
 	}
 
-	const status = statusView(detail, copy, lang);
+	const status = statusView(detail, copy);
 	const action = primaryAction(detail, status, copy);
 	const Hero = heroIcon(detail);
-	const facts = detail.facts.map((fact) => describeFact(fact, lang));
+	const facts = detail.facts.map((fact) => describeFact(fact, copy));
 	const isBusiness = detail.kind === "business";
 	const verified = isBusiness && detail.services.includes("verified");
 	const commissionFree =
@@ -360,7 +310,7 @@ export function DetailCard({
 									<HandCoins size={14} strokeWidth={1.75} aria-hidden="true" />
 									{copy.commission}
 								</dt>
-								<dd>{serviceLabel("commissionFree", lang)}</dd>
+								<dd>{copy.serviceLabels.commissionFree}</dd>
 							</div>
 						)}
 					</dl>
@@ -380,7 +330,7 @@ export function DetailCard({
 					<>
 						<ul className="corridor-detail__tags" aria-label={copy.services}>
 							{stopServices.map((service) => (
-								<ServiceTag key={service} service={service} lang={lang} />
+								<ServiceTag key={service} service={service} />
 							))}
 						</ul>
 						<details className="q-details">
@@ -397,8 +347,8 @@ export function DetailCard({
 												<Icon size={16} strokeWidth={1.75} />
 											</span>
 											<span>
-												<strong>{serviceLabel(service, lang)}.</strong>{" "}
-												{SERVICE_HINTS[lang][service]}
+												<strong>{copy.serviceLabels[service]}.</strong>{" "}
+												{copy.serviceHints[service]}
 											</span>
 										</li>
 									);

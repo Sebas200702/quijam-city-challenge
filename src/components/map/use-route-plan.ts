@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
+import type { MapMessages } from "../../lib/i18n/dictionaries/map";
 import type { PlanResponse } from "../../lib/routing/plan-route";
 import type { CrowdByZone } from "../../lib/routing/routing-types";
 
@@ -105,39 +106,39 @@ export function isRecalculated(plan: PlanResponse | null): boolean {
  * One plain sentence on why this route, for the "why" line (epic #57, rule 6).
  * Built only from what the Decider returned; numbers and options stay in the details.
  */
-export function routeWhy(plan: PlanResponse): string {
+export function routeWhy(plan: PlanResponse, t: MapMessages): string {
 	const { route, discarded } = plan;
 	const floods = discarded.filter(
 		(item) => item.reason === "active-flood",
 	).length;
 	const steps = discarded.some((item) => item.reason === "not-accessible");
 	if (!route) {
-		return floods > 0
-			? "Todas las rutas cruzan un arroyo activo; espera en un lugar seco."
-			: "Ahora no hay una ruta segura; espera en un lugar seco.";
+		return floods > 0 ? t.whyAllFlooded : t.whyNoSafe;
 	}
 	const avoided =
 		floods > 0
-			? `Evitamos ${floods === 1 ? "una ruta" : `${floods} rutas`} con arroyo activo`
+			? t.whyAvoidedFlood(floods)
 			: steps
-				? "Dejamos fuera las rutas que no son accesibles"
+				? t.whyAvoidedSteps
 				: plan.chosenBy === "none"
-					? "Es la única ruta disponible"
-					: "Es la ruta con mejor tiempo y tarifa";
+					? t.whyOnlyRoute
+					: t.whyBestRoute;
 	const feature =
 		steps && route.accessible
-			? "esta es accesible en silla de ruedas"
+			? t.whyWheelchair
 			: route.isGreen
-				? "esta ruta es verde: transporte público o a pie"
+				? t.whyGreen
 				: route.accessible
-					? "esta es accesible en silla de ruedas"
-					: "esta ruta no cruza arroyos activos";
+					? t.whyWheelchair
+					: t.whyNoFlood;
 	return `${avoided}; ${feature}.`;
 }
 
 /** Plain-language confidence for the details panel. */
-export function confidenceLabel(confidence: number): string {
+export function confidenceLabel(confidence: number, t: MapMessages): string {
 	const percent = Math.round(confidence * 100);
-	const level = percent >= 75 ? "Alta" : percent >= 50 ? "Media" : "Baja";
-	return `${level} · ${percent} %`;
+	const levels = t.confidenceLevels;
+	const level =
+		percent >= 75 ? levels.high : percent >= 50 ? levels.medium : levels.low;
+	return t.confidenceValue(level, percent);
 }
