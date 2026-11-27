@@ -23,13 +23,13 @@ const es = {
 	layerBusinesses: "Negocios",
 	referenceTag: "Datos de referencia",
 	offline: "Sin conexión",
-	stopsTitle: "Paradas del corredor",
+	stopsTitle: "Paraderos del corredor",
 	stopsOrder: "De sur a norte",
 	stopsCount: (count: number) =>
-		count === 1 ? "1 parada" : `${count} paradas`,
-	stopsEmptyTitle: "Aún no hay paradas",
-	stopsEmptyText: "Cuando carguen las paradas del corredor, las verás aquí.",
-	stopNumber: (n: number) => `Parada ${n}`,
+		count === 1 ? "1 paradero" : `${count} paraderos`,
+	stopsEmptyTitle: "Aún no hay paraderos",
+	stopsEmptyText: "Cuando carguen los paraderos del corredor, los verás aquí.",
+	stopNumber: (n: number) => `Paradero ${n}`,
 	detailEmptyTitle: "Toca un punto del mapa",
 	detailEmptyWhy: "Verás sus servicios, alertas y cómo moverte sin trancón.",
 	detailEmptyHintStops: "Paraderos con sombra, agua y anfitriones",
@@ -149,7 +149,7 @@ const es = {
 		"Paraderos y arroyos siguen a la vista. El fondo del mapa puede verse incompleto.",
 	statusErrorTitle: "No pudimos cargar el mapa",
 	statusErrorText:
-		"Revisa tu señal e inténtalo otra vez. El Guía sigue disponible.",
+		"Revisa tu señal e inténtalo otra vez. Quillart AI sigue disponible.",
 	retry: "Reintentar",
 	statusLoadingTitle: "Cargando el mapa",
 	statusLoadingText: "Revisamos rutas, tarifas y arroyos.",
@@ -185,7 +185,7 @@ const es = {
 	errorText: "Revisa tu señal e inténtalo otra vez.",
 	offlineTitle: "Sin conexión",
 	offlineText:
-		"Cuando vuelva la señal calculamos tu ruta. El Guía funciona sin conexión.",
+		"Cuando vuelva la señal calculamos tu ruta. Quillart AI funciona sin conexión.",
 	noRouteAccessible: "No hay ruta accesible ahora",
 	noRouteSafe: "No hay ruta segura ahora",
 	goTo: (destination: string) => `Ve a ${destination}`,
@@ -197,7 +197,7 @@ const es = {
 	details: "Ver detalles",
 	confidence: "Confianza de la ruta",
 	howChosen: "Cómo la elegimos",
-	chosenByModel: "Modelo de decisión OpenJev",
+	chosenByModel: "Modelo de decisión de QUILLART",
 	chosenByRules: "Tiempo, tarifa y congestión",
 	discarded: (label: string, reason: string) =>
 		`Descartada: ${label} (${reason})`,
@@ -374,7 +374,7 @@ const en: MapMessages = {
 		"Stops and arroyos are still in view. The map background may look incomplete.",
 	statusErrorTitle: "We could not load the map",
 	statusErrorText:
-		"Check your signal and try again. The Guide is still available.",
+		"Check your signal and try again. Quillart AI is still available.",
 	retry: "Try again",
 	statusLoadingTitle: "Loading the map",
 	statusLoadingText: "We are checking routes, fares and arroyos.",
@@ -409,7 +409,7 @@ const en: MapMessages = {
 	errorText: "Check your signal and try again.",
 	offlineTitle: "Offline",
 	offlineText:
-		"When the signal is back we will work out your route. The Guide works offline.",
+		"When the signal is back we will work out your route. Quillart AI works offline.",
 	noRouteAccessible: "No accessible route right now",
 	noRouteSafe: "No safe route right now",
 	goTo: (destination: string) => `Go to ${destination}`,
@@ -421,7 +421,7 @@ const en: MapMessages = {
 	details: "See details",
 	confidence: "Route confidence",
 	howChosen: "How we chose it",
-	chosenByModel: "OpenJev decision model",
+	chosenByModel: "QUILLART decision model",
 	chosenByRules: "Time, fare and congestion",
 	discarded: (label: string, reason: string) =>
 		`Discarded: ${label} (${reason})`,
@@ -594,7 +594,7 @@ const pt: MapMessages = {
 		"Paradas e arroios continuam à vista. O fundo do mapa pode aparecer incompleto.",
 	statusErrorTitle: "Não conseguimos carregar o mapa",
 	statusErrorText:
-		"Verifique seu sinal e tente de novo. O Guia continua disponível.",
+		"Verifique seu sinal e tente de novo. O Quillart AI continua disponível.",
 	retry: "Tentar de novo",
 	statusLoadingTitle: "Carregando o mapa",
 	statusLoadingText: "Estamos conferindo rotas, tarifas e arroios.",
@@ -629,7 +629,7 @@ const pt: MapMessages = {
 	errorText: "Verifique seu sinal e tente de novo.",
 	offlineTitle: "Sem conexão",
 	offlineText:
-		"Quando o sinal voltar, calculamos sua rota. O Guia funciona sem conexão.",
+		"Quando o sinal voltar, calculamos sua rota. O Quillart AI funciona sem conexão.",
 	noRouteAccessible: "Não há rota acessível agora",
 	noRouteSafe: "Não há rota segura agora",
 	goTo: (destination: string) => `Vá até ${destination}`,
@@ -641,7 +641,7 @@ const pt: MapMessages = {
 	details: "Ver detalhes",
 	confidence: "Confiança da rota",
 	howChosen: "Como a escolhemos",
-	chosenByModel: "Modelo de decisão OpenJev",
+	chosenByModel: "Modelo de decisão do QUILLART",
 	chosenByRules: "Tempo, tarifa e congestionamento",
 	discarded: (label: string, reason: string) =>
 		`Descartada: ${label} (${reason})`,
@@ -818,7 +818,7 @@ const fr: MapMessages = {
 		"Les arrêts et les ruisseaux restent visibles. Le fond de carte peut sembler incomplet.",
 	statusErrorTitle: "Impossible de charger la carte",
 	statusErrorText:
-		"Vérifiez votre signal et réessayez. Le Guide reste disponible.",
+		"Vérifiez votre signal et réessayez. Quillart AI reste disponible.",
 	retry: "Réessayer",
 	statusLoadingTitle: "Chargement de la carte",
 	statusLoadingText:
@@ -854,7 +854,7 @@ const fr: MapMessages = {
 	errorText: "Vérifiez votre signal et réessayez.",
 	offlineTitle: "Hors ligne",
 	offlineText:
-		"Dès que le signal revient, nous calculons votre itinéraire. Le Guide fonctionne hors ligne.",
+		"Dès que le signal revient, nous calculons votre itinéraire. Quillart AI fonctionne hors ligne.",
 	noRouteAccessible: "Aucun itinéraire accessible pour le moment",
 	noRouteSafe: "Aucun itinéraire sûr pour le moment",
 	goTo: (destination: string) => `Allez à ${destination}`,
@@ -866,7 +866,7 @@ const fr: MapMessages = {
 	details: "Voir les détails",
 	confidence: "Fiabilité de l’itinéraire",
 	howChosen: "Comment nous l’avons choisi",
-	chosenByModel: "Modèle de décision OpenJev",
+	chosenByModel: "Modèle de décision QUILLART",
 	chosenByRules: "Temps, tarif et affluence",
 	discarded: (label: string, reason: string) => `Écarté : ${label} (${reason})`,
 	alternative: (label: string, minutes: number, fare: string) =>

@@ -4,7 +4,7 @@
 import type { Language } from "../languages";
 
 const es = {
-	eyebrow: "Tarifa justa · Ciudadanía · Control en vivo",
+	eyebrow: "Tarifa de referencia · Ciudadanía · Control en vivo",
 	title: "Bandeja de reportes de cobro abusivo",
 	resolvedBadge: (resolved: number, total: number, rate: string) =>
 		`${resolved} / ${total} resueltos (${rate})`,
@@ -17,7 +17,7 @@ const es = {
 		`${rate} (${resolved} de ${total})`,
 	noPending: "Sin reportes pendientes",
 	resolvedOf: (resolved: number, total: number) =>
-		`${resolved} resuelto(s) de ${total}`,
+		`${resolved} ${resolved === 1 ? "resuelto" : "resueltos"} de ${total}`,
 	newCount: (n: number) => `${n} nuevo(s)`,
 	filterAria: "Filtrar reportes por estado",
 	all: "Todos",
@@ -45,7 +45,7 @@ const es = {
 	errorTitle: "No pudimos cargar los reportes",
 	emptyTitle: "No hay cobros abusivos reportados",
 	emptyText:
-		"Cuando un visitante reporte uno desde Reportar o el Guía, aparece aquí al momento.",
+		"Cuando un visitante reporte uno desde Reportar o Quillart AI, aparece aquí al momento.",
 	emptyFilterTitle: (status: string) => `No hay reportes en «${status}»`,
 	emptyFilterText: "Cambia el filtro para ver los demás.",
 	justArrived: "Recién llegado",
@@ -63,7 +63,7 @@ const es = {
 export type InboxMessages = typeof es;
 
 const en: InboxMessages = {
-	eyebrow: "Fair fares · Citizens · Live monitoring",
+	eyebrow: "Reference fares · Citizens · Live monitoring",
 	title: "Overcharge report inbox",
 	resolvedBadge: (resolved, total, rate) =>
 		`${resolved} / ${total} resolved (${rate})`,
@@ -102,7 +102,7 @@ const en: InboxMessages = {
 	errorTitle: "We couldn't load the reports",
 	emptyTitle: "No overcharges reported",
 	emptyText:
-		"When a visitor reports one from Report or the Guide, it shows up here right away.",
+		"When a visitor reports one from Report or Quillart AI, it shows up here right away.",
 	emptyFilterTitle: (status) => `No reports in “${status}”`,
 	emptyFilterText: "Change the filter to see the rest.",
 	justArrived: "Just in",
@@ -118,7 +118,7 @@ const en: InboxMessages = {
 };
 
 const pt: InboxMessages = {
-	eyebrow: "Tarifa justa · Cidadania · Controle ao vivo",
+	eyebrow: "Tarifa de referência · Cidadania · Controle ao vivo",
 	title: "Caixa de relatos de cobrança abusiva",
 	resolvedBadge: (resolved, total, rate) =>
 		`${resolved} / ${total} resolvidos (${rate})`,
@@ -129,7 +129,8 @@ const pt: InboxMessages = {
 	meterLabel: "Porcentagem de relatos de cobrança abusiva resolvidos",
 	meterText: (rate, resolved, total) => `${rate} (${resolved} de ${total})`,
 	noPending: "Nenhum relato pendente",
-	resolvedOf: (resolved, total) => `${resolved} resolvido(s) de ${total}`,
+	resolvedOf: (resolved, total) =>
+		`${resolved} ${resolved === 1 ? "resolvido" : "resolvidos"} de ${total}`,
 	newCount: (n) => `${n} novo(s)`,
 	filterAria: "Filtrar relatos por status",
 	all: "Todos",
@@ -158,7 +159,7 @@ const pt: InboxMessages = {
 	errorTitle: "Não conseguimos carregar os relatos",
 	emptyTitle: "Nenhuma cobrança abusiva relatada",
 	emptyText:
-		"Quando um visitante relatar uma em Reportar ou no Guia, ela aparece aqui na hora.",
+		"Quando um visitante relatar uma em Reportar ou no Quillart AI, ela aparece aqui na hora.",
 	emptyFilterTitle: (status) => `Nenhum relato em «${status}»`,
 	emptyFilterText: "Mude o filtro para ver os demais.",
 	justArrived: "Acabou de chegar",
@@ -174,7 +175,7 @@ const pt: InboxMessages = {
 };
 
 const fr: InboxMessages = {
-	eyebrow: "Tarif juste · Citoyenneté · Suivi en direct",
+	eyebrow: "Tarif de référence · Citoyenneté · Suivi en direct",
 	title: "Boîte des signalements de surfacturation",
 	resolvedBadge: (resolved, total, rate) =>
 		`${resolved} / ${total} résolus (${rate})`,
@@ -185,7 +186,8 @@ const fr: InboxMessages = {
 	meterLabel: "Pourcentage de signalements de surfacturation résolus",
 	meterText: (rate, resolved, total) => `${rate} (${resolved} sur ${total})`,
 	noPending: "Aucun signalement en attente",
-	resolvedOf: (resolved, total) => `${resolved} résolu(s) sur ${total}`,
+	resolvedOf: (resolved, total) =>
+		`${resolved} ${resolved <= 1 ? "résolu" : "résolus"} sur ${total}`,
 	newCount: (n) => `${n} nouveau(x)`,
 	filterAria: "Filtrer les signalements par statut",
 	all: "Tous",
@@ -214,7 +216,7 @@ const fr: InboxMessages = {
 	errorTitle: "Impossible de charger les signalements",
 	emptyTitle: "Aucune surfacturation signalée",
 	emptyText:
-		"Dès qu'un visiteur en signale une depuis Signaler ou le Guide, elle apparaît ici immédiatement.",
+		"Dès qu'un visiteur en signale une depuis Signaler ou Quillart AI, elle apparaît ici immédiatement.",
 	emptyFilterTitle: (status) => `Aucun signalement dans « ${status} »`,
 	emptyFilterText: "Changez le filtre pour voir les autres.",
 	justArrived: "Vient d'arriver",

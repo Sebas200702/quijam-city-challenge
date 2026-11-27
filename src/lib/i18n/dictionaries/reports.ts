@@ -26,7 +26,7 @@ const es = {
 	serverFallbackError:
 		"No pudimos validar el reporte. Revisa los datos e intenta de nuevo.",
 	empty: {
-		eyebrow: "Tarifa justa",
+		eyebrow: "Tarifa de referencia",
 		title: "No hay trayectos disponibles",
 		body: "No pudimos cargar los trayectos del corredor en este momento. Vuelve al mapa para consultar las tarifas oficiales.",
 	},
@@ -62,7 +62,7 @@ const es = {
 		newReport: "Nuevo reporte",
 	},
 	form: {
-		eyebrow: "Tarifa justa · Reporte anónimo",
+		eyebrow: "Tarifa de referencia · Reporte anónimo",
 		title: "Reportar cobro abusivo",
 		route: "Trayecto del corredor",
 		referenceFare: "Tarifa oficial de referencia",
@@ -112,7 +112,7 @@ const en: ReportsMessages = {
 	serverFallbackError:
 		"We couldn't validate the report. Check the details and try again.",
 	empty: {
-		eyebrow: "Fair fare",
+		eyebrow: "Reference fare",
 		title: "No routes available",
 		body: "We couldn't load the corridor routes right now. Go back to the map to check the official fares.",
 	},
@@ -150,7 +150,7 @@ const en: ReportsMessages = {
 		newReport: "New report",
 	},
 	form: {
-		eyebrow: "Fair fare · Anonymous report",
+		eyebrow: "Reference fare · Anonymous report",
 		title: "Report an overcharge",
 		route: "Corridor route",
 		referenceFare: "Official reference fare",
@@ -197,7 +197,7 @@ const pt: ReportsMessages = {
 	serverFallbackError:
 		"Não conseguimos validar a denúncia. Confira os dados e tente de novo.",
 	empty: {
-		eyebrow: "Tarifa justa",
+		eyebrow: "Tarifa de referência",
 		title: "Não há trajetos disponíveis",
 		body: "Não conseguimos carregar os trajetos do corredor agora. Volte ao mapa para consultar as tarifas oficiais.",
 	},
@@ -235,7 +235,7 @@ const pt: ReportsMessages = {
 		newReport: "Nova denúncia",
 	},
 	form: {
-		eyebrow: "Tarifa justa · Denúncia anônima",
+		eyebrow: "Tarifa de referência · Denúncia anônima",
 		title: "Denunciar cobrança abusiva",
 		route: "Trajeto do corredor",
 		referenceFare: "Tarifa oficial de referência",
@@ -285,7 +285,7 @@ const fr: ReportsMessages = {
 	serverFallbackError:
 		"Nous n'avons pas pu valider le signalement. Vérifiez les informations et réessayez.",
 	empty: {
-		eyebrow: "Tarif juste",
+		eyebrow: "Tarif de référence",
 		title: "Aucun trajet disponible",
 		body: "Nous n'avons pas pu charger les trajets du corridor pour le moment. Retournez à la carte pour consulter les tarifs officiels.",
 	},
@@ -323,7 +323,7 @@ const fr: ReportsMessages = {
 		newReport: "Nouveau signalement",
 	},
 	form: {
-		eyebrow: "Tarif juste · Signalement anonyme",
+		eyebrow: "Tarif de référence · Signalement anonyme",
 		title: "Signaler un tarif abusif",
 		route: "Trajet du corridor",
 		referenceFare: "Tarif officiel de référence",
