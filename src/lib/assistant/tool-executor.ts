@@ -26,6 +26,11 @@ import type {
 	AssistantToolName,
 	AssistantToolResult,
 } from "./assistant-types";
+import {
+	UNTRUSTED_BODY_MAX,
+	UNTRUSTED_TITLE_MAX,
+	untrusted,
+} from "./untrusted-content";
 
 export interface ToolDeps {
 	/** Used by plan_route to ask the mobility Guide. Defaults to global fetch. */
@@ -130,17 +135,22 @@ async function placeNames(
 	return Object.fromEntries(places.map((place) => [place.id, place.name]));
 }
 
+// Summaries go to the model. Text written by people (titles, descriptions,
+// names, free-form locations) is wrapped with `untrusted()` so the model reads
+// it as data; ids, dates, counts and catalog values stay plain fields.
+
 function eventSummary(
 	event: CommunityEvent,
 	names: Record<string, string>,
 ): Record<string, unknown> {
+	const catalogPlace = event.placeId ? names[event.placeId] : undefined;
 	return {
 		id: event.id,
-		title: event.title,
+		title: untrusted(event.title, UNTRUSTED_TITLE_MAX),
 		when: eventWhen(event),
 		starts_at: event.startsAt,
 		category: event.category,
-		place: (event.placeId && names[event.placeId]) || event.locationText,
+		place: catalogPlace || untrusted(event.locationText, UNTRUSTED_TITLE_MAX),
 		spots_left: spotsLeft(event),
 		free: event.isFree || !event.priceCop,
 		...(event.status === "cancelled" ? { cancelled: true } : {}),
@@ -185,7 +195,8 @@ function publishOutcome<T extends { id: string }>(
 	return {
 		summary: {
 			outcome: result.outcome,
-			message: result.message,
+			// The triage reason may quote the submitted text.
+			message: untrusted(result.message, UNTRUSTED_BODY_MAX),
 			id: result.record?.id ?? null,
 			...extra,
 		},
@@ -262,8 +273,8 @@ const HANDLERS: { [N in AssistantToolName]: Handler<N> } = {
 		return {
 			summary: {
 				...eventSummary(event, names),
-				description: event.description.slice(0, 280),
-				organizer: event.organizerName,
+				description: untrusted(event.description, UNTRUSTED_BODY_MAX),
+				organizer: untrusted(event.organizerName, UNTRUSTED_TITLE_MAX),
 				can_register: registrationBlocker(event, now) ?? true,
 			},
 			display: { kind: "events", events: [event], placeNames: names },
@@ -323,8 +334,8 @@ const HANDLERS: { [N in AssistantToolName]: Handler<N> } = {
 			summary: {
 				...placeSummary(place),
 				address: place.address,
-				opening_hours: place.openingHours,
-				description: place.description.slice(0, 280),
+				opening_hours: untrusted(place.openingHours, UNTRUSTED_TITLE_MAX),
+				description: untrusted(place.description, UNTRUSTED_BODY_MAX),
 			},
 			display: { kind: "places", places: [place] },
 		};
@@ -342,7 +353,7 @@ const HANDLERS: { [N in AssistantToolName]: Handler<N> } = {
 				count: threads.length,
 				threads: threads.map((thread) => ({
 					id: thread.id,
-					title: thread.title,
+					title: untrusted(thread.title, UNTRUSTED_TITLE_MAX),
 					category: thread.category,
 					replies: thread.replyCount,
 				})),
@@ -422,7 +433,7 @@ const HANDLERS: { [N in AssistantToolName]: Handler<N> } = {
 			summary: {
 				outcome: "registered",
 				event_id: event.id,
-				title: event.title,
+				title: untrusted(event.title, UNTRUSTED_TITLE_MAX),
 				when: eventWhen(event),
 			},
 			display: {
