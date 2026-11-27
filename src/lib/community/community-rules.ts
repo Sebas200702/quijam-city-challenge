@@ -96,6 +96,12 @@ export function validateThreadInput(input: NewThreadInput): string | null {
 	if (input.title.trim().length < 4) return validation().titleMin4;
 	if (input.title.trim().length > 140) return validation().titleMax140;
 	if (input.body.trim().length < 2) return "Escribe tu mensaje.";
+	// A safety report must say where it happens (audit v2, U16).
+	if (
+		input.category === "safety" &&
+		(input.latitude == null || input.longitude == null)
+	)
+		return messages[getLanguage()].geo.picker.safetyPointRequired;
 	return validatePoint(input.latitude, input.longitude);
 }
 

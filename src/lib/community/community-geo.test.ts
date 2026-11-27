@@ -77,10 +77,22 @@ describe("community points", () => {
 			placeId: null,
 			eventId: null,
 		};
-		expect(validateThreadInput(thread)).toBeNull();
+		expect(validateThreadInput({ ...thread, ...PLAZA })).toBeNull();
 		expect(validateThreadInput({ ...thread, ...SANTA_MARTA })).toMatch(
 			/área metropolitana/,
 		);
+	});
+
+	it("requires a point on a safety report (U16)", () => {
+		const report = {
+			title: "Poste caído en la esquina",
+			body: "Bloquea la acera desde ayer.",
+			category: "safety" as const,
+			placeId: null,
+			eventId: null,
+		};
+		expect(validateThreadInput(report)).toMatch(/.+/);
+		expect(validateThreadInput({ ...report, ...PLAZA })).toBeNull();
 	});
 });
 

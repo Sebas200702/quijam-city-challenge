@@ -2,15 +2,21 @@
 // component so the map can change without touching it: it publishes the map
 // view as screen context and applies the agent's `map.flyTo`, `map.drop` and
 // `map.showRoute` actions, each with its undo. `/mapa?destino=` opens the map
-// on that route. Any map that holds a Leaflet map and a route query can use it.
+// on that route. A route goes to a named destination, a stop or any catalog
+// place (through its nearest stop), from the visitor's chosen origin. Any map that holds a Leaflet map and a route query can use it.
 
 import L from "leaflet";
 import { type RefObject, useEffect, useRef } from "react";
 import { screenContext } from "../../lib/assistant/screen-context-store";
+import { PLACES } from "../../lib/community/places-catalog";
 import { useT } from "../../lib/i18n/use-language";
 import { focusMap } from "../../lib/map/map-focus";
+import {
+	arrivalRouteTarget,
+	type RouteCatalog,
+	resolveRouteTarget,
+} from "../../lib/map/route-target";
 import { prefersReducedMotion } from "../../lib/reduced-motion";
-import { DESTINATIONS, type DestinationKey } from "../../lib/trip/trip-planner";
 import { useUiAction } from "../agent-dock/use-ui-action";
 import { pinIcon } from "./map-markers";
 import type { RouteQuery } from "./use-route-plan";
@@ -21,6 +27,8 @@ interface MapUiActionsOptions {
 	setQuery: (query: RouteQuery) => void;
 	/** Code of the selected stop, arroyo or business, if any. */
 	selected: string | null;
+	/** Corridor stops: routes end at one of them. */
+	stops: RouteCatalog["stops"];
 }
 
 function move(map: L.Map, center: L.LatLngExpression, zoom: number) {
@@ -28,30 +36,29 @@ function move(map: L.Map, center: L.LatLngExpression, zoom: number) {
 	else map.flyTo(center, zoom, { duration: 0.6 });
 }
 
-function isDestination(value: string | null): value is DestinationKey {
-	return value !== null && Object.hasOwn(DESTINATIONS, value);
-}
-
 export function useMapUiActions({
 	mapRef,
 	query,
 	setQuery,
 	selected,
+	stops,
 }: MapUiActionsOptions): void {
 	const t = useT();
 	const pinsRef = useRef<L.LayerGroup | null>(null);
 	const queryRef = useRef(query);
 	queryRef.current = query;
+	const catalogRef = useRef<RouteCatalog>({ stops, places: PLACES });
+	catalogRef.current = { stops, places: PLACES };
 
-	// `/mapa?destino=estadio`: the route the agent (or a link) asked for.
+	// `/mapa?destino=estadio` (or a place slug): the route the agent or a link asked for.
 	// biome-ignore lint/correctness/useExhaustiveDependencies: read once, on arrival.
 	useEffect(() => {
-		const destino = new URLSearchParams(window.location.search).get("destino");
-		if (!isDestination(destino)) return;
-		setQuery({
-			...queryRef.current,
-			destination: DESTINATIONS[destino].stopCode,
-		});
+		const target = arrivalRouteTarget(
+			window.location.search,
+			catalogRef.current,
+		);
+		if (!target) return;
+		setQuery({ ...queryRef.current, destination: target.stopCode });
 	}, []);
 
 	// What the agent sees: the view (rounded by the server), the selection and the route.
@@ -81,14 +88,15 @@ export function useMapUiActions({
 
 	useUiAction("map.showRoute", (action) => {
 		const before = queryRef.current;
-		const destination = DESTINATIONS[action.destino];
+		const target = resolveRouteTarget(action.destino, catalogRef.current);
+		if (!target) return null;
 		setQuery({
 			...before,
-			destination: destination.stopCode,
+			destination: target.stopCode,
 			accessibleMode: action.accesible ?? before.accessibleMode,
 		});
 		return {
-			labels: [t.dock.routeTo(destination.name)],
+			labels: [t.dock.routeTo(target.name)],
 			undo: () => setQuery(before),
 		};
 	});

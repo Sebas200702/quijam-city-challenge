@@ -518,7 +518,11 @@ function NewThreadForm({
 				/>
 			</Field>
 			<LazyPointPicker
-				title={t.geo.picker.threadTitle}
+				title={
+					category === "safety"
+						? t.geo.picker.safetyTitle
+						: t.geo.picker.threadTitle
+				}
 				hint={t.geo.picker.threadHint}
 				value={point}
 				note={pointNote}

@@ -114,6 +114,8 @@ describe("device store trust and safety", () => {
 			category: "safety",
 			placeId: null,
 			eventId: null,
+			latitude: 10.9878,
+			longitude: -74.7889,
 		});
 		const id = record?.id ?? "";
 		expect((await store.getThread(id))?.cityVerified).toBe(false);

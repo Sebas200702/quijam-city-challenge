@@ -33,6 +33,9 @@ const es = {
 		fromPlace: (place: string) =>
 			`Tomamos el punto de ${place}. Ajústalo si es en otra esquina.`,
 		pointRequired: "Marca en el mapa dónde es el encuentro.",
+		safetyTitle: "¿Dónde pasa?",
+		safetyPointRequired:
+			"Para un reporte de seguridad, marca en el mapa dónde pasa.",
 	},
 	minimap: {
 		label: (name: string) => `Mapa con la ubicación de ${name}`,
@@ -89,6 +92,9 @@ const en: GeoMessages = {
 		fromPlace: (place: string) =>
 			`We used the point of ${place}. Adjust it if it is on another corner.`,
 		pointRequired: "Mark on the map where the meeting is.",
+		safetyTitle: "Where is it?",
+		safetyPointRequired:
+			"For a safety report, mark on the map where it is happening.",
 	},
 	minimap: {
 		label: (name: string) => `Map showing where ${name} is`,
@@ -145,6 +151,9 @@ const pt: GeoMessages = {
 		fromPlace: (place: string) =>
 			`Usamos o ponto de ${place}. Ajuste se for em outra esquina.`,
 		pointRequired: "Marque no mapa onde é o encontro.",
+		safetyTitle: "Onde acontece?",
+		safetyPointRequired:
+			"Para um relato de segurança, marque no mapa onde acontece.",
 	},
 	minimap: {
 		label: (name: string) => `Mapa com a localização de ${name}`,
@@ -202,6 +211,9 @@ const fr: GeoMessages = {
 		fromPlace: (place: string) =>
 			`Nous avons repris le point de ${place}. Ajustez-le si c'est à un autre coin.`,
 		pointRequired: "Marquez sur la carte le lieu du rendez-vous.",
+		safetyTitle: "Où est-ce ?",
+		safetyPointRequired:
+			"Pour un signalement de sécurité, marquez sur la carte où cela se passe.",
 	},
 	minimap: {
 		label: (name: string) => `Carte montrant où se trouve ${name}`,
