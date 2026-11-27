@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { parseAssistantRequest } from "./assistant-server";
+import type { AssistantContext } from "./assistant-types";
 import { systemInstructionFor } from "./gemini-agent";
 import { answerLocally } from "./local-agents";
 import { routeMessage } from "./orchestrator";
@@ -9,7 +10,6 @@ import {
 	screenFacts,
 	screenSummary,
 } from "./screen-context";
-import type { AssistantContext } from "./assistant-types";
 import type { ScreenContext } from "./screen-context-types";
 
 const eventScreen: ScreenContext = {

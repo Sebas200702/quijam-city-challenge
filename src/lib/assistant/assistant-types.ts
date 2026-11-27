@@ -16,6 +16,7 @@ import type {
 	PublishResult,
 } from "../community/community-types";
 import type { Language } from "../i18n/languages";
+import type { OpenDataSlug } from "../open-data/open-data-types";
 import type { ScreenContext } from "./screen-context-types";
 import type { UiAction } from "./ui-action-types";
 
@@ -26,7 +27,8 @@ export type AssistantAgentId =
 	| "places" // public spaces and nature, directions
 	| "mobility" // routes, fares, arroyo alerts (existing Guide + Decisor)
 	| "city_reports" // problems in public space for the city (triaged)
-	| "account"; // profile, my registrations, my publications
+	| "account" // profile, my registrations, my publications
+	| "city_data"; // news, open data (reference/synthetic, historical), city indicators
 
 /** Read tools run right away; action tools need the person's confirmation. */
 export interface AssistantToolArgs {
@@ -71,6 +73,14 @@ export interface AssistantToolArgs {
 	report_issue: { description: string; place_slug?: string };
 	/** Suggests a screen; the UI shows it as a button, never navigates on its own. */
 	open_page: { path: string; label: string };
+	/** Mobility: current reference fares (Transmetro, bus, taxi) from the corridor route segments. */
+	get_fares: Record<string, never>;
+	/** City data: news (active arroyo alerts, newest community events). */
+	get_news: Record<string, never>;
+	/** City data: the open-data catalog, or the records of one dataset. */
+	get_open_data: { dataset?: OpenDataSlug };
+	/** City data: the five program indicators, from public sources only. */
+	get_city_indicators: Record<string, never>;
 }
 
 export type AssistantToolName = keyof AssistantToolArgs;

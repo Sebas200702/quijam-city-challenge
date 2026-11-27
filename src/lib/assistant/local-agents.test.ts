@@ -578,3 +578,43 @@ describe("drafts in the chosen language (S5)", () => {
 		]);
 	});
 });
+
+describe("city data and fares without a model", () => {
+	it("mobility looks up current fares instead of answering from memory", () => {
+		expect(
+			answerLocally("mobility", ask("¿Cuánto vale el pasaje?"), signedIn)
+				.toolCalls,
+		).toEqual([{ name: "get_fares", args: {} }]);
+	});
+
+	it("city data picks news, indicators or one dataset", () => {
+		const tools = (text: string) =>
+			answerLocally("city_data", ask(text), anonymous).toolCalls;
+		expect(tools("¿Qué novedades hay?")).toEqual([
+			{ name: "get_news", args: {} },
+		]);
+		expect(tools("Indicadores de la ciudad")).toEqual([
+			{ name: "get_city_indicators", args: {} },
+		]);
+		expect(tools("Datos de los paraderos")).toEqual([
+			{ name: "get_open_data", args: { dataset: "paraderos" } },
+		]);
+		expect(tools("¿Qué datos abiertos tienen?")).toEqual([
+			{ name: "get_open_data", args: {} },
+		]);
+	});
+
+	it("repeats the fares exactly in the wrap-up", () => {
+		expect(
+			wrapUpResult({
+				callId: "c1",
+				name: "get_fares",
+				summary: {
+					fares: [
+						{ mode: "Transmetro", fare_min_cop: 3500, fare_max_cop: 3500 },
+					],
+				},
+			}),
+		).toBe("Tarifas vigentes en pesos: Transmetro: $3.500.");
+	});
+});

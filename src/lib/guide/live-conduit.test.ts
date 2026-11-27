@@ -19,6 +19,27 @@ describe("ASK_QUILLART_DECLARATION", () => {
 			required: ["request"],
 		});
 	});
+
+	it("names every capability and forbids prices from memory", () => {
+		const description = ASK_QUILLART_DECLARATION.description ?? "";
+		for (const topic of [
+			/fares/i,
+			/events/i,
+			/places/i,
+			/forum/i,
+			/reports/i,
+			/account/i,
+			/news/i,
+			/open data/i,
+			/historical/i,
+			/synthetic/i,
+			/indicators/i,
+			/crowd simulation/i,
+		]) {
+			expect(description).toMatch(topic);
+		}
+		expect(description).toMatch(/never answer those from memory/i);
+	});
 });
 
 describe("toConduitCalls", () => {

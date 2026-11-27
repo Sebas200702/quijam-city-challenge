@@ -12,7 +12,7 @@
 //    person is looking at answers (Agenda on /agenda, Mobility on /mapa), and
 //    it wins a keyword tie it is part of (audit v2, U06).
 // 4. OpenJev. When keywords are null or tied and a client exists, a choice
-//    question over the six agent descriptions; accepted at confidence >= 0.35.
+//    question over the agent descriptions; accepted at confidence >= 0.35.
 //    Only the person's message text is sent (no names, no context).
 // 5. Default. A tie is broken by section priority (reports and mobility are
 //    time sensitive), and with no signal at all the Agenda agent answers: it is
@@ -22,13 +22,13 @@
 import type { OpenJevClient } from "../openjev/openjev-types";
 import { AGENT_IDS, AGENTS } from "./assistant-agents";
 import { countKeywords, hasAnyKeyword, normalizeText } from "./assistant-text";
-import { agentForScreen } from "./screen-context";
 import type {
 	AssistantAgentId,
 	AssistantContext,
 	AssistantMessage,
 	AssistantResponse,
 } from "./assistant-types";
+import { agentForScreen } from "./screen-context";
 
 export const MIN_ROUTING_CONFIDENCE = 0.35;
 export const DEFAULT_AGENT: AssistantAgentId = "agenda";
@@ -41,6 +41,7 @@ const TIE_BREAK_ORDER: readonly AssistantAgentId[] = [
 	"agenda",
 	"community",
 	"places",
+	"city_data",
 ];
 
 export interface RouteDecision {
@@ -230,6 +231,34 @@ const AGENT_KEYWORDS: Record<AssistantAgentId, string[]> = {
 		"estoy inscrito",
 		"estoy inscrita",
 	],
+	// Only specific words: generic "datos", "precio" or "tarifa" stay with
+	// agenda and mobility.
+	city_data: [
+		"novedad*",
+		"aviso",
+		"avisos",
+		"noticia*",
+		"news",
+		"datos abiertos",
+		"open data",
+		"dataset*",
+		"estadistica*",
+		"statistic*",
+		"historic*",
+		"historia",
+		"simulacion",
+		"simulador",
+		"simulation",
+		"indicador*",
+		"indicator*",
+		"sintetic*",
+		"synthetic",
+		"tendencia*",
+		"trends",
+		"ocupacion",
+		"occupancy",
+		"aforo",
+	],
 };
 
 /**
@@ -332,6 +361,20 @@ const OTHER_LANGUAGE_KEYWORDS: Record<AssistantAgentId, string[]> = {
 		"mes inscriptions",
 		"meus eventos",
 		"mes evenements",
+	],
+	city_data: [
+		"novidade*",
+		"nouveaute*",
+		"actualite*",
+		"dados abertos",
+		"donnees ouvertes",
+		"estatistica*",
+		"statistique*",
+		"simulacao",
+		"indicateur*",
+		"synthetique*",
+		"frequentation",
+		"lotacao",
 	],
 };
 

@@ -12,6 +12,7 @@ import { PLACES } from "../community/places-catalog";
 import { detectDestination } from "../guide/guide-local";
 import type { Language } from "../i18n/languages";
 import { messages as dictionaries } from "../i18n/messages";
+import { OPEN_DATA_CATALOG } from "../open-data/open-data-catalog";
 import { type AgentTurn, PROFILE_PATH } from "./assistant-agents";
 import { hasAnyKeyword, matchPlace, normalizeText } from "./assistant-text";
 import {
@@ -22,6 +23,11 @@ import {
 	type AssistantToolResult,
 	isActionTool,
 } from "./assistant-types";
+import {
+	formatFares,
+	formatIndicators,
+	type ModeFare,
+} from "./city-data-format";
 import {
 	capacityFromText,
 	dateFromText,
@@ -536,8 +542,33 @@ function placesTurn(text: string, context: AssistantContext): AgentTurn {
 	};
 }
 
+const FARE_WORDS = [
+	"tarifa*",
+	"pasaje*",
+	"precio*",
+	"cuanto cuesta",
+	"cuanto vale",
+	"cuanto sale",
+	"cobra*",
+	"fare*",
+	"price*",
+	"how much",
+	"passagem",
+	"preco*",
+	"quanto custa",
+	"tarif*",
+	"prix",
+	"combien",
+];
+
 function mobilityTurn(text: string, context: AssistantContext): AgentTurn {
 	const copy = localCopy(context.language);
+	if (hasAnyKeyword(normalizeText(text), FARE_WORDS)) {
+		return {
+			text: copy.fares,
+			toolCalls: [{ name: "get_fares", args: {} }],
+		};
+	}
 	const destination = detectDestination(text);
 	if (destination) {
 		return {
@@ -556,6 +587,63 @@ function mobilityTurn(text: string, context: AssistantContext): AgentTurn {
 		text: copy.whereTo,
 		toolCalls: [
 			{ name: "open_page", args: { path: "/mapa", label: copy.mapLabel } },
+		],
+	};
+}
+
+const NEWS_WORDS = [
+	"novedad*",
+	"aviso*",
+	"noticia*",
+	"alerta*",
+	"news",
+	"novidade*",
+	"nouveaute*",
+	"actualite*",
+];
+
+const INDICATOR_WORDS = [
+	"indicador*",
+	"indicator*",
+	"indicateur*",
+	"meta*",
+	"progreso",
+	"progress",
+];
+
+/** Words of each dataset slug and title, so "los paraderos" finds it. */
+function datasetFor(normalized: string) {
+	return OPEN_DATA_CATALOG.find((dataset) =>
+		hasAnyKeyword(normalized, [
+			dataset.slug.replace(/-/g, " "),
+			...normalizeText(dataset.title)
+				.trim()
+				.split(" ")
+				.filter((word) => word.length >= 6),
+		]),
+	);
+}
+
+function cityDataTurn(text: string, context: AssistantContext): AgentTurn {
+	const copy = localCopy(context.language);
+	const normalized = normalizeText(text);
+	if (hasAnyKeyword(normalized, NEWS_WORDS)) {
+		return { text: copy.news, toolCalls: [{ name: "get_news", args: {} }] };
+	}
+	if (hasAnyKeyword(normalized, INDICATOR_WORDS)) {
+		return {
+			text: copy.indicators,
+			toolCalls: [{ name: "get_city_indicators", args: {} }],
+		};
+	}
+	const dataset = datasetFor(normalized);
+	return {
+		text: copy.openData,
+		toolCalls: [
+			{
+				name: "get_open_data",
+				args: dataset ? { dataset: dataset.slug } : {},
+			},
 		],
 	};
 }
@@ -777,6 +865,34 @@ export function wrapUpResult(
 			return publishText(result, words.reportSent, copy);
 		case "open_page":
 			return "";
+		case "get_fares": {
+			const fares = result.summary.fares;
+			return Array.isArray(fares) && fares.length > 0
+				? words.fares(formatFares(fares as ModeFare[]))
+				: words.fallback;
+		}
+		case "get_news": {
+			const alerts = result.summary.arroyo_alerts;
+			const events = result.summary.new_events;
+			return words.news(
+				Array.isArray(alerts) ? alerts.length : 0,
+				Array.isArray(events) ? events.length : 0,
+			);
+		}
+		case "get_open_data":
+			return Array.isArray(result.summary.datasets)
+				? words.openDataCatalog(count ?? 0)
+				: words.openDataRecords(count ?? 0);
+		case "get_city_indicators": {
+			const indicators = result.summary.indicators;
+			return Array.isArray(indicators) && indicators.length > 0
+				? words.indicators(
+						formatIndicators(
+							indicators as Parameters<typeof formatIndicators>[0],
+						),
+					)
+				: words.fallback;
+		}
 	}
 }
 
@@ -819,5 +935,7 @@ export function answerLocally(
 			return cityReportsTurn(text, context);
 		case "account":
 			return accountTurn(text, context);
+		case "city_data":
+			return cityDataTurn(text, context);
 	}
 }
