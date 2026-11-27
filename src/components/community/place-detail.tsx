@@ -14,7 +14,7 @@ import {
 	directionsUrl,
 	PLACE_KIND_LABELS,
 } from "../../lib/community/community-labels";
-import type { PlaceKind } from "../../lib/community/community-types";
+import { useT } from "../../lib/i18n/use-language";
 import { AskQuillartButton } from "../assistant/ask-quillart-button";
 import { CommunityShell } from "./community-shell";
 import { EmptyState, Loaded, SpotIllustration } from "./community-ui";
@@ -23,32 +23,15 @@ import { PlaceBadges, PlaceKindTile } from "./place-card";
 import { ThreadCard } from "./thread-card";
 import { useLoad } from "./use-community";
 
-const CARE_TIPS: Partial<Record<PlaceKind, string[]>> = {
-	nature: [
-		"Quédate en los senderos y miradores: el manglar es casa de muchas especies.",
-		"Observa las aves en silencio y a distancia; no las alimentes.",
-		"Lo que traes, te lo llevas. Deja el lugar como lo encontraste.",
-	],
-	waterfront: [
-		"Nada de basura ni plásticos al río o al mar: todo va a la caneca.",
-		"Respeta las zonas de baño señalizadas y las indicaciones de los salvavidas.",
-		"Comparte la ciclorruta: despacio cerca de niños y peatones.",
-	],
-	park: [
-		"Cuida los árboles y las zonas verdes; no arranques plantas.",
-		"Recoge lo de tu mascota y llévala con traílla.",
-		"Usa las canecas y ayuda a que los juegos sigan en buen estado.",
-	],
-};
-
 function BackLink() {
+	const t = useT();
 	return (
 		<a
 			href="/lugares"
 			className="q-btn q-btn--ghost q-btn--sm min-h-11! self-start px-2 no-underline"
 		>
 			<ArrowLeft size={16} aria-hidden="true" />
-			Todos los lugares
+			{t.places.allPlaces}
 		</a>
 	);
 }
@@ -60,6 +43,7 @@ export function PlaceDetail({
 	slug: string;
 	aiHref?: string;
 }) {
+	const t = useT();
 	const { state } = useLoad(
 		async (store) => {
 			const place = await store.getPlace(slug);
@@ -77,25 +61,25 @@ export function PlaceDetail({
 	return (
 		<CommunityShell current="places" aiHref={aiHref}>
 			<BackLink />
-			<Loaded state={state} loadingLabel="Cargando el lugar…">
+			<Loaded state={state} loadingLabel={t.places.loadingPlace}>
 				{(data) => {
 					if (!data)
 						return (
 							<EmptyState
-								title="No encontramos este lugar"
+								title={t.places.notFoundTitle}
 								illustration="/illustrations/page-not-found.svg"
 								action={
 									<a href="/lugares" className="q-btn q-btn--primary">
-										Ver todos los lugares
+										{t.places.notFoundAction}
 									</a>
 								}
 							>
-								Puede que el enlace esté mal escrito o que el lugar ya no esté
-								en la lista.
+								{t.places.notFoundText}
 							</EmptyState>
 						);
 					const { place, events, threads } = data;
-					const tips = CARE_TIPS[place.kind];
+					const tips =
+						t.places.careTips[place.kind as keyof typeof t.places.careTips];
 					return (
 						<>
 							<div className="q-illus py-5">
@@ -126,10 +110,11 @@ export function PlaceDetail({
 												aria-hidden="true"
 												className="mt-0.5 text-[var(--ink-muted)]"
 											/>
-											<span className="sr-only">Dirección</span>
+											<span className="sr-only">{t.places.address}</span>
 										</dt>
 										<dd className="q-p">
-											{place.address ?? `${place.neighborhood}, Barranquilla`}
+											{place.address ??
+												t.places.defaultAddress(place.neighborhood)}
 										</dd>
 									</div>
 									<div className="flex items-start gap-2">
@@ -139,10 +124,10 @@ export function PlaceDetail({
 												aria-hidden="true"
 												className="mt-0.5 text-[var(--ink-muted)]"
 											/>
-											<span className="sr-only">Horario</span>
+											<span className="sr-only">{t.places.hours}</span>
 										</dt>
 										<dd className="q-p">
-											{place.openingHours ?? "Abierto todo el día"}
+											{place.openingHours ?? t.places.openAllDay}
 										</dd>
 									</div>
 								</dl>
@@ -158,35 +143,32 @@ export function PlaceDetail({
 										className="q-btn q-btn--primary"
 									>
 										<Navigation size={18} aria-hidden="true" />
-										Cómo llegar
-										<span className="sr-only">(se abre en otra pestaña)</span>
+										{t.places.directions}
+										<span className="sr-only">{t.places.opensNewTab}</span>
 									</a>
-									<AskQuillartButton
-										prompt={`¿Qué puedo hacer en ${place.name}?`}
-									/>
+									<AskQuillartButton prompt={t.places.askAbout(place.name)} />
 								</div>
 							</section>
 
 							<section aria-labelledby="place-events" className="space-y-3">
 								<div className="flex flex-wrap items-center justify-between gap-2">
 									<h2 id="place-events" className="q-h2">
-										Qué pasa aquí
+										{t.places.eventsTitle}
 									</h2>
 									<a
 										href={`/agenda/nuevo?lugar=${encodeURIComponent(place.id)}`}
 										className="q-btn q-btn--secondary q-btn--sm min-h-11!"
 									>
 										<CalendarPlus size={16} aria-hidden="true" />
-										Organizar un evento aquí
+										{t.places.organizeEvent}
 									</a>
 								</div>
 								{events.length === 0 ? (
 									<EmptyState
 										illustration="/illustrations/events-calendar.svg"
-										title="Todavía no hay eventos aquí"
+										title={t.places.noEventsTitle}
 									>
-										¿Tienes un plan para este lugar? Organízalo y la gente se
-										suma.
+										{t.places.noEventsText}
 									</EmptyState>
 								) : (
 									<ul className="grid grid-cols-1 gap-3 lg:grid-cols-2">
@@ -202,22 +184,22 @@ export function PlaceDetail({
 							<section aria-labelledby="place-threads" className="space-y-3">
 								<div className="flex flex-wrap items-center justify-between gap-2">
 									<h2 id="place-threads" className="q-h2">
-										Conversaciones sobre este lugar
+										{t.places.threadsTitle}
 									</h2>
 									<a
 										href={`/foro?nuevo=1&lugar=${encodeURIComponent(place.id)}`}
 										className="q-btn q-btn--secondary q-btn--sm min-h-11!"
 									>
 										<MessageSquarePlus size={16} aria-hidden="true" />
-										Abrir conversación
+										{t.places.openThread}
 									</a>
 								</div>
 								{threads.length === 0 ? (
 									<EmptyState
 										illustration="/illustrations/share-opinion.svg"
-										title="Nadie ha hablado de este lugar todavía"
+										title={t.places.noThreadsTitle}
 									>
-										Cuenta cómo te fue, pregunta o comparte un dato.
+										{t.places.noThreadsText}
 									</EmptyState>
 								) : (
 									<ul className="space-y-3">
@@ -237,7 +219,7 @@ export function PlaceDetail({
 								>
 									<h2 id="place-care" className="q-h3 flex items-center gap-2">
 										<Sprout size={20} aria-hidden="true" />
-										Cuida este lugar
+										{t.places.careTitle}
 									</h2>
 									<ul className="q-p list-disc space-y-1.5 pl-5">
 										{tips.map((tip) => (

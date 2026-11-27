@@ -7,6 +7,6 @@ const slug = Astro.params.slug ?? "";
 const { aiHref } = homeContent;
 ---
 
-<BaseLayout title="Lugar · QUILLART">
+<BaseLayout title="Lugar · QUILLART" titleKey="places.detailTitle">
 	<PlaceDetail client:only="react" slug={slug} aiHref={aiHref} />
 </BaseLayout>
