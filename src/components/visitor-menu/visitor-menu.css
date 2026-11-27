@@ -1,0 +1,281 @@
+/* Visitor secondary-menu pages (/pasaporte, /jerga).
+   Page-level layout only; every colour, radius and shadow comes from the QUILLART tokens. */
+
+.vm-page {
+	width: 100%;
+	max-width: 560px;
+	margin: 0 auto;
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+}
+
+.vm-titlerow {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+.vm-titlerow > :first-child {
+	flex: 1;
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+.vm-hero {
+	flex: none;
+	width: 112px;
+}
+.vm-hero--lg {
+	width: 136px;
+}
+.vm-count {
+	font-family: var(--font-display);
+	font-size: 40px;
+	line-height: 44px;
+	font-weight: 700;
+}
+
+.vm-note {
+	display: flex;
+	gap: 8px;
+	align-items: flex-start;
+	margin: 0;
+}
+.vm-note > svg {
+	flex: none;
+	margin-top: 1px;
+}
+.vm-search-clear {
+	width: 44px;
+	min-height: 44px;
+}
+
+/* List of slang entries. */
+.vm-list {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+/* Stamps grid: the passport pages. */
+.vm-stamps {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 10px;
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+.vm-stamp {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 6px;
+	padding: 12px 6px;
+	border-radius: var(--radius-md);
+	background: var(--surface);
+	box-shadow: var(--shadow-card);
+	text-align: center;
+	min-width: 0;
+}
+.vm-stamp__seal {
+	width: 56px;
+	height: 56px;
+	border-radius: 50%;
+	display: grid;
+	place-items: center;
+	background: var(--gold-soft);
+	color: var(--gold-text);
+	box-shadow: inset 0 0 0 3px var(--gold);
+}
+.vm-stamp__seal--green {
+	background: var(--green-soft);
+	color: var(--green-text);
+	box-shadow: inset 0 0 0 3px var(--green);
+}
+.vm-stamp__seal--todo {
+	background: var(--bg);
+	color: var(--ink-subtle);
+	box-shadow: inset 0 0 0 2px var(--line-control);
+}
+.vm-stamp b {
+	font-size: 13px;
+	line-height: 16px;
+	overflow-wrap: anywhere;
+}
+.vm-stamp small {
+	font-size: 11px;
+	line-height: 14px;
+	color: var(--ink-muted);
+}
+.vm-stamp__reward {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	font-size: 11px;
+	line-height: 14px;
+	font-weight: 600;
+	color: var(--green-text);
+}
+
+/* Glossary of terms inside a .q-details body. */
+.vm-terms {
+	margin: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+.vm-terms dt {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	font-weight: 600;
+	color: var(--ink);
+}
+.vm-terms svg {
+	flex: none;
+	color: var(--gold-text);
+}
+.vm-terms dd {
+	margin: 2px 0 0 26px;
+}
+
+/* Slang entry. */
+.vm-slang {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	padding: 14px 16px;
+	border-radius: var(--radius-md);
+	background: var(--surface);
+	box-shadow: var(--shadow-card);
+}
+.vm-slang__term {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin: 0;
+	font-family: var(--font-display);
+	font-size: 18px;
+	line-height: 24px;
+	font-weight: 600;
+}
+.vm-slang__term svg {
+	color: var(--gold-text);
+	flex: none;
+}
+.vm-slang__en {
+	display: flex;
+	gap: 6px;
+	align-items: baseline;
+	color: var(--ink-muted);
+}
+.vm-slang__lang {
+	flex: none;
+	font-size: 10px;
+	line-height: 14px;
+	font-weight: 700;
+	letter-spacing: 0.06em;
+	padding: 0 6px;
+	border-radius: var(--radius-pill);
+	background: var(--line);
+	color: var(--ink);
+}
+.vm-slang__example {
+	margin: 2px 0 0;
+	padding: 8px 12px;
+	border-radius: 14px;
+	background: var(--gold-soft);
+	color: var(--ink);
+	font-size: 13px;
+	line-height: 18px;
+}
+.vm-slang__example i {
+	font-style: italic;
+}
+
+/* Sticky primary action, kept above the mobile tab bar (68px). */
+.vm-foot {
+	position: sticky;
+	bottom: 68px;
+	margin-top: auto;
+	padding: 8px 0;
+	background: linear-gradient(transparent, var(--bg) 30%);
+}
+
+/* Flat illustrations, coloured only with tokens. */
+.vm-ill {
+	display: block;
+	width: 100%;
+	height: auto;
+}
+.vm-illus {
+	display: block;
+	width: 168px;
+	max-width: 100%;
+	margin: 0 auto;
+}
+.il-bg {
+	fill: var(--illus);
+}
+.il-gold {
+	fill: var(--gold);
+}
+.il-goldsoft {
+	fill: var(--gold-soft);
+}
+.il-green {
+	fill: var(--green);
+}
+.il-greensoft {
+	fill: var(--green-soft);
+}
+.il-red {
+	fill: var(--red);
+}
+.il-ink {
+	fill: var(--ink);
+}
+.il-subtle {
+	fill: var(--ink-subtle);
+}
+.il-surface {
+	fill: var(--surface-raised);
+}
+.il-line {
+	fill: none;
+	stroke: var(--ink);
+	stroke-width: 2.5;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+}
+.il-text {
+	fill: var(--ink);
+	font-family: var(--font-sans);
+	font-weight: 700;
+}
+.il-onred {
+	fill: var(--on-red);
+	font-family: var(--font-display);
+	font-weight: 700;
+}
+
+@media (min-width: 1024px) {
+	.vm-foot {
+		bottom: 0;
+	}
+	.vm-hero {
+		width: 140px;
+	}
+	.vm-hero--lg {
+		width: 176px;
+	}
+	.vm-stamps {
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+	}
+}
