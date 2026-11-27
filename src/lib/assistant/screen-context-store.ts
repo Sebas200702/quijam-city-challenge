@@ -102,3 +102,23 @@ function pageDefaults(): Partial<ScreenContext> {
 export const screenContext: ScreenContextStore = createScreenContextStore(
 	pageDefaults(),
 );
+
+/** Kept for this tab: the person can stop sharing the screen from the dock. */
+const SHARE_KEY = "quillart-share-screen";
+
+export function isScreenShared(): boolean {
+	try {
+		return sessionStorage.getItem(SHARE_KEY) !== "off";
+	} catch {
+		return true;
+	}
+}
+
+export function setScreenShared(on: boolean): void {
+	try {
+		if (on) sessionStorage.removeItem(SHARE_KEY);
+		else sessionStorage.setItem(SHARE_KEY, "off");
+	} catch {
+		// Storage blocked: the choice lasts until the page changes.
+	}
+}

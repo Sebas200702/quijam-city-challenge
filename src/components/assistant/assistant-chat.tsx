@@ -8,6 +8,7 @@ import {
 	MicOff,
 	RotateCcw,
 	SendHorizontal,
+	Square,
 	Volume2,
 	VolumeX,
 } from "lucide-react";
@@ -27,6 +28,7 @@ import type {
 } from "../../lib/assistant/assistant-types";
 import { useT } from "../../lib/i18n/use-language";
 import { scrollBehavior } from "../../lib/reduced-motion";
+import { onDockRequest } from "../agent-dock/dock-control";
 import {
 	ErrorNote,
 	PublishNotice,
@@ -36,6 +38,7 @@ import { EventCard } from "../community/event-card";
 import { ThreadCard } from "../community/thread-card";
 import { ActionConfirmCard } from "./action-confirm-card";
 import { PlaceResultCard } from "./place-result-card";
+import { useAnswerAnnouncement } from "./use-answer-announcement";
 import { useAssistant } from "./use-assistant";
 import { speak, useVoiceConduit } from "./voice-conduit";
 
@@ -132,7 +135,7 @@ function DisplayView({
 	}
 }
 
-function AiAvatar({ thinking = false }: { thinking?: boolean }) {
+export function AiAvatar({ thinking = false }: { thinking?: boolean }) {
 	return (
 		<span className="q-avatar" aria-hidden="true">
 			<span
@@ -143,7 +146,17 @@ function AiAvatar({ thinking = false }: { thinking?: boolean }) {
 	);
 }
 
-function MessageView({ message }: { message: AssistantMessage }) {
+/**
+ * One turn of the log. `onScreen` lists tool calls whose result the screen
+ * itself already shows (a filtered list, pins): their cards are not repeated.
+ */
+export function MessageView({
+	message,
+	onScreen,
+}: {
+	message: AssistantMessage;
+	onScreen?: ReadonlySet<string>;
+}) {
 	if (message.role === "user") {
 		return (
 			<div className="q-msg q-msg--user">
@@ -169,7 +182,9 @@ function MessageView({ message }: { message: AssistantMessage }) {
 			</div>
 		);
 	}
-	const shown = message.results.filter((result) => result.display);
+	const shown = message.results.filter(
+		(result) => result.display && !onScreen?.has(result.callId),
+	);
 	if (shown.length === 0) return null;
 	return (
 		<div className="space-y-3 pl-10">
@@ -214,6 +229,13 @@ export function AssistantChat({
 		sessionLoading,
 		send,
 	} = assistant;
+	const announcement = useAnswerAnnouncement({
+		messages,
+		loading,
+		pendingCount: pending.length,
+		stopped: assistant.stopped,
+	});
+	const waitHintId = useId();
 	const [draft, setDraft] = useState("");
 	const voice = useVoiceConduit((text) => void send(text));
 	const inputId = useId();
@@ -238,6 +260,15 @@ export function AssistantChat({
 		);
 		void send(question);
 	}, [sessionLoading, send]);
+
+	// /inicio is the dock opened full screen: "Pregúntale a Quillart" buttons land here.
+	useEffect(
+		() =>
+			onDockRequest(({ ask }) => {
+				if (ask) void send(ask);
+			}),
+		[send],
+	);
 
 	// Read new answers aloud when the person turned it on.
 	useEffect(() => {
@@ -291,6 +322,7 @@ export function AssistantChat({
 				autoComplete="off"
 				enterKeyHint="send"
 				maxLength={1000}
+				aria-describedby={loading ? waitHintId : undefined}
 			/>
 			{voice.canListen && (
 				<button
@@ -310,16 +342,33 @@ export function AssistantChat({
 					</span>
 				</button>
 			)}
-			<button
-				type="submit"
-				className="q-btn q-btn--primary q-btn--icon"
-				disabled={loading || voice.listening || !draft.trim()}
-			>
-				<SendHorizontal size={20} aria-hidden="true" />
-				<span className="q-sr">{t.chat.send}</span>
-			</button>
+			{loading ? (
+				// U20: the answer can be stopped; the text being typed is kept.
+				<button
+					type="button"
+					className="q-btn q-btn--secondary q-btn--icon"
+					onClick={assistant.stop}
+				>
+					<Square size={18} aria-hidden="true" />
+					<span className="q-sr">{t.dock.stop}</span>
+				</button>
+			) : (
+				<button
+					type="submit"
+					className="q-btn q-btn--primary q-btn--icon"
+					disabled={voice.listening || !draft.trim()}
+				>
+					<SendHorizontal size={20} aria-hidden="true" />
+					<span className="q-sr">{t.chat.send}</span>
+				</button>
+			)}
 		</form>
 	);
+	const waitHint = loading ? (
+		<p id={waitHintId} className="q-sm q-muted">
+			{t.dock.waitForAnswer}
+		</p>
+	) : null;
 
 	return (
 		<section
@@ -343,12 +392,6 @@ export function AssistantChat({
 						{t.chat.readAloud}
 					</button>
 				)}
-				<a
-					className="q-btn q-btn--ghost q-btn--sm min-h-11"
-					href="/prueba-guia"
-				>
-					{t.chat.liveVoice}
-				</a>
 				{!empty && (
 					<button
 						type="button"
@@ -394,12 +437,14 @@ export function AssistantChat({
 				</div>
 			) : (
 				<>
-					<div className="flex flex-col gap-4" aria-live="polite">
+					{/* Not a live region (U20): the status line below says what is new. */}
+					<div className="flex flex-col gap-4">
 						{messages.map((message, index) => (
 							<MessageView
 								// biome-ignore lint/suspicious/noArrayIndexKey: the log only grows.
 								key={index}
 								message={message}
+								onScreen={assistant.onScreen}
 							/>
 						))}
 						{pending.map((action) => (
@@ -470,9 +515,13 @@ export function AssistantChat({
 							</div>
 						)}
 						{composer}
+						{waitHint}
 					</div>
 				</>
 			)}
+			<p role="status" className="q-sr">
+				{announcement}
+			</p>
 		</section>
 	);
 }

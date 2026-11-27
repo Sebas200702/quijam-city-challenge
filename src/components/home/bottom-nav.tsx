@@ -34,7 +34,10 @@ export function BottomNav({ current }: BottomNavProps) {
 	};
 
 	return (
-		<nav aria-label={t.nav.sections} className="sticky bottom-0 z-30 lg:hidden">
+		<nav
+			aria-label={t.nav.sections}
+			className="q-bottom-nav sticky bottom-0 z-30 lg:hidden"
+		>
 			<div className="q-tabs">
 				{tab("home", APP_HOME_HREF, t.nav.home, () => (
 					<span

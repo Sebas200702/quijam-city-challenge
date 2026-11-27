@@ -112,8 +112,12 @@ export function createUiBus(env: UiBusEnv): UiBus {
 		}
 	}
 
+	/** The latest changes, for a dock that mounts after a screen applied them. */
+	let recent: UiChange[] = [];
+
 	function emit(changes: UiChange[]) {
 		if (changes.length === 0) return;
+		recent = changes;
 		for (const listener of listeners) listener(changes);
 	}
 
@@ -195,6 +199,7 @@ export function createUiBus(env: UiBusEnv): UiBus {
 		},
 		onChange(listener) {
 			listeners.add(listener);
+			if (recent.length > 0) listener(recent);
 			return () => listeners.delete(listener);
 		},
 	};

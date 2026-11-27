@@ -12,6 +12,7 @@ import type {
 	VisitorShellCopy,
 } from "../../lib/home-content-types";
 import type { PlanResponse } from "../../lib/routing/plan-route";
+import { openDock } from "../agent-dock/dock-control";
 
 const copFormatter = new Intl.NumberFormat("es-CO", {
 	maximumFractionDigits: 0,
@@ -50,6 +51,10 @@ export function NextStepCard({
 }: NextStepCardProps) {
 	const route = plan?.route ?? null;
 	const loading = !route && !failed && plan === null;
+	// The dock on this screen answers (U03); /inicio only when there is none.
+	const askInDock = (event: { preventDefault: () => void }) => {
+		if (openDock()) event.preventDefault();
+	};
 	const fare = (cop: number) =>
 		cop === 0 ? copy.free : `$${copFormatter.format(cop)}`;
 
@@ -132,7 +137,11 @@ export function NextStepCard({
 							{copy.emptyTitle}
 						</h2>
 						<p className="q-next-step__why">{copy.emptyWhy}</p>
-						<a className="q-btn q-btn--primary q-btn--block" href={askHref}>
+						<a
+							className="q-btn q-btn--primary q-btn--block"
+							href={askHref}
+							onClick={askInDock}
+						>
 							<Mic size={18} strokeWidth={1.75} aria-hidden="true" />
 							{copy.talkToGuide}
 						</a>
@@ -140,17 +149,7 @@ export function NextStepCard({
 				)}
 			</section>
 
-			{route ? (
-				<a className="q-prompt visitor-guide-bar" href={askHref}>
-					<span className="visitor-guide-bar__text">{copy.guidePrompt}</span>
-					<span
-						className="q-btn q-btn--secondary q-btn--icon"
-						aria-hidden="true"
-					>
-						<Mic size={20} strokeWidth={1.75} />
-					</span>
-				</a>
-			) : null}
+			{/* No second "Pregúntale a Quillart AI" bar here: the dock below is the one entry (U04). */}
 			{online ? null : (
 				<p className="q-sm q-muted visitor-note visitor-note--card">
 					<WifiOff size={16} strokeWidth={1.75} aria-hidden="true" />

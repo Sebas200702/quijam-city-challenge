@@ -21,7 +21,10 @@ import type {
 } from "../../lib/assistant/assistant-types";
 import { isActionTool } from "../../lib/assistant/assistant-types";
 import { answerOffline } from "../../lib/assistant/offline-answer";
-import { screenContext } from "../../lib/assistant/screen-context-store";
+import {
+	isScreenShared,
+	screenContext,
+} from "../../lib/assistant/screen-context-store";
 import { type UiNavigation, uiBus } from "../../lib/assistant/ui-action-bus";
 import { declinedResult, runTool } from "../../lib/assistant/tool-executor";
 import { withOfflineGuide } from "../../lib/guide/guide-offline";
@@ -173,6 +176,9 @@ export function useAssistant() {
 		() => new Set(),
 	);
 	const navigation = useRef<UiNavigation | null>(null);
+	const abort = useRef<AbortController | null>(null);
+	/** True right after the person stopped an answer. */
+	const [stopped, setStopped] = useState(false);
 	const batch = useRef<OpenBatch | null>(null);
 	const busy = useRef(false);
 	const profileRef = useRef(profile);
@@ -263,9 +269,12 @@ export function useAssistant() {
 					isVisitor: current?.isVisitor ?? null,
 					fromPath: referrerPath(),
 					language: getLanguage(),
-					screen: screenContext.get(),
+					// The person can stop sharing the screen from the dock.
+					...(isScreenShared() ? { screen: screenContext.get() } : {}),
 				},
 			};
+			const controller = new AbortController();
+			abort.current = controller;
 			let response: Response;
 			try {
 				response = await fetch("/api/assistant", {
@@ -275,8 +284,10 @@ export function useAssistant() {
 						Accept: `${ASSISTANT_STREAM_TYPE}, application/json`,
 					},
 					body: JSON.stringify(body),
+					signal: controller.signal,
 				});
-			} catch {
+			} catch (error) {
+				if (controller.signal.aborted) throw error;
 				// No network: the local agents answer on the phone (#47).
 				const { assistantOffline, assistantNoActions } =
 					dictionaries[getLanguage()].offline;
@@ -323,6 +334,7 @@ export function useAssistant() {
 			busy.current = true;
 			setLoading(true);
 			setError(null);
+			setStopped(false);
 			let response: AssistantResponse;
 			try {
 				response = await request(history);
@@ -330,6 +342,12 @@ export function useAssistant() {
 				busy.current = false;
 				setDraft(null);
 				setLoading(false);
+				// "Detener" (U20): the person stopped it; nothing failed.
+				if (abort.current?.signal.aborted) {
+					abort.current = null;
+					setStopped(true);
+					return;
+				}
 				setError({
 					message:
 						"Uy, no pude conectarme ahora mismo. Revisa tu conexión e inténtalo otra vez.",
@@ -455,10 +473,11 @@ export function useAssistant() {
 		[settle],
 	);
 
+	/** Sends a message; false (nothing sent) while an answer is still coming. */
 	const send = useCallback(
-		async (text: string) => {
+		async (text: string): Promise<boolean> => {
 			const clean = text.trim();
-			if (!clean || busy.current) return;
+			if (!clean || busy.current) return false;
 			let history = messages;
 			const open = batch.current;
 			if (open) {
@@ -477,10 +496,16 @@ export function useAssistant() {
 			];
 			setMessages(next);
 			setSuggestions([]);
-			await converse(next, 0);
+			void converse(next, 0);
+			return true;
 		},
 		[converse, messages],
 	);
+
+	/** "Detener" (U20): cancels the answer being written. */
+	const stop = useCallback(() => {
+		abort.current?.abort();
+	}, []);
 
 	/** Starts over with an empty conversation. */
 	const reset = useCallback(() => {
@@ -498,11 +523,13 @@ export function useAssistant() {
 		draft,
 		pending,
 		loading,
+		stopped,
 		error,
 		suggestions,
 		signedIn: profile !== null,
 		sessionLoading,
 		send,
+		stop,
 		confirm,
 		cancel,
 		reset,
