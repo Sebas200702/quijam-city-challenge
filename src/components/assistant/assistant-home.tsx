@@ -91,7 +91,7 @@ function TodayStrip() {
 								<li key={event.id} className="min-w-0">
 									<a
 										href={`/agenda/${encodeURIComponent(event.id)}`}
-										className="q-card h-full min-h-11 items-start gap-1.5 px-4 py-3 text-left text-inherit no-underline transition-shadow hover:shadow-[var(--glow-gold)]"
+										className="q-card h-full min-h-11 items-start gap-1.5 px-4 py-3 text-left text-inherit no-underline transition-shadow lg:hover:shadow-[var(--glow-gold)]"
 									>
 										<span className="q-badge q-badge--event">
 											{formatEventDay(event.startsAt)}

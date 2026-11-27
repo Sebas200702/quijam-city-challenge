@@ -279,8 +279,10 @@
 	text-align: left;
 	cursor: pointer;
 }
-.corridor-stop:hover {
-	background: var(--bg);
+@media (min-width: 1024px) {
+	.corridor-stop:hover {
+		background: var(--bg);
+	}
 }
 .corridor-stop[aria-pressed="true"] {
 	background: var(--gold-soft);

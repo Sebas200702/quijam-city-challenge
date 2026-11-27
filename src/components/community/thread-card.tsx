@@ -16,7 +16,7 @@ export function ThreadCard({ thread }: { thread: ForumThread }) {
 	return (
 		<a
 			href={`/foro/${thread.id}`}
-			className="q-card block min-h-11 px-5 py-4 text-inherit no-underline transition-shadow hover:shadow-[var(--shadow-card)]"
+			className="q-card block min-h-11 px-5 py-4 text-inherit no-underline transition-shadow lg:hover:shadow-[var(--shadow-card)]"
 		>
 			<div className="flex flex-wrap items-center gap-2">
 				<span className="q-badge q-badge--neutral">
