@@ -6,12 +6,17 @@ import type {
 } from "./city-dashboard-types";
 import {
 	calculateOccupancyPercent,
+	calculateResolvedReportsRate,
 	calculateTotalVisitors,
+	filterReportsByStatus,
 	formatCop,
 	formatFreshnessLabel,
+	formatRelativeReportTime,
 	getActiveFloodAlerts,
 	getDensityVisualState,
+	getReportStatusActions,
 	getSaturatedZones,
+	REPORT_STATUS_LABELS,
 	summarizeReportsByStatus,
 } from "./city-dashboard-utils";
 
@@ -185,5 +190,62 @@ describe("city-dashboard-utils", () => {
 		expect(formatFreshnessLabel("2026-11-26T18:00:00Z", base + 125000)).toBe(
 			"Actualizado hace 2 min",
 		);
+	});
+
+	it("uses consistent Spanish labels for inbox states and calculates resolved rate", () => {
+		expect(REPORT_STATUS_LABELS).toEqual({
+			open: "Nuevo",
+			in_review: "En revisión",
+			resolved: "Resuelto",
+			dismissed: "Descartado",
+		});
+
+		const summary = summarizeReportsByStatus(sampleReports);
+		expect(calculateResolvedReportsRate(summary)).toBe(33);
+		expect(
+			calculateResolvedReportsRate({
+				open: 0,
+				in_review: 0,
+				resolved: 0,
+				dismissed: 0,
+				total: 0,
+			}),
+		).toBe(0);
+	});
+
+	it("filters reports by status and returns valid workflow transitions", () => {
+		expect(filterReportsByStatus(sampleReports, "all")).toHaveLength(3);
+		expect(
+			filterReportsByStatus(sampleReports, "open").map((r) => r.id),
+		).toEqual(["r1"]);
+		expect(
+			filterReportsByStatus(sampleReports, "in_review").map((r) => r.id),
+		).toEqual(["r2"]);
+		expect(
+			filterReportsByStatus(sampleReports, "resolved").map((r) => r.id),
+		).toEqual(["r3"]);
+
+		expect(
+			getReportStatusActions("open").map((action) => action.nextStatus),
+		).toEqual(["in_review", "resolved"]);
+		expect(
+			getReportStatusActions("in_review").map((action) => action.nextStatus),
+		).toEqual(["resolved", "dismissed"]);
+		expect(
+			getReportStatusActions("resolved").map((action) => action.nextStatus),
+		).toEqual(["in_review"]);
+	});
+
+	it("formats relative report arrival times in Spanish", () => {
+		const base = new Date("2026-11-26T18:00:00Z").getTime();
+		expect(
+			formatRelativeReportTime("2026-11-26T18:00:00Z", base + 20_000),
+		).toBe("Hace un momento");
+		expect(
+			formatRelativeReportTime("2026-11-26T18:00:00Z", base + 5 * 60_000),
+		).toBe("Hace 5 min");
+		expect(
+			formatRelativeReportTime("2026-11-26T18:00:00Z", base + 2 * 3_600_000),
+		).toBe("Hace 2 h");
 	});
 });

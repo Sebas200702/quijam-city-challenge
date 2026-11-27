@@ -18,6 +18,10 @@ export interface GuideText {
 	modes: Record<TransportMode, string>;
 	report: {
 		title: string;
+		route: string;
+		referenceFare: string;
+		overchargeEstimate: (percent: number | null, deltaCop: string) => string;
+		withinReference: string;
 		vehicle: string;
 		vehicles: Record<"taxi" | "bus" | "informal" | "other", string>;
 		charged: string;
@@ -54,6 +58,13 @@ const ES: GuideText = {
 	},
 	report: {
 		title: "Reportar cobro abusivo",
+		route: "Trayecto",
+		referenceFare: "Tarifa de referencia",
+		overchargeEstimate: (percent, deltaCop) =>
+			percent !== null
+				? `+${deltaCop} (+${percent} % sobre la referencia)`
+				: `+${deltaCop} sobre la referencia`,
+		withinReference: "Dentro de la tarifa de referencia",
 		vehicle: "¿En qué ibas?",
 		vehicles: { taxi: "Taxi", bus: "Bus", informal: "Informal", other: "Otro" },
 		charged: "¿Cuánto te cobraron? (COP)",
@@ -94,6 +105,13 @@ const EN: GuideText = {
 	},
 	report: {
 		title: "Report an overcharge",
+		route: "Route",
+		referenceFare: "Reference fare",
+		overchargeEstimate: (percent, deltaCop) =>
+			percent !== null
+				? `+${deltaCop} (+${percent}% above reference)`
+				: `+${deltaCop} above reference`,
+		withinReference: "Within the reference fare",
 		vehicle: "What were you riding?",
 		vehicles: {
 			taxi: "Taxi",
