@@ -399,9 +399,14 @@ function fromCall(
 			// A filled fare report link also fills the form when it is on screen (U17).
 			const args = call.args as AssistantToolArgs["open_page"];
 			const [path, search = ""] = args.path.split("?");
-			if (path !== "/reportar" || search === "") return [];
+			// The person asked for that screen: take them there (with its prefill in the URL).
+			const open = { ...source, type: "ui.open" as const, path: args.path };
+			if (path !== "/reportar" || search === "") return [open];
 			const fields = readPrefill("overcharge", search);
-			return [{ ...source, type: "form.prefill", form: "overcharge", fields }];
+			return [
+				{ ...source, type: "form.prefill", form: "overcharge", fields },
+				open,
+			];
 		}
 		// Actions keep their confirmation card; the form on screen only mirrors it.
 		case "create_event":

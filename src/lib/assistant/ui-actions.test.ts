@@ -373,6 +373,11 @@ describe("fare report filled from the conversation (U17)", () => {
 				form: "overcharge",
 				fields: { amount: "25000", vehicle: "taxi" },
 			},
+			{
+				type: "ui.open",
+				fromCall: "c9",
+				path: "/reportar?monto=25000&vehiculo=taxi",
+			},
 		]);
 	});
 });
