@@ -109,15 +109,20 @@ export default function ModerationPage() {
 	const t = useT();
 	const store = useStore();
 	const session = useSession();
+	// The city sign-in brings its own heading; one h1 per screen.
+	const cityGate =
+		!session.loading && !session.profile && store.mode === "cloud";
 	return (
 		<CityFrame signedIn={!!session.profile}>
-			<PageTitle
-				eyebrow={t.forum.moderation.eyebrow}
-				title={t.forum.moderation.title}
-				illustration="/illustrations/for-review.svg"
-			>
-				{t.forum.moderation.intro}
-			</PageTitle>
+			{!cityGate && (
+				<PageTitle
+					eyebrow={t.forum.moderation.eyebrow}
+					title={t.forum.moderation.title}
+					illustration="/illustrations/for-review.svg"
+				>
+					{t.forum.moderation.intro}
+				</PageTitle>
+			)}
 			{session.loading ? (
 				<Loading />
 			) : session.profile ? (
