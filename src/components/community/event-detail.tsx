@@ -1,0 +1,510 @@
+// One event: details, registration, organizer tools and related conversations.
+
+import {
+	ArrowLeft,
+	CalendarClock,
+	MapPin,
+	MessageCirclePlus,
+	Navigation,
+	Share2,
+	Ticket,
+	UserRound,
+	Users,
+} from "lucide-react";
+import { type ReactNode, useState } from "react";
+import { EVENT_ILLUSTRATIONS } from "../../lib/community/community-illustrations";
+import {
+	directionsUrl,
+	EVENT_CATEGORY_LABELS,
+	formatCop,
+	formatEventLongDay,
+	formatTimeRange,
+} from "../../lib/community/community-labels";
+import {
+	isPastEvent,
+	registrationBlocker,
+	spotsLeft,
+} from "../../lib/community/community-rules";
+import type {
+	CommunityEvent,
+	ForumThread,
+	Place,
+	Profile,
+} from "../../lib/community/community-types";
+import { AskQuillartButton } from "../assistant/ask-quillart-button";
+import { CommunityShell } from "./community-shell";
+import {
+	EmptyState,
+	ErrorNote,
+	HeldBadge,
+	Loaded,
+	SpotIllustration,
+} from "./community-ui";
+import { ThreadCard } from "./thread-card";
+import { signInHref, useLoad, useSession, useStore } from "./use-community";
+
+export interface EventDetailProps {
+	id: string;
+	aiHref?: string;
+}
+
+export default function EventDetail({ id, aiHref }: EventDetailProps) {
+	const { profile, loading: sessionLoading } = useSession();
+	const { state, reload } = useLoad(
+		async (store) => {
+			const event = await store.getEvent(id);
+			if (!event) return null;
+			const [places, registrations, threads] = await Promise.all([
+				event.placeId ? store.listPlaces() : Promise.resolve([] as Place[]),
+				store.myRegistrations(),
+				store.listThreads({ eventId: event.id }),
+			]);
+			return {
+				event,
+				place: places.find((place) => place.id === event.placeId) ?? null,
+				registered: registrations.includes(event.id),
+				threads,
+			};
+		},
+		[id, profile?.id],
+		["events", "forum"],
+	);
+
+	return (
+		<CommunityShell current="agenda" aiHref={aiHref}>
+			<a href="/agenda" className="q-btn q-btn--ghost self-start">
+				<ArrowLeft size={18} aria-hidden="true" />
+				Volver a la agenda
+			</a>
+			<Loaded state={state} loadingLabel="Cargando el evento…">
+				{(data) =>
+					data ? (
+						<EventView
+							{...data}
+							profile={profile}
+							sessionLoading={sessionLoading}
+							onChange={reload}
+						/>
+					) : (
+						<EmptyState
+							title="No encontramos este evento"
+							illustration="/illustrations/page-not-found.svg"
+							action={
+								<a href="/agenda" className="q-btn q-btn--primary">
+									Ver la agenda
+								</a>
+							}
+						>
+							Puede que lo hayan retirado o que el enlace esté incompleto.
+						</EmptyState>
+					)
+				}
+			</Loaded>
+		</CommunityShell>
+	);
+}
+
+interface EventViewProps {
+	event: CommunityEvent;
+	place: Place | null;
+	registered: boolean;
+	threads: ForumThread[];
+	profile: Profile | null;
+	sessionLoading: boolean;
+	onChange: () => void;
+}
+
+function EventView({
+	event,
+	place,
+	registered,
+	threads,
+	profile,
+	sessionLoading,
+	onChange,
+}: EventViewProps) {
+	const isOrganizer = !!profile && profile.id === event.organizerId;
+	const cancelled = event.status === "cancelled";
+	const where = place?.name ?? event.locationText ?? "Lugar por confirmar";
+
+	return (
+		<>
+			<article className="q-card space-y-4 p-5 lg:p-8">
+				<div className="q-illus py-5">
+					<SpotIllustration
+						src={EVENT_ILLUSTRATIONS[event.category]}
+						className="h-36! lg:h-56!"
+					/>
+				</div>
+				<div className="flex flex-wrap items-center gap-2">
+					<span className="q-badge q-badge--event">
+						{EVENT_CATEGORY_LABELS[event.category]}
+					</span>
+					{event.moderationStatus === "held" && <HeldBadge />}
+					{cancelled && (
+						<span className="q-badge q-badge--alert">Cancelado</span>
+					)}
+					{registered && !cancelled && (
+						<span className="q-badge q-badge--optimal">Inscrito</span>
+					)}
+				</div>
+				<h1 className={`q-h1 break-words ${cancelled ? "line-through" : ""}`}>
+					{event.title}
+				</h1>
+				{event.moderationStatus === "held" && (
+					<p className="q-sm rounded-[var(--radius-md)] bg-[var(--gold-soft)] px-4 py-2 text-[var(--gold-text)]">
+						Tu evento está en revisión. Solo tú lo ves hasta que la moderación
+						lo apruebe.
+					</p>
+				)}
+
+				<dl className="space-y-3">
+					<InfoRow icon={<CalendarClock size={18} />} label="Cuándo">
+						{formatEventLongDay(event.startsAt)}
+						<br />
+						{formatTimeRange(event.startsAt, event.endsAt)}
+					</InfoRow>
+					<InfoRow icon={<MapPin size={18} />} label="Dónde">
+						{place ? (
+							<a
+								href={`/lugares/${encodeURIComponent(place.slug)}`}
+								className="font-semibold text-[var(--ink)]"
+							>
+								{place.name}
+							</a>
+						) : (
+							where
+						)}
+						{place && <span className="q-muted"> · {place.neighborhood}</span>}
+					</InfoRow>
+					<InfoRow icon={<UserRound size={18} />} label="Organiza">
+						{event.organizerName}
+					</InfoRow>
+					<InfoRow icon={<Ticket size={18} />} label="Entrada">
+						{event.isFree || !event.priceCop
+							? "Gratis"
+							: formatCop(event.priceCop)}
+					</InfoRow>
+				</dl>
+
+				{!cancelled && <Capacity event={event} />}
+
+				<p className="q-p whitespace-pre-line break-words">
+					{event.description}
+				</p>
+
+				<div className="flex flex-wrap gap-3">
+					{place && (
+						<a
+							href={directionsUrl(place.name, place.latitude, place.longitude)}
+							target="_blank"
+							rel="noopener noreferrer"
+							className="q-btn q-btn--secondary"
+						>
+							<Navigation size={18} aria-hidden="true" />
+							Cómo llegar
+						</a>
+					)}
+					<ShareButton title={event.title} />
+					<AskQuillartButton prompt={`¿Cómo llego a «${event.title}»?`} />
+				</div>
+			</article>
+
+			{isOrganizer ? (
+				<OrganizerPanel event={event} onChange={onChange} />
+			) : (
+				<RegistrationPanel
+					event={event}
+					registered={registered}
+					signedIn={!!profile}
+					sessionLoading={sessionLoading}
+					onChange={onChange}
+				/>
+			)}
+
+			<section className="space-y-3" aria-labelledby="event-threads">
+				<div className="flex flex-wrap items-center justify-between gap-3">
+					<h2 id="event-threads" className="q-h2">
+						Conversaciones
+					</h2>
+					<a
+						href={`/foro?nuevo=1&evento=${encodeURIComponent(event.id)}`}
+						className="q-btn q-btn--secondary"
+					>
+						<MessageCirclePlus size={18} aria-hidden="true" />
+						Conversar sobre este evento
+					</a>
+				</div>
+				{threads.length === 0 ? (
+					<p className="q-p q-muted">
+						Nadie ha abierto una conversación todavía. ¿Tienes una pregunta para
+						quien organiza? Empieza tú.
+					</p>
+				) : (
+					<ul className="space-y-3">
+						{threads.map((thread) => (
+							<li key={thread.id}>
+								<ThreadCard thread={thread} />
+							</li>
+						))}
+					</ul>
+				)}
+			</section>
+		</>
+	);
+}
+
+function InfoRow({
+	icon,
+	label,
+	children,
+}: {
+	icon: ReactNode;
+	label: string;
+	children: ReactNode;
+}) {
+	return (
+		<div className="flex gap-3">
+			<span
+				aria-hidden="true"
+				className="mt-0.5 shrink-0 text-[var(--gold-text)]"
+			>
+				{icon}
+			</span>
+			<div className="min-w-0">
+				<dt className="q-eyebrow">{label}</dt>
+				<dd className="q-p break-words">{children}</dd>
+			</div>
+		</div>
+	);
+}
+
+function Capacity({ event }: { event: CommunityEvent }) {
+	const left = spotsLeft(event);
+	const people =
+		event.registeredCount === 1
+			? "1 persona inscrita"
+			: `${event.registeredCount} personas inscritas`;
+	if (event.capacity === null || left === null) {
+		return (
+			<p className="q-sm q-muted flex items-center gap-2">
+				<Users size={16} aria-hidden="true" />
+				{people} · cupos sin límite
+			</p>
+		);
+	}
+	const ratio = Math.min(event.registeredCount / event.capacity, 1);
+	const tone = left === 0 ? "red" : left <= 5 ? "gold" : "green";
+	const state =
+		left === 0
+			? "Cupos agotados"
+			: left === 1
+				? "Queda 1 cupo"
+				: `Quedan ${left} cupos`;
+	return (
+		<div className={`q-meter q-meter--${tone}`}>
+			<div className="q-meter__head">
+				<span>
+					<b>{event.registeredCount}</b> de {event.capacity} cupos
+				</span>
+				<span className="q-meter__state font-semibold">{state}</span>
+			</div>
+			<div
+				className="q-meter__track"
+				role="progressbar"
+				aria-label="Cupos ocupados"
+				aria-valuemin={0}
+				aria-valuemax={event.capacity}
+				aria-valuenow={event.registeredCount}
+			>
+				<div
+					className="q-meter__fill"
+					style={{ width: `${Math.round(ratio * 100)}%` }}
+				/>
+			</div>
+		</div>
+	);
+}
+
+function RegistrationPanel({
+	event,
+	registered,
+	signedIn,
+	sessionLoading,
+	onChange,
+}: {
+	event: CommunityEvent;
+	registered: boolean;
+	signedIn: boolean;
+	sessionLoading: boolean;
+	onChange: () => void;
+}) {
+	const store = useStore();
+	const [busy, setBusy] = useState(false);
+	const [error, setError] = useState<string | null>(null);
+	const blocker =
+		registrationBlocker(event) ??
+		(event.moderationStatus === "held"
+			? "Las inscripciones abren cuando la moderación apruebe el evento."
+			: null);
+
+	async function toggle() {
+		setBusy(true);
+		setError(null);
+		try {
+			if (registered) await store.unregister(event.id);
+			else await store.register(event.id);
+			onChange();
+		} catch (err) {
+			setError(
+				err instanceof Error ? err.message : "No pudimos guardar el cambio.",
+			);
+		} finally {
+			setBusy(false);
+		}
+	}
+
+	if (sessionLoading) return null;
+
+	let content: ReactNode;
+	if (!signedIn) {
+		content = blocker ? (
+			<p className="q-p q-muted">{blocker}</p>
+		) : (
+			<a href={signInHref()} className="q-btn q-btn--primary q-btn--block">
+				Inicia sesión para inscribirte
+			</a>
+		);
+	} else if (registered) {
+		const canLeave = !isPastEvent(event) && event.status !== "cancelled";
+		content = (
+			<>
+				<p className="q-p">¡Listo! Ya estás en la lista. Te esperamos.</p>
+				{canLeave && (
+					<button
+						type="button"
+						className="q-btn q-btn--secondary q-btn--block"
+						onClick={() => void toggle()}
+						disabled={busy}
+					>
+						{busy ? "Cancelando…" : "Cancelar inscripción"}
+					</button>
+				)}
+			</>
+		);
+	} else if (blocker) {
+		content = <p className="q-p q-muted">{blocker}</p>;
+	} else {
+		content = (
+			<button
+				type="button"
+				className="q-btn q-btn--primary q-btn--block"
+				onClick={() => void toggle()}
+				disabled={busy}
+			>
+				{busy ? "Inscribiendo…" : "Inscribirme"}
+			</button>
+		);
+	}
+
+	return (
+		<section className="q-card space-y-3 p-5" aria-label="Inscripción">
+			{content}
+			{error && <ErrorNote message={error} />}
+		</section>
+	);
+}
+
+function OrganizerPanel({
+	event,
+	onChange,
+}: {
+	event: CommunityEvent;
+	onChange: () => void;
+}) {
+	const store = useStore();
+	const [busy, setBusy] = useState(false);
+	const [error, setError] = useState<string | null>(null);
+	const cancelled = event.status === "cancelled";
+	const people =
+		event.registeredCount === 1
+			? "1 persona inscrita"
+			: `${event.registeredCount} personas inscritas`;
+
+	async function cancel() {
+		if (
+			!window.confirm(
+				"¿Seguro que quieres cancelar este evento? Las personas inscritas lo verán como cancelado.",
+			)
+		)
+			return;
+		setBusy(true);
+		setError(null);
+		try {
+			await store.cancelEvent(event.id);
+			onChange();
+		} catch (err) {
+			setError(
+				err instanceof Error ? err.message : "No pudimos cancelar el evento.",
+			);
+		} finally {
+			setBusy(false);
+		}
+	}
+
+	return (
+		<section className="q-card space-y-3 p-5" aria-label="Tu evento">
+			<p className="q-eyebrow">Tú organizas este evento</p>
+			<p className="q-h3">{people}</p>
+			{cancelled ? (
+				<p className="q-p q-muted">Cancelaste este evento.</p>
+			) : (
+				!isPastEvent(event) && (
+					<button
+						type="button"
+						className="q-btn q-btn--alert q-btn--block"
+						onClick={() => void cancel()}
+						disabled={busy}
+					>
+						{busy ? "Cancelando…" : "Cancelar evento"}
+					</button>
+				)
+			)}
+			{error && <ErrorNote message={error} />}
+		</section>
+	);
+}
+
+function ShareButton({ title }: { title: string }) {
+	const [copied, setCopied] = useState(false);
+
+	async function share() {
+		const url = window.location.href;
+		if (navigator.share) {
+			try {
+				await navigator.share({ title, text: title, url });
+				return;
+			} catch (err) {
+				if (err instanceof DOMException && err.name === "AbortError") return;
+			}
+		}
+		try {
+			await navigator.clipboard.writeText(url);
+			setCopied(true);
+			window.setTimeout(() => setCopied(false), 2500);
+		} catch {
+			window.prompt("Copia el enlace del evento:", url);
+		}
+	}
+
+	return (
+		<button
+			type="button"
+			className="q-btn q-btn--secondary"
+			onClick={() => void share()}
+		>
+			<Share2 size={18} aria-hidden="true" />
+			<span aria-live="polite">{copied ? "Enlace copiado" : "Compartir"}</span>
+		</button>
+	);
+}
