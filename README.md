@@ -91,6 +91,7 @@ Detalle en [`docs/`](docs/).
 | [`docs/19-caso-1.md`](docs/19-caso-1.md) | Caso 1 de punta a punta: requisitos, guion de ensayo de 2 minutos, plan B y registro de ensayos |
 | [`docs/20-comunidad-y-moderacion.md`](docs/20-comunidad-y-moderacion.md) | Comunidad (eventos, inscripciones, foro, lugares) y moderación por triaje con reglas duras y OpenJev; cola de la ciudad y puesta en marcha |
 | [`docs/21-quillart-ai.md`](docs/21-quillart-ai.md) | Quillart AI como puerta de entrada: orquestador, agentes especializados, confirmación de acciones y voz como conducto |
+| [`docs/22-seguridad-y-confianza.md`](docs/22-seguridad-y-confianza.md) | Seguridad y confianza: desinformación, suplantación, estafas, reportes, límites de uso, IA blindada y derechos sobre los datos |
 | [`docs/feedback.md`](docs/feedback.md) | Registro de retroalimentación por sprint y validación con personas ajenas |
 
 ## Equipo

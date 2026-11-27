@@ -41,6 +41,9 @@ Los nombres exactos de los scripts se fijan al crear el proyecto.
 | `POST /api/community/triage` | Triaje sin guardar nada, para el almacén del dispositivo. | `TYPESAFE_API_KEY` opcional |
 | `GET`/`POST /api/community/moderation` | Cola de la ciudad y acciones aprobar, retirar y cerrar (solo rol `city`). | `SUPABASE_SERVICE_ROLE_KEY` |
 | `POST /api/assistant` | Orquestador y agentes de Quillart AI. | `GEMINI_API_KEY` y `TYPESAFE_API_KEY` opcionales |
+| `DELETE /api/community/account` | Elimina la cuenta de la persona y lo que escribió (Ley 1581). | `SUPABASE_SERVICE_ROLE_KEY` |
+
+Todas las rutas de `src/pages/api/` pasan primero por `guardRequest` (límites de uso por IP o por usuario, `src/lib/security/`) y todas las respuestas llevan cabeceras de seguridad (`src/middleware.ts`). Detalle en [22-seguridad-y-confianza.md](22-seguridad-y-confianza.md).
 
 ## Variables de entorno
 
