@@ -102,6 +102,16 @@ Detalle en [`docs/`](docs/).
 | [`docs/30-auditoria-ui-ux.md`](docs/30-auditoria-ui-ux.md) | Auditoría UI/UX v2: hallazgos por severidad y brechas frente al enfoque nuevo (dock del agente, acciones en pantalla, contexto, georreferencia y mapa del Área Metropolitana) |
 | [`docs/feedback.md`](docs/feedback.md) | Registro de retroalimentación por sprint y validación con personas ajenas |
 
+## Quillart controla la app
+
+El asistente de texto (y la voz, que le pasa todo por `ask_quillart`) maneja la pantalla, no solo responde:
+
+- **Un solo orquestador con todas las herramientas.** Con Gemini, cada turno tiene todas las herramientas; el agente especialista que elige el orquestador solo define el foco y la etiqueta. Si el enrutamiento falla, el modelo no se queda sin la herramienta que necesita.
+- **Herramientas de UI** (actúan de inmediato, sin tarjeta de confirmación y sin otra ronda del modelo): `open_page` (abre la pantalla), `filter_agenda`, `filter_places`, `show_on_map`, `show_route`, `set_language`, `set_theme`, `focus_on` y `go_back`. El servidor las convierte en acciones de UI con lista blanca (`ui-actions.ts`).
+- **Acciones de toda la app** (`app.language`, `app.theme`, `app.back`): el bus (`ui-action-bus.ts`) las aplica en cualquier pantalla, con "Deshacer".
+- **Sin modelo** (sin `GEMINI_API_KEY` o si falla), los agentes locales entienden los mismos comandos: "modo oscuro", "ponlo en inglés", "abre el mapa", "vuelve atrás", "¿qué significa bololó?".
+- Las escrituras (inscribirse, publicar, responder, reportar) siguen pasando por la tarjeta de confirmación, una por turno.
+
 ## Equipo
 
 | Integrante | GitHub | Rol |

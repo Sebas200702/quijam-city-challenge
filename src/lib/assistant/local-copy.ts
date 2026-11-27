@@ -23,6 +23,7 @@ const es: LocalCopy = {
 		"Para eso necesitas entrar a tu cuenta. Entra o créala y seguimos.",
 	actionKept:
 		"Te dejé la acción lista con el texto exacto. Entra a tu cuenta o créala para confirmarla; cuando vuelvas, sigue aquí.",
+	uiDone: "Listo, ya lo tienes en pantalla.",
 	createEvent:
 		"¡Qué buena! Llena el formulario con el nombre, la fecha y el lugar; se publica al enviarlo y, si el sistema detecta algo, pasa a revisión.",
 	createEventLabel: "Publicar un evento",
@@ -126,6 +127,7 @@ const en: LocalCopy = {
 		"You need to sign in for that. Sign in or create an account and we'll continue.",
 	actionKept:
 		"I left the action ready with the exact text. Sign in or create an account to confirm it; when you come back, it will be right here.",
+	uiDone: "Done, it's on your screen.",
 	createEvent:
 		"Great! Fill in the form with the name, date and place; it goes live when you send it and, if the system flags something, it goes to review.",
 	createEventLabel: "Publish an event",
@@ -234,6 +236,7 @@ const pt: LocalCopy = {
 		"Para isso você precisa entrar na sua conta. Entre ou crie uma e seguimos.",
 	actionKept:
 		"Deixei a ação pronta com o texto exato. Entre na sua conta ou crie uma para confirmá-la; quando voltar, ela estará aqui.",
+	uiDone: "Pronto, já está na sua tela.",
 	createEvent:
 		"Que legal! Preencha o formulário com o nome, a data e o lugar; é publicado ao enviar e, se o sistema detectar algo, passa por revisão.",
 	createEventLabel: "Publicar um evento",
@@ -338,6 +341,7 @@ const fr: LocalCopy = {
 		"Pour cela, tu dois te connecter à ton compte. Connecte-toi ou crée-le et on continue.",
 	actionKept:
 		"J'ai préparé l'action avec le texte exact. Connecte-toi ou crée un compte pour la confirmer ; à ton retour, elle t'attendra ici.",
+	uiDone: "C'est fait, c'est à l'écran.",
 	createEvent:
 		"Super ! Remplis le formulaire avec le nom, la date et le lieu ; il est publié à l'envoi et, si le système détecte quelque chose, il passe en vérification.",
 	createEventLabel: "Publier un événement",

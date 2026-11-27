@@ -15,6 +15,8 @@ export interface LocalCopy {
 	needAccount: string;
 	/** Server safety net: a proposed action waits on its card for sign-in (U02). */
 	actionKept: string;
+	/** A turn that only changed the screen (UI tools) and said nothing else. */
+	uiDone: string;
 	createEvent: string;
 	createEventLabel: string;
 	/** A complete event draft waits on its confirmation card. */

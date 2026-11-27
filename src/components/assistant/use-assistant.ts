@@ -20,7 +20,7 @@ import type {
 	AssistantToolName,
 	AssistantToolResult,
 } from "../../lib/assistant/assistant-types";
-import { isActionTool } from "../../lib/assistant/assistant-types";
+import { isActionTool, isUiTool } from "../../lib/assistant/assistant-types";
 import { answerOffline } from "../../lib/assistant/offline-answer";
 import {
 	clearPendingAction,
@@ -503,8 +503,9 @@ export function useAssistant() {
 			if (results.length > 0) {
 				next = [...next, { role: "tool", results }];
 				commit(next);
-				const onlyLinks = reads.every((call) => call.name === "open_page");
-				if (!onlyLinks && rounds < MAX_ROUNDS) {
+				// Pure screen changes (open, filter, map, language, theme) need no new round.
+				const onlyUi = reads.every((call) => isUiTool(call.name));
+				if (!onlyUi && rounds < MAX_ROUNDS) {
 					return converse(next, rounds + 1);
 				}
 			}

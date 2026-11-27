@@ -22,7 +22,7 @@ export const MAX_CONDUIT_REQUEST = 2_000;
 export const ASK_QUILLART_DECLARATION: FunctionDeclaration = {
 	name: ASK_QUILLART_TOOL,
 	description:
-		"Hands the person's request to Quillart AI, which routes it to the right specialist (mobility, routes and Transmetro, bus and taxi fares; events and agenda; places; community forum; city reports; the person's account; news and notices; open data, historical and synthetic reference data; city indicators and the crowd simulation) and shows the result on screen. Call it for every price, fare, cost or amount, even if asked before: never answer those from memory. Returns the reply text and whether a confirmation card is waiting on screen.",
+		"Hands the person's request to Quillart AI, which routes it to the right specialist (mobility, routes and Transmetro, bus and taxi fares; events and agenda; places; community forum; city reports; the person's account; news and notices; open data, historical and synthetic reference data; city indicators and the crowd simulation) and shows the result on screen. It also controls the app: opens screens, filters the agenda or places, shows places and routes on the map, changes the language or light/dark mode, points at parts of the screen, goes back and explains costeño slang. Call it for every price, fare, cost or amount, even if asked before: never answer those from memory. Returns the reply text and whether a confirmation card is waiting on screen.",
 	parametersJsonSchema: {
 		type: "object",
 		properties: {
