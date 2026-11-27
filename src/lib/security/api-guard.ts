@@ -19,6 +19,8 @@ export const RATE_LIMIT_POLICIES = {
 	"impact-report": { limit: 5, windowMs: MINUTE, scope: "ip" },
 	account: { limit: 5, windowMs: 10 * MINUTE, scope: "ip" },
 	"open-data": { limit: 60, windowMs: MINUTE, scope: "ip" },
+	"presenter-session": { limit: 10, windowMs: 10 * MINUTE, scope: "ip" },
+	"presenter-events": { limit: 60, windowMs: MINUTE, scope: "ip" },
 } as const satisfies Record<string, RateLimitPolicy>;
 
 export type RateLimitPolicyName = keyof typeof RATE_LIMIT_POLICIES;
