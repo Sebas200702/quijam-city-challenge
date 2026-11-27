@@ -31,6 +31,18 @@ describe("resolveRouteTarget", () => {
 		});
 	});
 
+	it("routes a place only to a stop some route segment reaches", () => {
+		const reachable = new Set(
+			CORRIDOR_SEED.segments.map((item) => item.destination_stop_code),
+		);
+		const target = resolveRouteTarget("bocas-de-ceniza", {
+			...catalog,
+			segments: CORRIDOR_SEED.segments,
+		});
+		expect(target?.name).toBe("Bocas de Ceniza y Tajamar");
+		expect(reachable.has(target?.stopCode ?? "")).toBe(true);
+	});
+
 	it("routes to a catalog place through its nearest stop", () => {
 		const target = resolveRouteTarget("gran-malecon", catalog);
 		expect(target).toEqual({

@@ -29,6 +29,8 @@ interface MapUiActionsOptions {
 	selected: string | null;
 	/** Corridor stops: routes end at one of them. */
 	stops: RouteCatalog["stops"];
+	/** Route legs, so a place resolves to a stop a route can reach. */
+	segments: NonNullable<RouteCatalog["segments"]>;
 }
 
 function move(map: L.Map, center: L.LatLngExpression, zoom: number) {
@@ -42,13 +44,18 @@ export function useMapUiActions({
 	setQuery,
 	selected,
 	stops,
+	segments,
 }: MapUiActionsOptions): void {
 	const t = useT();
 	const pinsRef = useRef<L.LayerGroup | null>(null);
 	const queryRef = useRef(query);
 	queryRef.current = query;
-	const catalogRef = useRef<RouteCatalog>({ stops, places: PLACES });
-	catalogRef.current = { stops, places: PLACES };
+	const catalogRef = useRef<RouteCatalog>({
+		stops,
+		places: PLACES,
+		segments,
+	});
+	catalogRef.current = { stops, places: PLACES, segments };
 
 	// `/mapa?destino=estadio` (or a place slug): the route the agent or a link asked for.
 	// biome-ignore lint/correctness/useExhaustiveDependencies: read once, on arrival.

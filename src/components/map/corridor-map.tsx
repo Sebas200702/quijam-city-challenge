@@ -457,6 +457,7 @@ export default function CorridorMap({ data, source }: CorridorMapProps) {
 		},
 		selected: selected?.code ?? null,
 		stops: data.stops,
+		segments: data.segments,
 	});
 
 	useHeatLayer(mapRef, data, heatOn, t);

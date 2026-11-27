@@ -4,7 +4,7 @@
 // The origin stays the visitor's own choice; the map defaults it to the Malecón.
 
 import type { Place } from "../community/community-types";
-import type { CorridorStop } from "../corridor/corridor-types";
+import type { CorridorStop, RouteSegment } from "../corridor/corridor-types";
 import { isInsideAmb } from "../geo/amb-boundary";
 import { DESTINATIONS } from "../trip/trip-planner";
 
@@ -18,6 +18,8 @@ export interface RouteTarget {
 export interface RouteCatalog {
 	stops: Pick<CorridorStop, "code" | "name" | "latitude" | "longitude">[];
 	places: Pick<Place, "slug" | "name" | "latitude" | "longitude">[];
+	/** Route legs: a place only resolves to a stop some leg arrives at. */
+	segments?: Pick<RouteSegment, "destination_stop_code">[];
 }
 
 /** Squared equirectangular distance: enough to rank stops a few km apart. */
@@ -44,8 +46,16 @@ export function resolveRouteTarget(
 	if (stop) return { stopCode: stop.code, name: stop.name };
 	const place = catalog.places.find((item) => item.slug === key);
 	if (!place || !isInsideAmb(place.latitude, place.longitude)) return null;
+	// A stop no leg reaches would always answer "no safe route" (Bocas de Ceniza).
+	const reachable = new Set(
+		catalog.segments?.map((item) => item.destination_stop_code),
+	);
+	const candidates =
+		reachable.size > 0
+			? catalog.stops.filter((item) => reachable.has(item.code))
+			: catalog.stops;
 	let nearest: RouteCatalog["stops"][number] | null = null;
-	for (const candidate of catalog.stops) {
+	for (const candidate of candidates) {
 		if (!nearest || closeness(place, candidate) < closeness(place, nearest)) {
 			nearest = candidate;
 		}
