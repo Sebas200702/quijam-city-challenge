@@ -65,6 +65,7 @@ El navegador envía `context.language` (`es`, `en`, `pt` o `fr`, el idioma elegi
 - **Gemini:** el contexto le dice que responda en ese idioma, salvo que la persona escriba en otro; las reglas comunes nombran los cuatro idiomas.
 - **Agente local:** sus frases y etiquetas de botones salen de `local-copy.ts`, una tabla por idioma. Sin idioma, responde en español, igual que antes.
 - **Orquestador:** además de las palabras clave en español e inglés, reconoce palabras en portugués y francés (lista aparte, sin palabras del español, para que el enrutamiento en español no cambie). A OpenJev se le avisa que el mensaje puede venir en cualquiera de los cuatro idiomas.
+- **Moderación:** las reglas duras y el triaje con OpenJev también cubren los cuatro idiomas (ver [20-comunidad-y-moderacion.md](20-comunidad-y-moderacion.md)).
 
 ## Ejecución de herramientas en el navegador
 
@@ -116,6 +117,5 @@ bun run dev
 ## Por construir
 
 - Gemini Live con herramientas: voz en tiempo real usando los mismos agentes y la misma regla de confirmación.
-- Multilenguaje de la moderación de la comunidad: reglas duras con términos básicos en inglés, portugués y francés, y aviso de idioma a OpenJev en el triaje (#93; Quillart AI ya responde en los cuatro idiomas).
 - Recordatorios de eventos y notificaciones.
 - Medir el enrutamiento: qué agente eligió el orquestador frente al que la persona necesitaba.
