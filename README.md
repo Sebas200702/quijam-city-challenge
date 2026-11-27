@@ -93,6 +93,7 @@ Detalle en [`docs/`](docs/).
 | [`docs/21-quillart-ai.md`](docs/21-quillart-ai.md) | Quillart AI como puerta de entrada: orquestador, agentes especializados, confirmación de acciones y voz como conducto |
 | [`docs/20-identidad.md`](docs/20-identidad.md) | Identidad: el intérprete de la ciudad, qué no somos (gemelo digital), vocabulario y orden de la demo |
 | [`docs/21-respuestas.md`](docs/21-respuestas.md) | Qué responder cuando pregunten por el proyecto: versiones de 10 s, 30 s y 1 min, y preguntas difíciles |
+| [`docs/22-seguridad-y-confianza.md`](docs/22-seguridad-y-confianza.md) | Seguridad y confianza: desinformación, suplantación, estafas, reportes, límites de uso, IA blindada y derechos sobre los datos |
 | [`docs/feedback.md`](docs/feedback.md) | Registro de retroalimentación por sprint y validación con personas ajenas |
 
 ## Equipo

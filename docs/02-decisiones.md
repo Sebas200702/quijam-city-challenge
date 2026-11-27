@@ -168,6 +168,8 @@ Cambios de producto frente a la épica #57:
 - **Regla 9:** contenido real de las personas, más una etiqueta discreta "datos de referencia" para la semilla del corredor.
 - Nueva variable de entorno solo de servidor: `SUPABASE_SERVICE_ROLE_KEY`.
 
+9. **Seguridad y confianza (27 nov 2026).** Se implementa la capa completa descrita en [22-seguridad-y-confianza.md](22-seguridad-y-confianza.md): etiquetas de desinformación y suplantación en el triaje, nombres reservados, enlaces externos a revisión, política de confianza (primer evento de cuentas nuevas y eventos con costo de organizadores no verificados van a revisión), botón "Reportar" (3 reportes ocultan), reportes ciudadanos "sin confirmar" hasta que la ciudad los confirma, organizadores verificados, auditoría de moderación, límites de uso en todas las API, cabeceras de seguridad, blindaje de Quillart AI contra *prompt injection* (datos no confiables, una acción por turno, texto exacto editable en la confirmación) y descarga y eliminación de datos (Ley 1581).
+
 ### Bitácora
 
 - Se pasó de "sin red social" a una comunidad moderada por triaje (reglas + OpenJev + revisión humana), que responde al riesgo original: "una red social nueva arranca vacía y exige moderación". No arranca vacía: la semilla trae lugares reales de la ciudad y una agenda inicial publicada por el equipo ("Agenda QUILLART").

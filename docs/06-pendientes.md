@@ -29,7 +29,9 @@ Cada una trae la recomendación que salió de la sesión de validación. La colu
 | 23 | Umbral de rechazo de OpenJev en moderación | 0,6: por debajo, el rechazo pasa a revisión humana. | Decidido (27 nov); revisar con lo que llegue a la cola |
 | 24 | Quién modera en el Demo Day | Una persona del equipo con rol `city` atiende `/moderacion`. | Abierto |
 | 25 | Despliegue de la capa de comunidad | Aplicar la migración y la semilla de comunidad en Supabase Cloud y cargar `SUPABASE_SERVICE_ROLE_KEY` en Dokploy. | Abierto |
-| 26 | Reporte de contenido por las personas | Botón "reportar" que manda a la misma cola de la ciudad. | Abierto (por construir) |
+| 26 | Reporte de contenido por las personas | Botón "reportar" que manda a la misma cola de la ciudad. | Decidido (27 nov): 3 reportes de personas distintas ocultan el contenido; ver [22-seguridad-y-confianza.md](22-seguridad-y-confianza.md) |
+| 27 | Configuración de seguridad en Supabase y Dokploy | MFA para el rol ciudad, CAPTCHA en el registro, confirmación de correo e IP real detrás del proxy. | Abierto: ver la sección "Configuración que no está en el código" de [22-seguridad-y-confianza.md](22-seguridad-y-confianza.md) |
+| 28 | Content-Security-Policy | Lista permitida para Leaflet, Google Fonts, Supabase y Gemini. | Abierto |
 
 ## Siguiente paso (Sprint 2, cierra la tarde del 26 nov)
 
