@@ -22,11 +22,14 @@ import {
 import { resolvePoint } from "./community-geo";
 import { publishResult, storedStatus } from "./community-mappers";
 import {
+	buildEventUpdateNoticeBody,
 	canJoinWaitlist,
+	detectEventEditChanges,
 	filterEvents,
 	filterThreads,
 	isEventFull,
 	registrationBlocker,
+	validateEventEditInput,
 	validateEventInput,
 	validatePostBody,
 	validateProfilePatch,
@@ -52,6 +55,7 @@ import type {
 	ReportReason,
 	SignUpInput,
 	ThreadQuery,
+	UserNotification,
 } from "./community-types";
 import { PLACES } from "./places-catalog";
 import { buildStarterEvents, buildStarterForum } from "./starter-content";
@@ -80,6 +84,10 @@ interface DeviceReport {
 	createdAt: string;
 }
 
+interface DeviceNotification extends UserNotification {
+	userId: string;
+}
+
 interface DeviceData {
 	accounts: DeviceAccount[];
 	sessionId: string | null;
@@ -99,6 +107,8 @@ interface DeviceData {
 	appeals?: DeviceAppeal[];
 	/** People waiting for a spot in a full event, in order of arrival. */
 	waitlist?: { eventId: string; userId: string; createdAt: string }[];
+	/** Per-user in-app notifications (#91, #92). */
+	notifications?: DeviceNotification[];
 }
 
 function reportCount(data: DeviceData, id: string): number {
@@ -301,8 +311,23 @@ export function createDeviceCommunityStore(): CommunityStore {
 			if (event.key !== STORAGE_KEY) return;
 			notify("events");
 			notify("forum");
+			notify("notifications");
 			emitSession(load());
 		});
+	}
+
+	function pushNotification(
+		data: DeviceData,
+		entry: Omit<DeviceNotification, "id" | "readAt" | "createdAt">,
+	) {
+		const list = data.notifications ?? [];
+		list.unshift({
+			...entry,
+			id: crypto.randomUUID(),
+			readAt: null,
+			createdAt: new Date().toISOString(),
+		});
+		data.notifications = list.slice(0, 200);
 	}
 
 	return {
@@ -452,15 +477,133 @@ export function createDeviceCommunityStore(): CommunityStore {
 			return publishResult(decision, event);
 		},
 
+		async updateEvent(id, input) {
+			const before = load();
+			const account = requireAccount(before);
+			const existing = before.events.find((item) => item.id === id);
+			if (!existing || existing.moderationStatus === "removed")
+				throw new Error("No encontramos este evento.");
+			if (existing.organizerId !== account.id)
+				throw new Error("Solo quien organiza puede editar el evento.");
+			if (existing.status === "cancelled")
+				throw new Error("No puedes editar un evento cancelado.");
+			const error = validateEventEditInput(input, existing.registeredCount);
+			if (error) throw new Error(error);
+
+			const changes = detectEventEditChanges(existing, input);
+			const needsTriage = changes.textChanged || changes.paidStatusChanged;
+			let nextStatus: CommunityEvent["moderationStatus"] =
+				existing.moderationStatus;
+			let nextPriority = existing.triagePriority;
+			let outcome: PublishResult<CommunityEvent>["outcome"] =
+				existing.moderationStatus === "held" ? "held" : "published";
+			let message =
+				existing.moderationStatus === "held"
+					? "Cambios guardados. Tu evento sigue en revisión."
+					: "Cambios guardados en tu evento.";
+			let triageDecision: ModerationDecision | null = null;
+
+			if (needsTriage) {
+				const decision = applyTrustPolicy(
+					await triage("event", input.description, input.title),
+					{
+						kind: "event",
+						accountAgeHours: account.createdAt
+							? (Date.now() - new Date(account.createdAt).getTime()) / 3_600_000
+							: NEW_ACCOUNT_HOURS * 10,
+						publishedEvents: before.events.filter(
+							(event) =>
+								event.organizerId === account.id &&
+								event.moderationStatus === "published",
+						).length,
+						isVerifiedOrganizer: Boolean(account.isVerifiedOrganizer),
+						isPaidEvent: !input.isFree,
+					},
+				);
+				const stored = storedStatus(decision);
+				if (!stored) return publishResult<never>(decision, null);
+				triageDecision = decision;
+				nextStatus = stored;
+				nextPriority = decision.priority;
+				outcome = stored === "held" ? "held" : "published";
+				message =
+					outcome === "held"
+						? "Cambios guardados. El texto actualizado quedó en revisión hasta que la ciudad lo apruebe."
+						: "Cambios guardados y publicados en la agenda.";
+			}
+
+			const data = load();
+			const target = data.events.find((item) => item.id === id);
+			if (!target) throw new Error("No encontramos este evento.");
+			target.title = input.title.trim();
+			target.description = input.description.trim();
+			target.category = input.category;
+			target.startsAt = input.startsAt;
+			target.endsAt = input.endsAt;
+			target.placeId = input.placeId;
+			target.locationText = input.placeId
+				? null
+				: input.locationText?.trim() || null;
+			target.capacity = input.capacity;
+			target.isFree = input.isFree;
+			target.priceCop = input.isFree ? null : input.priceCop;
+			target.moderationStatus = nextStatus;
+			target.triagePriority = nextPriority;
+			if (triageDecision) rememberTriage(data, target.id, triageDecision);
+
+			if (
+				(changes.dateChanged || changes.placeChanged) &&
+				target.moderationStatus === "published"
+			) {
+				const body = buildEventUpdateNoticeBody(target.title, changes);
+				for (const reg of data.registrations) {
+					if (reg.eventId !== target.id || reg.userId === account.id) continue;
+					pushNotification(data, {
+						userId: reg.userId,
+						kind: "event_updated",
+						title: `Cambio en evento: ${target.title}`,
+						body,
+						href: `/agenda/${encodeURIComponent(target.id)}`,
+						eventId: target.id,
+					});
+				}
+			}
+
+			save(data);
+			notify("events");
+			notify("notifications");
+			return {
+				outcome,
+				message,
+				priority: nextPriority,
+				record: { ...target },
+			};
+		},
+
 		async cancelEvent(id) {
 			const data = load();
 			const account = requireAccount(data);
 			const event = data.events.find((item) => item.id === id);
 			if (!event || event.organizerId !== account.id)
 				throw new Error("Solo quien organiza puede cancelar el evento.");
+			const wasCancelled = event.status === "cancelled";
 			event.status = "cancelled";
+			if (!wasCancelled) {
+				for (const reg of data.registrations) {
+					if (reg.eventId !== event.id || reg.userId === account.id) continue;
+					pushNotification(data, {
+						userId: reg.userId,
+						kind: "event_cancelled",
+						title: `Evento cancelado: ${event.title}`,
+						body: `El organizador canceló "${event.title}". Revisa otros planes en la agenda.`,
+						href: `/agenda/${encodeURIComponent(event.id)}`,
+						eventId: event.id,
+					});
+				}
+			}
 			save(data);
 			notify("events");
+			notify("notifications");
 		},
 
 		async myRegistrations() {
@@ -761,9 +904,46 @@ export function createDeviceCommunityStore(): CommunityStore {
 					if (thread && wasPublished && action === "remove")
 						thread.replyCount = Math.max(thread.replyCount - 1, 0);
 				}
+				const ownerId =
+					kind === "event"
+						? (item as CommunityEvent).organizerId
+						: (item as ForumThread | ForumPost).authorId;
+				if (ownerId) {
+					const label =
+						kind === "post"
+							? "tu respuesta en el foro"
+							: `"${(item as CommunityEvent | ForumThread).title}"`;
+					const approvedHref =
+						kind === "event"
+							? `/agenda/${encodeURIComponent(id)}`
+							: kind === "thread"
+								? `/foro/${encodeURIComponent(id)}`
+								: `/foro/${encodeURIComponent((item as ForumPost).threadId)}`;
+					pushNotification(
+						data,
+						action === "approve"
+							? {
+									userId: ownerId,
+									kind: "moderation_approved",
+									title: "Tu publicación fue aprobada",
+									body: `${label} ya está visible en QUILLART.`,
+									href: approvedHref,
+									eventId: kind === "event" ? id : null,
+								}
+							: {
+									userId: ownerId,
+									kind: "moderation_removed",
+									title: "Tu publicación fue retirada",
+									body: `${label} fue retirada tras revisión. Puedes pedir una segunda revisión desde tu perfil.`,
+									href: "/perfil",
+									eventId: kind === "event" ? id : null,
+								},
+					);
+				}
 			}
 			save(data);
 			notify(kind === "event" ? "events" : "forum");
+			notify("notifications");
 		},
 
 		async listMyRemoved() {
@@ -946,12 +1126,49 @@ export function createDeviceCommunityStore(): CommunityStore {
 			data.reports = (data.reports ?? []).filter(
 				(report) => report.reporterId !== account.id,
 			);
+			data.notifications = (data.notifications ?? []).filter(
+				(item) => item.userId !== account.id,
+			);
 			data.accounts = data.accounts.filter((item) => item.id !== account.id);
 			data.sessionId = null;
 			save(data);
 			emitSession(data);
 			notify("events");
 			notify("forum");
+			notify("notifications");
+		},
+
+		async listNotifications() {
+			const data = load();
+			if (!data.sessionId) return [];
+			return (data.notifications ?? [])
+				.filter((item) => item.userId === data.sessionId)
+				.map(({ userId: _userId, ...notice }) => notice);
+		},
+
+		async markNotificationRead(id) {
+			const data = load();
+			if (!data.sessionId) return;
+			const target = (data.notifications ?? []).find(
+				(item) => item.id === id && item.userId === data.sessionId,
+			);
+			if (!target) return;
+			target.readAt = new Date().toISOString();
+			save(data);
+			notify("notifications");
+		},
+
+		async markAllNotificationsRead() {
+			const data = load();
+			if (!data.sessionId) return;
+			const now = new Date().toISOString();
+			for (const item of data.notifications ?? []) {
+				if (item.userId === data.sessionId && item.readAt === null) {
+					item.readAt = now;
+				}
+			}
+			save(data);
+			notify("notifications");
 		},
 
 		subscribe(topic, listener) {

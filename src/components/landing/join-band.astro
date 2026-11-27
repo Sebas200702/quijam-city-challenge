@@ -1,23 +1,26 @@
 ---
 // Closing call to action on the brand gold, with an illustration.
+import { ArrowRight } from "lucide-react";
 import { ASSISTANT_HREF } from "../../lib/assistant/assistant-labels";
 ---
 
-<section aria-labelledby="join-title" class="px-4 pb-12 lg:px-8 lg:pb-16">
-	<div class="mx-auto grid w-full max-w-6xl items-center gap-6 overflow-hidden rounded-[28px] bg-[var(--gold)] px-6 py-10 text-[var(--on-gold)] lg:grid-cols-[1.2fr_1fr] lg:px-14 lg:py-12">
-		<div class="flex flex-col gap-5">
-			<h2 id="join-title" class="q-display text-[var(--on-gold)] lg:text-[48px] lg:leading-[52px]" data-i18n="landing.join.title">
-				La ciudad se vive mejor juntos
+<section aria-labelledby="join-title" class="px-3 pb-12 lg:px-8 lg:pb-16">
+	<div class="l-join" data-reveal="scale">
+		<span class="q-star l-join__star" aria-hidden="true"></span>
+		<div class="flex flex-col gap-7">
+			<h2 id="join-title" class="l-join__title">
+				<span class="l-wipe" data-i18n="landing.join.title">La ciudad se vive mejor juntos</span>
 			</h2>
 			<div class="flex flex-wrap gap-3">
-				<a href={ASSISTANT_HREF} class="q-btn q-btn--lg min-h-11 bg-[#0B131E]! text-white!" data-i18n="landing.join.talk">
-					Hablar con Quillart
+				<a href={ASSISTANT_HREF} class="q-btn q-btn--lg l-cta min-h-11 bg-[#0B131E]! text-white!">
+					<span data-i18n="landing.join.talk">Hablar con Quillart</span>
+					<ArrowRight size={20} strokeWidth={1.75} aria-hidden="true" />
 				</a>
 				<a href="/perfil" class="q-btn q-btn--lg min-h-11 bg-white! text-[#0B131E]!" data-i18n="landing.join.account">
 					Crear mi cuenta
 				</a>
 			</div>
 		</div>
-		<img src="/illustrations/walking-together.svg" alt="" aria-hidden="true" class="mx-auto h-48 w-auto lg:h-64" loading="lazy" width="240" height="260" />
+		<img src="/illustrations/walking-together.svg" alt="" aria-hidden="true" class="mx-auto h-48 w-auto lg:h-72" loading="lazy" width="240" height="260" />
 	</div>
 </section>

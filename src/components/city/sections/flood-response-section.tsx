@@ -186,7 +186,7 @@ export function FloodResponseSection({
 				)}
 
 				<section
-					className="q-panel gap-3 p-5"
+					className="q-panel lc-shape--bubble gap-3 p-5"
 					aria-labelledby="flood-arroyos-title"
 				>
 					<div className="flex flex-wrap items-baseline justify-between gap-3">
@@ -227,7 +227,7 @@ export function FloodResponseSection({
 
 			<div className="flex min-w-0 flex-col gap-4">
 				<section
-					className="q-panel gap-3 p-5"
+					className="q-panel lc-shape--leaf gap-3 p-5"
 					aria-labelledby="flood-routes-title"
 				>
 					<div className="flex flex-wrap items-baseline justify-between gap-3">
@@ -273,7 +273,7 @@ export function FloodResponseSection({
 				</section>
 
 				<section
-					className="q-panel gap-3 p-5"
+					className="q-panel lc-shape--dee gap-3 p-5"
 					aria-labelledby="flood-hosts-title"
 				>
 					<div className="flex flex-wrap items-baseline justify-between gap-3">

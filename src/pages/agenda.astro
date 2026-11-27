@@ -1,5 +1,7 @@
 ---
 import AgendaPage from "../components/community/agenda-page";
+import SiteFooter from "../components/site/site-footer.astro";
+import SiteHeader from "../components/site/site-header.astro";
 import BaseLayout from "../layouts/base-layout.astro";
 import { homeContent } from "../lib/home-content";
 
@@ -10,5 +12,14 @@ const { aiHref } = homeContent;
 	title="Agenda · Planes en Barranquilla"
 	titleKey="agenda.pageTitle"
 >
+	<SiteHeader current="agenda" homeHref="/inicio">
+		<a
+			slot="actions"
+			href="/perfil"
+			class="q-btn q-btn--ghost q-btn--sm min-h-11 max-lg:hidden!"
+			><span data-i18n="nav.profile">Perfil</span></a
+		>
+	</SiteHeader>
 	<AgendaPage client:only="react" aiHref={aiHref} />
+	<SiteFooter variant="slim" />
 </BaseLayout>

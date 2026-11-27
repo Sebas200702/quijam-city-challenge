@@ -294,3 +294,52 @@
 		height: min(52vh, 560px);
 	}
 }
+
+/* ── Landing look: bubble card, display type, chips for the hours. ── */
+.match-timeline__pill {
+	border-radius: 6px 22px 22px 22px;
+}
+.match-timeline__card {
+	border-radius: 28px 28px 28px 8px;
+}
+.match-timeline__titles .q-h3 {
+	font-family: var(--font-display);
+	letter-spacing: -0.01em;
+}
+.match-timeline__hour {
+	padding: 2px 14px;
+	border-radius: 6px 18px 6px 18px;
+	background: var(--gold-soft);
+	color: var(--gold-text);
+	font-weight: 700;
+}
+.match-timeline__mark {
+	border-radius: 2px;
+	rotate: 45deg;
+}
+.match-timeline__event-time {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 52px;
+	min-height: 28px;
+	padding: 0 8px;
+	border-radius: var(--radius-pill);
+	background: var(--green-soft);
+}
+.match-timeline__event {
+	transition: transform 0.4s var(--l-ease, ease);
+}
+html.l-motion .match-timeline__card {
+	animation: l-rise 0.7s var(--l-ease) backwards;
+}
+@media (min-width: 1024px) {
+	.match-timeline__event:hover {
+		transform: translateX(6px);
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.match-timeline__event {
+		transition: none;
+	}
+}

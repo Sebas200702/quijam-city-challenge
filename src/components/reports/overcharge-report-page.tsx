@@ -42,6 +42,7 @@ import { AgentMark } from "../agent-dock/agent-mark";
 import { usePublishScreen } from "../agent-dock/use-screen-context";
 import { useUiAction } from "../agent-dock/use-ui-action";
 import { ReportIllustration } from "./report-illustration";
+import "../../styles/life-roles.css";
 
 type FormStatus =
 	| { kind: "idle" }
@@ -63,7 +64,7 @@ interface OverchargeReportPageProps {
 }
 
 const INPUT_CLASS =
-	"min-h-11 w-full rounded-[var(--radius-md)] border border-[var(--line-control)] bg-[var(--surface-raised)] px-3.5 py-2.5 text-[15px] text-[var(--ink)]";
+	"min-h-11 w-full rounded-[22px] border border-[var(--line-control)] bg-[var(--surface-raised)] px-4 py-2.5 text-[15px] text-[var(--ink)]";
 const INVALID_CLASS = "border-2 border-[var(--red)]";
 
 function FieldError({ id, message }: { id: string; message: string }) {
@@ -325,7 +326,7 @@ export function OverchargeReportPage({
 
 	if (routes.length === 0 || !selectedRoute) {
 		return (
-			<section className="q-card" aria-labelledby={`${id}-empty`}>
+			<section className="q-card r-shape-corner l-rise" aria-labelledby={`${id}-empty`}>
 				<div className="q-band q-band--gold" aria-hidden="true" />
 				<div className="q-card__head">
 					<div>
@@ -337,7 +338,7 @@ export function OverchargeReportPage({
 				</div>
 				<div className="q-card__body">
 					<p className="q-p q-muted">{t.empty.body}</p>
-					<a href="/mapa" className="q-btn q-btn--primary">
+					<a href="/mapa" className="q-btn q-btn--primary l-cta">
 						<ArrowLeft size={18} strokeWidth={1.75} aria-hidden="true" />
 						{t.backToMap}
 					</a>
@@ -349,7 +350,7 @@ export function OverchargeReportPage({
 	return (
 		<div className="space-y-4">
 			<div className="flex flex-wrap items-center justify-between gap-2">
-				<a href="/mapa" className="q-btn q-btn--ghost q-btn--sm">
+				<a href="/mapa" className="q-btn q-btn--secondary q-btn--sm min-h-11 rounded-[var(--radius-pill)]">
 					<ArrowLeft size={18} strokeWidth={1.75} aria-hidden="true" />
 					{t.backToMap}
 				</a>
@@ -359,7 +360,7 @@ export function OverchargeReportPage({
 			{!isOnline && (
 				<div
 					role="status"
-					className="flex items-center gap-3 rounded-[var(--radius-md)] bg-[var(--gold-soft)] px-4 py-3 text-sm text-[var(--ink)]"
+					className="l-rise flex items-center gap-3 rounded-[24px_24px_24px_6px] bg-[var(--gold-soft)] px-4 py-3 text-sm text-[var(--ink)]"
 				>
 					<CloudOff
 						size={20}
@@ -374,7 +375,7 @@ export function OverchargeReportPage({
 			{pendingCount > 0 && isOnline && (
 				<div
 					role="status"
-					className="flex flex-wrap items-center justify-between gap-3 rounded-[var(--radius-md)] bg-[var(--gold-soft)] px-4 py-3 text-sm text-[var(--ink)]"
+					className="l-rise flex flex-wrap items-center justify-between gap-3 rounded-[24px_24px_24px_6px] bg-[var(--gold-soft)] px-4 py-3 text-sm text-[var(--ink)]"
 				>
 					<span>{t.pendingBanner(pendingCount)}</span>
 					<button
@@ -392,7 +393,7 @@ export function OverchargeReportPage({
 
 			{status.kind === "saved" ? (
 				<section
-					className="q-card"
+					className="q-card r-shape-bubble l-rise"
 					role="status"
 					aria-live="polite"
 					aria-labelledby={`${id}-saved-title`}
@@ -429,7 +430,7 @@ export function OverchargeReportPage({
 										formatCop(status.referenceCop),
 									)}
 						</p>
-						<div className="rounded-[var(--radius-md)] bg-[var(--bg)] p-4 text-sm space-y-1.5">
+						<div className="rounded-[28px_28px_28px_6px] bg-[var(--bg)] p-5 text-sm space-y-1.5">
 							<p className="font-semibold text-[var(--ink)]">
 								{status.routeLabel}
 							</p>
@@ -459,7 +460,7 @@ export function OverchargeReportPage({
 				</section>
 			) : status.kind === "offline" ? (
 				<section
-					className="q-card"
+					className="q-card r-shape-leaf l-rise"
 					role="status"
 					aria-live="polite"
 					aria-labelledby={`${id}-offline-title`}
@@ -505,12 +506,19 @@ export function OverchargeReportPage({
 					</div>
 				</section>
 			) : (
-				<section className="q-card" aria-labelledby={`${id}-title`}>
+				<section className="q-card r-shape-corner l-rise" aria-labelledby={`${id}-title`}>
 					<div className="q-band q-band--gold" aria-hidden="true" />
 					<div className="q-card__head">
-						<div>
-							<p className="q-eyebrow">{t.form.eyebrow}</p>
-							<h1 id={`${id}-title`} className="q-h1 mt-1">
+						<div className="flex min-w-0 flex-col items-start gap-3">
+							<span
+								className="l-geo l-geo--ring l-geo--green r-card-geo max-lg:hidden"
+								aria-hidden="true"
+							/>
+							<p className="l-eyebrow l-eyebrow--sunk">
+								<span className="q-dot" aria-hidden="true" />
+								{t.form.eyebrow}
+							</p>
+							<h1 id={`${id}-title`} className="l-h2 r-title">
 								{t.form.title}
 							</h1>
 						</div>
@@ -531,7 +539,7 @@ export function OverchargeReportPage({
 								id={`${id}-route`}
 								value={selectedRoute.segmentCode}
 								onChange={(event) => handleRouteChange(event.target.value)}
-								className="min-h-11 w-full rounded-[var(--radius-md)] border border-[var(--line-control)] bg-[var(--surface-raised)] px-3.5 py-2.5 text-[15px] text-[var(--ink)]"
+								className="min-h-11 w-full rounded-[22px] border border-[var(--line-control)] bg-[var(--surface-raised)] px-4 py-2.5 text-[15px] text-[var(--ink)]"
 							>
 								{routes.map((route) => (
 									<option key={route.segmentCode} value={route.segmentCode}>
@@ -543,7 +551,7 @@ export function OverchargeReportPage({
 						</label>
 
 						<div
-							className="rounded-[var(--radius-md)] bg-[var(--green-soft)] p-4"
+							className="rounded-[8px_30px_8px_30px] bg-[var(--green-soft)] p-5"
 							aria-live="polite"
 						>
 							<p className="q-eyebrow text-[var(--green-text)]">
@@ -695,7 +703,7 @@ export function OverchargeReportPage({
 								placeholder={t.form.notesPlaceholder}
 								value={notes}
 								onChange={(event) => setNotes(event.target.value)}
-								className="min-h-11 w-full rounded-[var(--radius-md)] border border-[var(--line-control)] bg-[var(--surface-raised)] px-3.5 py-2.5 text-[15px] text-[var(--ink)]"
+								className="min-h-11 w-full rounded-[22px] border border-[var(--line-control)] bg-[var(--surface-raised)] px-4 py-2.5 text-[15px] text-[var(--ink)]"
 							/>
 						</label>
 
@@ -720,7 +728,7 @@ export function OverchargeReportPage({
 
 						<button
 							type="submit"
-							className="q-btn q-btn--primary q-btn--block"
+							className="q-btn q-btn--primary q-btn--block l-cta"
 							disabled={status.kind === "sending"}
 							aria-busy={status.kind === "sending"}
 						>

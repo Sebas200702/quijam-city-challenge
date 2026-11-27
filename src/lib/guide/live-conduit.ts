@@ -152,3 +152,37 @@ export function conduitResponse(
 		},
 	};
 }
+
+/**
+ * Note for the live session after the person confirmed (or cancelled) an
+ * action on its card: Live already answered `ask_quillart`, so the outcome
+ * goes in as client content for Live to tell. Null when the call has no
+ * result in the conversation yet.
+ */
+export function confirmedActionNote(
+	messages: AssistantMessage[],
+	callId: string,
+): string | null {
+	const index = messages.findLastIndex(
+		(message) =>
+			message.role === "tool" &&
+			message.results.some((result) => result.callId === callId),
+	);
+	if (index < 0) return null;
+	const tool = messages[index];
+	const result =
+		tool.role === "tool"
+			? tool.results.find((item) => item.callId === callId)
+			: undefined;
+	const reply = conduitResultOf(messages.slice(index + 1), null).reply;
+	const outcome = result?.declined
+		? "The action on the card did not happen (cancelled or failed)."
+		: "The person confirmed the action on the card and it ran.";
+	return [
+		`[Quillart AI update, not said by the person] ${outcome}`,
+		reply ? `Quillart AI answered: ${reply}` : "",
+		"Tell the person the outcome briefly in your own words.",
+	]
+		.filter(Boolean)
+		.join("\n");
+}

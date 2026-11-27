@@ -42,6 +42,7 @@ import type {
 	ReportReason,
 	SignUpInput,
 	ThreadQuery,
+	UserNotification,
 } from "./community-types";
 
 const AUTH_ERRORS: Record<string, string> = {
@@ -54,6 +55,12 @@ const AUTH_ERRORS: Record<string, string> = {
 function friendly(error: { message: string } | null | undefined): Error {
 	const message = error?.message ?? "Algo falló. Intenta de nuevo.";
 	return new Error(AUTH_ERRORS[message] ?? message);
+}
+
+// Postgres rejects an id that is not a UUID (invalid_text_representation);
+// for a lookup by an id taken from the URL that just means "not found".
+function isMalformedId(error: { code?: string }): boolean {
+	return error.code === "22P02";
 }
 
 export function createCloudCommunityStore(
@@ -90,7 +97,7 @@ export function createCloudCommunityStore(
 
 	async function callApi<T>(
 		path: string,
-		init: { method: "GET" | "POST" | "DELETE"; body?: unknown },
+		init: { method: "GET" | "POST" | "PATCH" | "DELETE"; body?: unknown },
 	): Promise<T> {
 		const response = await fetch(path, {
 			method: init.method,
@@ -248,7 +255,7 @@ export function createCloudCommunityStore(
 				.eq("id", id)
 				.neq("moderation_status", "removed")
 				.maybeSingle();
-			if (error) throw friendly(error);
+			if (error && !isMalformedId(error)) throw friendly(error);
 			return data ? toEvent(data) : null;
 		},
 
@@ -259,6 +266,18 @@ export function createCloudCommunityStore(
 				method: "POST",
 				body: { kind: "event", input },
 			});
+		},
+
+		async updateEvent(id, input) {
+			const error = validateEventInput(input);
+			if (error) throw new Error(error);
+			return callApi<PublishResult<CommunityEvent>>(
+				`/api/community/events/${encodeURIComponent(id)}`,
+				{
+					method: "PATCH",
+					body: { input },
+				},
+			);
 		},
 
 		async cancelEvent(id) {
@@ -356,7 +375,7 @@ export function createCloudCommunityStore(
 				.eq("id", id)
 				.neq("moderation_status", "removed")
 				.maybeSingle();
-			if (error) throw friendly(error);
+			if (error && !isMalformedId(error)) throw friendly(error);
 			return data ? toThread(data) : null;
 		},
 
@@ -544,9 +563,56 @@ export function createCloudCommunityStore(
 			await supabase.auth.signOut();
 		},
 
+		async listNotifications(): Promise<UserNotification[]> {
+			const userId = await currentUserId();
+			if (!userId) return [];
+			const { data, error } = await supabase
+				.from("user_notifications")
+				.select("id, kind, title, body, href, event_id, read_at, created_at")
+				.eq("user_id", userId)
+				.order("created_at", { ascending: false })
+				.limit(50);
+			// A deployment without the migration simply has no stored notices yet.
+			if (error) return [];
+			return (data ?? []).map((row) => ({
+				id: String(row.id),
+				kind: row.kind as UserNotification["kind"],
+				title: String(row.title),
+				body: String(row.body),
+				href: String(row.href ?? "/inicio"),
+				eventId: (row.event_id as string | null) ?? null,
+				readAt: (row.read_at as string | null) ?? null,
+				createdAt: String(row.created_at),
+			}));
+		},
+
+		async markNotificationRead(id: string) {
+			const userId = await currentUserId();
+			if (!userId) return;
+			await supabase
+				.from("user_notifications")
+				.update({ read_at: new Date().toISOString() })
+				.eq("id", id)
+				.eq("user_id", userId);
+		},
+
+		async markAllNotificationsRead() {
+			const userId = await currentUserId();
+			if (!userId) return;
+			await supabase
+				.from("user_notifications")
+				.update({ read_at: new Date().toISOString() })
+				.eq("user_id", userId)
+				.is("read_at", null);
+		},
+
 		subscribe(topic: CommunityTopic, listener) {
 			const tables =
-				topic === "events" ? ["events"] : ["forum_threads", "forum_posts"];
+				topic === "events"
+					? ["events"]
+					: topic === "notifications"
+						? ["user_notifications"]
+						: ["forum_threads", "forum_posts"];
 			const channel = supabase.channel(
 				`community-${topic}-${crypto.randomUUID()}`,
 			);

@@ -111,7 +111,7 @@ export function ActiveDiversionCard({
 			)}
 
 			<article
-				className="q-card"
+				className="q-card lc-shape--leaf"
 				aria-labelledby="active-diversion-title"
 				aria-busy={busy}
 			>
@@ -121,7 +121,7 @@ export function ActiveDiversionCard({
 				/>
 				<div className="q-card__head">
 					<div className="min-w-0">
-						<p className="q-eyebrow flex items-center gap-1.5">
+						<p className="l-eyebrow l-eyebrow--sunk lc-eb">
 							<Route size={14} strokeWidth={1.75} aria-hidden="true" />
 							{paused ? "Desvío en pausa" : "Desvío activo"} · desde{" "}
 							{diversion.since}

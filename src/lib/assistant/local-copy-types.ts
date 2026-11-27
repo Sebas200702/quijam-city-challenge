@@ -13,8 +13,14 @@ export interface LocalCopy {
 	};
 	/** Server safety net when a model proposed an action without a session. */
 	needAccount: string;
+	/** Server safety net: a proposed action waits on its card for sign-in (U02). */
+	actionKept: string;
 	createEvent: string;
 	createEventLabel: string;
+	/** A complete event draft waits on its confirmation card. */
+	eventDrafted: string;
+	/** A partial event draft opens the form already filled. */
+	eventFormFilled: string;
 	confirmUnregister: string;
 	confirmRegister: string;
 	whichToLeave: string;
@@ -31,6 +37,9 @@ export interface LocalCopy {
 	mapLabel: string;
 	emergency: string;
 	reportReady: string;
+	/** The fare report form opens almost filled (U17). */
+	fareReportReady: string;
+	fareReportLabel: string;
 	profile: string;
 	profileLabel: string;
 	myRegistrations: string;

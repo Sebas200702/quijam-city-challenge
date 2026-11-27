@@ -243,6 +243,24 @@ export function useLiveVoice(assistant: Assistant) {
 		[flushUser],
 	);
 
+	/**
+	 * Tells the live session something that happened outside it, such as the
+	 * outcome of an action the person confirmed later on its card (S4).
+	 */
+	const notify = useCallback((text: string): boolean => {
+		const live = session.current;
+		if (!live || !text) return false;
+		try {
+			live.sendClientContent({
+				turns: [{ role: "user", parts: [{ text }] }],
+				turnComplete: true,
+			});
+			return true;
+		} catch {
+			return false;
+		}
+	}, []);
+
 	// Leaving the page ends the session and frees the microphone.
 	useEffect(() => () => stop(), [stop]);
 
@@ -253,5 +271,6 @@ export function useLiveVoice(assistant: Assistant) {
 		start,
 		stop,
 		sendText,
+		notify,
 	};
 }

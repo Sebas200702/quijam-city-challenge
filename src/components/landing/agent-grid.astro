@@ -1,32 +1,122 @@
 ---
-// One illustrated tile per specialized agent; each opens Quillart AI with an example.
-import { ArrowRight } from "lucide-react";
+// One illustrated tile per specialized agent; each opens Quillart AI with an
+// example. The tiles form a bento: sizes, colours and illustration shapes vary.
+import { ArrowUpRight } from "lucide-react";
 import { AGENT_TILES } from "./landing-content";
+
+interface TileLook {
+	span: string;
+	tone: string;
+	/** Silhouette of the tile and, for the speech bubble, of its cell. */
+	form: string;
+	cell: string;
+	shape: string;
+	/** Wide on phones too, with the illustration beside the text. */
+	row: boolean;
+}
+
+const LOOKS: Record<string, TileLook> = {
+	agenda: {
+		span: "col-span-2 lg:col-span-7",
+		tone: "l-tile--gold",
+		form: "l-tile--ticket",
+		cell: "",
+		shape: "l-art--burst",
+		row: true,
+	},
+	community: {
+		span: "lg:col-span-5",
+		tone: "",
+		form: "l-tile--bubble",
+		cell: "l-cell--bubble",
+		shape: "l-art--arch",
+		row: false,
+	},
+	places: {
+		span: "lg:col-span-5",
+		tone: "l-tile--green",
+		form: "l-tile--leaf",
+		cell: "",
+		shape: "l-art--leaf",
+		row: false,
+	},
+	mobility: {
+		span: "col-span-2 lg:col-span-7",
+		tone: "l-tile--ink",
+		form: "l-tile--notch",
+		cell: "",
+		shape: "l-art--pin",
+		row: true,
+	},
+	city_reports: {
+		span: "lg:col-span-6",
+		tone: "l-tile--red",
+		form: "l-tile--chamfer",
+		cell: "",
+		shape: "l-art--octagon",
+		row: false,
+	},
+	account: {
+		span: "lg:col-span-6",
+		tone: "",
+		form: "l-tile--dee",
+		cell: "",
+		shape: "l-art--circle",
+		row: false,
+	},
+};
+
+const FALLBACK: TileLook = {
+	span: "lg:col-span-6",
+	tone: "",
+	form: "",
+	cell: "",
+	shape: "",
+	row: false,
+};
 ---
 
-<section aria-labelledby="agents-title" class="mx-auto w-full max-w-6xl px-4 py-10 lg:px-8 lg:py-16">
-	<h2 id="agents-title" class="q-h1 mb-6 text-center lg:mb-10" data-i18n="landing.agents.title">¿Qué quieres hacer?</h2>
-	<ul class="m-0 grid list-none grid-cols-2 gap-3 p-0 lg:grid-cols-3 lg:gap-6">
+<section aria-labelledby="agents-title" class="mx-auto w-full max-w-[1240px] px-3 pt-6 pb-12 lg:px-8 lg:pt-10 lg:pb-24">
+	<div class="l-heading mb-6 flex flex-col items-center gap-4 text-center lg:mb-12">
+		<span class="l-geo l-geo--half l-geo--gold" aria-hidden="true"></span>
+		<span class="l-geo l-geo--tri" style="--i: 2" aria-hidden="true"></span>
+		<span class="l-geo l-geo--ring l-geo--green" style="--i: 1" aria-hidden="true"></span>
+		<span class="l-geo l-geo--plus l-geo--ink" style="--i: 3" aria-hidden="true"></span>
+		<p class="l-eyebrow" data-reveal>
+			<span class="q-star" aria-hidden="true"></span>
+			<span data-i18n="landing.agents.eyebrow">6 agentes, una conversación</span>
+		</p>
+		<h2 id="agents-title" class="l-h2" data-reveal style="--i: 1" data-i18n="landing.agents.title">¿Qué quieres hacer?</h2>
+	</div>
+	<ul class="m-0 grid list-none grid-cols-2 gap-3 p-0 lg:grid-cols-12 lg:gap-5">
 		{
-			AGENT_TILES.map((tile) => (
-				<li class="min-w-0">
-					<a
-						href={tile.example.href}
-						class="q-card h-full gap-0! overflow-hidden text-inherit no-underline transition-shadow lg:hover:shadow-[var(--glow-gold)]"
-					>
-						<div class="q-illus h-32 overflow-hidden rounded-none! px-3 lg:h-52">
-							<img src={tile.illustration} alt="" class="h-26! w-auto! max-w-full object-contain lg:h-42!" loading="lazy" width="160" height="160" />
-						</div>
-						<div class="flex flex-1 flex-col gap-2 p-3 lg:p-5">
-							<h3 class="q-h3 text-[16px] leading-tight lg:text-[20px]" data-i18n={`landing.agents.${tile.id}.title`}>{tile.title}</h3>
-							<span class="q-sm q-muted mt-auto flex items-center gap-1">
-								<span class="line-clamp-2" data-i18n={`landing.agents.${tile.id}.example`}>“{tile.example.label}”</span>
-								<ArrowRight size={16} strokeWidth={1.75} aria-hidden="true" className="shrink-0" />
-							</span>
-						</div>
-					</a>
-				</li>
-			))
+			AGENT_TILES.map((tile, index) => {
+				const look = LOOKS[tile.id] ?? FALLBACK;
+				return (
+					<li class={`l-cell min-w-0 ${look.span} ${look.cell}`} data-reveal style={`--i: ${index % 3}`}>
+						<a href={tile.example.href} class={`l-tile ${look.tone} ${look.form} ${look.row ? "l-tile--row" : ""}`}>
+							{tile.id === "agenda" && <span class="q-star l-tile__star" aria-hidden="true" />}
+							{tile.id === "mobility" && (
+								<svg class="l-tile__route" viewBox="0 0 600 300" preserveAspectRatio="none" aria-hidden="true">
+									<path d="M-10 250 C 120 250 150 150 260 160 S 380 60 610 40" />
+								</svg>
+							)}
+							<div class={`l-art ${look.shape}`}>
+								<img src={tile.illustration} alt="" loading="lazy" width="160" height="160" />
+							</div>
+							<div class="l-tile__text">
+								<h3 class="l-tile__title" data-i18n={`landing.agents.${tile.id}.title`}>{tile.title}</h3>
+								<span class="l-tile__foot">
+									<span class="l-tile__quote" data-i18n={`landing.agents.${tile.id}.example`}>“{tile.example.label}”</span>
+									<span class="l-tile__go" aria-hidden="true">
+										<ArrowUpRight size={20} strokeWidth={1.75} />
+									</span>
+								</span>
+							</div>
+						</a>
+					</li>
+				);
+			})
 		}
 	</ul>
 </section>

@@ -25,6 +25,7 @@ import type {
 } from "../../lib/corridor/corridor-types";
 import { useT } from "../../lib/i18n/use-language";
 import "./map-chrome.css";
+import "../../styles/life-map-b.css";
 
 export const SERVICE_ICONS: Record<ServiceKey, LucideIcon> = {
 	accessible: Accessibility,
@@ -87,7 +88,7 @@ export function ServiceTag({ service }: { service: ServiceKey }) {
 	const t = useT();
 	const Icon = SERVICE_ICONS[service];
 	return (
-		<li className={`corridor-tag mc-tag mc-tag--${SERVICE_TONES[service]}`}>
+		<li className={`corridor-tag mc-tag lmb-tag mc-tag--${SERVICE_TONES[service]}`}>
 			<Icon size={14} strokeWidth={1.75} aria-hidden="true" />
 			{t.map.serviceLabels[service]}
 		</li>

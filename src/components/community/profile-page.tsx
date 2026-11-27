@@ -32,6 +32,7 @@ import { ConsentNote } from "./consent-note";
 import { EventCard } from "./event-card";
 import { GoogleSignInButton } from "./google-sign-in-button";
 import { MyDataPanel } from "./my-data-panel";
+import { NotificationsPanel } from "./notifications-panel";
 import { ThreadCard } from "./thread-card";
 import { useCaptcha } from "./use-captcha";
 import { errorText, useLoad, useSession, useStore } from "./use-community";
@@ -700,6 +701,8 @@ function SignedInView({ profile }: { profile: Profile }) {
 					}
 				</Loaded>
 			</Section>
+
+			<NotificationsPanel />
 
 			<AppealsPanel />
 

@@ -73,7 +73,6 @@ import { type RouteQuery, useRoutePlan } from "./use-route-plan";
 
 const FALLBACK_CENTER: L.LatLngTuple = [10.97, -74.79];
 const WIDE_SCREEN_PX = 640;
-const WIDE_QUERY = `(min-width: ${WIDE_SCREEN_PX}px)`;
 /** From this zoom on, every pin shows its name and status word, not only the selected one. */
 const NEAR_ZOOM = 16;
 /** Same key the layout's inline script reads to apply the theme before paint. */
@@ -225,11 +224,9 @@ export default function CorridorMap({ data, source }: CorridorMapProps) {
 		flood.blocked,
 		crowdByZone,
 	);
-	// The route sheet: open on wide screens (the planner beside the stop list); on phones
-	// only when the visitor asks for a route, so the map gets the whole screen.
-	const [routeOpen, setRouteOpen] = useState(
-		() => window.matchMedia(WIDE_QUERY).matches,
-	);
+	// The route sheet opens only when the visitor asks for a route (the stop list, the
+	// agent's `map.showRoute` or `/mapa?destino=`), on phones and desktop alike.
+	const [routeOpen, setRouteOpen] = useState(false);
 	// "You are here": the trip's origin stands in for the visitor's position (no GPS in the pilot).
 	const origin = data.stops.find((stop) => stop.code === query.origin) ?? null;
 	// The arroyo modal only opens when it touches this route or the visitor's zone (docs/20, 3.1).
@@ -459,6 +456,8 @@ export default function CorridorMap({ data, source }: CorridorMapProps) {
 			setRouteOpen(true);
 		},
 		selected: selected?.code ?? null,
+		stops: data.stops,
+		segments: data.segments,
 	});
 
 	useHeatLayer(mapRef, data, heatOn, t);

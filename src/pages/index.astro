@@ -3,11 +3,12 @@
 import AgentGrid from "../components/landing/agent-grid.astro";
 import HowItWorks from "../components/landing/how-it-works.astro";
 import JoinBand from "../components/landing/join-band.astro";
-import LandingFooter from "../components/landing/landing-footer.astro";
-import LandingHeader from "../components/landing/landing-header.astro";
 import LandingHero from "../components/landing/landing-hero.astro";
+import PromptMarquee from "../components/landing/prompt-marquee.astro";
 import TrustStrip from "../components/landing/trust-strip.astro";
 import UpcomingSection from "../components/landing/upcoming-section.astro";
+import SiteFooter from "../components/site/site-footer.astro";
+import SiteHeader from "../components/site/site-header.astro";
 import BaseLayout from "../layouts/base-layout.astro";
 ---
 
@@ -18,15 +19,16 @@ import BaseLayout from "../layouts/base-layout.astro";
 	dock={false}
 >
 	<div class="overflow-x-clip">
-		<LandingHeader />
+		<SiteHeader />
 		<main>
 			<LandingHero />
+			<PromptMarquee />
 			<AgentGrid />
 			<HowItWorks />
 			<UpcomingSection />
 			<TrustStrip />
 			<JoinBand />
 		</main>
-		<LandingFooter />
+		<SiteFooter variant="full" />
 	</div>
 </BaseLayout>

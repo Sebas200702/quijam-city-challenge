@@ -8,6 +8,9 @@ import type {
 	ModerationStatus,
 	TriagePriority,
 } from "../moderation/moderation-types";
+import type { UserNotification } from "../notifications/event-notifications-types";
+
+export type { UserNotification };
 
 /**
  * Optional point of a public place on the AMB map (docs/30, U08). Never a person's
@@ -265,7 +268,7 @@ export interface RemovedContentItem {
 /** Where the data lives: the shared cloud database, or this device only. */
 export type StoreMode = "cloud" | "device";
 
-export type CommunityTopic = "events" | "forum";
+export type CommunityTopic = "events" | "forum" | "notifications";
 
 export interface CommunityStore {
 	readonly mode: StoreMode;
@@ -286,6 +289,10 @@ export interface CommunityStore {
 	listEvents(query?: EventQuery): Promise<CommunityEvent[]>;
 	getEvent(id: string): Promise<CommunityEvent | null>;
 	createEvent(input: NewEventInput): Promise<PublishResult<CommunityEvent>>;
+	updateEvent(
+		id: string,
+		input: NewEventInput,
+	): Promise<PublishResult<CommunityEvent>>;
 	cancelEvent(id: string): Promise<void>;
 	/** Ids of the events the signed-in person registered for. */
 	myRegistrations(): Promise<string[]>;
@@ -325,6 +332,11 @@ export interface CommunityStore {
 	/** Ley 1581: the person can download and delete their data. */
 	exportMyData(): Promise<MyDataExport>;
 	deleteAccount(): Promise<void>;
+
+	/** In-app notifications for the signed-in person (#91, #92). */
+	listNotifications(): Promise<UserNotification[]>;
+	markNotificationRead(id: string): Promise<void>;
+	markAllNotificationsRead(): Promise<void>;
 
 	/** Calls the listener whenever someone else changes the topic. */
 	subscribe(topic: CommunityTopic, listener: () => void): () => void;

@@ -9,9 +9,9 @@ interface TopNavProps {
 }
 
 const linkClass = (active: boolean) =>
-	`inline-flex min-h-11 items-center gap-2 rounded-full px-4 text-[15px] font-semibold no-underline ${
+	`ls-toplink inline-flex min-h-11 items-center gap-2 rounded-full px-4 text-[15px] font-semibold no-underline ${
 		active
-			? "bg-[var(--line)] text-[var(--ink)]"
+			? "is-on"
 			: "bg-transparent text-[var(--ink-muted)] lg:hover:text-[var(--ink)]"
 	}`;
 
@@ -32,7 +32,7 @@ export function TopNav({ current }: TopNavProps) {
 				>
 					{link.section === "home" && (
 						<span
-							className="q-star text-[var(--gold)]"
+							className="q-star"
 							style={{ width: 16, height: 16 }}
 							aria-hidden="true"
 						/>

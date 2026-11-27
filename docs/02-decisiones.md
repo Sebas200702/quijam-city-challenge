@@ -225,3 +225,19 @@ Auditoría UI/UX v2 ([30-auditoria-ui-ux.md](30-auditoria-ui-ux.md), U07, U09, U
 - **El mapa georreferencia el resto de la app sin ser el inicio.** Capas de puntos registrables (hoy Lugares; luego eventos y conversaciones), enlaces `/mapa?lugar=…&evento=…&lat=…&lng=…` y `focusMap()` para el dock del agente. Detalle en [24-datos-faltantes-ui.md](24-datos-faltantes-ui.md).
 - **Los lugares fuera del AMB no se borran**: siguen en `/lugares` con la etiqueta "Fuera del área metropolitana" y sin pin.
 - **Agrupación de pines propia** (sin `Leaflet.markercluster`): círculos numerados por debajo del zoom 15.
+
+## Recordatorios y notificaciones de eventos (27 nov 2026)
+
+Issue #91.
+
+- **Bandeja privada con RLS y cascada (Ley 1581):** se crea `public.user_notifications` (`20261129000003_user_notifications.sql`) registrada en `supabase_realtime`, con lectura/actualización/borrado restringidos al propio usuario e inserciones únicamente desde el servidor (service role) o triggers `security definer` (`trg_events_notify_cancelled` al cancelar un evento). Al eliminar la cuenta se borran en cascada.
+- **Presupuesto de interrupciones (regla 4 de #57):** ningún recordatorio de evento ni aviso de moderación abre modal ni pide permiso al cargar. Dentro de la app aparece como máximo una tarjeta discreta (`EventNotifier`) y la bandeja completa en `/perfil#mis-avisos` (`NotificationsPanel`); las notificaciones web reutilizan `AppNotification` con `requireInteraction: false` y el usuario puede desactivar ambos canales en cualquier momento.
+- **Recordatorios del día anterior sin cron externo:** los eventos inscritos que comienzan en las próximas 24 horas generan recordatorios deterministas por día (`buildUpcomingEventReminders`) deduplicados localmente.
+
+## Editar eventos con nuevo triaje (27 nov 2026)
+
+Issue #92.
+
+- **Sin `UPDATE` directo desde el cliente:** se mantiene la política de base de datos que solo permite al cliente actualizar `status` para cancelar. Toda edición de título, descripción, fecha, lugar, cupos o entrada pasa por `PATCH /api/community/events/[id]` con llave de servicio (`updateEventContent`), verificando autoría y bloqueando cupos menores a `registered_count`.
+- **Re-triaje obligatorio en cambios de texto o cobro:** si cambia título, descripción o condición de pago, el servidor vuelve a ejecutar `triageContent` + `applyTrustPolicy`; si el veredicto es `reject` no sobrescribe el evento (`422`), y si es `hold` lo retiene (`moderation_status = 'held'`) hasta decisión de la ciudad en `/moderacion`.
+- **Aviso automático a inscritos:** cuando cambia la fecha o el lugar de un evento publicado, el servidor inserta avisos `event_updated` en `user_notifications` para todas las personas inscritas.

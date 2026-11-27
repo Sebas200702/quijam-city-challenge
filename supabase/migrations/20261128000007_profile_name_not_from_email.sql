@@ -36,7 +36,11 @@ begin
     new.id,
     candidate,
     nullif(trim(new.raw_user_meta_data ->> 'neighborhood'), ''),
-    coalesce((new.raw_user_meta_data ->> 'is_visitor')::boolean, false)
+    -- A malformed value never aborts the sign-up: anything but 'true' is false.
+    case lower(trim(coalesce(new.raw_user_meta_data ->> 'is_visitor', '')))
+      when 'true' then true
+      else false
+    end
   )
   on conflict (id) do nothing;
   return new;

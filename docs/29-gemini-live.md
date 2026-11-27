@@ -37,6 +37,10 @@ Restricciones según el SDK:
 6. Las acciones van a la misma tarjeta de confirmación del texto (`PendingAction` en `use-assistant.ts`). El modelo dice en voz alta qué va a hacer y el navegador lee "Revisa la tarjeta en pantalla y confirma". Solo se ejecuta si la persona confirma en la tarjeta. Cancelar, escribir otro mensaje, cerrar Live o que Gemini retire la llamada (`toolCallCancellation`) la cuentan como no hecha.
 7. Si Live no conecta o se cae, el chat lo dice y sigue con el micrófono del navegador (Web Speech API) y el texto (`live-status.ts`).
 
+**Cambio de página (pendiente S4):** la app no tiene router de cliente, así que un resultado que abre otra página la recarga y la sesión Live se cierra. Al salir con Live activo, el dock marca `quillart.live.resume` en `sessionStorage` (`live-resume.ts`, válido 30 s y de un solo uso); el dock de la página nueva lo toma, reabre Live con la conversación guardada como historia y muestra "La voz en vivo siguió contigo en esta página". El navegador puede dejar el audio suspendido hasta el primer toque: `live-audio.ts` lo reanuda con el primer toque o tecla.
+
+**Acción confirmada después (pendiente S4):** `confirmedActionNote` (`live-conduit.ts`) arma el aviso para Live con el resultado de la tarjeta y la respuesta de Quillart AI. Falta conectarlo: `use-live-voice.ts` necesita un `notify` (`sendClientContent`) y el dock debe llamarlo al confirmar o cancelar.
+
 Límite conocido: el agente se elige al abrir la sesión. Para cambiar de apartado a mitad de la conversación hay que terminar y volver a abrir la voz en vivo.
 
 ## Archivos
@@ -48,6 +52,7 @@ Límite conocido: el agente se elige al abrir la sesión. Para cambiar de aparta
 | `src/lib/guide/live-session.ts` | Cliente del navegador: pide el token y abre la sesión Live (Guía o agente). |
 | `src/lib/guide/live-agent.ts` | Valida la petición del token, elige el agente con el orquestador y arma su instrucción y herramientas. |
 | `src/lib/guide/live-tool-calls.ts` | Convierte las llamadas de Live en llamadas del asistente y los resultados en respuestas para Live. |
+| `src/lib/guide/live-resume.ts` | Marca de un solo uso para reabrir Live en la página siguiente. |
 | `src/lib/guide/live-status.ts` | Estados de la voz en vivo y respaldo con Web Speech API y texto. |
 | `src/lib/guide/live-audio.ts` | Micrófono y reproducción de audio de Live. |
 | `src/components/assistant/use-live-voice.ts` | Hook del chat que conecta Live con `use-assistant.ts`. |

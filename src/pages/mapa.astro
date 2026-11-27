@@ -1,6 +1,6 @@
 ---
 import { BottomNav } from "../components/home/bottom-nav";
-import { TopBar } from "../components/home/top-bar";
+import SiteHeader from "../components/site/site-header.astro";
 import VisitorMapSection from "../components/visitor-home/visitor-map-section";
 import { VisitorPresenceBeacon } from "../components/visitor-presence-beacon";
 import BaseLayout from "../layouts/base-layout.astro";
@@ -16,16 +16,36 @@ const { aiHref } = homeContent;
 	titleKey="map.pageTitle"
 	dockOverlay
 >
-	{/* Top bar with the secondary menu on every width; tab bar on phones. */}
+	{/* Shared header floating over the map on every width; tab bar on phones. No footer: full-screen map. */}
+	<SiteHeader current="map" variant="overlay" homeHref="/inicio" title="Mapa" titleKey="nav.map">
+		<a slot="actions" href="/perfil" class="q-btn q-btn--ghost q-btn--sm min-h-11 max-lg:hidden!">
+			<span data-i18n="nav.profile">Perfil</span>
+		</a>
+	</SiteHeader>
 	<div
 		class="flex h-[calc(100dvh-3px-var(--q-dock-space,0px))] w-full flex-col"
 	>
-		<TopBar current="map" aiHref={aiHref} client:load />
-		<main class="relative min-h-0 flex-1">
+		{/* The map starts below the floating header, so its search and chips stay clear of it. */}
+		<main class="map-main relative min-h-0 flex-1">
 			<VisitorMapSection client:only="react" data={data} source={source}>
 				{/* Shown until the map loads: never a blank screen (rule 8). */}
-				<div slot="fallback" class="grid h-full place-items-center">
-					<div class="q-state q-state--loading" role="status">
+				<div
+					slot="fallback"
+					class="relative grid h-full place-items-center overflow-hidden p-4"
+				>
+					<span
+						class="l-geo l-geo--ring l-geo--gold top-[14%] left-[12%]"
+						aria-hidden="true"></span>
+					<span
+						class="l-geo l-geo--half l-geo--green right-[10%] bottom-[20%] rotate-[-24deg]"
+						aria-hidden="true"></span>
+					<span
+						class="l-geo l-geo--plus top-[22%] right-[16%]"
+						aria-hidden="true"></span>
+					<div
+						class="q-state q-state--loading h-auto! rounded-[28px_72px_28px_72px] bg-[linear-gradient(160deg,var(--gold-soft),var(--surface))] px-10! shadow-[var(--shadow-card)]"
+						role="status"
+					>
 						<span class="q-state__glyph" aria-hidden="true">
 							<span class="q-star q-star--think"></span>
 						</span>
@@ -39,3 +59,10 @@ const { aiHref } = homeContent;
 		<BottomNav client:load current="map" aiHref={aiHref} />
 	</div>
 </BaseLayout>
+
+<style is:global>
+	/* Reserve the overlay header's room: the map's own top controls sit right under the pill. */
+	.map-main .visitor-map {
+		top: var(--site-header-space);
+	}
+</style>

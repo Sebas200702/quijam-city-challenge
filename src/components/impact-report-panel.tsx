@@ -147,16 +147,19 @@ export function ImpactReportPanel() {
 	const loading = state.kind === "loading";
 
 	return (
-		<section className="q-card" aria-labelledby="impact-report-title">
+		<section className="q-card lc-shape--arch" aria-labelledby="impact-report-title">
 			<div className="q-band q-band--green" aria-hidden="true" />
 			<div className="q-card__body">
 				<div className="grid gap-6 lg:grid-cols-[320px_minmax(0,1fr)]">
 					<div className="flex flex-col gap-4">
 						<div>
-							<p className="q-eyebrow">Informe del día</p>
+							<p className="l-eyebrow l-eyebrow--sunk lc-eb">
+								<span className="q-star" aria-hidden="true" />
+								Informe del día
+							</p>
 							<h2
 								id="impact-report-title"
-								className="q-h2 mt-1 flex items-center gap-2"
+								className="l-h2 lc-h2 flex items-center gap-2"
 							>
 								<Sparkles
 									size={22}

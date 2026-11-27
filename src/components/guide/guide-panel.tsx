@@ -33,6 +33,7 @@ import {
 	useVoiceConduit,
 } from "../assistant/voice-conduit";
 import "./guide-panel.css";
+import "../../styles/life-assistant.css";
 import {
 	GuideChatIllustration,
 	GuideErrorIllustration,
@@ -177,7 +178,7 @@ function Suggestions({
 		: text.suggestions;
 	return (
 		<fieldset
-			className={`guide-panel__chips${wrap ? " guide-panel__chips--wrap" : ""}`}
+			className={`la-chips guide-panel__chips${wrap ? " guide-panel__chips--wrap" : ""}`}
 		>
 			<legend className="q-sr">{text.suggestionsLabel}</legend>
 			{suggestions.map((suggestion) => {
@@ -441,7 +442,7 @@ export function GuidePanel({
 				</div>
 			</div>
 
-			<div className="guide-panel__log" aria-live="polite">
+			<div className="la-chat guide-panel__log" aria-live="polite">
 				{showReferenceTag && (
 					<span className="q-sim-tag guide-panel__sim">
 						{text.referenceData}
@@ -475,7 +476,10 @@ export function GuidePanel({
 								</div>
 							</>
 						)}
-						<p className="q-eyebrow">{text.tryThis}</p>
+						<p className="l-eyebrow l-eyebrow--sunk">
+							<span className="q-star" aria-hidden="true" />
+							{text.tryThis}
+						</p>
 						<Suggestions
 							text={text}
 							routeQuestion={routeQuestion}

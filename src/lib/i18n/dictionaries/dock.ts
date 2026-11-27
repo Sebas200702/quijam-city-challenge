@@ -27,6 +27,8 @@ const es = {
 	filledByAgent: "Llenado por Quillart AI: revisa antes de enviar",
 	clear: "Quitar",
 	resumed: "Entraste a tu cuenta: tu acción sigue lista para confirmar.",
+	liveResumed:
+		"La voz en vivo siguió contigo en esta página. Si no la oyes, toca la pantalla.",
 	whenLegend: "Cuándo",
 	when: { hoy: "Hoy", finde: "Este finde", semana: "Esta semana" },
 	searchFor: (text: string) => `«${text}»`,
@@ -116,6 +118,8 @@ const en: DockMessages = {
 	filledByAgent: "Filled in by Quillart AI: review before sending",
 	clear: "Clear",
 	resumed: "You signed in: your action is still ready to confirm.",
+	liveResumed:
+		"Live voice came with you to this page. If you can't hear it, tap the screen.",
 	whenLegend: "When",
 	when: { hoy: "Today", finde: "This weekend", semana: "This week" },
 	searchFor: (text: string) => `“${text}”`,
@@ -200,6 +204,8 @@ const pt: DockMessages = {
 	filledByAgent: "Preenchido pela Quillart AI: revise antes de enviar",
 	clear: "Limpar",
 	resumed: "Você entrou na sua conta: sua ação continua pronta para confirmar.",
+	liveResumed:
+		"A voz ao vivo veio com você para esta página. Se não ouvir, toque na tela.",
 	whenLegend: "Quando",
 	when: { hoy: "Hoje", finde: "Este fim de semana", semana: "Esta semana" },
 	searchFor: (text: string) => `«${text}»`,
@@ -285,6 +291,8 @@ const fr: DockMessages = {
 	filledByAgent: "Rempli par Quillart AI : vérifiez avant d’envoyer",
 	clear: "Effacer",
 	resumed: "Vous êtes connecté : votre action est toujours prête à confirmer.",
+	liveResumed:
+		"La voix en direct vous a suivi sur cette page. Si vous ne l'entendez pas, touchez l'écran.",
 	whenLegend: "Quand",
 	when: { hoy: "Aujourd’hui", finde: "Ce week-end", semana: "Cette semaine" },
 	searchFor: (text: string) => `« ${text} »`,

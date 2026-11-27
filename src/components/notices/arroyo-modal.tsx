@@ -70,7 +70,7 @@ export function ArroyoModal({ notice, onAction, onDismiss }: ArroyoModalProps) {
 		<div className="q-backdrop">
 			<div
 				ref={dialogRef}
-				className="q-alert q-alert--alert q-alert--modal q-notice"
+				className="q-alert q-alert--alert q-alert--modal q-notice lsb-notice lsb-notice--modal"
 				// Spanish-only copy for now (WCAG 3.1.2, language of parts).
 				lang="es"
 				role="alertdialog"

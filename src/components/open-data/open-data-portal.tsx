@@ -1,3 +1,4 @@
+import "../../styles/life-city.css";
 import {
 	Check,
 	CloudOff,
@@ -17,9 +18,6 @@ import type {
 	OpenDataOrigin,
 } from "../../lib/open-data/open-data-types";
 import { BottomNav } from "../home/bottom-nav";
-import { QuillartLogo } from "../home/quillart-logo";
-import { TopNav } from "../home/top-nav";
-import { SecondaryMenu } from "../visitor-home/secondary-menu";
 
 type OriginFilter = "all" | OpenDataOrigin;
 
@@ -55,7 +53,7 @@ function DatasetCard({
 	const previewColumns = dataset.columns.slice(0, 5);
 
 	return (
-		<article className="q-card h-full">
+		<article className="q-card l-rise h-full overflow-hidden rounded-[28px_56px_28px_28px] transition-transform duration-200 hover:-translate-y-1">
 			<div
 				className={`q-band ${
 					dataset.origin === "community" ? "q-band--green" : "q-band--gold"
@@ -298,31 +296,33 @@ export function OpenDataPortal({
 		(showReference ? referenceDatasets.length : 0);
 
 	return (
-		<div className="mx-auto flex min-h-[calc(100dvh-3px)] w-full max-w-md flex-col lg:max-w-6xl">
-			<header className="flex items-center gap-3 px-4 pt-4 lg:gap-6 lg:px-8 lg:pt-6">
-				<a
-					href="/inicio"
-					className="flex min-w-0 flex-1 no-underline text-inherit"
-				>
-					<QuillartLogo />
-				</a>
-				<TopNav current="map" aiHref={aiHref} />
-				<SecondaryMenu />
-			</header>
-
+		<div className="mx-auto flex min-h-[calc(100dvh-3px-var(--site-header-space))] w-full max-w-md flex-col lg:max-w-6xl">
 			<main className="flex flex-1 flex-col gap-6 px-4 pt-4 pb-8 lg:gap-8 lg:px-8 lg:pt-8 lg:pb-16">
-				<section className="q-card">
+				<section className="q-card l-rise relative overflow-hidden rounded-[36px_36px_72px_36px]">
 					<div className="q-flag" aria-hidden="true">
 						<i />
 						<i />
 						<i />
 					</div>
-					<div className="q-card__head">
-						<div>
-							<p className="q-eyebrow">
+					<div className="q-card__head relative bg-[linear-gradient(135deg,var(--gold-soft),var(--surface)_72%)]">
+						<span
+							aria-hidden="true"
+							className="l-geo l-geo--ring l-geo--gold absolute right-10 top-4 max-lg:hidden"
+						/>
+						<span
+							aria-hidden="true"
+							className="l-geo l-geo--tri absolute right-40 bottom-3 max-lg:hidden"
+						/>
+						<span
+							aria-hidden="true"
+							className="l-geo l-geo--plus l-geo--green absolute right-64 top-6 max-lg:hidden"
+						/>
+						<div className="relative">
+							<p className="l-eyebrow">
+								<span className="q-dot" aria-hidden="true" />
 								Legado abierto · Ciudad inteligente · Barranquilla
 							</p>
-							<h1 className="q-h1 mt-1">Portal de datos abiertos</h1>
+							<h1 className="l-h2 mt-3">Portal de datos abiertos</h1>
 							<p className="q-p q-muted mt-2 max-w-2xl">
 								Descarga en CSV o JSON los conjuntos públicos de QUILLART sin
 								registro y sin datos personales.
@@ -332,7 +332,7 @@ export function OpenDataPortal({
 
 					<div className="q-card__body space-y-4">
 						<div className="grid gap-3 sm:grid-cols-3">
-							<div className="rounded-[var(--radius-md)] bg-[var(--bg)] p-4">
+							<div className="l-rise rounded-[32px_32px_32px_8px] bg-[var(--gold-soft)] p-5">
 								<p className="q-eyebrow flex items-center gap-1.5">
 									<Database size={14} strokeWidth={1.75} aria-hidden="true" />
 									Conjuntos publicados
@@ -344,7 +344,7 @@ export function OpenDataPortal({
 									{totalRecords} registros públicos
 								</p>
 							</div>
-							<div className="rounded-[var(--radius-md)] bg-[var(--bg)] p-4">
+							<div className="l-rise rounded-[20px] bg-[var(--green-soft)] p-5">
 								<p className="q-eyebrow">Licencia abierta</p>
 								<p className="q-num mt-1 text-2xl font-bold text-[var(--ink)]">
 									{catalog.license}
@@ -358,7 +358,7 @@ export function OpenDataPortal({
 									Ver términos de uso
 								</a>
 							</div>
-							<div className="rounded-[var(--radius-md)] bg-[var(--bg)] p-4">
+							<div className="l-rise rounded-[32px_8px_32px_32px] bg-[var(--bg)] p-5">
 								<p className="q-eyebrow flex items-center gap-1.5">
 									<ShieldCheck
 										size={14}
@@ -504,7 +504,7 @@ export function OpenDataPortal({
 				</fieldset>
 
 				{visibleCount === 0 ? (
-					<section className="q-card q-state q-state--empty">
+					<section className="q-card q-state q-state--empty l-rise rounded-[40px_16px_40px_16px]">
 						<div className="q-state__glyph" aria-hidden="true">
 							<Database size={26} strokeWidth={1.75} />
 						</div>
@@ -522,8 +522,11 @@ export function OpenDataPortal({
 							>
 								<div className="flex flex-wrap items-center justify-between gap-2">
 									<div>
-										<p className="q-eyebrow">Plataforma ciudadana</p>
-										<h2 id="community-datasets" className="q-h2 mt-0.5">
+										<p className="l-eyebrow">
+											<span className="q-dot" aria-hidden="true" />
+											Plataforma ciudadana
+										</p>
+										<h2 id="community-datasets" className="l-h2 mt-2 !text-[clamp(1.6rem,3.2vw,2.4rem)]">
 											Datos de la comunidad
 										</h2>
 									</div>
@@ -531,9 +534,13 @@ export function OpenDataPortal({
 										Publicados y moderados
 									</span>
 								</div>
-								<ul className="m-0 grid list-none grid-cols-1 gap-4 p-0 lg:grid-cols-2">
-									{communityDatasets.map((dataset) => (
-										<li key={dataset.slug}>
+								<ul className="lc-cards m-0 grid list-none grid-cols-1 gap-4 p-0 lg:grid-cols-2">
+									{communityDatasets.map((dataset, index) => (
+										<li
+											key={dataset.slug}
+											className="l-rise"
+											style={{ ["--i" as string]: index % 4 }}
+										>
 											<DatasetCard
 												dataset={dataset}
 												copiedSlug={copiedSlug}
@@ -552,16 +559,23 @@ export function OpenDataPortal({
 							>
 								<div className="flex flex-wrap items-center justify-between gap-2">
 									<div>
-										<p className="q-eyebrow">Corredor Estadio – Malecón</p>
-										<h2 id="corridor-datasets" className="q-h2 mt-0.5">
+										<p className="l-eyebrow l-eyebrow--sunk">
+											<span className="q-dot" aria-hidden="true" />
+											Corredor Estadio – Malecón
+										</p>
+										<h2 id="corridor-datasets" className="l-h2 mt-2 !text-[clamp(1.6rem,3.2vw,2.4rem)]">
 											Conjuntos del corredor piloto
 										</h2>
 									</div>
 									<span className="q-sim-tag">Datos de referencia</span>
 								</div>
-								<ul className="m-0 grid list-none grid-cols-1 gap-4 p-0 lg:grid-cols-2">
-									{referenceDatasets.map((dataset) => (
-										<li key={dataset.slug}>
+								<ul className="lc-cards m-0 grid list-none grid-cols-1 gap-4 p-0 lg:grid-cols-2">
+									{referenceDatasets.map((dataset, index) => (
+										<li
+											key={dataset.slug}
+											className="l-rise"
+											style={{ ["--i" as string]: index % 4 }}
+										>
 											<DatasetCard
 												dataset={dataset}
 												copiedSlug={copiedSlug}

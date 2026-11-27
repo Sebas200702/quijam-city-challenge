@@ -13,6 +13,7 @@ import type {
 } from "../moderation/moderation-types";
 import { triageContent } from "../moderation/triage";
 import { applyTrustPolicy } from "../moderation/trust-policy";
+import type { UserNotificationKind } from "../notifications/event-notifications-types";
 import type { OpenJevClient } from "../openjev/openjev-types";
 import { resolvePoint, type StoredPoint } from "./community-geo";
 import {
@@ -26,6 +27,9 @@ import {
 	toThread,
 } from "./community-mappers";
 import {
+	buildEventUpdateNoticeBody,
+	detectEventEditChanges,
+	validateEventEditInput,
 	validateEventInput,
 	validatePostBody,
 	validateThreadInput,
@@ -157,6 +161,156 @@ async function storedPointFor(
 			? { latitude: Number(place.latitude), longitude: Number(place.longitude) }
 			: null,
 	);
+}
+
+export function parseUpdateEventRequest(body: unknown): NewEventInput {
+	if (!isRecord(body) || !isRecord(body.input)) {
+		throw new CommunityError("Solicitud inválida.", 400);
+	}
+	return body.input as unknown as NewEventInput;
+}
+
+/**
+ * Updates an event strictly on behalf of its organizer (#92).
+ * - Enforces capacity >= registered_count.
+ * - Re-runs moderation triage + trust policy on any text or paid-status change;
+ *   if held, the event is retained until a city moderator reviews it.
+ * - Notifies every registered attendee if the date or place changed.
+ */
+export async function updateEventContent(
+	admin: SupabaseClient,
+	author: Author,
+	eventId: string,
+	input: NewEventInput,
+	jev: OpenJevClient | null,
+): Promise<PublishResult<CommunityEvent>> {
+	const { data: existingRow, error: fetchError } = await admin
+		.from("events")
+		.select(EVENT_COLUMNS)
+		.eq("id", eventId)
+		.neq("moderation_status", "removed")
+		.maybeSingle();
+	if (fetchError) throw new CommunityError(fetchError.message, 500);
+	if (!existingRow) {
+		throw new CommunityError("No encontramos este evento.", 404);
+	}
+
+	const existing = toEvent(existingRow);
+	if (existing.organizerId !== author.id) {
+		throw new CommunityError(
+			"Solo quien organiza puede editar el evento.",
+			403,
+		);
+	}
+	if (existing.status === "cancelled") {
+		throw new CommunityError("No puedes editar un evento cancelado.", 400);
+	}
+
+	const validationError = validateEventEditInput(
+		input,
+		existing.registeredCount,
+	);
+	if (validationError) {
+		throw new CommunityError(validationError, 400);
+	}
+
+	const changes = detectEventEditChanges(existing, input);
+	const needsTriage = changes.textChanged || changes.paidStatusChanged;
+
+	let moderationPatch: Record<string, unknown> = {};
+	let finalOutcome: PublishResult<CommunityEvent>["outcome"] =
+		existing.moderationStatus === "held" ? "held" : "published";
+	let finalMessage =
+		existing.moderationStatus === "held"
+			? "Cambios guardados. Tu evento sigue en revisión."
+			: "Cambios guardados en tu evento.";
+	let finalPriority: TriagePriority = existing.triagePriority;
+
+	if (needsTriage) {
+		const { count } = await admin
+			.from("events")
+			.select("id", { count: "exact", head: true })
+			.eq("organizer_id", author.id)
+			.eq("moderation_status", "published");
+		const decision = applyTrustPolicy(
+			await triageContent(
+				{ kind: "event", title: input.title, body: input.description },
+				jev,
+			),
+			{
+				kind: "event",
+				accountAgeHours:
+					(Date.now() - new Date(author.createdAt).getTime()) / 3_600_000,
+				publishedEvents: count ?? 0,
+				isVerifiedOrganizer: author.isVerifiedOrganizer,
+				isPaidEvent: !input.isFree,
+			},
+		);
+		if (decision.verdict === "reject") {
+			return publishResult<never>(decision, null);
+		}
+		moderationPatch = moderationColumns(decision);
+		const computed = publishResult(decision, null);
+		finalOutcome = computed.outcome;
+		finalMessage =
+			computed.outcome === "held"
+				? "Cambios guardados. El texto actualizado quedó en revisión hasta que la ciudad lo apruebe."
+				: "Cambios guardados y publicados en la agenda.";
+		finalPriority = computed.priority;
+	}
+
+	const { data: updatedRow, error: updateError } = await admin
+		.from("events")
+		.update({
+			title: input.title.trim(),
+			description: input.description.trim(),
+			category: input.category,
+			starts_at: input.startsAt,
+			ends_at: input.endsAt,
+			place_id: input.placeId,
+			location_text: input.placeId ? null : input.locationText?.trim() || null,
+			capacity: input.capacity,
+			is_free: input.isFree,
+			price_cop: input.isFree ? null : input.priceCop,
+			...moderationPatch,
+		})
+		.eq("id", eventId)
+		.select(EVENT_COLUMNS)
+		.single();
+	if (updateError) throw new CommunityError(updateError.message, 500);
+
+	const updated = toEvent(updatedRow);
+
+	// Notify registered attendees if date or place changed and the event is visible.
+	if (
+		(changes.dateChanged || changes.placeChanged) &&
+		updated.moderationStatus === "published"
+	) {
+		const { data: regs } = await admin
+			.from("event_registrations")
+			.select("user_id")
+			.eq("event_id", eventId);
+		const body = buildEventUpdateNoticeBody(updated.title, changes);
+		const noticeRows: NewUserNotificationRow[] = (regs ?? [])
+			.map((row) => String(row.user_id))
+			.filter((userId) => userId !== author.id)
+			.map((userId) => ({
+				user_id: userId,
+				kind: "event_updated",
+				title: `Cambio en evento: ${updated.title}`,
+				body,
+				href: `/agenda/${eventId}`,
+				event_id: eventId,
+			}));
+		await insertUserNotifications(admin, noticeRows);
+	}
+
+	return {
+		outcome: finalOutcome,
+		message: finalMessage,
+		priority: finalPriority,
+		record: updated,
+	};
 }
 
 export async function publishContent(
@@ -510,6 +664,39 @@ export function sortQueue(items: ModerationQueueItem[]): ModerationQueueItem[] {
 	);
 }
 
+export interface NewUserNotificationRow {
+	user_id: string;
+	kind: UserNotificationKind;
+	title: string;
+	body: string;
+	href: string;
+	event_id?: string | null;
+}
+
+/**
+ * Inserts in-app notifications via service role. Never breaks the main action
+ * if a deployment has not run the user_notifications migration yet.
+ */
+export async function insertUserNotifications(
+	admin: SupabaseClient,
+	rows: readonly NewUserNotificationRow[],
+): Promise<void> {
+	if (rows.length === 0) return;
+	const { error } = await admin.from("user_notifications").insert(
+		rows.map((row) => ({
+			user_id: row.user_id,
+			kind: row.kind,
+			title: row.title.slice(0, 160),
+			body: row.body.slice(0, 500),
+			href: row.href.startsWith("/") ? row.href : "/inicio",
+			event_id: row.event_id ?? null,
+		})),
+	);
+	if (error) {
+		console.error("[notifications] insert failed", error.message);
+	}
+}
+
 export async function applyModeration(
 	admin: SupabaseClient,
 	moderatorId: string,
@@ -520,6 +707,21 @@ export async function applyModeration(
 	if (action === "verify" && kind !== "thread") {
 		throw new CommunityError("Solo se confirman reportes del foro.", 400);
 	}
+	const ownerSelect =
+		kind === "event"
+			? "organizer_id, title"
+			: kind === "thread"
+				? "author_id, title"
+				: "author_id, thread_id";
+	const { data: beforeRow } =
+		action === "approve" || action === "remove"
+			? await admin
+					.from(TABLE[kind])
+					.select(ownerSelect)
+					.eq("id", id)
+					.maybeSingle()
+			: { data: null };
+
 	const now = new Date().toISOString();
 	const patch =
 		action === "resolve"
@@ -545,6 +747,46 @@ export async function applyModeration(
 	// A held risk report that the city approves may now corroborate others.
 	if (action === "approve" && kind === "thread")
 		await corroborateRisk(admin, id);
+
+	// Notify the author when their held/appealed content is approved or removed (#91).
+	if ((action === "approve" || action === "remove") && beforeRow) {
+		const row = beforeRow as unknown as Record<string, unknown>;
+		const authorId =
+			kind === "event"
+				? (row.organizer_id as string | null)
+				: (row.author_id as string | null);
+		if (authorId && authorId !== moderatorId) {
+			const label =
+				kind === "post"
+					? "tu respuesta en el foro"
+					: `"${String(row.title ?? "tu publicación").slice(0, 90)}"`;
+			const approvedHref =
+				kind === "event"
+					? `/agenda/${id}`
+					: kind === "thread"
+						? `/foro/${id}`
+						: `/foro/${String(row.thread_id ?? "")}`;
+			await insertUserNotifications(admin, [
+				action === "approve"
+					? {
+							user_id: authorId,
+							kind: "moderation_approved",
+							title: "Tu publicación fue aprobada",
+							body: `${label} ya está visible en QUILLART.`,
+							href: approvedHref,
+							event_id: kind === "event" ? id : null,
+						}
+					: {
+							user_id: authorId,
+							kind: "moderation_removed",
+							title: "Tu publicación fue retirada",
+							body: `${label} fue retirada tras revisión. Puedes pedir una segunda revisión desde tu perfil.`,
+							href: "/perfil",
+							event_id: kind === "event" ? id : null,
+						},
+			]);
+		}
+	}
 
 	// Deciding on removed content closes its appeal: approving overturns, removing upholds.
 	if (action === "approve" || action === "remove") {

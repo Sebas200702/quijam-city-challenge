@@ -1,5 +1,6 @@
 import { X } from "lucide-react";
 import { type ReactNode, useEffect, useId, useRef } from "react";
+import "../../styles/life-assistant-b.css";
 
 interface VisitorSheetProps {
 	title: string;
@@ -85,7 +86,19 @@ export function VisitorSheet({
 				lang={lang}
 			>
 				<span className="q-sheet__handle" aria-hidden="true" />
-				<div className="visitor-sheet__head">
+				<div className="visitor-sheet__head lab-sheet-head l-rise">
+					<span
+						className="l-geo l-geo--ring l-geo--gold -top-3 left-[38%]"
+						aria-hidden="true"
+					/>
+					<span
+						className="l-geo l-geo--plus l-geo--green bottom-1 left-[52%]"
+						aria-hidden="true"
+					/>
+					<span
+						className="l-geo l-geo--quarter -bottom-2 -left-2"
+						aria-hidden="true"
+					/>
 					<h2 className="q-h2" id={titleId}>
 						{title}
 					</h2>
@@ -104,7 +117,12 @@ export function VisitorSheet({
 						<X size={20} strokeWidth={1.75} aria-hidden="true" />
 					</button>
 				</div>
-				<div className="q-sheet__body">{children}</div>
+				<div
+					className="q-sheet__body l-rise"
+					style={{ ["--i" as string]: 1 }}
+				>
+					{children}
+				</div>
 			</section>
 		</>
 	);

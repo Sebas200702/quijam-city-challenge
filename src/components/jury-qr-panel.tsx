@@ -409,11 +409,11 @@ export function JuryQrPanel({ summary, connectionState }: JuryQrPanelProps) {
 	}
 
 	return (
-		<section aria-labelledby="jury-qr-title" className="q-card">
+		<section aria-labelledby="jury-qr-title" className="q-card lc-shape--corner">
 			<div className="q-band q-band--green" aria-hidden="true" />
 			<div className="q-card__head flex-wrap">
 				<div>
-					<p className="q-eyebrow flex items-center gap-1.5">
+					<p className="l-eyebrow l-eyebrow--sunk lc-eb">
 						<Hand
 							size={14}
 							strokeWidth={1.75}
@@ -422,7 +422,7 @@ export function JuryQrPanel({ summary, connectionState }: JuryQrPanelProps) {
 						/>
 						En vivo · Visitantes conectados
 					</p>
-					<h2 id="jury-qr-title" className="q-h2 mt-1">
+					<h2 id="jury-qr-title" className="l-h2 lc-h2">
 						QR de bienvenida
 					</h2>
 				</div>

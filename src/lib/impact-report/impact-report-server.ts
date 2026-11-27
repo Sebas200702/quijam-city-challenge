@@ -23,7 +23,7 @@ import type {
 } from "./impact-report-types";
 
 /** Fallback text model. Override with GEMINI_REPORT_MODEL if the API stops serving it. */
-export const DEFAULT_REPORT_MODEL = "gemini-flash-latest";
+export const DEFAULT_REPORT_MODEL = "gemini-3.5-flash";
 
 export class ReportAccessError extends Error {}
 

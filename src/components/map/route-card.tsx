@@ -24,6 +24,7 @@ import { useT } from "../../lib/i18n/use-language";
 import type { PlanResponse } from "../../lib/routing/plan-route";
 import type { Itinerary, TransportMode } from "../../lib/routing/routing-types";
 import { AskQuillartButton } from "../assistant/ask-quillart-button";
+import "../../styles/life-map.css";
 import {
 	confidenceLabel,
 	isRecalculated,
@@ -43,11 +44,11 @@ const makeFare = (t: MapMessages) => {
 const shortName = (name: string) => name.replace(/\s*\(.*\)\s*$/, "");
 
 const MODES: Record<TransportMode, { icon: LucideIcon; tile: string }> = {
-	transmetro: { icon: TramFront, tile: "q-tile--gold" },
-	bus: { icon: Bus, tile: "q-tile--gold" },
-	taxi_verified: { icon: CarTaxiFront, tile: "q-tile--gold" },
-	walk: { icon: Footprints, tile: "" },
-	bike: { icon: Bike, tile: "q-tile--green" },
+	transmetro: { icon: TramFront, tile: "q-tile--gold lm-leg--octagon" },
+	bus: { icon: Bus, tile: "q-tile--gold lm-leg--circle" },
+	taxi_verified: { icon: CarTaxiFront, tile: "q-tile--gold lm-leg--hex" },
+	walk: { icon: Footprints, tile: "lm-leg--shield" },
+	bike: { icon: Bike, tile: "q-tile--green lm-leg--leaf" },
 };
 
 const STROKE = 1.75;
@@ -72,7 +73,11 @@ interface RouteCardProps {
 /** Small decorative illustration for a state block. */
 function StateArt({ src }: { src: string }) {
 	return (
-		<span className="q-illus" style={{ padding: 8 }} aria-hidden="true">
+		<span
+			className="q-illus"
+			style={{ padding: "14px 18px 8px", borderRadius: "999px 999px 20px 20px" }}
+			aria-hidden="true"
+		>
 			<img src={src} alt="" style={{ height: 88, width: "auto" }} />
 		</span>
 	);
@@ -140,8 +145,7 @@ function Legs({
 				return (
 					<li key={leg.code} className="flex items-center gap-3">
 						<span
-							className={`q-tile ${mode.tile}`}
-							style={{ width: 40, height: 40, borderRadius: 12 }}
+							className={`q-tile lm-leg ${mode.tile}`}
 							aria-hidden="true"
 						>
 							<Icon size={20} strokeWidth={STROKE} />
@@ -305,8 +309,8 @@ export function RouteCard({
 						<p className="q-next-step__why">{routeWhy(plan, t)}</p>
 					</div>
 					<span
-						className="q-tile q-tile--green"
-						style={{ width: 64, height: 64, borderRadius: 20 }}
+						className="q-tile q-tile--green l-ico--burst"
+						style={{ width: 64, height: 64 }}
 						aria-hidden="true"
 					>
 						<MainIcon size={30} strokeWidth={STROKE} />
@@ -340,7 +344,7 @@ export function RouteCard({
 				<Legs route={route} names={names} accessible={query.accessibleMode} />
 
 				{taxi ? (
-					<p className="q-sm m-0 flex items-center gap-2 rounded-[var(--radius-md)] bg-[var(--gold-soft)] px-3 py-2">
+					<p className="q-sm m-0 flex items-center gap-2 rounded-[6px_22px_6px_22px] bg-[var(--gold-soft)] px-4 py-2">
 						<CarTaxiFront
 							size={16}
 							strokeWidth={STROKE}

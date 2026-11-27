@@ -1,0 +1,275 @@
+/* Agenda (classes `ev-*`): the event ticket, the list headings and the event
+   detail. Colours come from the design tokens; motion reuses `html.l-motion`. */
+
+/* ── Ticket: a date stub, a perforation and a bite on each long edge ── */
+.ev-ticket {
+	--ev-stub: 76px;
+	--ev-tone: var(--gold-soft);
+	--ev-tone-ink: var(--gold-text);
+	position: relative;
+	display: flex;
+	min-width: 0;
+	border-radius: 22px;
+	color: inherit;
+	text-decoration: none;
+	/* The paper is masked, so the shadow hangs from the link instead. */
+	filter: drop-shadow(0 1px 2px rgb(0 0 0 / 0.08))
+		drop-shadow(0 8px 16px rgb(0 0 0 / 0.07));
+	transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.ev-ticket--green {
+	--ev-tone: var(--green-soft);
+	--ev-tone-ink: var(--green-text);
+}
+
+.ev-ticket--red {
+	--ev-tone: var(--red-soft);
+	--ev-tone-ink: var(--red-text);
+}
+
+.ev-ticket--ink {
+	--ev-tone: var(--ink);
+	--ev-tone-ink: var(--bg);
+}
+
+.ev-ticket--off {
+	opacity: 0.7;
+}
+
+.ev-ticket__paper {
+	position: relative;
+	display: flex;
+	flex: 1;
+	min-width: 0;
+	border-radius: inherit;
+	background: var(--surface);
+	-webkit-mask:
+		radial-gradient(circle 9px at var(--ev-stub) 0, #0000 96%, #000) top / 100%
+		51% no-repeat,
+		radial-gradient(circle 9px at var(--ev-stub) 100%, #0000 96%, #000) bottom /
+		100% 51% no-repeat;
+	mask:
+		radial-gradient(circle 9px at var(--ev-stub) 0, #0000 96%, #000) top / 100%
+		51% no-repeat,
+		radial-gradient(circle 9px at var(--ev-stub) 100%, #0000 96%, #000) bottom /
+		100% 51% no-repeat;
+}
+
+.ev-ticket__paper::after {
+	content: "";
+	position: absolute;
+	left: var(--ev-stub);
+	top: 16px;
+	bottom: 16px;
+	margin-left: -1px;
+	border-left: 2px dashed color-mix(in srgb, var(--ink) 24%, transparent);
+	pointer-events: none;
+}
+
+.ev-ticket__stub {
+	display: flex;
+	flex: none;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 4px;
+	width: var(--ev-stub);
+	padding: 14px 4px;
+	background: var(--ev-tone);
+	color: var(--ev-tone-ink);
+}
+
+.ev-ticket__day {
+	font-family: var(--font-display);
+	font-size: 30px;
+	line-height: 1;
+	font-weight: 700;
+	letter-spacing: -0.02em;
+}
+
+.ev-ticket__month {
+	font-size: 12px;
+	line-height: 16px;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+}
+
+.ev-ticket__stub .q-star {
+	width: 12px;
+	height: 12px;
+	margin-top: 4px;
+	opacity: 0.7;
+}
+
+.ev-ticket__body {
+	flex: 1;
+	min-width: 0;
+	padding: 14px 16px 14px 18px;
+}
+
+.ev-ticket__body > * + * {
+	margin-top: 6px;
+}
+
+.ev-ticket__title {
+	margin: 0;
+	font-family: var(--font-display);
+	font-size: 18px;
+	line-height: 1.2;
+	font-weight: 700;
+	letter-spacing: -0.01em;
+	overflow-wrap: anywhere;
+}
+
+@media (min-width: 1024px) {
+	.ev-ticket:hover {
+		transform: translateY(-5px) rotate(-0.5deg);
+	}
+
+	.ev-ticket:hover .ev-ticket__stub .q-star {
+		transform: rotate(90deg);
+	}
+
+	.ev-ticket__stub .q-star {
+		transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+	}
+}
+
+/* ── Agenda list ── */
+.ev-filters {
+	position: relative;
+	overflow: hidden;
+	padding: 16px;
+	border-radius: 28px 28px 28px 8px;
+	background: linear-gradient(
+		160deg,
+		var(--gold-soft),
+		color-mix(in srgb, var(--gold-soft) 40%, var(--surface)) 55%,
+		var(--surface)
+	);
+	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 6%, transparent);
+}
+
+.ev-group__head {
+	position: relative;
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+
+.ev-group__head .q-tile {
+	width: 40px;
+	height: 40px;
+}
+
+.ev-group__head .q-star {
+	width: 16px;
+	height: 16px;
+}
+
+.q-h2.ev-group__title {
+	font-size: clamp(22px, 3vw, 30px);
+	line-height: 1.1;
+	font-weight: 700;
+	letter-spacing: -0.02em;
+}
+
+.ev-group__rule {
+	flex: 1;
+	min-width: 16px;
+	border-top: 2px dashed var(--line-control);
+}
+
+/* ── Event detail ── */
+.q-card.ev-detail {
+	border-radius: 28px 28px 56px 28px;
+}
+
+.ev-detail__art {
+	position: relative;
+	overflow: hidden;
+	border-radius: 24px 24px 24px 72px;
+}
+
+.q-h1.ev-detail__title {
+	font-size: clamp(30px, 4.6vw, 48px);
+	line-height: 1.05;
+	letter-spacing: -0.02em;
+}
+
+.ev-info {
+	display: grid;
+	gap: 10px;
+}
+
+.ev-info__row {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 10px 22px 10px 10px;
+	background: var(--bg);
+}
+
+.ev-info__row:nth-child(4n + 1) {
+	border-radius: 999px;
+}
+
+.ev-info__row:nth-child(4n + 2) {
+	border-radius: 8px 28px 8px 28px;
+}
+
+.ev-info__row:nth-child(4n + 3) {
+	border-radius: 28px 28px 28px 6px;
+}
+
+.ev-info__row:nth-child(4n + 4) {
+	border-radius: 28px 8px 28px 8px;
+}
+
+.ev-info__row .q-tile {
+	width: 44px;
+	height: 44px;
+}
+
+.q-card.ev-panel {
+	border-radius: 28px 28px 28px 6px;
+}
+
+.q-card.ev-panel--gold {
+	background: linear-gradient(
+		160deg,
+		var(--gold-soft),
+		var(--surface) 70%
+	);
+}
+
+/* ── Publish form ── */
+.q-card.ev-form {
+	border-radius: 28px 56px 28px 28px;
+}
+
+@media (min-width: 1024px) {
+	.ev-filters {
+		padding: 20px;
+		border-radius: 36px 36px 36px 10px;
+	}
+
+	.q-card.ev-detail {
+		border-radius: 36px 36px 96px 36px;
+	}
+
+	.ev-detail__art {
+		border-radius: 28px 28px 28px 120px;
+	}
+
+	.ev-info {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 12px;
+	}
+
+	.q-card.ev-form {
+		border-radius: 36px 64px 36px 36px;
+	}
+}

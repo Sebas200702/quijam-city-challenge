@@ -100,11 +100,32 @@ export function PlaceDetail({
 						t.places.careTips[place.kind as keyof typeof t.places.careTips];
 					return (
 						<>
-							<div className="q-illus py-3 sm:py-5">
-								<SpotIllustration
-									src={PLACE_ILLUSTRATIONS[place.kind]}
-									className="h-20! sm:h-36! lg:h-56!"
+							<div className="lq-canvas l-rise grid place-items-center">
+								<span
+									className="l-geo l-geo--quarter l-geo--green top-0 right-0 rotate-180 opacity-80"
+									aria-hidden="true"
 								/>
+								<span
+									className="l-geo l-geo--ring top-6 left-[12%]"
+									style={{ ["--i" as string]: 1 }}
+									aria-hidden="true"
+								/>
+								<span
+									className="l-geo l-geo--half l-geo--gold bottom-6 left-[24%] -rotate-24 max-lg:hidden"
+									style={{ ["--i" as string]: 2 }}
+									aria-hidden="true"
+								/>
+								<span
+									className="l-geo l-geo--plus l-geo--ink right-[22%] bottom-8 rotate-12 max-lg:hidden"
+									style={{ ["--i" as string]: 3 }}
+									aria-hidden="true"
+								/>
+								<div className="lq-canvas__body lq-art lq-art--leaf">
+									<SpotIllustration
+										src={PLACE_ILLUSTRATIONS[place.kind]}
+										className="h-24! lg:h-40!"
+									/>
+								</div>
 							</div>
 							<section className="flex flex-col gap-3">
 								<div className="flex items-start gap-4">
@@ -113,7 +134,7 @@ export function PlaceDetail({
 										<p className="q-eyebrow">
 											{PLACE_KIND_LABELS[place.kind]} · {place.neighborhood}
 										</p>
-										<h1 className="q-h1 mt-1 break-words">{place.name}</h1>
+										<h1 className="q-h1 lq-title mt-1 break-words">{place.name}</h1>
 									</div>
 								</div>
 								<div className="flex flex-wrap gap-1.5">
@@ -153,7 +174,7 @@ export function PlaceDetail({
 									<p className="q-sm q-muted">{t.places.outsideAmbNote}</p>
 								)}
 								<p className="q-p">{place.description}</p>
-								<dl className="q-card gap-3 p-4">
+								<dl className="q-card l-rise gap-3 rounded-[28px_64px_28px_28px]! p-5">
 									<div className="flex items-start gap-2">
 										<dt>
 											<MapPin
@@ -196,7 +217,7 @@ export function PlaceDetail({
 
 							<section aria-labelledby="place-events" className="space-y-3">
 								<div className="flex flex-wrap items-center justify-between gap-2">
-									<h2 id="place-events" className="q-h2">
+									<h2 id="place-events" className="q-h2 lq-h2">
 										{t.places.eventsTitle}
 									</h2>
 									<a
@@ -227,7 +248,7 @@ export function PlaceDetail({
 
 							<section aria-labelledby="place-threads" className="space-y-3">
 								<div className="flex flex-wrap items-center justify-between gap-2">
-									<h2 id="place-threads" className="q-h2">
+									<h2 id="place-threads" className="q-h2 lq-h2">
 										{t.places.threadsTitle}
 									</h2>
 									<a
@@ -259,7 +280,7 @@ export function PlaceDetail({
 							{tips && (
 								<section
 									aria-labelledby="place-care"
-									className="q-card gap-3 bg-[var(--green-soft)]! p-5 text-[var(--green-text)]!"
+									className="q-card l-rise gap-3 rounded-[64px_28px_64px_28px]! bg-[var(--green-soft)]! px-7 py-6 text-[var(--green-text)]!"
 								>
 									<h2 id="place-care" className="q-h3 flex items-center gap-2">
 										<Sprout size={20} aria-hidden="true" />

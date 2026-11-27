@@ -17,11 +17,11 @@ import { MenuIllustration } from "./visitor-illustrations";
 import { VisitorSheet } from "./visitor-sheet";
 
 const ITEMS: { id: VisitorMenuItemId; Icon: LucideIcon; tone: string }[] = [
-	{ id: "passport", Icon: BookOpenCheck, tone: "q-tile--gold" },
-	{ id: "slang", Icon: MessagesSquare, tone: "q-tile--green" },
-	{ id: "data", Icon: ShieldCheck, tone: "visitor-tile--neutral" },
-	{ id: "language", Icon: Globe, tone: "visitor-tile--neutral" },
-	{ id: "theme", Icon: Moon, tone: "visitor-tile--neutral" },
+	{ id: "passport", Icon: BookOpenCheck, tone: "q-tile--gold lab-ico--octagon" },
+	{ id: "slang", Icon: MessagesSquare, tone: "q-tile--green lab-ico--leaf" },
+	{ id: "data", Icon: ShieldCheck, tone: "visitor-tile--neutral lab-ico--shield" },
+	{ id: "language", Icon: Globe, tone: "visitor-tile--neutral lab-ico--circle" },
+	{ id: "theme", Icon: Moon, tone: "visitor-tile--neutral lab-ico--hex" },
 ];
 
 interface VisitorMenuSheetProps {
@@ -60,8 +60,8 @@ export function VisitorMenuSheet({
 			lang={lang}
 		>
 			<nav aria-label={copy.menuTitle}>
-				<ul className="visitor-menu">
-					{ITEMS.map(({ id, Icon: BaseIcon, tone }) => {
+				<ul className="visitor-menu lab-menu">
+					{ITEMS.map(({ id, Icon: BaseIcon, tone }, index) => {
 						const { title } = copy.menuItems[id];
 						const dark = theme === "dark";
 						// The theme icon shows what the tap switches to.
@@ -82,7 +82,11 @@ export function VisitorMenuSheet({
 							</>
 						);
 						return (
-							<li key={id}>
+							<li
+								key={id}
+								className="l-rise"
+								style={{ ["--i" as string]: index + 2 }}
+							>
 								{id === "language" || id === "theme" ? (
 									<button
 										type="button"

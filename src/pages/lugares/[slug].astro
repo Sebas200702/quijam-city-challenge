@@ -1,6 +1,8 @@
 ---
 import { PlaceDetail } from "../../components/community/place-detail";
 import BaseLayout from "../../layouts/base-layout.astro";
+import SiteFooter from "../../components/site/site-footer.astro";
+import SiteHeader from "../../components/site/site-header.astro";
 import { homeContent } from "../../lib/home-content";
 
 const slug = Astro.params.slug ?? "";
@@ -8,5 +10,9 @@ const { aiHref } = homeContent;
 ---
 
 <BaseLayout title="Lugar · QUILLART" titleKey="places.detailTitle">
+	<SiteHeader current="places" homeHref="/inicio">
+		<a slot="actions" href="/perfil" class="q-btn q-btn--ghost q-btn--sm min-h-11 max-lg:hidden!"><span data-i18n="nav.profile">Perfil</span></a>
+	</SiteHeader>
 	<PlaceDetail client:only="react" slug={slug} aiHref={aiHref} />
+	<SiteFooter variant="slim" />
 </BaseLayout>

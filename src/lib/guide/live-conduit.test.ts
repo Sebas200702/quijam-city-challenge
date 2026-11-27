@@ -5,6 +5,7 @@ import {
 	ASK_QUILLART_TOOL,
 	conduitResponse,
 	conduitResultOf,
+	confirmedActionNote,
 	MAX_CONDUIT_REQUEST,
 	toConduitCalls,
 } from "./live-conduit";
@@ -148,5 +149,39 @@ describe("conduitResponse", () => {
 
 	it("answers with an error when the pipeline could not answer", () => {
 		expect(conduitResponse("c9", null).response).toHaveProperty("error");
+	});
+});
+
+describe("confirmedActionNote (S4)", () => {
+	it("tells Live the outcome of an action confirmed later on the card", () => {
+		const note = confirmedActionNote(
+			[
+				{ role: "user", text: "inscríbeme" },
+				{
+					role: "assistant",
+					agent: "agenda",
+					text: "Confírmame abajo.",
+					toolCalls: [
+						{ id: "c1", name: "register_for_event", args: { event_id: "e1" } },
+					],
+				},
+				{
+					role: "tool",
+					results: [
+						{ callId: "c1", name: "register_for_event", summary: { ok: true } },
+					],
+				},
+				{
+					role: "assistant",
+					agent: "agenda",
+					text: "¡Listo! Quedaste inscrito.",
+					toolCalls: [],
+				},
+			],
+			"c1",
+		);
+		expect(note).toMatch(/confirmed/);
+		expect(note).toMatch(/¡Listo! Quedaste inscrito\./);
+		expect(confirmedActionNote([], "c1")).toBeNull();
 	});
 });

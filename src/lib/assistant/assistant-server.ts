@@ -233,10 +233,6 @@ export interface AnswerDeps {
 
 const ACCOUNT_ONLY_TOOLS: readonly AssistantToolName[] = ["my_registrations"];
 
-/** Said instead of the model's text when an action waits for the account. */
-export const ACTION_KEPT_TEXT =
-	"Te dejé la acción lista con el texto exacto. Entra a tu cuenta o créala para confirmarla; cuando vuelvas, sigue aquí.";
-
 /**
  * Safety net for the model without a session. Personal reads become a
  * sign-in button. An action is kept as a pending card (U02): the card shows
@@ -255,7 +251,7 @@ export function enforceAccount(
 	if (turn.toolCalls.some((call) => isActionTool(call.name))) {
 		return {
 			// The model's text may claim the action is done: never show it here.
-			text: `${emergency}${ACTION_KEPT_TEXT}`,
+			text: `${emergency}${copy.actionKept}`,
 			toolCalls: turn.toolCalls.filter(
 				(call) => !ACCOUNT_ONLY_TOOLS.includes(call.name),
 			),

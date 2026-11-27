@@ -1,0 +1,339 @@
+{
+	"note": "Synthetic data created by scripts/simulate-city.ts. `bun scripts/simulate-city.ts --reset` deletes every id listed here. See docs/32-simulacion.md.",
+	"seed": 2026,
+	"users": [
+		{
+			"id": "9a2f052d-360d-422f-863a-8304fe59334b",
+			"email": "u00.andrea@sim.quillart.test",
+			"name": "Andrea J. (simulado)",
+			"index": 0
+		},
+		{
+			"id": "d3765e0e-6119-424b-9445-cd6d984463ff",
+			"email": "u01.camilo@sim.quillart.test",
+			"name": "Camilo N. (simulado)",
+			"index": 1
+		},
+		{
+			"id": "c9ebe181-b560-4cd0-ac22-0f0a0eebbdef",
+			"email": "u02.valentina@sim.quillart.test",
+			"name": "Valentina C. (simulado)",
+			"index": 2
+		},
+		{
+			"id": "58d3502a-87ed-40f2-ad07-9f2c6863a6cd",
+			"email": "u03.jhon@sim.quillart.test",
+			"name": "Jhon O. (simulado)",
+			"index": 3
+		},
+		{
+			"id": "0d014f32-dcda-4da0-9ff6-42c6196fa6ae",
+			"email": "u04.daniela@sim.quillart.test",
+			"name": "Daniela R. (simulado)",
+			"index": 4
+		},
+		{
+			"id": "d8a4dab7-25d0-4e14-9d1b-67d773217881",
+			"email": "u05.luis@sim.quillart.test",
+			"name": "Luis A. (simulado)",
+			"index": 5
+		},
+		{
+			"id": "3ab7e4b1-9744-4514-8267-290f669ed7d5",
+			"email": "u06.mariana@sim.quillart.test",
+			"name": "Mariana N. (simulado)",
+			"index": 6
+		},
+		{
+			"id": "85044f62-4916-41b8-b517-84369cdea9e0",
+			"email": "u07.kevin@sim.quillart.test",
+			"name": "Kevin C. (simulado)",
+			"index": 7
+		},
+		{
+			"id": "cc24628b-1686-4f03-b4d9-4902f5f01ad6",
+			"email": "u08.yuliana@sim.quillart.test",
+			"name": "Yuliana F. (simulado)",
+			"index": 8
+		},
+		{
+			"id": "f9065df7-21be-47a0-b8f7-ef8e0c3c539d",
+			"email": "u09.carlos@sim.quillart.test",
+			"name": "Carlos T. (simulado)",
+			"index": 9
+		},
+		{
+			"id": "81b0ec38-06da-4d73-8533-b4756ccc4261",
+			"email": "u10.natalia@sim.quillart.test",
+			"name": "Natalia A. (simulado)",
+			"index": 10
+		},
+		{
+			"id": "c57a3b39-e0e0-4eb7-8dcf-c30173befdc8",
+			"email": "u11.jesus@sim.quillart.test",
+			"name": "Jesús E. (simulado)",
+			"index": 11
+		},
+		{
+			"id": "b02abfc3-df94-4bda-9111-f6f16da0eca4",
+			"email": "u12.paola@sim.quillart.test",
+			"name": "Paola V. (simulado)",
+			"index": 12
+		},
+		{
+			"id": "f357f1c6-c547-4d69-851b-1d698f6283ff",
+			"email": "u13.andres@sim.quillart.test",
+			"name": "Andrés P. (simulado)",
+			"index": 13
+		},
+		{
+			"id": "4a2bd709-3e8e-4274-b3a3-f3060b6e32cf",
+			"email": "u14.katherine@sim.quillart.test",
+			"name": "Katherine E. (simulado)",
+			"index": 14
+		},
+		{
+			"id": "2d740ae6-ef41-482a-9a9b-2cfd3ea4fb74",
+			"email": "u15.jorge@sim.quillart.test",
+			"name": "Jorge F. (simulado)",
+			"index": 15
+		},
+		{
+			"id": "6b5dfde2-aaea-424b-a34c-e0bbf173114f",
+			"email": "u16.melissa@sim.quillart.test",
+			"name": "Melissa S. (simulado)",
+			"index": 16
+		},
+		{
+			"id": "e845e134-fc29-4a72-bab5-b4ea0f5c92bb",
+			"email": "u17.brayan@sim.quillart.test",
+			"name": "Brayan T. (simulado)",
+			"index": 17
+		},
+		{
+			"id": "dfbf90ab-7983-4475-9664-c7b303151569",
+			"email": "u18.diana@sim.quillart.test",
+			"name": "Diana A. (simulado)",
+			"index": 18
+		},
+		{
+			"id": "7c0ad4e6-d5de-4713-bc3f-2692ec43dd71",
+			"email": "u19.wilmer@sim.quillart.test",
+			"name": "Wilmer P. (simulado)",
+			"index": 19
+		},
+		{
+			"id": "0a425ae9-4362-409f-b3e9-dd436644428f",
+			"email": "u20.laura@sim.quillart.test",
+			"name": "Laura H. (simulado)",
+			"index": 20
+		},
+		{
+			"id": "30e14d55-4c0a-40fd-a061-98bc091289e1",
+			"email": "u21.rafael@sim.quillart.test",
+			"name": "Rafael O. (simulado)",
+			"index": 21
+		},
+		{
+			"id": "13a0f2b3-8ad6-4a0a-9dd5-93d2576b9d71",
+			"email": "u22.estefania@sim.quillart.test",
+			"name": "Estefanía G. (simulado)",
+			"index": 22
+		},
+		{
+			"id": "a5472136-3f20-429c-8057-6d9f0b06d1b0",
+			"email": "u23.javier@sim.quillart.test",
+			"name": "Javier V. (simulado)",
+			"index": 23
+		},
+		{
+			"id": "fbe1d0b2-b086-41c8-ba40-f249c8d42872",
+			"email": "u24.liseth@sim.quillart.test",
+			"name": "Liseth V. (simulado)",
+			"index": 24
+		},
+		{
+			"id": "43d01cbe-ec5a-4d38-a685-c5415ee3a82d",
+			"email": "u25.oscar@sim.quillart.test",
+			"name": "Óscar E. (simulado)",
+			"index": 25
+		},
+		{
+			"id": "7959cd5a-d907-4374-a2a0-c8cff4cab09a",
+			"email": "u26.mileidys@sim.quillart.test",
+			"name": "Mileidys D. (simulado)",
+			"index": 26
+		},
+		{
+			"id": "9c69905d-96b9-4d65-b343-72837ac053dc",
+			"email": "u27.hernan@sim.quillart.test",
+			"name": "Hernán M. (simulado)",
+			"index": 27
+		},
+		{
+			"id": "d6cf0b3d-020e-4dcc-9908-a0e8569de033",
+			"email": "u28.sofia@sim.quillart.test",
+			"name": "Sofía P. (simulado)",
+			"index": 28
+		},
+		{
+			"id": "b8d266d9-1464-41f5-afe0-8ea873784d5e",
+			"email": "u29.alvaro@sim.quillart.test",
+			"name": "Álvaro J. (simulado)",
+			"index": 29
+		},
+		{
+			"id": "4d4c3555-66a2-4e0c-9d73-cf62a1340976",
+			"email": "u30.yesenia@sim.quillart.test",
+			"name": "Yesenia L. (simulado)",
+			"index": 30
+		},
+		{
+			"id": "1fc0cbed-1efb-40c1-9c11-7412c6a174cf",
+			"email": "u31.fabian@sim.quillart.test",
+			"name": "Fabián P. (simulado)",
+			"index": 31
+		},
+		{
+			"id": "ef551f9b-31c5-4753-9776-77f0740f9c5d",
+			"email": "u32.dayana@sim.quillart.test",
+			"name": "Dayana O. (simulado)",
+			"index": 32
+		},
+		{
+			"id": "79a08fb1-1897-4f61-8270-afc406ed21fb",
+			"email": "u33.eduardo@sim.quillart.test",
+			"name": "Eduardo G. (simulado)",
+			"index": 33
+		},
+		{
+			"id": "0c3cc5b1-8663-42e0-aa88-52bf746a252e",
+			"email": "u34.lorena@sim.quillart.test",
+			"name": "Lorena D. (simulado)",
+			"index": 34
+		},
+		{
+			"id": "9228bf87-40df-465b-b015-36329269f599",
+			"email": "u35.sebastian@sim.quillart.test",
+			"name": "Sebastián V. (simulado)",
+			"index": 35
+		},
+		{
+			"id": "985964e5-1f30-4c02-bce5-ace79f535b4b",
+			"email": "u36.karen@sim.quillart.test",
+			"name": "Karen D. (simulado)",
+			"index": 36
+		},
+		{
+			"id": "274d7fad-b758-43bd-879d-7cfc7105c311",
+			"email": "u37.ivan@sim.quillart.test",
+			"name": "Iván J. (simulado)",
+			"index": 37
+		},
+		{
+			"id": "613215e9-4a0d-48a8-a579-92b6317e065e",
+			"email": "u38.gisela@sim.quillart.test",
+			"name": "Gisela F. (simulado)",
+			"index": 38
+		},
+		{
+			"id": "f1c44463-18a9-4867-952d-ca5d0dd57276",
+			"email": "u39.tomas@sim.quillart.test",
+			"name": "Tomás V. (simulado)",
+			"index": 39
+		},
+		{
+			"id": "ec2905a0-01f1-47e4-9df3-280b9fff397e",
+			"email": "agenda-proyectada@sim.quillart.test",
+			"name": "Agenda proyectada (simulado)",
+			"index": 99
+		}
+	],
+	"events": [
+		"6716b32c-5fc6-4b80-af15-6c018c6c8253",
+		"509276e1-fa2f-4141-9d19-4236192c9adb",
+		"3ff47a07-30a6-4605-99a6-330681af97b2",
+		"d260d236-a29f-4dd0-9ba9-a8fbb3bbe494",
+		"9c8519d7-2111-461b-ad2d-ed3efa127e4f",
+		"fafb1e7f-6077-4764-abf3-7b934af9a816",
+		"3dedc50f-afb6-4c54-9f40-ee89ed477cd6",
+		"fc5ec5b9-85a6-460d-abb5-5e737eff63cd",
+		"eef9aaa5-befd-4b3b-86aa-fea832456b25",
+		"0c67ca25-94ae-4069-b3ec-216e660c821d",
+		"122b14ec-ad76-4214-8d5e-64cef29f4f36",
+		"1d790dff-3e66-405f-a42a-bc3aa7884c0c",
+		"2d4fe479-6339-4448-962b-37061b81c780",
+		"1a0227e4-8f2d-4988-9132-a4de5c2df43f",
+		"d9decc9b-9a3a-4006-a202-434f39b71469",
+		"eff3f2be-5f19-4e1c-a7fd-65057cefb66e",
+		"683a5d97-c5be-41cd-88b1-75fa64feb24f",
+		"99cd43e4-081d-4a26-b12e-9dee52134ad6",
+		"e620f524-c2dc-484a-8e26-102672280e67",
+		"d98d736d-285b-49a0-8800-d5829c2ceb71",
+		"7d6d3e9f-cc39-4721-a5f5-2bd54d9f8485",
+		"caf8f825-9a74-45eb-a816-4fbdfc611d8e",
+		"1d7450ed-192d-4120-99cc-082535dcc9c4",
+		"8d26a562-54e9-45db-99b4-6c035e1f4960",
+		"0ec39782-3d02-4733-b1cb-a6fc60bc5a14",
+		"93cdf71a-83bf-4c13-926e-5e46e780771a",
+		"388ad133-f3f2-4aa3-965a-4443c17df780",
+		"f904f789-9dd8-4b11-bff0-6fc847223215",
+		"f4264b00-5b0b-4d7a-a612-ea55d838779c",
+		"9c14f194-1001-4687-9b72-0cf37f662b8a",
+		"da4b748f-bd3d-45d0-8bb3-aed81ed22c52",
+		"de980fdd-7b68-4f91-8161-6fc74315aec4",
+		"70f3889c-17ce-4eee-b463-8c2e68210e30",
+		"e3e99348-3205-468b-8bd1-d52a80f0fcaf",
+		"e2da5e72-6610-438b-945f-66dfd561bcc9",
+		"696d4191-b527-4119-a755-4a2e05ad0464",
+		"aa1b6d4e-607d-4af5-9ebf-7bb44b6010ab",
+		"fc1f7435-725a-42d5-9b9b-a0352f6d84af",
+		"e04bf95a-fa78-4fa9-a00b-5ad15aa9ad5d",
+		"0fde8353-31de-4967-9aa8-fdaae8021298",
+		"edb24199-5c06-4b8a-a015-484b9ebec47e",
+		"279a0eb5-b949-44bc-8522-5ee2ef9e30c7",
+		"a8c6c1f9-94e8-43d9-974a-0c7d3cda67d9",
+		"741cb834-6952-4135-8be8-7ed7e00d9273",
+		"82efbe63-fdc4-431d-97b1-464dc776e797",
+		"2727c067-dce8-47f2-ae93-41ae9472f422",
+		"3f42457b-007d-4d3e-84e3-9529387bb8d3"
+	],
+	"threads": [
+		"31f81df7-49d7-460f-9b6b-67221e625e0f",
+		"2a4654c6-67b5-4703-85e1-2eddcf1e511d",
+		"95398106-c020-4639-86af-dfb3cfa9d12b",
+		"f3ad721f-7457-48b8-a22d-f17d0f35e26a",
+		"1f75dd5a-2655-4717-93ac-3a1391747558",
+		"a8f38737-8dcd-4890-b687-4ccde9ae1ddb",
+		"322d51d1-b84c-4fa0-8e30-f0c8cc3e68cd",
+		"22f50754-4141-4bb8-9968-0a15367f9c44",
+		"595abaf0-5b31-4bcd-9d84-c18391b61fdb"
+	],
+	"posts": [
+		"77c8356e-07e7-4be7-95cc-63e7fdef893d",
+		"8264550e-8645-43ff-8cd3-779d1912afd3",
+		"f163521b-61ea-4ddb-b74e-6324d7b3cb48",
+		"c55f8326-58b0-4766-b98f-a5034dafaa17",
+		"c669f719-3754-46e5-8de1-d8f3ddd9b9e0",
+		"e13fd26b-e8f0-40e2-8971-fdf01536c2f3",
+		"d4e27346-eb7d-4836-b8ee-10e5845c1538",
+		"98493c75-b6e5-4cae-9385-ebe6e95040c9",
+		"68f4ce14-085e-445b-8770-35d0d445b2c3",
+		"0b2ef11f-12de-433d-9413-ff31452aefa9",
+		"409cb4c5-7efc-485d-82da-0047c5256b38",
+		"1ff2e07d-8391-4bc8-9d1e-ffb9d782d662",
+		"0953a05c-67d1-45b1-a986-fe68606a9ac2",
+		"d5bb3e7f-3646-4761-875e-1121edb3ac16",
+		"2d1af8f5-7ad7-4a15-afb2-8139a3e69f56",
+		"12538690-e0e9-4c52-9d98-ac661337dcb6",
+		"00aa95ca-20b5-4068-9497-541c10c44233",
+		"02d6e0a1-2990-415e-b24d-6d16ddb64bbd",
+		"a6cd5404-ee56-484b-b6bd-0441ffe0591c",
+		"5d88ce24-9da5-4cbe-b0f1-b8f34351323f",
+		"e44b2cae-39ca-4227-8ac3-dc20d120e381"
+	],
+	"overchargeReports": [],
+	"zoneBackup": null,
+	"ticks": 0,
+	"updatedAt": "2026-11-27T12:18:34.886Z"
+}

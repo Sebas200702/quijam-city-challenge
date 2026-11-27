@@ -77,3 +77,41 @@ describe("cloud store auth options", () => {
 		});
 	});
 });
+
+// Lookups by id run from().select().eq().neq().maybeSingle().
+function lookupStore(error: { code: string; message: string }) {
+	const chain = {
+		select: () => chain,
+		eq: () => chain,
+		neq: () => chain,
+		maybeSingle: async () => ({ data: null, error }),
+	};
+	return createCloudCommunityStore({
+		from: () => chain,
+	} as unknown as SupabaseClient);
+}
+
+describe("cloud store lookups by id", () => {
+	const malformed = {
+		code: "22P02",
+		message: 'invalid input syntax for type uuid: "no-existe-123"',
+	};
+
+	it("treats a malformed event id as not found", async () => {
+		await expect(
+			lookupStore(malformed).getEvent("no-existe-123"),
+		).resolves.toBeNull();
+	});
+
+	it("treats a malformed thread id as not found", async () => {
+		await expect(
+			lookupStore(malformed).getThread("no-existe-123"),
+		).resolves.toBeNull();
+	});
+
+	it("still surfaces other lookup errors", async () => {
+		const store = lookupStore({ code: "XX000", message: "boom" });
+		await expect(store.getEvent("x")).rejects.toThrow("boom");
+		await expect(store.getThread("x")).rejects.toThrow("boom");
+	});
+});

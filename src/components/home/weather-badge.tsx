@@ -1,4 +1,6 @@
 import { Sun } from "lucide-react";
+import "../../styles/life-shell.css";
+
 
 interface WeatherBadgeProps {
 	label: string;
@@ -7,7 +9,7 @@ interface WeatherBadgeProps {
 export function WeatherBadge({ label }: WeatherBadgeProps) {
 	return (
 		<span
-			className="q-badge q-badge--event"
+			className="q-badge q-badge--event ls-weather"
 			style={{
 				height: 36,
 				padding: "0 14px",

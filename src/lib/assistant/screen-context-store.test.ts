@@ -1,6 +1,31 @@
 import { describe, expect, it, vi } from "vitest";
 import { createScreenContextStore, routePattern } from "./screen-context-store";
 
+describe("screen context store page title", () => {
+	it("follows a translated page title while no screen named its own", () => {
+		const store = createScreenContextStore({
+			route: "/perfil",
+			title: "Mi perfil",
+		});
+		store.setDefaultTitle("My profile");
+		expect(store.get().title).toBe("My profile");
+		store.reset();
+		expect(store.get().title).toBe("My profile");
+	});
+
+	it("keeps the title a screen published", () => {
+		const store = createScreenContextStore({
+			route: "/agenda",
+			title: "Agenda",
+		});
+		store.publish({ title: "Concierto en el Malecón" });
+		store.setDefaultTitle("Things to do");
+		expect(store.get().title).toBe("Concierto en el Malecón");
+		store.reset();
+		expect(store.get().title).toBe("Things to do");
+	});
+});
+
 describe("routePattern", () => {
 	it.each([
 		["/agenda", "/agenda"],

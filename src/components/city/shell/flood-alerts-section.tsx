@@ -1,4 +1,5 @@
 import { CloudRain } from "lucide-react";
+import "../../../styles/life-city-b.css";
 import type { FloodZone } from "../../../lib/city-dashboard-types";
 import { CORRIDOR_SEED } from "../../../lib/corridor/corridor-seed";
 import type { FloodCountdowns } from "../../../lib/flood-alert/flood-countdown";
@@ -40,10 +41,15 @@ export function FloodAlertsSection({
 }: FloodAlertsSectionProps) {
 	return (
 		<section aria-labelledby="cs-floods-title" className="flex flex-col gap-4">
-			<div>
-				<p className="q-eyebrow">Resiliencia climática</p>
-				<h2 className="q-h2 cs-ih mt-1" id="cs-floods-title">
-					<CloudRain size={22} strokeWidth={1.75} aria-hidden="true" />
+			<div className="l-rise flex flex-col gap-3">
+				<p className="l-eyebrow l-eyebrow--sunk">
+					<span className="q-star" aria-hidden="true" />
+					Resiliencia climática
+				</p>
+				<h2 className="l-h2 lcb-h2" id="cs-floods-title">
+					<span className="lcb-chip lcb-chip--leaf">
+						<CloudRain size={22} strokeWidth={1.75} aria-hidden="true" />
+					</span>
 					Arroyos
 				</h2>
 			</div>
@@ -60,7 +66,7 @@ export function FloodAlertsSection({
 				rainSentAt={rainSentAt}
 				onRetry={onRetry}
 			/>
-			<fieldset className="q-row m-0 border-0 p-0">
+			<fieldset className="q-row lcb-toggles m-0 border-0 p-0">
 				<legend className="q-sr">Alertas de arroyo de la ciudad</legend>
 				{floodZones.map((zone) => (
 					<button

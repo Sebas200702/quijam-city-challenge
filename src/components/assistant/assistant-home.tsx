@@ -53,6 +53,14 @@ function sections(t: Messages): {
 	];
 }
 
+/** Tone and shape of each section's icon chip: no two neighbours match. */
+const SECTION_CHIPS = [
+	"q-tile--gold l-ico--circle",
+	"q-tile--green l-ico--hex",
+	"q-tile--red l-ico--shield",
+	"q-tile--gold l-ico--octagon",
+];
+
 function TodayStrip() {
 	const t = useT();
 	const { state } = useLoad(
@@ -74,7 +82,10 @@ function TodayStrip() {
 	return (
 		<section aria-labelledby="today-title" className="space-y-3">
 			<div className="flex items-center justify-between gap-2">
-				<h2 id="today-title" className="q-h2">
+				<h2
+					id="today-title"
+					className="q-h2 lg:text-[32px]! lg:leading-[36px]! lg:tracking-[-0.02em]"
+				>
 					{t.home.upcomingTitle}
 				</h2>
 				<a
@@ -89,12 +100,16 @@ function TodayStrip() {
 					items.length === 0 ? (
 						<p className="q-p q-muted">{t.home.noEvents}</p>
 					) : (
-						<ul className="grid gap-2 lg:grid-cols-3">
-							{items.map(({ event, place }) => (
-								<li key={event.id} className="min-w-0">
+						<ul className="la-shapes grid gap-3 lg:grid-cols-3">
+							{items.map(({ event, place }, index) => (
+								<li
+									key={event.id}
+									className="l-rise min-w-0"
+									style={{ ["--i" as string]: index }}
+								>
 									<a
 										href={`/agenda/${encodeURIComponent(event.id)}`}
-										className="q-card h-full min-h-11 items-start gap-1.5 px-4 py-3 text-left text-inherit no-underline transition-shadow lg:hover:shadow-[var(--glow-gold)]"
+										className="q-card la-lift h-full min-h-11 items-start gap-1.5 px-5 py-4 text-left text-inherit no-underline lg:hover:shadow-[var(--glow-gold)]"
 									>
 										<span className="q-badge q-badge--event">
 											{formatEventDay(event.startsAt)}
@@ -127,15 +142,19 @@ function SectionLinks() {
 	return (
 		<nav
 			aria-label={t.nav.sections}
-			className="grid grid-cols-2 gap-2 lg:grid-cols-4"
+			className="la-nav grid grid-cols-2 gap-2 lg:grid-cols-4"
 		>
-			{sections(t).map((section) => (
+			{sections(t).map((section, index) => (
 				<a
 					key={section.href}
 					href={section.href}
-					className="q-card min-h-11 flex-row! items-center gap-3 px-4 py-3 text-left text-inherit no-underline"
+					className="q-card la-lift min-h-11 flex-row! items-center gap-2.5 px-3 py-3 text-left text-inherit no-underline lg:gap-3 lg:px-4 lg:hover:shadow-[var(--shadow-modal)]"
 				>
-					<span className="text-[var(--gold-text)]">{section.icon}</span>
+					<span
+						className={`q-tile h-10! w-10! ${SECTION_CHIPS[index % SECTION_CHIPS.length]}`}
+					>
+						{section.icon}
+					</span>
 					<span className="min-w-0">
 						<span className="q-h3 block">{section.label}</span>
 						<span className="q-sm q-muted block truncate">{section.hint}</span>
@@ -154,7 +173,11 @@ export function AssistantHome() {
 			intro={t.home.intro}
 			starters={t.home.starters}
 			emptyState={
-				<div className="mt-2 space-y-6">
+				<div className="relative mt-2 space-y-6">
+					<span
+						className="l-geo l-geo--tri l-geo--gold top-1 left-[46%] max-lg:hidden"
+						aria-hidden="true"
+					/>
 					<TodayStrip />
 					<SectionLinks />
 				</div>

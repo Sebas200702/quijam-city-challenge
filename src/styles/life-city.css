@@ -1,0 +1,185 @@
+/* City command centre and open data: silhouettes, tone blocks and section
+   headings that follow the landing (classes `lc-*`). Tokens only, so both
+   themes work. Shapes use border-radius, never a clip on real content; the one
+   chamfer is for small tiles with enough padding. */
+
+/* ── Page header: a small rounded canvas ── */
+.lc-canvas {
+	position: relative;
+	isolation: isolate;
+	overflow: hidden;
+	display: flex;
+	flex-direction: column;
+	padding: 20px 20px 22px;
+	border-radius: 28px 28px 64px 28px;
+	background: linear-gradient(
+		160deg,
+		var(--gold-soft),
+		color-mix(in srgb, var(--gold-soft) 50%, var(--surface)) 55%,
+		var(--surface)
+	);
+	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 6%, transparent);
+	color: var(--ink);
+}
+
+/* Real content always sits above the confetti. */
+.lc-canvas > :not(.l-geo),
+.lc-gate > :not(.l-geo),
+.lc-hero > :not(.l-geo) {
+	position: relative;
+	z-index: 2;
+}
+
+.lc-title {
+	margin: 0;
+	font-family: var(--font-display);
+	font-size: clamp(26px, 3.2vw, 40px);
+	line-height: 1.06;
+	font-weight: 700;
+	letter-spacing: -0.02em;
+	text-wrap: balance;
+}
+
+/* Section headings: the landing display type at dashboard scale. */
+.l-h2.lc-h2 {
+	font-size: clamp(24px, 2.6vw, 34px);
+	line-height: 1.08;
+}
+
+.lc-head {
+	position: relative;
+}
+
+/* Space between an eyebrow pill and the title under it. */
+.l-eyebrow + .lc-h2,
+.l-eyebrow + .lc-title,
+.l-eyebrow + .q-h1,
+.l-eyebrow + .q-h2 {
+	margin-top: 10px;
+}
+
+/* Eyebrow pills that may wrap on a phone. */
+.l-eyebrow.lc-eb {
+	max-width: 100%;
+	padding-block: 6px;
+	border-radius: 18px;
+}
+
+.l-eyebrow.lc-eb > svg {
+	flex: none;
+	color: var(--gold-text);
+}
+
+/* ── Silhouettes for cards and panels ── */
+.lc-shape--bubble {
+	border-radius: 28px 28px 28px 6px;
+}
+
+.lc-shape--leaf {
+	border-radius: 24px 56px 24px 56px;
+}
+
+.lc-shape--dee {
+	border-radius: 24px 56px 56px 24px;
+}
+
+.lc-shape--corner {
+	border-radius: 28px 28px 64px 28px;
+}
+
+.lc-shape--arch {
+	border-radius: 52px 52px 24px 24px;
+}
+
+.lc-shape--tab {
+	border-radius: 6px 32px 32px 32px;
+}
+
+/* ── Tone blocks: the colour keeps its state meaning ── */
+.lc-tone--gold {
+	background: linear-gradient(165deg, var(--gold-soft), var(--surface) 78%);
+}
+
+.lc-tone--green {
+	background: linear-gradient(165deg, var(--green-soft), var(--surface) 78%);
+}
+
+.lc-tone--red {
+	background: linear-gradient(165deg, var(--red-soft), var(--surface) 78%);
+}
+
+/* ── Hover lift ── */
+.lc-lift,
+.lc-cards .q-card {
+	transition:
+		transform 0.5s var(--l-ease, ease),
+		box-shadow 0.5s var(--l-ease, ease);
+}
+
+@media (min-width: 1024px) {
+	.lc-lift:hover,
+	.lc-cards .q-card:hover {
+		box-shadow: var(--shadow-modal);
+		transform: translateY(-4px);
+	}
+}
+
+/* ── Card grids: no two neighbours share a silhouette ── */
+.lc-cards > :nth-child(4n + 1):is(.q-card),
+.lc-cards > :nth-child(4n + 1) > .q-card {
+	border-radius: 28px 28px 28px 6px;
+}
+
+.lc-cards > :nth-child(4n + 2):is(.q-card),
+.lc-cards > :nth-child(4n + 2) > .q-card {
+	border-radius: 24px 56px 24px 56px;
+}
+
+.lc-cards > :nth-child(4n + 3):is(.q-card),
+.lc-cards > :nth-child(4n + 3) > .q-card {
+	border-radius: 24px 56px 56px 24px;
+}
+
+.lc-cards > :nth-child(4n + 4):is(.q-card),
+.lc-cards > :nth-child(4n + 4) > .q-card {
+	border-radius: 52px 52px 24px 24px;
+}
+
+/* ── Hero card of the open data portal ── */
+.lc-hero.q-card {
+	border-radius: 32px 32px 72px 32px;
+	background: linear-gradient(
+		160deg,
+		var(--gold-soft),
+		color-mix(in srgb, var(--gold-soft) 50%, var(--surface)) 45%,
+		var(--surface)
+	);
+}
+
+/* ── Access cards (sign in, second factor) ── */
+.lc-gate.q-card {
+	border-radius: 48px 48px 28px 28px;
+	background: linear-gradient(
+		170deg,
+		var(--gold-soft),
+		var(--surface) 44%
+	);
+}
+
+/* ── State panels (loading, empty, error) ── */
+.lc-state {
+	position: relative;
+	overflow: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.lc-lift,
+	.lc-cards .q-card {
+		transition: none;
+	}
+
+	.lc-lift:hover,
+	.lc-cards .q-card:hover {
+		transform: none;
+	}
+}

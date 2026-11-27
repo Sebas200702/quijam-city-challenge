@@ -1,8 +1,12 @@
 ---
 import PresenterPanel from "../../components/presenter/presenter-panel";
+import SiteFooter from "../../components/site/site-footer.astro";
+import SiteHeader from "../../components/site/site-header.astro";
 import BaseLayout from "../../layouts/base-layout.astro";
 ---
 
 <BaseLayout translated={false} title="Panel de presentador · QUILLART" theme="dark" dock="presenter">
+	<SiteHeader variant="compact" links={false} cta={false} title="Presentador" />
 	<PresenterPanel client:only="react" />
+	<SiteFooter variant="slim" />
 </BaseLayout>

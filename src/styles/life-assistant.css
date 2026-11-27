@@ -1,0 +1,237 @@
+/* Quillart AI conversation and visitor home: shapes and motion on top of the
+   landing layer (classes `la-*`). Colours come from tokens only. */
+
+/* ── Welcome canvas ── */
+.la-hero {
+	position: relative;
+	isolation: isolate;
+	overflow: hidden;
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	padding: 24px 20px 28px;
+	border-radius: 32px 32px 72px 32px;
+	background: linear-gradient(
+		160deg,
+		var(--gold-soft),
+		color-mix(in srgb, var(--gold-soft) 50%, var(--surface)) 55%,
+		var(--surface)
+	);
+	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 6%, transparent);
+	color: var(--ink);
+}
+
+.la-hero__copy {
+	position: relative;
+	z-index: 2;
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	gap: 8px;
+	min-width: 0;
+}
+
+.la-hero__lead {
+	margin: 0;
+	color: var(--ink-muted);
+}
+
+.la-hero__art {
+	position: relative;
+	z-index: 2;
+	display: grid;
+	place-items: center;
+	flex: none;
+	width: 104px;
+	aspect-ratio: 4 / 5;
+	border-radius: 999px 999px 20px 20px;
+	background: var(--illus);
+}
+
+.la-hero__art img {
+	width: 78% !important;
+	max-width: 78%;
+	height: auto !important;
+}
+
+@media (min-width: 1024px) {
+	.la-hero {
+		gap: 32px;
+		padding: 40px 48px 44px;
+		border-radius: 48px 48px 128px 48px;
+	}
+
+	.la-hero__art {
+		width: 196px;
+		border-radius: 999px 999px 28px 28px;
+	}
+}
+
+/* ── Ask box: the landing halo at full width ── */
+.la-ask {
+	max-width: none;
+}
+
+/* ── Suggestion chips: pill, leaf, bubble and tag in the flag colours ── */
+.la-chips .q-chip {
+	transition:
+		transform 0.3s var(--l-ease),
+		box-shadow 0.2s;
+}
+
+.la-chips .q-chip:nth-of-type(4n + 2) {
+	border-radius: 6px 20px 6px 20px;
+	background: var(--green-soft);
+	color: var(--green-text);
+}
+
+.la-chips .q-chip:nth-of-type(4n + 3) {
+	border-radius: 20px 20px 20px 4px;
+}
+
+.la-chips .q-chip:nth-of-type(4n + 4) {
+	border-radius: 4px 20px 20px 20px;
+	background: var(--red-soft);
+	color: var(--red-text);
+}
+
+/* Room for the hover lift inside the scrolling row. */
+.la-chips.guide-panel__chips {
+	padding-top: 4px;
+}
+
+@media (min-width: 1024px) {
+	.la-chips .q-chip:hover:not(:disabled) {
+		transform: translateY(-3px);
+	}
+}
+
+/* ── Message bubbles with tails ── */
+.la-chat .q-bubble {
+	position: relative;
+	border-radius: 22px;
+}
+
+.la-chat .q-msg--user .q-bubble {
+	border-bottom-right-radius: 0;
+}
+
+.la-chat .q-msg--ai .q-bubble {
+	border-bottom-left-radius: 0;
+}
+
+.la-chat .q-bubble::after {
+	content: "";
+	position: absolute;
+	bottom: 0;
+	width: 8px;
+	height: 12px;
+}
+
+.la-chat .q-msg--user .q-bubble::after {
+	left: calc(100% - 0.5px);
+	background: var(--gold);
+	clip-path: polygon(0 0, 100% 100%, 0 100%);
+}
+
+.la-chat .q-msg--ai .q-bubble::after {
+	right: calc(100% - 0.5px);
+	background: var(--surface-raised);
+	clip-path: polygon(100% 0, 100% 100%, 0 100%);
+}
+
+.la-chat .q-msg--user {
+	padding-right: 8px;
+}
+
+.la-chat .q-avatar {
+	border-radius: 50% 50% 50% 6px;
+}
+
+html.l-motion .la-chat .q-msg--user {
+	animation: l-rise 0.5s var(--l-ease) both;
+}
+
+/* ── Cards: a different silhouette for each neighbour ── */
+.la-lift {
+	transition:
+		transform 0.5s var(--l-ease),
+		box-shadow 0.5s var(--l-ease);
+}
+
+@media (min-width: 1024px) {
+	.la-lift:hover {
+		transform: translateY(-4px);
+	}
+}
+
+.la-shapes > :nth-child(3n + 1) > .q-card {
+	border-radius: 28px 28px 28px 6px;
+}
+
+.la-shapes > :nth-child(3n + 2) > .q-card {
+	border-radius: 8px 32px 8px 32px;
+}
+
+.la-shapes > :nth-child(3n + 3) > .q-card {
+	border-radius: 28px 56px 28px 28px;
+}
+
+.la-nav > .q-card:nth-child(4n + 1) {
+	border-radius: 24px 24px 24px 6px;
+}
+
+.la-nav > .q-card:nth-child(4n + 2) {
+	border-radius: 6px 24px 6px 24px;
+}
+
+.la-nav > .q-card:nth-child(4n + 3) {
+	border-radius: 24px 6px 24px 6px;
+}
+
+.la-nav > .q-card:nth-child(4n + 4) {
+	border-radius: 24px 24px 6px 24px;
+}
+
+.q-card.la-place {
+	border-radius: 8px 32px 8px 32px;
+}
+
+.la-shapes > :nth-child(even) > .q-card.la-place,
+.q-card.la-place:nth-child(even) {
+	border-radius: 28px 28px 28px 6px;
+}
+
+.q-card.la-confirm {
+	border-radius: 28px 28px 28px 6px;
+}
+
+.q-next-step.la-route {
+	border-radius: 28px 64px 28px 28px;
+}
+
+/* ── Beta voice test page ── */
+.la-field {
+	min-height: 44px;
+	padding: 0 16px;
+	border: 1px solid var(--line-control);
+	border-radius: var(--radius-pill);
+	background: var(--surface);
+	color: var(--ink);
+	font: inherit;
+}
+
+.la-log li {
+	width: fit-content;
+	max-width: 100%;
+	padding: 10px 14px;
+	border-radius: 20px 20px 20px 4px;
+	background: var(--surface-raised);
+	box-shadow: var(--shadow-card);
+	overflow-wrap: anywhere;
+}
+
+.la-log li:nth-child(even) {
+	border-radius: 6px 20px 6px 20px;
+	background: var(--green-soft);
+}
