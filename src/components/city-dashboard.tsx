@@ -257,8 +257,12 @@ export function CityDashboard() {
 		void loadSnapshot();
 	}, [configured, demo, session, lastCityEvent, loadSnapshot]);
 
-	async function handleSignIn(email: string, password: string) {
-		const nextSession = await signInCityOperator(email, password);
+	async function handleSignIn(
+		email: string,
+		password: string,
+		captchaToken?: string | null,
+	) {
+		const nextSession = await signInCityOperator(email, password, captchaToken);
 		setSession(nextSession);
 	}
 

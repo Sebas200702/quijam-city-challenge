@@ -25,8 +25,8 @@ const SOURCES = {
 /** Pages that load an AudioWorklet from a blob URL (the voice test). */
 const BLOB_WORKLET_PATHS = new Set(["/prueba-guia"]);
 
-/** Pages with the account form, which loads the Turnstile CAPTCHA. */
-const TURNSTILE_PATHS = new Set(["/perfil"]);
+/** Pages with a sign-in or sign-up form, which load the Turnstile CAPTCHA. */
+const TURNSTILE_PATHS = new Set(["/perfil", "/ciudad", "/vendedor/entrar"]);
 
 /** Reporting endpoint for violations (see src/pages/api/csp-report.ts). */
 export const CSP_REPORT_PATH = "/api/csp-report";

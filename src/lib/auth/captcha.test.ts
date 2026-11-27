@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+	captchaActive,
 	captchaEnabled,
 	TURNSTILE_SCRIPT_URL,
 	turnstileLanguage,
@@ -15,6 +16,23 @@ describe("captchaEnabled", () => {
 
 	it("is on with a site key", () => {
 		expect(captchaEnabled("0x4AAAAAAA")).toBe(true);
+	});
+});
+
+describe("captchaActive", () => {
+	const supabase = { url: "https://abc.supabase.co", key: "sb_publishable_x" };
+
+	it("needs both a site key and Supabase", () => {
+		expect(captchaActive("0x4AAA", supabase.url, supabase.key)).toBe(true);
+	});
+
+	it("stays off without Supabase, so a blocked widget never locks the device-only forms", () => {
+		expect(captchaActive("0x4AAA", undefined, undefined)).toBe(false);
+		expect(captchaActive("0x4AAA", supabase.url, "")).toBe(false);
+	});
+
+	it("stays off without a site key", () => {
+		expect(captchaActive("", supabase.url, supabase.key)).toBe(false);
 	});
 });
 

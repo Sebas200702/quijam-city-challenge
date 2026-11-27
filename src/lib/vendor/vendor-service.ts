@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { withCaptcha } from "../auth/captcha";
 import { startOfTodayBogota } from "./vendor-logic";
 import type {
 	ProductInput,
@@ -49,10 +50,13 @@ export async function signIn(
 	client: SupabaseClient,
 	email: string,
 	password: string,
+	captchaToken?: string | null,
 ): Promise<void> {
+	const options = withCaptcha(undefined, captchaToken);
 	const { error } = await client.auth.signInWithPassword({
 		email: email.trim(),
 		password,
+		...(options ? { options } : {}),
 	});
 	if (error) throw friendly(error, "No pudimos entrar.");
 }
@@ -63,14 +67,18 @@ export async function signUp(
 	email: string,
 	password: string,
 	displayName: string,
+	captchaToken?: string | null,
 ): Promise<boolean> {
 	const { data, error } = await client.auth.signUp({
 		email: email.trim(),
 		password,
-		options: {
-			data: { display_name: displayName.trim(), is_visitor: false },
-			emailRedirectTo: `${window.location.origin}/vendedor/entrar`,
-		},
+		options: withCaptcha(
+			{
+				data: { display_name: displayName.trim(), is_visitor: false },
+				emailRedirectTo: `${window.location.origin}/vendedor/entrar`,
+			},
+			captchaToken,
+		),
 	});
 	if (error) throw friendly(error, "No pudimos crear la cuenta.");
 	return Boolean(data.session);

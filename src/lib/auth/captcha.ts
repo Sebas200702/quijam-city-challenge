@@ -23,6 +23,26 @@ export function captchaEnabled(siteKey: string | undefined): boolean {
 }
 
 /**
+ * The forms ask for the CAPTCHA only when it can matter: a site key and a
+ * Supabase project to check it. Without Supabase the forms run on this device,
+ * and a blocked Turnstile script must not lock them.
+ */
+export function captchaActive(
+	siteKey: string | undefined,
+	supabaseUrl: string | undefined,
+	supabaseKey: string | undefined,
+): boolean {
+	return captchaEnabled(siteKey) && Boolean(supabaseUrl && supabaseKey);
+}
+
+/** Fixed at build time from the public env. */
+export const CAPTCHA_ACTIVE = captchaActive(
+	TURNSTILE_SITE_KEY,
+	import.meta.env.PUBLIC_SUPABASE_URL,
+	import.meta.env.PUBLIC_SUPABASE_PUBLISHABLE_KEY,
+);
+
+/**
  * Adds the CAPTCHA token to the Supabase Auth options. Without a token the
  * options are returned as they were, so nothing changes before the key exists.
  */

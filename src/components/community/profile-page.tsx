@@ -16,6 +16,7 @@ import type { Profile } from "../../lib/community/community-types";
 import { useT } from "../../lib/i18n/use-language";
 import { AskQuillartButton } from "../assistant/ask-quillart-button";
 import { AppealsPanel } from "./appeals-panel";
+import { CaptchaField } from "./captcha-field";
 import { CommunityShell } from "./community-shell";
 import {
 	EmptyState,
@@ -30,7 +31,6 @@ import { EventCard } from "./event-card";
 import { GoogleSignInButton } from "./google-sign-in-button";
 import { MyDataPanel } from "./my-data-panel";
 import { ThreadCard } from "./thread-card";
-import { TurnstileWidget } from "./turnstile-widget";
 import { useCaptcha } from "./use-captcha";
 import { useLoad, useSession, useStore } from "./use-community";
 
@@ -44,7 +44,7 @@ export function safeReturnPath(raw: string | null): string | null {
 
 /** Read at load, before supabase-js removes the OAuth tokens from the URL. */
 const OPENED_BY_OAUTH =
-	typeof window !== "undefined" && isOAuthReturn(window.location.hash);
+	typeof window !== "undefined" && isOAuthReturn(window.location.search);
 
 function returnPath(): string | null {
 	if (typeof window === "undefined") return null;
@@ -122,18 +122,6 @@ function ResidencyField({
 function PrivacyNote() {
 	const t = useT();
 	return <p className="q-sm q-muted">{t.profile.privacyNote}</p>;
-}
-
-/** The Turnstile widget, only when a site key is configured. */
-function CaptchaField({ captcha }: { captcha: ReturnType<typeof useCaptcha> }) {
-	if (!captcha.enabled) return null;
-	return (
-		<TurnstileWidget
-			siteKey={captcha.siteKey}
-			onToken={captcha.setToken}
-			resetSignal={captcha.resetSignal}
-		/>
-	);
 }
 
 function SignInForm() {

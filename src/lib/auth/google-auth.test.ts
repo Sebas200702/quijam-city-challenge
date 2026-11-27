@@ -7,15 +7,14 @@ import {
 } from "./google-auth";
 
 describe("isOAuthReturn", () => {
-	it("detects the tokens the OAuth return leaves in the hash", () => {
-		expect(isOAuthReturn("#access_token=a&refresh_token=b&type=bearer")).toBe(
-			true,
-		);
+	it("detects the PKCE code the OAuth return leaves in the query", () => {
+		expect(isOAuthReturn("?volver=%2Fagenda&code=abc-123")).toBe(true);
 	});
 
-	it("ignores a normal visit", () => {
+	it("ignores a normal visit and implicit-flow tokens (PKCE only)", () => {
 		expect(isOAuthReturn("")).toBe(false);
-		expect(isOAuthReturn("#panel-signin")).toBe(false);
+		expect(isOAuthReturn("?volver=%2Fagenda")).toBe(false);
+		expect(isOAuthReturn("#access_token=a&refresh_token=b")).toBe(false);
 	});
 });
 

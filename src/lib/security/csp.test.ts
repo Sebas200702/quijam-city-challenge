@@ -82,7 +82,7 @@ describe("buildCsp", () => {
 		).toContain("blob:");
 	});
 
-	it("allows Cloudflare Turnstile (script and frame) only on the profile page", () => {
+	it("allows Cloudflare Turnstile (script and frame) only on the sign-in pages", () => {
 		const turnstile = "https://challenges.cloudflare.com";
 		const elsewhere = buildCsp(base);
 		expect(directive(elsewhere, "script-src")).not.toContain(turnstile);
@@ -92,6 +92,11 @@ describe("buildCsp", () => {
 		expect(directive(profile, "frame-src")).toEqual(["'self'", turnstile]);
 		const withSlash = buildCsp({ ...base, pathname: "/perfil/" });
 		expect(directive(withSlash, "frame-src")).toContain(turnstile);
+		for (const pathname of ["/ciudad", "/vendedor/entrar"]) {
+			expect(
+				directive(buildCsp({ ...base, pathname }), "script-src"),
+			).toContain(turnstile);
+		}
 	});
 });
 
