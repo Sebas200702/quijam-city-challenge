@@ -18,6 +18,7 @@ import type { GuideAnswer } from "../../lib/guide/guide-answer";
 import type { GuideLanguage } from "../../lib/guide/guide-local";
 import type {
 	GuideMessages,
+	GuideSuggestion,
 	GuideSuggestionIcon,
 } from "../../lib/i18n/dictionaries/guide";
 import { VOICE_LOCALES } from "../../lib/i18n/languages";
@@ -117,6 +118,8 @@ interface GuidePanelProps {
 	onReportSaved?: (reportId: string) => void;
 	/** Show the "reference data" tag; off on the map, whose header already has it. */
 	showReferenceTag?: boolean;
+	/** The route on the map, offered first as a question for the Mobility agent. */
+	routeQuestion?: string;
 }
 
 function GuideAvatar() {
@@ -152,21 +155,30 @@ function GlossedText({
 
 function Suggestions({
 	text,
+	routeQuestion,
 	disabled,
 	wrap,
 	onAsk,
 }: {
 	text: GuideMessages["panel"];
+	routeQuestion?: string;
 	disabled: boolean;
 	wrap: boolean;
 	onAsk: (question: string) => void;
 }) {
+	// The map's route replaces the generic route example.
+	const suggestions: GuideSuggestion[] = routeQuestion
+		? [
+				{ text: routeQuestion, icon: "route" },
+				...text.suggestions.filter((suggestion) => suggestion.icon !== "route"),
+			]
+		: text.suggestions;
 	return (
 		<fieldset
 			className={`guide-panel__chips${wrap ? " guide-panel__chips--wrap" : ""}`}
 		>
 			<legend className="q-sr">{text.suggestionsLabel}</legend>
-			{text.suggestions.map((suggestion) => {
+			{suggestions.map((suggestion) => {
 				const Icon = SUGGESTION_ICONS[suggestion.icon];
 				return (
 					<button
@@ -191,6 +203,7 @@ export function GuidePanel({
 	onClose,
 	onReportSaved,
 	showReferenceTag = false,
+	routeQuestion,
 }: GuidePanelProps) {
 	const inputId = useId();
 	const titleId = useId();
@@ -457,6 +470,7 @@ export function GuidePanel({
 						<p className="q-eyebrow">{text.tryThis}</p>
 						<Suggestions
 							text={text}
+							routeQuestion={routeQuestion}
 							disabled={thinking}
 							wrap
 							onAsk={(question) => ask(question)}
@@ -569,6 +583,7 @@ export function GuidePanel({
 				{!empty && !voice.listening && (
 					<Suggestions
 						text={text}
+						routeQuestion={routeQuestion}
 						disabled={thinking}
 						wrap={false}
 						onAsk={(question) => ask(question)}

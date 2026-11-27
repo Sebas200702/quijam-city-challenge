@@ -527,7 +527,7 @@ export function RouteCard({
 						onClick={onOpenGuide}
 					>
 						<MessageCircle size={20} strokeWidth={STROKE} aria-hidden="true" />
-						{t.askGuideBilingual}
+						{t.askGuide}
 					</button>
 				</div>
 			</div>

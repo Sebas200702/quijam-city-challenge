@@ -168,6 +168,8 @@ export default function CorridorMap({ data, source }: CorridorMapProps) {
 	);
 	// "You are here": the trip's origin stands in for the visitor's position (no GPS in the pilot).
 	const origin = data.stops.find((stop) => stop.code === query.origin) ?? null;
+	const destination =
+		data.stops.find((stop) => stop.code === query.destination) ?? null;
 	// The arroyo modal only opens when it touches this route or the visitor's zone (docs/20, 3.1).
 	const route = plan?.route ?? null;
 	const visitor = useMemo<VisitorContext | undefined>(() => {
@@ -433,7 +435,7 @@ export default function CorridorMap({ data, source }: CorridorMapProps) {
 					onClick={() => setGuideOpen(true)}
 				>
 					<MessageCircle size={20} strokeWidth={1.75} aria-hidden="true" />
-					{t.askGuideBilingual}
+					{t.askGuide}
 				</button>
 				<div className="corridor-panel__stops">
 					<StopList
@@ -499,6 +501,11 @@ export default function CorridorMap({ data, source }: CorridorMapProps) {
 					<GuidePanel
 						onShowOnMap={showDestination}
 						onClose={() => setGuideOpen(false)}
+						routeQuestion={
+							origin && destination
+								? t.askRoutePrompt(origin.name, destination.name)
+								: undefined
+						}
 						onReportSaved={(reportId) =>
 							void publish({ type: "cobro_abusivo", reportId })
 						}
@@ -683,7 +690,7 @@ function MapStatusOverlay({
 									strokeWidth={1.75}
 									aria-hidden="true"
 								/>
-								{t.askGuideShort}
+								{t.askGuide}
 							</button>
 						</div>
 					</div>
