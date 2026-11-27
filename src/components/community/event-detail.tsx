@@ -45,7 +45,13 @@ import {
 import { ReportButton } from "./report-button";
 import { ThreadCard } from "./thread-card";
 import { VerifiedOrganizerBadge } from "./trust-badges";
-import { signInHref, useLoad, useSession, useStore } from "./use-community";
+import {
+	errorText,
+	signInHref,
+	useLoad,
+	useSession,
+	useStore,
+} from "./use-community";
 
 export interface EventDetailProps {
 	id: string;
@@ -369,7 +375,7 @@ function RegistrationPanel({
 			else await store.register(event.id);
 			onChange();
 		} catch (err) {
-			setError(err instanceof Error ? err.message : t.agenda.saveError);
+			setError(errorText(err, t.agenda.saveError));
 		} finally {
 			setBusy(false);
 		}
@@ -479,7 +485,7 @@ function OrganizerPanel({
 			await store.cancelEvent(event.id);
 			onChange();
 		} catch (err) {
-			setError(err instanceof Error ? err.message : t.agenda.cancelEventError);
+			setError(errorText(err, t.agenda.cancelEventError));
 		} finally {
 			setBusy(false);
 		}

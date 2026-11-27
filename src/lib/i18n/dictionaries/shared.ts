@@ -11,6 +11,8 @@ const es = {
 		eventStartPast: "La fecha de inicio ya pasó. Elige una fecha futura.",
 		eventEndAfterStart: "La hora de cierre debe ser después del inicio.",
 		eventPlaceMissing: "Elige un lugar o escribe la dirección del encuentro.",
+		eventStartMissing: "Indica la fecha y hora de inicio.",
+		eventPriceMissing: "Indica el valor de la entrada en pesos.",
 		capacityInteger: "Los cupos deben ser un número entero mayor que cero.",
 		titleMax140: "El título no puede pasar de 140 caracteres.",
 		displayNameMin: "Escribe cómo quieres que te vean (mínimo 2 caracteres).",
@@ -58,6 +60,8 @@ const es = {
 	ui: {
 		loading: "Cargando…",
 		loadError: "No pudimos cargar la información.",
+		errorTitle: "Algo falló",
+		offlineText: "Revisa tu conexión y vuelve a intentarlo.",
 		heldBadge: "En revisión",
 		deviceMode:
 			"Sin conexión con el servidor de la comunidad: lo que publiques se guarda en este dispositivo.",
@@ -115,6 +119,8 @@ const en: SharedMessages = {
 		eventStartPast: "The start date has already passed. Pick a future date.",
 		eventEndAfterStart: "The end time must be after the start.",
 		eventPlaceMissing: "Choose a place or type the meeting address.",
+		eventStartMissing: "Enter the start date and time.",
+		eventPriceMissing: "Enter the ticket price in pesos.",
 		capacityInteger: "Spots must be a whole number greater than zero.",
 		titleMax140: "The title cannot exceed 140 characters.",
 		displayNameMin: "Write how you want to be seen (at least 2 characters).",
@@ -162,6 +168,8 @@ const en: SharedMessages = {
 	ui: {
 		loading: "Loading…",
 		loadError: "We could not load the information.",
+		errorTitle: "Something went wrong",
+		offlineText: "Check your connection and try again.",
 		heldBadge: "Under review",
 		deviceMode:
 			"No connection to the community server: what you post is saved on this device.",
@@ -218,6 +226,8 @@ const pt: SharedMessages = {
 		eventStartPast: "A data de início já passou. Escolha uma data futura.",
 		eventEndAfterStart: "O horário de término deve ser depois do início.",
 		eventPlaceMissing: "Escolha um lugar ou escreva o endereço do encontro.",
+		eventStartMissing: "Informe a data e o horário de início.",
+		eventPriceMissing: "Informe o valor da entrada em pesos.",
 		capacityInteger: "As vagas devem ser um número inteiro maior que zero.",
 		titleMax140: "O título não pode passar de 140 caracteres.",
 		displayNameMin: "Escreva como quer ser visto (mínimo de 2 caracteres).",
@@ -265,6 +275,8 @@ const pt: SharedMessages = {
 	ui: {
 		loading: "Carregando…",
 		loadError: "Não conseguimos carregar as informações.",
+		errorTitle: "Algo deu errado",
+		offlineText: "Verifique sua conexão e tente novamente.",
 		heldBadge: "Em revisão",
 		deviceMode:
 			"Sem conexão com o servidor da comunidade: o que você publicar fica salvo neste dispositivo.",
@@ -322,6 +334,8 @@ const fr: SharedMessages = {
 		eventEndAfterStart: "L’heure de fin doit être après le début.",
 		eventPlaceMissing:
 			"Choisissez un lieu ou saisissez l’adresse du rendez-vous.",
+		eventStartMissing: "Indiquez la date et l’heure de début.",
+		eventPriceMissing: "Indiquez le prix de l’entrée en pesos.",
 		capacityInteger:
 			"Le nombre de places doit être un entier supérieur à zéro.",
 		titleMax140: "Le titre ne peut pas dépasser 140 caractères.",
@@ -371,6 +385,8 @@ const fr: SharedMessages = {
 	ui: {
 		loading: "Chargement…",
 		loadError: "Nous n’avons pas pu charger les informations.",
+		errorTitle: "Un problème est survenu",
+		offlineText: "Vérifiez votre connexion et réessayez.",
 		heldBadge: "En cours de vérification",
 		deviceMode:
 			"Pas de connexion au serveur de la communauté : ce que vous publiez est enregistré sur cet appareil.",

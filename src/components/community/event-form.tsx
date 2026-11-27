@@ -6,8 +6,10 @@ import { askHref } from "../../lib/assistant/assistant-labels";
 import { EVENT_CATEGORY_LABELS } from "../../lib/community/community-labels";
 import {
 	bogotaLocalToIso,
+	type EventInputField,
+	type EventInputIssue,
+	eventInputIssue,
 	isoToBogotaLocal,
-	validateEventInput,
 } from "../../lib/community/community-rules";
 import type {
 	CommunityEvent,
@@ -27,7 +29,13 @@ import {
 	PublishNotice,
 	textareaClass,
 } from "./community-ui";
-import { signInHref, useLoad, useSession, useStore } from "./use-community";
+import {
+	errorText,
+	signInHref,
+	useLoad,
+	useSession,
+	useStore,
+} from "./use-community";
 
 const CATEGORIES = Object.keys(EVENT_CATEGORY_LABELS) as EventCategory[];
 const OTHER_PLACE = "";
@@ -61,6 +69,13 @@ function initialValues(): FormValues {
 		isFree: true,
 		price: "",
 	};
+}
+
+/** Control that shows the problem of `field`, so the form can focus it. */
+function controlId(field: EventInputField, values: FormValues): string {
+	if (field === "start") return values.date ? "event-start" : "event-date";
+	if (field === "place") return "event-location";
+	return `event-${field}`;
 }
 
 function toInput(values: FormValues): NewEventInput {
@@ -130,6 +145,7 @@ function EventFormBody() {
 	const { state: placesState } = useLoad((s) => s.listPlaces(), []);
 	const [values, setValues] = useState<FormValues>(initialValues);
 	const [error, setError] = useState<string | null>(null);
+	const [issue, setIssue] = useState<EventInputIssue | null>(null);
 	const [submitting, setSubmitting] = useState(false);
 	const [result, setResult] = useState<PublishResult<CommunityEvent> | null>(
 		null,
@@ -151,23 +167,35 @@ function EventFormBody() {
 	function set<K extends keyof FormValues>(key: K, value: FormValues[K]) {
 		setValues((current) => ({ ...current, [key]: value }));
 		setError(null);
+		setIssue(null);
 	}
+
+	// After a failed check, move to the field once its message is on screen,
+	// so the screen reader reads the label and the message together.
+	// biome-ignore lint/correctness/useExhaustiveDependencies: only a new check moves the focus.
+	useEffect(() => {
+		if (issue) document.getElementById(controlId(issue.field, values))?.focus();
+	}, [issue]);
+
+	/** The message for one control, when the last check pointed at it. */
+	const errorFor = (id: string) =>
+		issue && controlId(issue.field, values) === id ? issue.message : null;
 
 	async function handleSubmit(event: SyntheticEvent<HTMLFormElement>) {
 		event.preventDefault();
 		setError(null);
 		setResult(null);
 		const input = toInput(values);
-		const invalid = validateEventInput(input);
+		const invalid = eventInputIssue(input);
 		if (invalid) {
-			setError(invalid);
+			setIssue(invalid);
 			return;
 		}
 		setSubmitting(true);
 		try {
 			setResult(await store.createEvent(input));
 		} catch (err) {
-			setError(err instanceof Error ? err.message : t.agenda.publishError);
+			setError(errorText(err, t.agenda.publishError));
 		} finally {
 			setSubmitting(false);
 		}
@@ -193,7 +221,11 @@ function EventFormBody() {
 
 	return (
 		<form onSubmit={handleSubmit} className="q-card space-y-5 p-5" noValidate>
-			<Field id="event-title" label={t.agenda.fieldTitle}>
+			<Field
+				id="event-title"
+				error={errorFor("event-title")}
+				label={t.agenda.fieldTitle}
+			>
 				<input
 					id="event-title"
 					className={inputClass}
@@ -205,7 +237,11 @@ function EventFormBody() {
 				/>
 			</Field>
 
-			<Field id="event-description" label={t.agenda.fieldDescription}>
+			<Field
+				id="event-description"
+				error={errorFor("event-description")}
+				label={t.agenda.fieldDescription}
+			>
 				<textarea
 					id="event-description"
 					className={textareaClass}
@@ -232,7 +268,11 @@ function EventFormBody() {
 			</Field>
 
 			<div className="grid gap-4 sm:grid-cols-3">
-				<Field id="event-date" label={t.agenda.fieldDate}>
+				<Field
+					id="event-date"
+					error={errorFor("event-date")}
+					label={t.agenda.fieldDate}
+				>
 					<input
 						id="event-date"
 						type="date"
@@ -243,7 +283,11 @@ function EventFormBody() {
 						required
 					/>
 				</Field>
-				<Field id="event-start" label={t.agenda.fieldStart}>
+				<Field
+					id="event-start"
+					error={errorFor("event-start")}
+					label={t.agenda.fieldStart}
+				>
 					<input
 						id="event-start"
 						type="time"
@@ -253,7 +297,11 @@ function EventFormBody() {
 						required
 					/>
 				</Field>
-				<Field id="event-end" label={t.agenda.fieldEnd}>
+				<Field
+					id="event-end"
+					error={errorFor("event-end")}
+					label={t.agenda.fieldEnd}
+				>
 					<input
 						id="event-end"
 						type="time"
@@ -288,6 +336,7 @@ function EventFormBody() {
 			{!values.placeId && (
 				<Field
 					id="event-location"
+					error={errorFor("event-location")}
 					label={t.agenda.fieldLocation}
 					hint={t.agenda.locationHint}
 				>
@@ -303,6 +352,7 @@ function EventFormBody() {
 
 			<Field
 				id="event-capacity"
+				error={errorFor("event-capacity")}
 				label={t.agenda.fieldCapacity}
 				hint={t.agenda.capacityHint}
 			>
@@ -343,7 +393,11 @@ function EventFormBody() {
 			</fieldset>
 
 			{!values.isFree && (
-				<Field id="event-price" label={t.agenda.fieldPrice}>
+				<Field
+					id="event-price"
+					error={errorFor("event-price")}
+					label={t.agenda.fieldPrice}
+				>
 					<input
 						id="event-price"
 						type="number"

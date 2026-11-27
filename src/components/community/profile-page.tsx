@@ -27,7 +27,7 @@ import {
 import { EventCard } from "./event-card";
 import { MyDataPanel } from "./my-data-panel";
 import { ThreadCard } from "./thread-card";
-import { useLoad, useSession, useStore } from "./use-community";
+import { errorText, useLoad, useSession, useStore } from "./use-community";
 
 /** Only same-site paths: "/agenda/x" yes, "//evil.com" or "https://…" no. */
 export function safeReturnPath(raw: string | null): string | null {
@@ -42,10 +42,6 @@ function returnPath(): string | null {
 	return safeReturnPath(
 		new URLSearchParams(window.location.search).get("volver"),
 	);
-}
-
-function errorText(error: unknown, fallback: string): string {
-	return error instanceof Error && error.message ? error.message : fallback;
 }
 
 function SubmitButton({
