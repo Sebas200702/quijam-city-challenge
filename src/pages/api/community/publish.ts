@@ -22,14 +22,14 @@ export const prerender = false;
  * for a moderator; rejected content is not stored.
  */
 export const POST: APIRoute = async (context) => {
-	const limitedIp = guardRequest(context, "publish-ip");
+	const limitedIp = await guardRequest(context, "publish-ip");
 	if (limitedIp) return limitedIp;
 	const { request } = context;
 	const admin = getSupabaseAdmin();
 	if (!admin) return notConfigured();
 	try {
 		const author = await authenticate(request, admin);
-		const limitedUser = guardRequest(context, "publish-user", author.id);
+		const limitedUser = await guardRequest(context, "publish-user", author.id);
 		if (limitedUser) return limitedUser;
 		const publishRequest = parsePublishRequest(await readJson(request));
 		const result = await publishContent(

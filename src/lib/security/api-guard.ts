@@ -1,7 +1,13 @@
 // Rate-limit guard for the public API routes.
 
 import { type ClientKeySource, getClientKey, hashKey } from "./client-key";
+import { getSupabaseAdmin } from "../supabase-admin";
 import { createRateLimiter } from "./rate-limit";
+import {
+	checkShared,
+	createSupabaseRateLimitStore,
+	type SharedRateLimitStore,
+} from "./rate-limit-shared";
 import type { RateLimiter, RateLimitPolicy } from "./rate-limit-types";
 
 const MINUTE = 60_000;
@@ -37,9 +43,28 @@ function limiterFor(name: RateLimitPolicyName): RateLimiter {
 	return limiter;
 }
 
+// Shared counters (#126): with several replicas each process only sees its own
+// traffic, so when Supabase is configured the count also goes through it.
+// undefined: resolve from the environment; null: memory only.
+let sharedOverride: SharedRateLimitStore | null | undefined;
+
+function sharedStore(): SharedRateLimitStore | null {
+	if (sharedOverride !== undefined) return sharedOverride;
+	const admin = getSupabaseAdmin();
+	return admin ? createSupabaseRateLimitStore(admin) : null;
+}
+
+/** Test hook: replace (or disable with null) the shared store. */
+export function setSharedRateLimitStore(
+	store: SharedRateLimitStore | null | undefined,
+): void {
+	sharedOverride = store;
+}
+
 /** Test hook: forget every counter. */
 export function resetRateLimiters(): void {
 	limiters.clear();
+	sharedOverride = undefined;
 }
 
 export function tooManyRequests(retryAfterSeconds: number): Response {
@@ -63,11 +88,11 @@ export function tooManyRequests(retryAfterSeconds: number): Response {
  * to let the route continue. "user" policies key on `extraKey` (the user id);
  * "ip" policies key on the caller's address, optionally narrowed by `extraKey`.
  */
-export function guardRequest(
+export async function guardRequest(
 	context: ClientKeySource,
 	policyName: RateLimitPolicyName,
 	extraKey?: string,
-): Response | null {
+): Promise<Response | null> {
 	const policy = RATE_LIMIT_POLICIES[policyName];
 	let key: string;
 	if (policy.scope === "user") {
@@ -77,6 +102,16 @@ export function guardRequest(
 			? `${getClientKey(context)}:${hashKey(extraKey)}`
 			: getClientKey(context);
 	}
-	const result = limiterFor(policyName).check(key);
-	return result.allowed ? null : tooManyRequests(result.retryAfterSeconds);
+	// In-memory first: cheap, and it still protects this process if the store is down.
+	const local = limiterFor(policyName).check(key);
+	if (!local.allowed) return tooManyRequests(local.retryAfterSeconds);
+
+	const store = sharedStore();
+	if (store) {
+		const shared = await checkShared(store, `${policyName}:${key}`, policy);
+		if (shared && !shared.allowed) {
+			return tooManyRequests(shared.retryAfterSeconds);
+		}
+	}
+	return null;
 }

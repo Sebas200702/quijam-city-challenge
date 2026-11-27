@@ -18,7 +18,7 @@ export const prerender = false;
  * they wrote and their registrations; their upcoming events are cancelled.
  */
 export const DELETE: APIRoute = async (context) => {
-	const limited = guardRequest(context, "account");
+	const limited = await guardRequest(context, "account");
 	if (limited) return limited;
 	const admin = getSupabaseAdmin();
 	if (!admin) return notConfigured();

@@ -43,7 +43,9 @@ Cómo evitamos la información falsa, las estafas, la suplantación y el abuso e
 | `impact-report` | 5 por minuto | IP |
 | `account` | 5 cada 10 min | IP |
 
-Las IP se guardan como un hash SHA-256 recortado, nunca en claro. El estado vive en la memoria del proceso: sirve para un solo contenedor en Dokploy; con varias réplicas hay que pasarlo a un almacén compartido.
+Las IP se guardan como un hash SHA-256 recortado, nunca en claro.
+
+**Contadores compartidos:** cada proceso cuenta en memoria primero (barato, y sigue protegiendo si algo falla) y, si hay `SUPABASE_SERVICE_ROLE_KEY`, también en la tabla `rate_limits` con la función `rate_limit_hit()` (ventana fija por política y llave). Así el límite vale para todas las réplicas de Dokploy y sobrevive a un reinicio. Si Supabase no responde en 800 ms o falla, manda la decisión en memoria: el límite nunca se vuelve un punto único de falla. Cada petición a una API con límite suma un viaje a Supabase.
 
 ## Modelo de datos (migración `20261127000002_trust_and_safety.sql`)
 
@@ -66,7 +68,6 @@ Hay que hacerla en los paneles de Supabase y Dokploy antes de abrir al público:
 ## Pendiente
 
 - **Content-Security-Policy:** requiere una lista permitida para teselas de Leaflet, Google Fonts, Supabase (REST y websocket) y Gemini (incluido el websocket de Live).
-- **Límites compartidos:** mover los límites de uso a Supabase o Redis si hay más de una réplica.
 - **Lista de espera** cuando un evento se llena, y límite de inscripciones simultáneas por cuenta.
 - **Revisar en el código** si el modelo afirma una acción sin resultado de herramienta (hoy solo lo impide la instrucción).
 - **Informe público de moderación** (cuánto se retuvo, por qué y en cuánto tiempo).

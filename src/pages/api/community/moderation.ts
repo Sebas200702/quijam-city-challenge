@@ -30,7 +30,7 @@ async function requireCity(request: Request) {
 
 /** Moderation queue for the city role: held content and reports to follow up. */
 export const GET: APIRoute = async (context) => {
-	const limited = guardRequest(context, "moderation");
+	const limited = await guardRequest(context, "moderation");
 	if (limited) return limited;
 	const { request } = context;
 	try {
@@ -44,7 +44,7 @@ export const GET: APIRoute = async (context) => {
 
 /** Approve or remove held content, close a follow-up or confirm a citizen report. */
 export const POST: APIRoute = async (context) => {
-	const limited = guardRequest(context, "moderation");
+	const limited = await guardRequest(context, "moderation");
 	if (limited) return limited;
 	const { request } = context;
 	try {

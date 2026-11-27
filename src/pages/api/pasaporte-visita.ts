@@ -19,7 +19,7 @@ function json(body: unknown, status: number): Response {
  * business code and the time are stored, never who scanned.
  */
 export const POST: APIRoute = async (context) => {
-	const limited = guardRequest(context, "passport-visit");
+	const limited = await guardRequest(context, "passport-visit");
 	if (limited) return limited;
 	let body: unknown;
 	try {
