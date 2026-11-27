@@ -37,9 +37,15 @@ const SECTIONS = [
 					</a>
 				))}
 			</nav>
-			<button type="button" class="q-btn q-btn--primary q-state__action" onclick="location.reload()" data-i18n="offline.retry">
+			<button type="button" id="offline-retry" class="q-btn q-btn--primary q-state__action" data-i18n="offline.retry">
 				Reintentar
 			</button>
 		</div>
 	</main>
+	<script>
+		// Bundled module script: the CSP blocks inline `onclick` attributes.
+		document
+			.getElementById("offline-retry")
+			?.addEventListener("click", () => location.reload());
+	</script>
 </BaseLayout>
