@@ -24,6 +24,7 @@ Cómo evitamos la información falsa, las estafas, la suplantación y el abuso e
 | Moderador comprometido o arbitrario | Alguien aprueba lo que no debe | **Registro de auditoría**: quién aprobó, retiró, atendió o confirmó qué y cuándo (`moderation_actions`, solo lo lee la ciudad). Segundo factor para el rol ciudad (ver configuración). | `community-server.ts` (`applyModeration`), migración 2 |
 | Clickjacking y otros ataques del navegador | La app dentro de un iframe ajeno | Cabeceras en todas las respuestas: `X-Frame-Options: SAMEORIGIN`, `X-Content-Type-Options: nosniff`, `Referrer-Policy`, `Permissions-Policy` (micrófono solo para la propia app), `Cross-Origin-Opener-Policy`. | `src/middleware.ts` |
 | Derechos sobre los datos | "Quiero ver y borrar lo que tienen de mí" | **Descargar mis datos** (JSON) y **Eliminar mi cuenta** (escribiendo ELIMINAR) en `/perfil`. Se borran conversaciones, respuestas, reportes e inscripciones; los eventos futuros se cancelan y los pasados quedan como "Cuenta eliminada". | `my-data-panel.tsx`, `DELETE /api/community/account`, `delete_community_account()` |
+| Retiro injusto | Un moderador retira algo que no debía | **Apelación**: quien publicó pide una segunda revisión una sola vez desde `/perfil`. Queda en la sección *Apelaciones* de `/moderacion` y en la auditoría (`appeal`, `appeal_upheld`, `appeal_overturned`). | `appeals-panel.tsx`, `appeal-rules.ts`, tabla `moderation_appeals`, función `request_appeal()` |
 | Exponer quién va a un evento | Acosar a quien se inscribió | Las inscripciones solo las ven la persona y quien organiza (RLS). Nunca se muestran listas públicas. | migración 1 |
 
 ## Límites de uso
@@ -63,7 +64,6 @@ Hay que hacerla en los paneles de Supabase y Dokploy antes de abrir al público:
 ## Pendiente
 
 - **Content-Security-Policy:** requiere una lista permitida para teselas de Leaflet, Google Fonts, Supabase (REST y websocket) y Gemini (incluido el websocket de Live).
-- **Apelaciones:** que la persona cuyo contenido se retiró pueda pedir una segunda revisión.
 - **Corroboración automática:** subir la prioridad de un reporte cuando varias personas distintas reportan lo mismo en la misma zona.
 - **Límites compartidos:** mover los límites de uso a Supabase o Redis si hay más de una réplica.
 - **Lista de espera** cuando un evento se llena, y límite de inscripciones simultáneas por cuenta.

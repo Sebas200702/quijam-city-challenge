@@ -144,3 +144,67 @@ describe("device store trust and safety", () => {
 		).rejects.toThrow();
 	});
 });
+
+describe("device store appeals", () => {
+	async function removedThread() {
+		await signUp(store, "Ana");
+		const { record } = await store.createThread({
+			title: "Venta de garaje",
+			body: "Este sábado en mi cuadra",
+			category: "neighborhood",
+			placeId: null,
+			eventId: null,
+		});
+		const id = record?.id ?? "";
+		await store.moderate("thread", id, "remove");
+		return id;
+	}
+
+	it("lets the author appeal removed content once, and puts it in the queue", async () => {
+		const id = await removedThread();
+		expect(await store.listMyRemoved()).toMatchObject([
+			{ kind: "thread", id, appealStatus: null },
+		]);
+		await expect(store.appeal("thread", id, "corto")).rejects.toThrow(/10/);
+
+		await store.appeal("thread", id, "Era un aviso del barrio, no spam.");
+		await expect(
+			store.appeal("thread", id, "Otra vez, por favor revisen."),
+		).rejects.toThrow(/Ya pediste/);
+
+		const queue = await store.listModerationQueue();
+		expect(queue.find((item) => item.id === id)?.appeal?.message).toMatch(
+			/aviso del barrio/,
+		);
+	});
+
+	it("closes the appeal when the city decides", async () => {
+		const id = await removedThread();
+		await store.appeal("thread", id, "Era un aviso del barrio, no spam.");
+		await store.moderate("thread", id, "approve");
+		expect((await store.listMyRemoved()).length).toBe(0);
+		expect((await store.listModerationQueue()).some((i) => i.id === id)).toBe(
+			false,
+		);
+	});
+
+	it("keeps it final when the city upholds the removal", async () => {
+		const id = await removedThread();
+		await store.appeal("thread", id, "Era un aviso del barrio, no spam.");
+		await store.moderate("thread", id, "remove");
+		expect(await store.listMyRemoved()).toMatchObject([
+			{ appealStatus: "upheld" },
+		]);
+		expect((await store.listModerationQueue()).some((i) => i.id === id)).toBe(
+			false,
+		);
+	});
+
+	it("does not let someone else appeal", async () => {
+		const id = await removedThread();
+		await signUp(store, "Beto");
+		await expect(
+			store.appeal("thread", id, "Quiero apelar lo de otra persona."),
+		).rejects.toThrow(/quien lo publicó/);
+	});
+});

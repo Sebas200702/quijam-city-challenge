@@ -265,6 +265,8 @@ export async function loadModerationQueue(
 	const error = events.error ?? threads.error ?? posts.error;
 	if (error) throw new CommunityError(error.message, 500);
 
+	const appeals = await loadOpenAppeals(admin);
+
 	const base = (row: Record<string, unknown>) => ({
 		id: String(row.id),
 		createdAt: String(row.created_at),
@@ -300,7 +302,86 @@ export async function loadModerationQueue(
 			threadId: String(row.thread_id),
 		})),
 	];
-	return sortQueue(items);
+	// Removed content only reaches the queue through an open appeal.
+	const queued = new Set(items.map((item) => `${item.kind}:${item.id}`));
+	for (const item of appeals.items) {
+		if (!queued.has(`${item.kind}:${item.id}`)) items.push(item);
+	}
+	return sortQueue(
+		items.map((item) => ({
+			...item,
+			appeal: appeals.byKey.get(`${item.kind}:${item.id}`) ?? null,
+		})),
+	);
+}
+
+interface OpenAppeal {
+	kind: ContentKind;
+	content_id: string;
+	message: string;
+	created_at: string;
+}
+
+/** Open appeals, with the removed content they point at as queue items. */
+async function loadOpenAppeals(admin: SupabaseClient): Promise<{
+	items: ModerationQueueItem[];
+	byKey: Map<string, { message: string; createdAt: string }>;
+}> {
+	const byKey = new Map<string, { message: string; createdAt: string }>();
+	const items: ModerationQueueItem[] = [];
+	const { data, error } = await admin
+		.from("moderation_appeals")
+		.select("kind, content_id, message, created_at")
+		.eq("status", "open")
+		.limit(100);
+	// A deployment without the migration simply has no appeals yet.
+	if (error || !data?.length) return { items, byKey };
+	const rows = data as OpenAppeal[];
+	for (const row of rows) {
+		byKey.set(`${row.kind}:${row.content_id}`, {
+			message: row.message,
+			createdAt: row.created_at,
+		});
+	}
+	for (const kind of ["event", "thread", "post"] as const) {
+		const ids = rows.filter((r) => r.kind === kind).map((r) => r.content_id);
+		if (!ids.length) continue;
+		const columns =
+			kind === "event"
+				? "title, description, organizer_name"
+				: kind === "thread"
+					? "title, body, author_name"
+					: "body, author_name, thread_id";
+		const { data: content } = await admin
+			.from(TABLE[kind])
+			.select(
+				`id, moderation_status, moderation_labels, moderation_source, triage_priority, community_reports, created_at, ${columns}`,
+			)
+			.in("id", ids);
+		for (const raw of (content ?? []) as unknown as Record<string, unknown>[]) {
+			items.push({
+				id: String(raw.id),
+				kind,
+				createdAt: String(raw.created_at),
+				status: raw.moderation_status as ModerationQueueItem["status"],
+				labels: (raw.moderation_labels ?? []) as ModerationQueueItem["labels"],
+				source: raw.moderation_source as ModerationQueueItem["source"],
+				priority: raw.triage_priority as ModerationQueueItem["priority"],
+				communityReports: Number(raw.community_reports ?? 0),
+				title:
+					kind === "post" ? "Respuesta en el foro" : String(raw.title ?? ""),
+				body: String(raw.description ?? raw.body ?? ""),
+				authorName: String(raw.organizer_name ?? raw.author_name ?? ""),
+				threadId:
+					kind === "thread"
+						? String(raw.id)
+						: kind === "post"
+							? String(raw.thread_id)
+							: null,
+			});
+		}
+	}
+	return { items, byKey };
 }
 
 const PRIORITY_ORDER = { emergency: 0, city_attention: 1, none: 2 } as const;
@@ -344,6 +425,30 @@ export async function applyModeration(
 	});
 	if (logError)
 		console.error("[moderation] audit log failed", logError.message);
+
+	// Deciding on removed content closes its appeal: approving overturns, removing upholds.
+	if (action === "approve" || action === "remove") {
+		const overturned = action === "approve";
+		const { data: closed } = await admin
+			.from("moderation_appeals")
+			.update({
+				status: overturned ? "overturned" : "upheld",
+				resolved_at: now,
+				resolved_by: moderatorId,
+			})
+			.eq("kind", kind)
+			.eq("content_id", id)
+			.eq("status", "open")
+			.select("id");
+		if (closed?.length) {
+			await admin.from("moderation_actions").insert({
+				moderator_id: moderatorId,
+				kind,
+				content_id: id,
+				action: overturned ? "appeal_overturned" : "appeal_upheld",
+			});
+		}
+	}
 }
 
 /** Ley 1581 (supresión): removes what the person wrote, then the account. */
