@@ -35,3 +35,4 @@ Rama: `feat/pendientes-santiago` (sale de `integ/pending-prs`, PR #214). Entrega
 - L4 (usuario): "Aplicar ahora" `city_mfa_aal2`. Aplicada.
 - L5: `gemini-flash-latest` dio 503 y luego timeout; `gemini-3.5-flash` responde 200.
 - L6: Verificación final: astro check 0 errores, vitest 823/827 (los 4 fallos de api-guard ocurren también en main con .env real), build pasa.
+- L7: Auditoría con 3 agentes en el navegador. Integrados: 21a9559 (id mal formado), 8b08652 (?destino= a parada alcanzable), 0e3ac15 (título del dock traducido). Gemini daba 504 a los 10 s; sin thinking responde en 2–4 s (llévame al mapa 2,1 s).
