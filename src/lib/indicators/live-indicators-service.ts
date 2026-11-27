@@ -61,6 +61,7 @@ export async function fetchLiveIndicatorsRaw(
 		threadsRes,
 		postsRes,
 		openDatasetsCount,
+		visitsRes,
 	] = await Promise.all([
 		supabase
 			.from("route_segments")
@@ -97,6 +98,9 @@ export async function fetchLiveIndicatorsRaw(
 			.select("moderation_status, triage_priority, city_resolved_at")
 			.overrideTypes<LiveCommunityNoticeRow[], { merge: false }>(),
 		fetchPublishedOpenDatasetsCount(),
+		supabase
+			.from("passport_visits")
+			.select("id", { count: "exact", head: true }),
 	]);
 
 	if (segmentsRes.error) {
@@ -116,6 +120,7 @@ export async function fetchLiveIndicatorsRaw(
 		forumThreads: threadsRes.error ? [] : (threadsRes.data ?? []),
 		forumPosts: postsRes.error ? [] : (postsRes.data ?? []),
 		openDatasetsCount,
+		passportVisitsCount: visitsRes.error ? 0 : (visitsRes.count ?? 0),
 		liveEventFloodCodes,
 	};
 }

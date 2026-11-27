@@ -29,7 +29,7 @@ function json(body: unknown, status: number): Response {
  * and falls back to the local Guide on any failure, so the demo always answers.
  */
 export const POST: APIRoute = async (context) => {
-	const limited = guardRequest(context, "guide-ask");
+	const limited = await guardRequest(context, "guide-ask");
 	if (limited) return limited;
 	const { request } = context;
 	let question: unknown;

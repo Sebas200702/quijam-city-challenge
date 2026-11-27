@@ -2,7 +2,15 @@
 // reply goes through the triage here before it is stored. Server only.
 
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { ContentKind } from "../moderation/moderation-types";
+import {
+	CORROBORATION_WINDOW_HOURS,
+	type RiskReport,
+	reportsToEscalate,
+} from "../moderation/corroboration";
+import type {
+	ContentKind,
+	TriagePriority,
+} from "../moderation/moderation-types";
 import { triageContent } from "../moderation/triage";
 import { applyTrustPolicy } from "../moderation/trust-policy";
 import type { OpenJevClient } from "../openjev/openjev-types";
@@ -199,6 +207,7 @@ export async function publishContent(
 			.select(THREAD_COLUMNS)
 			.single();
 		if (error) throw new CommunityError(error.message, 500);
+		if (decision.verdict === "publish") await corroborateRisk(admin, data.id);
 		return publishResult(decision, toThread(data));
 	}
 
@@ -265,6 +274,8 @@ export async function loadModerationQueue(
 	const error = events.error ?? threads.error ?? posts.error;
 	if (error) throw new CommunityError(error.message, 500);
 
+	const appeals = await loadOpenAppeals(admin);
+
 	const base = (row: Record<string, unknown>) => ({
 		id: String(row.id),
 		createdAt: String(row.created_at),
@@ -300,7 +311,161 @@ export async function loadModerationQueue(
 			threadId: String(row.thread_id),
 		})),
 	];
-	return sortQueue(items);
+	// Removed content only reaches the queue through an open appeal.
+	const queued = new Set(items.map((item) => `${item.kind}:${item.id}`));
+	for (const item of appeals.items) {
+		if (!queued.has(`${item.kind}:${item.id}`)) items.push(item);
+	}
+	return sortQueue(
+		items.map((item) => ({
+			...item,
+			appeal: appeals.byKey.get(`${item.kind}:${item.id}`) ?? null,
+		})),
+	);
+}
+
+interface OpenAppeal {
+	kind: ContentKind;
+	content_id: string;
+	message: string;
+	created_at: string;
+}
+
+/** Open appeals, with the removed content they point at as queue items. */
+async function loadOpenAppeals(admin: SupabaseClient): Promise<{
+	items: ModerationQueueItem[];
+	byKey: Map<string, { message: string; createdAt: string }>;
+}> {
+	const byKey = new Map<string, { message: string; createdAt: string }>();
+	const items: ModerationQueueItem[] = [];
+	const { data, error } = await admin
+		.from("moderation_appeals")
+		.select("kind, content_id, message, created_at")
+		.eq("status", "open")
+		.limit(100);
+	// A deployment without the migration simply has no appeals yet.
+	if (error || !data?.length) return { items, byKey };
+	const rows = data as OpenAppeal[];
+	for (const row of rows) {
+		byKey.set(`${row.kind}:${row.content_id}`, {
+			message: row.message,
+			createdAt: row.created_at,
+		});
+	}
+	for (const kind of ["event", "thread", "post"] as const) {
+		const ids = rows.filter((r) => r.kind === kind).map((r) => r.content_id);
+		if (!ids.length) continue;
+		const columns =
+			kind === "event"
+				? "title, description, organizer_name"
+				: kind === "thread"
+					? "title, body, author_name"
+					: "body, author_name, thread_id";
+		const { data: content } = await admin
+			.from(TABLE[kind])
+			.select(
+				`id, moderation_status, moderation_labels, moderation_source, triage_priority, community_reports, created_at, ${columns}`,
+			)
+			.in("id", ids);
+		for (const raw of (content ?? []) as unknown as Record<string, unknown>[]) {
+			items.push({
+				id: String(raw.id),
+				kind,
+				createdAt: String(raw.created_at),
+				status: raw.moderation_status as ModerationQueueItem["status"],
+				labels: (raw.moderation_labels ?? []) as ModerationQueueItem["labels"],
+				source: raw.moderation_source as ModerationQueueItem["source"],
+				priority: raw.triage_priority as ModerationQueueItem["priority"],
+				communityReports: Number(raw.community_reports ?? 0),
+				title:
+					kind === "post" ? "Respuesta en el foro" : String(raw.title ?? ""),
+				body: String(raw.description ?? raw.body ?? ""),
+				authorName: String(raw.organizer_name ?? raw.author_name ?? ""),
+				threadId:
+					kind === "thread"
+						? String(raw.id)
+						: kind === "post"
+							? String(raw.thread_id)
+							: null,
+			});
+		}
+	}
+	return { items, byKey };
+}
+
+interface RiskRow {
+	id: string;
+	author_id: string | null;
+	place_id: string | null;
+	triage_priority: TriagePriority;
+	created_at: string;
+	city_resolved_at: string | null;
+}
+
+const RISK_COLUMNS =
+	"id, author_id, place_id, triage_priority, created_at, city_resolved_at";
+
+function toRisk(row: RiskRow): RiskReport {
+	return {
+		id: row.id,
+		authorId: row.author_id,
+		placeId: row.place_id,
+		priority: row.triage_priority,
+		createdAt: row.created_at,
+		resolved: row.city_resolved_at !== null,
+	};
+}
+
+/**
+ * Corroboration (#126): when different people reported a risk at the same place
+ * in a short time, raise those reports to emergency and leave it in the audit log.
+ * Never blocks publishing: a failure here only means the priority stays as it was.
+ */
+export async function corroborateRisk(
+	admin: SupabaseClient,
+	threadId: string,
+): Promise<void> {
+	try {
+		const { data: seedRow } = await admin
+			.from("forum_threads")
+			.select(RISK_COLUMNS)
+			.eq("id", threadId)
+			.eq("moderation_status", "published")
+			.maybeSingle();
+		if (!seedRow?.place_id || seedRow.triage_priority === "none") return;
+		const seed = toRisk(seedRow as RiskRow);
+		const since = new Date(
+			Date.parse(seed.createdAt) - CORROBORATION_WINDOW_HOURS * 3_600_000,
+		).toISOString();
+		const { data: peers } = await admin
+			.from("forum_threads")
+			.select(RISK_COLUMNS)
+			.eq("place_id", seedRow.place_id)
+			.eq("moderation_status", "published")
+			.neq("triage_priority", "none")
+			.is("city_resolved_at", null)
+			.gte("created_at", since)
+			.limit(50);
+		const ids = reportsToEscalate(
+			seed,
+			((peers ?? []) as RiskRow[]).map(toRisk),
+		);
+		if (ids.length === 0) return;
+		await admin
+			.from("forum_threads")
+			.update({ triage_priority: "emergency" })
+			.in("id", ids);
+		await admin.from("moderation_actions").insert(
+			ids.map((id) => ({
+				moderator_id: null,
+				kind: "thread",
+				content_id: id,
+				action: "corroborate",
+			})),
+		);
+	} catch (error) {
+		console.error("[moderation] corroboration failed", error);
+	}
 }
 
 const PRIORITY_ORDER = { emergency: 0, city_attention: 1, none: 2 } as const;
@@ -344,6 +509,33 @@ export async function applyModeration(
 	});
 	if (logError)
 		console.error("[moderation] audit log failed", logError.message);
+
+	// A held risk report that the city approves may now corroborate others.
+	if (action === "approve" && kind === "thread") await corroborateRisk(admin, id);
+
+	// Deciding on removed content closes its appeal: approving overturns, removing upholds.
+	if (action === "approve" || action === "remove") {
+		const overturned = action === "approve";
+		const { data: closed } = await admin
+			.from("moderation_appeals")
+			.update({
+				status: overturned ? "overturned" : "upheld",
+				resolved_at: now,
+				resolved_by: moderatorId,
+			})
+			.eq("kind", kind)
+			.eq("content_id", id)
+			.eq("status", "open")
+			.select("id");
+		if (closed?.length) {
+			await admin.from("moderation_actions").insert({
+				moderator_id: moderatorId,
+				kind,
+				content_id: id,
+				action: overturned ? "appeal_overturned" : "appeal_upheld",
+			});
+		}
+	}
 }
 
 /** Ley 1581 (supresión): removes what the person wrote, then the account. */

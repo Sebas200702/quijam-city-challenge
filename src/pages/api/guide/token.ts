@@ -25,7 +25,7 @@ function json(body: unknown, status: number): Response {
 
 /** Issues an ephemeral Gemini Live token. The real API key never leaves the server. */
 export const POST: APIRoute = async (context) => {
-	const limited = guardRequest(context, "guide-token");
+	const limited = await guardRequest(context, "guide-token");
 	if (limited) return limited;
 	const { url } = context;
 	const apiKey = getSecret("GEMINI_API_KEY");

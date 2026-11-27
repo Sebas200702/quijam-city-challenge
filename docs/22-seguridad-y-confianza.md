@@ -25,6 +25,9 @@ Cómo evitamos la información falsa, las estafas, la suplantación y el abuso e
 | Clickjacking y otros ataques del navegador | La app dentro de un iframe ajeno | Cabeceras en todas las respuestas: `X-Frame-Options: SAMEORIGIN`, `X-Content-Type-Options: nosniff`, `Referrer-Policy`, `Permissions-Policy` (micrófono solo para la propia app), `Cross-Origin-Opener-Policy`. | `src/middleware.ts` |
 | Script inyectado (XSS) | Un texto del foro logra meter `<script>` o un enlace a un script ajeno | **Content-Security-Policy** en cada página: solo corren nuestros scripts y los scripts en línea exactos de esa página (por hash). Sin `eval`, sin plugins, sin conexiones a sitios fuera de la lista. Ver la sección siguiente. | `src/lib/security/csp.ts`, `src/middleware.ts` |
 | Derechos sobre los datos | "Quiero ver y borrar lo que tienen de mí" | **Descargar mis datos** (JSON) y **Eliminar mi cuenta** (escribiendo ELIMINAR) en `/perfil`. Se borran conversaciones, respuestas, reportes e inscripciones; los eventos futuros se cancelan y los pasados quedan como "Cuenta eliminada". | `my-data-panel.tsx`, `DELETE /api/community/account`, `delete_community_account()` |
+| Retiro injusto | Un moderador retira algo que no debía | **Apelación**: quien publicó pide una segunda revisión una sola vez desde `/perfil`. Queda en la sección *Apelaciones* de `/moderacion` y en la auditoría (`appeal`, `appeal_upheld`, `appeal_overturned`). | `appeals-panel.tsx`, `appeal-rules.ts`, tabla `moderation_appeals`, función `request_appeal()` |
+| Un mismo riesgo reportado por muchas personas | Tres reportes del mismo hueco o arroyo, cada uno marcado "para la ciudad" | **Corroboración**: cuando **3 personas distintas** publican un reporte de riesgo en **el mismo lugar** dentro de **6 horas** (sin que la ciudad lo haya atendido), todos suben de *para la ciudad* a *urgente*. Queda en la auditoría como `corroborate`. Reportes sin lugar o de una misma persona no suman. | `corroboration.ts`, `corroborateRisk()` en `community-server.ts` |
+| Eventos llenos y cupos que se pierden | Alguien se inscribe y no va; otra persona se queda afuera | **Lista de espera**: cuando un evento se llena, las personas se anotan y la primera en orden de llegada entra sola apenas alguien cancela. Solo quien se anotó y quien organiza ven la lista (RLS). | `event_waitlist`, `join_waitlist()`, trigger `handle_event_registration`, `event-detail.tsx` |
 | Exponer quién va a un evento | Acosar a quien se inscribió | Las inscripciones solo las ven la persona y quien organiza (RLS). Nunca se muestran listas públicas. | migración 1 |
 
 ## Content-Security-Policy
@@ -68,7 +71,9 @@ Verificado el 27 nov 2026 con Playwright: primero en `report-only` y luego aplic
 | `csp-report` | 30 por minuto | IP |
 | `account` | 5 cada 10 min | IP |
 
-Las IP se guardan como un hash SHA-256 recortado, nunca en claro. El estado vive en la memoria del proceso: sirve para un solo contenedor en Dokploy; con varias réplicas hay que pasarlo a un almacén compartido.
+Las IP se guardan como un hash SHA-256 recortado, nunca en claro.
+
+**Contadores compartidos:** cada proceso cuenta en memoria primero (barato, y sigue protegiendo si algo falla) y, si hay `SUPABASE_SERVICE_ROLE_KEY`, también en la tabla `rate_limits` con la función `rate_limit_hit()` (ventana fija por política y llave). Así el límite vale para todas las réplicas de Dokploy y sobrevive a un reinicio. Si Supabase no responde en 800 ms o falla, manda la decisión en memoria: el límite nunca se vuelve un punto único de falla. Cada petición a una API con límite suma un viaje a Supabase.
 
 ## Modelo de datos (migración `20261127000002_trust_and_safety.sql`)
 
@@ -90,9 +95,6 @@ Hay que hacerla en los paneles de Supabase y Dokploy antes de abrir al público:
 
 ## Pendiente
 
-- **Apelaciones:** que la persona cuyo contenido se retiró pueda pedir una segunda revisión.
-- **Corroboración automática:** subir la prioridad de un reporte cuando varias personas distintas reportan lo mismo en la misma zona.
-- **Límites compartidos:** mover los límites de uso a Supabase o Redis si hay más de una réplica.
 - **Lista de espera** cuando un evento se llena, y límite de inscripciones simultáneas por cuenta.
 - **Revisar en el código** si el modelo afirma una acción sin resultado de herramienta (hoy solo lo impide la instrucción).
 - **Informe público de moderación** (cuánto se retuvo, por qué y en cuánto tiempo).

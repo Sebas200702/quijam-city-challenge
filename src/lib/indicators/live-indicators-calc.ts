@@ -243,6 +243,8 @@ export function computeProgramIndicators(
 		(openVerifiedPct / INDICATOR_TARGETS.openVerifiedBusinessesPct) * 100,
 	);
 
+	const passportVisits = Math.max(0, input.passportVisitsCount ?? 0);
+
 	const economia: DimensionIndicator = {
 		dimension: "economia",
 		dimensionLabel: "Economía",
@@ -251,8 +253,16 @@ export function computeProgramIndicators(
 		targetDisplay: `Meta: ${verifiedBusinesses.length} abiertos (${INDICATOR_TARGETS.openVerifiedBusinessesPct} %)`,
 		progressPercent: economyProgress,
 		...getIndicatorVisualState(economyProgress),
-		origin: "reference",
-		communityFacts: [],
+		origin: passportVisits > 0 ? "mixed" : "reference",
+		communityFacts:
+			passportVisits > 0
+				? [
+						{
+							label: "Visitas con sello en negocios verificados",
+							value: `${passportVisits}`,
+						},
+					]
+				: [],
 		referenceFacts: [
 			{
 				label: "Verificados sin comisión",

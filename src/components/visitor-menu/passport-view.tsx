@@ -7,12 +7,24 @@ import {
 	Stamp,
 	Store,
 } from "lucide-react";
-import { type ReactNode, useState } from "react";
-import { loadPassport } from "../../lib/visitor-menu/passport-source";
-import type { PassportStamp } from "../../lib/visitor-menu/visitor-menu-types";
+import { type ReactNode, useCallback, useState } from "react";
+import {
+	loadPassport,
+	savePassport,
+} from "../../lib/visitor-menu/passport-source";
+import {
+	addStamp,
+	parseStampCode,
+	stampFromCode,
+} from "../../lib/visitor-menu/stamp-code";
+import type {
+	Passport,
+	PassportStamp,
+} from "../../lib/visitor-menu/visitor-menu-types";
 import { StampBookIllustration } from "./illustrations";
 import { MenuShell } from "./menu-shell";
 import { MenuEmpty, MenuError, MenuLoading, OfflineNote } from "./menu-state";
+import { StampScanner } from "./stamp-scanner";
 import { useMenuData, useOnline } from "./use-menu-data";
 import "./visitor-menu.css";
 
@@ -100,28 +112,82 @@ function ScanButton({
 export function PassportView() {
 	const online = useOnline();
 	const { state, retry } = useMenuData(loadPassport);
-	const [scanAsked, setScanAsked] = useState(false);
-	const onScan = () => setScanAsked(true);
+	const [scanning, setScanning] = useState(false);
+	const [local, setLocal] = useState<Passport | null>(null);
+	const [result, setResult] = useState<{
+		tone: "safe" | "info" | "alert";
+		title: string;
+		text: string;
+	} | null>(null);
+	const onScan = () => {
+		setResult(null);
+		setScanning(true);
+	};
 
-	// The QR scanner arrives with issue #45; until then, explain what to do instead.
-	const scanNotice = scanAsked && (
-		<div className="q-alert q-alert--info" role="status">
-			<span className="q-alert__icon" aria-hidden="true">
-				<ScanQrCode size={18} strokeWidth={1.75} />
-			</span>
-			<div className="q-alert__body">
-				<p className="q-alert__title">El escáner llega pronto</p>
-				<p className="q-alert__text">
-					Por ahora, busca negocios verificados en el mapa.
-				</p>
-				<div className="q-alert__actions">
-					<a className="q-btn q-btn--secondary q-btn--sm" href="/mapa">
-						<MapPin size={16} strokeWidth={1.75} aria-hidden="true" />
-						Abrir el mapa
-					</a>
+	const stored = state.status === "ready" ? state.data : null;
+	const passport = local ?? stored;
+
+	const handleCode = useCallback(
+		(raw: string) => {
+			const code = parseStampCode(raw);
+			const stamp = code ? stampFromCode(code) : null;
+			if (!code || !stamp) {
+				setResult({
+					tone: "alert",
+					title: "Ese QR no da sello",
+					text: "Escanea el QR de un negocio verificado o de un evento ambiental.",
+				});
+				return;
+			}
+			const current = local ?? stored ?? { stamps: [] };
+			const next = addStamp(current, stamp);
+			setScanning(false);
+			if (!next.added) {
+				setResult({
+					tone: "info",
+					title: "Ya tienes este sello",
+					text: stamp.name,
+				});
+				return;
+			}
+			setLocal(next.passport);
+			savePassport(next.passport);
+			if (code.kind === "negocio") {
+				// Anonymous count for the city's economy indicator; failing offline is fine.
+				void fetch("/api/pasaporte-visita", {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({ businessCode: code.code }),
+				}).catch(() => undefined);
+			}
+			setResult({
+				tone: "safe",
+				title: "¡Sello nuevo!",
+				text: stamp.reward
+					? `${stamp.name}. Recompensa: ${stamp.reward}.`
+					: stamp.name,
+			});
+		},
+		[local, stored],
+	);
+
+	const scanNotice = (
+		<>
+			{scanning && (
+				<StampScanner onCode={handleCode} onClose={() => setScanning(false)} />
+			)}
+			{result && (
+				<div
+					className={`q-alert q-alert--${result.tone}`}
+					role={result.tone === "alert" ? "alert" : "status"}
+				>
+					<div className="q-alert__body">
+						<p className="q-alert__title">{result.title}</p>
+						<p className="q-alert__text">{result.text}</p>
+					</div>
 				</div>
-			</div>
-		</div>
+			)}
+		</>
 	);
 
 	let body: ReactNode;
@@ -137,7 +203,7 @@ export function PassportView() {
 				onRetry={retry}
 			/>
 		);
-	} else if (state.data.stamps.length === 0) {
+	} else if (!passport || passport.stamps.length === 0) {
 		body = (
 			<>
 				<MenuEmpty
@@ -156,7 +222,7 @@ export function PassportView() {
 			</>
 		);
 	} else {
-		const stamps = [...state.data.stamps].sort((a, b) =>
+		const stamps = [...passport.stamps].sort((a, b) =>
 			b.collectedAt.localeCompare(a.collectedAt),
 		);
 		body = (
@@ -192,7 +258,7 @@ export function PassportView() {
 		);
 	}
 
-	const count = state.status === "ready" ? state.data.stamps.length : null;
+	const count = state.status === "ready" ? (passport?.stamps.length ?? 0) : null;
 
 	return (
 		<MenuShell online={online}>

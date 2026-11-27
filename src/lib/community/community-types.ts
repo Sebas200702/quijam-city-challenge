@@ -227,6 +227,19 @@ export interface ModerationQueueItem {
 	communityReports: number;
 	/** Thread of a reply, to link to it. */
 	threadId: string | null;
+	/** Open appeal from the author, when they asked for a second review. */
+	appeal?: { message: string; createdAt: string } | null;
+}
+
+export type AppealStatus = "open" | "upheld" | "overturned";
+
+/** Content of the signed-in person that was removed, and where its appeal stands. */
+export interface RemovedContentItem {
+	kind: ContentKind;
+	id: string;
+	title: string;
+	/** null: never appealed, so it can still be. */
+	appealStatus: AppealStatus | null;
 }
 
 /** Where the data lives: the shared cloud database, or this device only. */
@@ -253,6 +266,11 @@ export interface CommunityStore {
 	/** Ids of the events the signed-in person registered for. */
 	myRegistrations(): Promise<string[]>;
 	register(eventId: string): Promise<void>;
+	/** Ids of the full events the signed-in person is waiting for. */
+	myWaitlist(): Promise<string[]>;
+	/** Joins the waiting list of a full event; the first in line gets the next free spot. */
+	joinWaitlist(eventId: string): Promise<void>;
+	leaveWaitlist(eventId: string): Promise<void>;
 	unregister(eventId: string): Promise<void>;
 
 	listThreads(query?: ThreadQuery): Promise<ForumThread[]>;
@@ -276,6 +294,10 @@ export interface CommunityStore {
 		id: string,
 		reason: ReportReason,
 	): Promise<void>;
+	/** The person's own removed content, to offer a second review. */
+	listMyRemoved(): Promise<RemovedContentItem[]>;
+	/** Asks the city for a second review of the person's removed content. */
+	appeal(kind: ContentKind, id: string, message: string): Promise<void>;
 	/** Ley 1581: the person can download and delete their data. */
 	exportMyData(): Promise<MyDataExport>;
 	deleteAccount(): Promise<void>;

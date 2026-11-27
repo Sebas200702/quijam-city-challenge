@@ -8,6 +8,11 @@ import type {
 	ModerationLabel,
 	ModerationSource,
 } from "../moderation/moderation-types";
+import { checkAppealMessage } from "../moderation/appeal-rules";
+import {
+	CORROBORATION_WINDOW_HOURS,
+	reportsToEscalate,
+} from "../moderation/corroboration";
 import { triageContent } from "../moderation/triage";
 import {
 	applyTrustPolicy,
@@ -16,8 +21,10 @@ import {
 } from "../moderation/trust-policy";
 import { publishResult, storedStatus } from "./community-mappers";
 import {
+	canJoinWaitlist,
 	filterEvents,
 	filterThreads,
+	isEventFull,
 	registrationBlocker,
 	validateEventInput,
 	validatePostBody,
@@ -26,6 +33,7 @@ import {
 	validateThreadInput,
 } from "./community-rules";
 import type {
+	AppealStatus,
 	CommunityEvent,
 	CommunityStore,
 	CommunityTopic,
@@ -55,6 +63,14 @@ interface DeviceAccount extends Profile {
 	createdAt?: string;
 }
 
+interface DeviceAppeal {
+	kind: ContentKind;
+	contentId: string;
+	message: string;
+	status: AppealStatus;
+	createdAt: string;
+}
+
 interface DeviceReport {
 	kind: ContentKind;
 	contentId: string;
@@ -79,6 +95,9 @@ interface DeviceData {
 	reports?: DeviceReport[];
 	/** Content whose community reports the moderator already closed. */
 	resolvedReports?: string[];
+	appeals?: DeviceAppeal[];
+	/** People waiting for a spot in a full event, in order of arrival. */
+	waitlist?: { eventId: string; userId: string; createdAt: string }[];
 }
 
 function reportCount(data: DeviceData, id: string): number {
@@ -87,6 +106,55 @@ function reportCount(data: DeviceData, id: string): number {
 			.filter((report) => report.contentId === id)
 			.map((report) => report.reporterId),
 	).size;
+}
+
+/** Corroboration (#126) on this device: same rule as the server, over local threads. */
+function corroborateThreads(data: DeviceData, seed: ForumThread) {
+	if (!seed.placeId || seed.triagePriority === "none") return;
+	const toRisk = (t: ForumThread) => ({
+		id: t.id,
+		authorId: t.authorId,
+		placeId: t.placeId,
+		priority: t.triagePriority,
+		createdAt: t.createdAt,
+		resolved: Boolean(data.resolvedReports?.includes(t.id)),
+	});
+	const peers = data.threads.filter(
+		(t) =>
+			t.moderationStatus === "published" &&
+			Date.parse(seed.createdAt) - Date.parse(t.createdAt) <=
+				CORROBORATION_WINDOW_HOURS * 3_600_000,
+	);
+	const ids = new Set(reportsToEscalate(toRisk(seed), peers.map(toRisk)));
+	for (const t of data.threads) {
+		if (ids.has(t.id)) t.triagePriority = "emergency";
+	}
+}
+
+/** A freed spot goes to the first person waiting, in order of arrival. */
+function promoteFromWaitlist(data: DeviceData, event: CommunityEvent) {
+	if (isEventFull(event) || !canJoinWaitlist({ ...event, registeredCount: event.capacity ?? 0 }))
+		return;
+	const next = (data.waitlist ?? [])
+		.filter((item) => item.eventId === event.id)
+		.sort((a, b) => a.createdAt.localeCompare(b.createdAt))[0];
+	if (!next) return;
+	data.waitlist = data.waitlist?.filter((item) => item !== next);
+	data.registrations.push({ eventId: event.id, userId: next.userId });
+	event.registeredCount += 1;
+}
+
+function hasOpenAppeal(data: DeviceData, id: string): boolean {
+	return Boolean(
+		data.appeals?.some((a) => a.contentId === id && a.status === "open"),
+	);
+}
+
+function openAppealOf(data: DeviceData, id: string) {
+	const found = data.appeals?.find(
+		(a) => a.contentId === id && a.status === "open",
+	);
+	return found ? { message: found.message, createdAt: found.createdAt } : null;
 }
 
 function triageOf(data: DeviceData, id: string) {
@@ -401,6 +469,60 @@ export function createDeviceCommunityStore(): CommunityStore {
 			if (blocker) throw new Error(blocker);
 			data.registrations.push({ eventId, userId: account.id });
 			event.registeredCount += 1;
+			data.waitlist = data.waitlist?.filter(
+				(item) => !(item.eventId === eventId && item.userId === account.id),
+			);
+			save(data);
+			notify("events");
+		},
+
+		async myWaitlist() {
+			const data = load();
+			return (data.waitlist ?? [])
+				.filter((item) => item.userId === data.sessionId)
+				.map((item) => item.eventId);
+		},
+
+		async joinWaitlist(eventId) {
+			const data = load();
+			const account = requireAccount(data);
+			const event = data.events.find((item) => item.id === eventId);
+			if (!event || !canJoinWaitlist(event)) {
+				throw new Error(
+					event && !isEventFull(event)
+						? "Todavía hay cupos: inscríbete directamente."
+						: "Este evento no está disponible para inscripciones.",
+				);
+			}
+			if (
+				data.registrations.some(
+					(item) => item.eventId === eventId && item.userId === account.id,
+				)
+			)
+				throw new Error("Ya estás inscrito en este evento.");
+			const waitlist = data.waitlist ?? [];
+			if (
+				!waitlist.some(
+					(item) => item.eventId === eventId && item.userId === account.id,
+				)
+			) {
+				waitlist.push({
+					eventId,
+					userId: account.id,
+					createdAt: new Date().toISOString(),
+				});
+			}
+			data.waitlist = waitlist;
+			save(data);
+			notify("events");
+		},
+
+		async leaveWaitlist(eventId) {
+			const data = load();
+			const account = requireAccount(data);
+			data.waitlist = data.waitlist?.filter(
+				(item) => !(item.eventId === eventId && item.userId === account.id),
+			);
 			save(data);
 			notify("events");
 		},
@@ -413,8 +535,10 @@ export function createDeviceCommunityStore(): CommunityStore {
 				(item) => !(item.eventId === eventId && item.userId === account.id),
 			);
 			const event = data.events.find((item) => item.id === eventId);
-			if (event && data.registrations.length < before)
+			if (event && data.registrations.length < before) {
 				event.registeredCount = Math.max(event.registeredCount - 1, 0);
+				promoteFromWaitlist(data, event);
+			}
 			save(data);
 			notify("events");
 		},
@@ -463,6 +587,7 @@ export function createDeviceCommunityStore(): CommunityStore {
 			};
 			data.threads.push(thread);
 			rememberTriage(data, thread.id, decision);
+			if (status === "published") corroborateThreads(data, thread);
 			save(data);
 			notify("forum");
 			return publishResult(decision, thread);
@@ -524,6 +649,7 @@ export function createDeviceCommunityStore(): CommunityStore {
 				triagePriority: string;
 			}) =>
 				item.moderationStatus === "held" ||
+				hasOpenAppeal(data, item.id) ||
 				(item.moderationStatus === "published" &&
 					item.triagePriority !== "none") ||
 				(item.moderationStatus === "published" &&
@@ -541,6 +667,7 @@ export function createDeviceCommunityStore(): CommunityStore {
 					...triageOf(data, event.id),
 					priority: event.triagePriority,
 					communityReports: reportsOf(event.id),
+					appeal: openAppealOf(data, event.id),
 					threadId: null,
 				})),
 				...data.threads.filter(needsAction).map((thread) => ({
@@ -554,6 +681,7 @@ export function createDeviceCommunityStore(): CommunityStore {
 					...triageOf(data, thread.id),
 					priority: thread.triagePriority,
 					communityReports: reportsOf(thread.id),
+					appeal: openAppealOf(data, thread.id),
 					threadId: thread.id,
 				})),
 				...data.posts.filter(needsAction).map((post) => ({
@@ -567,6 +695,7 @@ export function createDeviceCommunityStore(): CommunityStore {
 					...triageOf(data, post.id),
 					priority: post.triagePriority,
 					communityReports: reportsOf(post.id),
+					appeal: openAppealOf(data, post.id),
 					threadId: post.threadId,
 				})),
 			];
@@ -594,6 +723,10 @@ export function createDeviceCommunityStore(): CommunityStore {
 			} else {
 				const wasPublished = item.moderationStatus === "published";
 				item.moderationStatus = action === "approve" ? "published" : "removed";
+				for (const appeal of data.appeals ?? []) {
+					if (appeal.contentId === id && appeal.status === "open")
+						appeal.status = action === "approve" ? "overturned" : "upheld";
+				}
 				data.moderation = {
 					...data.moderation,
 					[id]: { ...triageOf(data, id), source: "moderator" },
@@ -611,6 +744,73 @@ export function createDeviceCommunityStore(): CommunityStore {
 						thread.replyCount = Math.max(thread.replyCount - 1, 0);
 				}
 			}
+			save(data);
+			notify(kind === "event" ? "events" : "forum");
+		},
+
+		async listMyRemoved() {
+			const data = load();
+			const account = currentAccount(data);
+			if (!account) return [];
+			const appealOf = (id: string) =>
+				data.appeals?.find((a) => a.contentId === id)?.status ?? null;
+			const item = (kind: ContentKind, id: string, title: string) => ({
+				kind,
+				id,
+				title: title.slice(0, 80),
+				appealStatus: appealOf(id),
+			});
+			return [
+				...data.events
+					.filter(
+						(e) => e.organizerId === account.id && e.moderationStatus === "removed",
+					)
+					.map((e) => item("event", e.id, e.title)),
+				...data.threads
+					.filter(
+						(t) => t.authorId === account.id && t.moderationStatus === "removed",
+					)
+					.map((t) => item("thread", t.id, t.title)),
+				...data.posts
+					.filter(
+						(p) => p.authorId === account.id && p.moderationStatus === "removed",
+					)
+					.map((p) => item("post", p.id, p.body)),
+			];
+		},
+
+		async appeal(kind, id, message) {
+			const check = checkAppealMessage(message);
+			if (!check.ok) throw new Error(check.error);
+			const data = load();
+			const account = requireAccount(data);
+			const list: (CommunityEvent | ForumThread | ForumPost)[] =
+				kind === "event"
+					? data.events
+					: kind === "thread"
+						? data.threads
+						: data.posts;
+			const entry = list.find((candidate) => candidate.id === id);
+			const owner =
+				kind === "event"
+					? (entry as CommunityEvent | undefined)?.organizerId
+					: (entry as ForumThread | ForumPost | undefined)?.authorId;
+			if (!entry || owner !== account.id)
+				throw new Error("Solo quien lo publicó puede apelar.");
+			if (entry.moderationStatus !== "removed")
+				throw new Error("Solo se apela contenido retirado.");
+			if (data.appeals?.some((a) => a.contentId === id))
+				throw new Error("Ya pediste una segunda revisión de esto.");
+			data.appeals = [
+				...(data.appeals ?? []),
+				{
+					kind,
+					contentId: id,
+					message: check.message,
+					status: "open",
+					createdAt: new Date().toISOString(),
+				},
+			];
 			save(data);
 			notify(kind === "event" ? "events" : "forum");
 		},

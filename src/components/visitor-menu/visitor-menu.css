@@ -279,3 +279,35 @@
 		grid-template-columns: repeat(4, minmax(0, 1fr));
 	}
 }
+
+.vm-scanner {
+	display: grid;
+	gap: 12px;
+	padding: 16px;
+	border: 1px solid var(--q-border, #d8d8d8);
+	border-radius: 12px;
+	margin-block: 16px;
+}
+.vm-scanner__head {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+.vm-scanner__head .q-btn {
+	min-width: 44px;
+	min-height: 44px;
+}
+.vm-scanner__video {
+	width: 100%;
+	aspect-ratio: 1;
+	object-fit: cover;
+	border-radius: 8px;
+}
+.vm-scanner__form {
+	display: grid;
+	gap: 8px;
+}
+.vm-scanner__form .q-btn,
+.vm-scanner__form .q-input {
+	min-height: 44px;
+}

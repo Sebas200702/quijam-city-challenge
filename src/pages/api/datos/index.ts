@@ -10,7 +10,7 @@ export const prerender = false;
  * live record counts, and JSON/CSV download endpoints. Never exposes PII.
  */
 export const GET: APIRoute = async (context) => {
-	const limited = guardRequest(context, "open-data");
+	const limited = await guardRequest(context, "open-data");
 	if (limited) return limited;
 
 	try {

@@ -163,16 +163,18 @@ function ModerationQueue({ profileId }: { profileId: string }) {
 								{t.forum.moderation.allClearHint}
 							</EmptyState>
 						);
-					const emergency = visible.filter(
+					const appeals = visible.filter((item) => item.appeal);
+					const rest = visible.filter((item) => !item.appeal);
+					const emergency = rest.filter(
 						(item) => item.priority === "emergency",
 					);
-					const city = visible.filter(
+					const city = rest.filter(
 						(item) => item.priority === "city_attention",
 					);
-					const held = visible.filter(
+					const held = rest.filter(
 						(item) => item.priority === "none" && item.status === "held",
 					);
-					const reported = visible.filter(
+					const reported = rest.filter(
 						(item) =>
 							item.priority === "none" &&
 							item.status === "published" &&
@@ -180,6 +182,16 @@ function ModerationQueue({ profileId }: { profileId: string }) {
 					);
 					return (
 						<>
+							{appeals.length > 0 && (
+								<QueueSection
+									id="appeals"
+									title={t.forum.moderation.appealsTitle}
+									hint={t.forum.moderation.appealsHint}
+									items={appeals}
+									pending={pending}
+									onAct={act}
+								/>
+							)}
 							<QueueSection
 								id="urgent"
 								title={t.forum.moderation.urgentTitle}
@@ -298,6 +310,9 @@ function QueueItem({
 				) : (
 					<span className="q-badge q-badge--optimal">{m.published}</span>
 				)}
+				{item.appeal && (
+					<span className="q-badge q-badge--high">{m.appealBadge}</span>
+				)}
 				{item.communityReports > 0 && (
 					<span className="q-badge q-badge--alert">
 						{m.reportedBy(item.communityReports)}
@@ -308,6 +323,11 @@ function QueueItem({
 			<p className="q-p q-muted line-clamp-3 whitespace-pre-line break-words">
 				{item.body}
 			</p>
+			{item.appeal && (
+				<p className="q-p whitespace-pre-line break-words rounded-[var(--radius-md)] bg-[var(--bg-soft)] p-3">
+					<b>{m.appealSays}</b> {item.appeal.message}
+				</p>
+			)}
 			{labels.length > 0 && (
 				<div className="flex flex-wrap gap-1.5">
 					{labels.map((label) => (
@@ -326,7 +346,16 @@ function QueueItem({
 				· {m.decidedBy} {m.sources[item.source]}
 			</p>
 			<div className="flex flex-wrap gap-2">
-				{held ? (
+				{item.appeal ? (
+					<button
+						type="button"
+						className="q-btn q-btn--primary"
+						disabled={busy}
+						onClick={() => onAct(item, "approve")}
+					>
+						{m.restore}
+					</button>
+				) : held ? (
 					<button
 						type="button"
 						className="q-btn q-btn--primary"
@@ -361,7 +390,7 @@ function QueueItem({
 					disabled={busy}
 					onClick={() => onAct(item, "remove")}
 				>
-					{m.remove}
+					{item.appeal ? m.keepRemoved : m.remove}
 				</button>
 				{href && (
 					<a href={href} className="q-btn q-btn--ghost">

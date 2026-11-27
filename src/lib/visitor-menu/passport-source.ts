@@ -44,10 +44,18 @@ export function parsePassport(raw: string | null): Passport {
 	return { stamps };
 }
 
-/**
- * The visitor's passport. Stamps live on this device until issue #45 adds the
- * QR flow and the server source; then only this function changes.
- */
+/** Save the passport on this device. Returns false if storage is blocked or full. */
+export function savePassport(passport: Passport): boolean {
+	if (typeof window === "undefined") return false;
+	try {
+		window.localStorage.setItem(PASSPORT_STORAGE_KEY, JSON.stringify(passport));
+		return true;
+	} catch {
+		return false;
+	}
+}
+
+/** The visitor's passport. Stamps live on this device; no account is needed. */
 export async function loadPassport(): Promise<Passport> {
 	if (typeof window === "undefined") return { stamps: [] };
 	return parsePassport(window.localStorage.getItem(PASSPORT_STORAGE_KEY));

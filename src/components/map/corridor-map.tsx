@@ -40,6 +40,7 @@ import { DESTINATIONS, type DestinationKey } from "../../lib/trip/trip-planner";
 import { GuidePanel } from "../guide/guide-panel";
 import { NoticeSlot } from "../notices/notice-slot";
 import "./corridor-map.css";
+import { HostArrivalNotice } from "../host/host-arrival-notice";
 import { BusinessExtras } from "./business-extras";
 import { DetailCard } from "./detail-card";
 import { useHeatLayer } from "./heat-layer";
@@ -640,6 +641,7 @@ export default function CorridorMap({ data, source }: CorridorMapProps) {
 					}}
 				/>
 			</div>
+			<HostArrivalNotice assignment={city.hostAssignment} />
 		</div>
 	);
 }

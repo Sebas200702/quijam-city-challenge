@@ -48,6 +48,11 @@ async function signUp(store: CommunityStore, name: string) {
 
 let store: CommunityStore;
 
+async function signInAs(name: string) {
+	await store.signOut();
+	await store.signIn(`${name.toLowerCase()}@example.com`, "secreto123");
+}
+
 beforeEach(() => {
 	vi.stubGlobal("localStorage", memoryStorage());
 	// Offline: the store falls back to the hard rules in the browser.
@@ -142,5 +147,163 @@ describe("device store trust and safety", () => {
 		await expect(
 			store.signIn("ana@example.com", "secreto123"),
 		).rejects.toThrow();
+	});
+});
+
+describe("device store appeals", () => {
+	async function removedThread() {
+		await signUp(store, "Ana");
+		const { record } = await store.createThread({
+			title: "Venta de garaje",
+			body: "Este sábado en mi cuadra",
+			category: "neighborhood",
+			placeId: null,
+			eventId: null,
+		});
+		const id = record?.id ?? "";
+		await store.moderate("thread", id, "remove");
+		return id;
+	}
+
+	it("lets the author appeal removed content once, and puts it in the queue", async () => {
+		const id = await removedThread();
+		expect(await store.listMyRemoved()).toMatchObject([
+			{ kind: "thread", id, appealStatus: null },
+		]);
+		await expect(store.appeal("thread", id, "corto")).rejects.toThrow(/10/);
+
+		await store.appeal("thread", id, "Era un aviso del barrio, no spam.");
+		await expect(
+			store.appeal("thread", id, "Otra vez, por favor revisen."),
+		).rejects.toThrow(/Ya pediste/);
+
+		const queue = await store.listModerationQueue();
+		expect(queue.find((item) => item.id === id)?.appeal?.message).toMatch(
+			/aviso del barrio/,
+		);
+	});
+
+	it("closes the appeal when the city decides", async () => {
+		const id = await removedThread();
+		await store.appeal("thread", id, "Era un aviso del barrio, no spam.");
+		await store.moderate("thread", id, "approve");
+		expect((await store.listMyRemoved()).length).toBe(0);
+		expect((await store.listModerationQueue()).some((i) => i.id === id)).toBe(
+			false,
+		);
+	});
+
+	it("keeps it final when the city upholds the removal", async () => {
+		const id = await removedThread();
+		await store.appeal("thread", id, "Era un aviso del barrio, no spam.");
+		await store.moderate("thread", id, "remove");
+		expect(await store.listMyRemoved()).toMatchObject([
+			{ appealStatus: "upheld" },
+		]);
+		expect((await store.listModerationQueue()).some((i) => i.id === id)).toBe(
+			false,
+		);
+	});
+
+	it("does not let someone else appeal", async () => {
+		const id = await removedThread();
+		await signUp(store, "Beto");
+		await expect(
+			store.appeal("thread", id, "Quiero apelar lo de otra persona."),
+		).rejects.toThrow(/quien lo publicó/);
+	});
+});
+
+describe("device store corroboration", () => {
+	const hueco = (placeId: string | null) => ({
+		title: "Hueco grande en la calle",
+		body: "Hay un hueco peligroso y los carros frenan de golpe.",
+		category: "mobility" as const,
+		placeId,
+		eventId: null,
+	});
+
+	it("raises risk reports to emergency when three different people report the same place", async () => {
+		const ids: string[] = [];
+		for (const name of ["Ana", "Beto"]) {
+			await signUp(store, name);
+			const { record } = await store.createThread(
+				hueco("place-gran-malecon"),
+			);
+			ids.push(record?.id ?? "");
+		}
+		let queue = await store.listModerationQueue();
+		expect(queue.every((item) => item.priority === "city_attention")).toBe(
+			true,
+		);
+
+		await signUp(store, "Caro");
+		const { record } = await store.createThread(hueco("place-gran-malecon"));
+		ids.push(record?.id ?? "");
+		queue = await store.listModerationQueue();
+		for (const id of ids) {
+			expect(queue.find((item) => item.id === id)?.priority).toBe("emergency");
+		}
+	});
+
+	it("does not corroborate reports at different places", async () => {
+		for (const [name, place] of [
+			["Ana", "place-gran-malecon"],
+			["Beto", "place-bocas-de-ceniza"],
+			["Caro", null],
+		] as const) {
+			await signUp(store, name);
+			await store.createThread(hueco(place));
+		}
+		const queue = await store.listModerationQueue();
+		expect(queue.some((item) => item.priority === "emergency")).toBe(false);
+	});
+});
+
+describe("device store waiting list", () => {
+	async function fullEvent() {
+		await signUp(store, "Ana");
+		const result = await store.createEvent(eventInput({ capacity: 1 }));
+		const id = result.record?.id ?? "";
+		await store.moderate("event", id, "approve");
+		await signUp(store, "Beto");
+		await store.register(id);
+		return id;
+	}
+
+	it("only lets people wait when the event is full", async () => {
+		await signUp(store, "Ana");
+		const result = await store.createEvent(eventInput({ capacity: 5 }));
+		const id = result.record?.id ?? "";
+		await store.moderate("event", id, "approve");
+		await expect(store.joinWaitlist(id)).rejects.toThrow(/Todavía hay cupos/);
+	});
+
+	it("gives the freed spot to the first person waiting", async () => {
+		const id = await fullEvent();
+		await signUp(store, "Caro");
+		await expect(store.register(id)).rejects.toThrow(/cupos/);
+		await store.joinWaitlist(id);
+		await signUp(store, "Dani");
+		await store.joinWaitlist(id);
+		expect(await store.myWaitlist()).toEqual([id]);
+
+		await signInAs("Beto");
+		await store.unregister(id);
+
+		await signInAs("Caro");
+		expect(await store.myRegistrations()).toEqual([id]);
+		expect(await store.myWaitlist()).toEqual([]);
+		await signInAs("Dani");
+		expect(await store.myWaitlist()).toEqual([id]);
+		expect((await store.getEvent(id))?.registeredCount).toBe(1);
+	});
+
+	it("lets a person leave the waiting list", async () => {
+		const id = await fullEvent();
+		await signUp(store, "Caro");
+		await store.joinWaitlist(id);
+		await store.leaveWaitlist(id);
+		expect(await store.myWaitlist()).toEqual([]);
 	});
 });

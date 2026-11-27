@@ -36,7 +36,7 @@ function json(body: unknown, status: number): Response {
  * assistant-stream.ts); otherwise it is one JSON response.
  */
 export const POST: APIRoute = async (context) => {
-	const limited = guardRequest(context, "assistant");
+	const limited = await guardRequest(context, "assistant");
 	if (limited) return limited;
 	const { request } = context;
 	const raw = await request.text();
