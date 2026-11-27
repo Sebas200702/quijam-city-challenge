@@ -13,7 +13,13 @@ const PIN_CLASS: Record<StatusTone, string> = {
 	neutral: "q-pin--event corridor-pin--muted",
 };
 
-export type PinGlyph = "transit" | "star" | "alert" | "water" | "store";
+export type PinGlyph =
+	| "transit"
+	| "star"
+	| "alert"
+	| "water"
+	| "store"
+	| "place";
 
 const svg = (paths: string, size = 16) =>
 	`<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round">${paths}</svg>`;
@@ -31,6 +37,10 @@ const GLYPHS: Record<PinGlyph, string> = {
 	// Lucide "droplet"
 	water: svg(
 		'<path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/>',
+	),
+	// Lucide "map-pin": a place of the catalog (park, nature, culture…).
+	place: svg(
+		'<path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/>',
 	),
 	// Lucide "store"
 	store: svg(
@@ -136,4 +146,24 @@ export function setMarkerSelected(marker: L.Marker, selected: boolean) {
 	if (selected) element?.setAttribute("aria-current", "true");
 	else element?.removeAttribute("aria-current");
 	marker.setZIndexOffset(selected ? 1000 : 0);
+}
+
+/** A group of pins too close to tell apart: its count, ringed in its layer's colour. */
+export function clusterIcon({
+	count,
+	tone,
+}: {
+	count: number;
+	tone: StatusTone;
+}): L.DivIcon {
+	const cluster = document.createElement("span");
+	cluster.className = `corridor-cluster corridor-cluster--${tone}`;
+	cluster.setAttribute("aria-hidden", "true");
+	cluster.textContent = String(count);
+	return L.divIcon({
+		className: "corridor-cluster-icon",
+		html: cluster,
+		iconSize: [44, 44],
+		iconAnchor: [22, 22],
+	});
 }
