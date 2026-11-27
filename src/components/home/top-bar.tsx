@@ -1,3 +1,4 @@
+import { LanguageSwitcher } from "./language-switcher";
 import type { NavSection } from "./nav-sections";
 import { QuillartLogo } from "./quillart-logo";
 import { TopNav } from "./top-nav";
@@ -13,6 +14,7 @@ export function TopBar({ current, aiHref }: TopBarProps) {
 		<header className="hidden items-center gap-6 border-b border-[var(--line)] bg-[var(--surface)] px-8 py-2 lg:flex">
 			<QuillartLogo />
 			<TopNav current={current} aiHref={aiHref} />
+			<LanguageSwitcher />
 		</header>
 	);
 }

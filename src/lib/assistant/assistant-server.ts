@@ -2,6 +2,7 @@
 // pick one specialized agent, runs it with Gemini (or the local fallback) and
 // returns tool calls with ids for the browser to run and confirm.
 
+import { isLanguage } from "../i18n/languages";
 import type { OpenJevClient } from "../openjev/openjev-types";
 import {
 	AGENT_IDS,
@@ -187,6 +188,7 @@ function parseContext(value: unknown): AssistantContext {
 		),
 		isVisitor,
 		fromPath,
+		...(isLanguage(value.language) ? { language: value.language } : {}),
 	};
 }
 

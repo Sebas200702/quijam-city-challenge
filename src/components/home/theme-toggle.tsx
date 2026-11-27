@@ -1,5 +1,6 @@
 import { Moon, Sun } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useT } from "../../lib/i18n/use-language";
 
 type Theme = "light" | "dark";
 
@@ -12,6 +13,7 @@ function readCurrentTheme(): Theme {
 /** Switches the page between the light (tourist) and dark theme. */
 export function ThemeToggle() {
 	const [theme, setTheme] = useState<Theme>("light");
+	const t = useT();
 
 	useEffect(() => {
 		setTheme(readCurrentTheme());
@@ -28,8 +30,7 @@ export function ThemeToggle() {
 		setTheme(next);
 	}
 
-	const label =
-		theme === "light" ? "Cambiar a tema oscuro" : "Cambiar a tema claro";
+	const label = theme === "light" ? t.theme.toDark : t.theme.toLight;
 
 	return (
 		<button type="button" className="q-fab" aria-label={label} onClick={toggle}>

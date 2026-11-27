@@ -31,6 +31,13 @@ const { title, theme = "light" } = Astro.props;
 					document.documentElement.dataset.theme = theme;
 				}
 			} catch {}
+			// Same for the interface language (the page itself is served in Spanish).
+			try {
+				const lang = localStorage.getItem("quillart-lang");
+				if (["es", "en", "pt", "fr"].includes(lang)) {
+					document.documentElement.lang = lang;
+				}
+			} catch {}
 		</script>
 	</head>
 	<body class="q-root min-h-dvh bg-bg text-ink antialiased">

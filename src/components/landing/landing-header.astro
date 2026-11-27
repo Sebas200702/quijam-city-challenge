@@ -1,5 +1,6 @@
 ---
 // Top bar of the landing: brand, main sections and the way into Quillart AI.
+import { LanguageSwitcher } from "../home/language-switcher";
 import { ThemeToggle } from "../home/theme-toggle";
 
 const links = [
@@ -33,6 +34,7 @@ const links = [
 			}
 		</ul>
 	</nav>
+	<LanguageSwitcher client:load />
 	<ThemeToggle client:load />
 	<a href="/inicio" class="q-btn q-btn--primary q-btn--sm min-h-11">
 		Abrir Quillart AI

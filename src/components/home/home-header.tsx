@@ -1,3 +1,4 @@
+import { LanguageSwitcher } from "./language-switcher";
 import type { NavSection } from "./nav-sections";
 import { QuillartLogo } from "./quillart-logo";
 import { ThemeToggle } from "./theme-toggle";
@@ -17,6 +18,7 @@ export function HomeHeader({ weatherLabel, current, aiHref }: HomeHeaderProps) {
 			<QuillartLogo />
 			<TopNav current={current} aiHref={aiHref} />
 			{weatherLabel && <WeatherBadge label={weatherLabel} />}
+			<LanguageSwitcher />
 			<ThemeToggle />
 		</header>
 	);

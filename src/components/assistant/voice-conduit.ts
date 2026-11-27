@@ -1,10 +1,15 @@
 // Voice is only a conduit for Quillart AI: the browser's speech-to-text in
-// (es-CO) and text-to-speech out. Text always works; when the browser has no
+// and text-to-speech out, in the language chosen in the app (es, en, pt, fr). Text always works; when the browser has no
 // support, the hook says so and the chat hides the voice controls.
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { VOICE_LOCALES } from "../../lib/i18n/languages";
+import { getLanguage } from "../../lib/i18n/use-language";
 
-const LANG = "es-CO";
+/** BCP 47 tag of the chosen interface language (es-CO, en-US, pt-BR, fr-FR). */
+function voiceLocale(): string {
+	return VOICE_LOCALES[getLanguage()];
+}
 const SPEAK_KEY = "quillart-read-aloud";
 
 interface RecognitionAlternative {
@@ -49,15 +54,18 @@ function canSpeak(): boolean {
 	return typeof window !== "undefined" && "speechSynthesis" in window;
 }
 
-/** A Spanish voice, preferring Colombian, then Latin American, then any. */
-function spanishVoice(): SpeechSynthesisVoice | null {
+/** A voice for the chosen language: the exact locale first (Colombian Spanish for es), then any of the same language. */
+function preferredVoice(locale: string): SpeechSynthesisVoice | null {
 	const voices = window.speechSynthesis.getVoices();
+	const language = locale.slice(0, 2).toLowerCase();
 	return (
-		voices.find((voice) => voice.lang === "es-CO") ??
-		voices.find((voice) =>
-			/^es[-_](US|MX|419|AR|CL|PE|VE)/i.test(voice.lang),
-		) ??
-		voices.find((voice) => voice.lang.toLowerCase().startsWith("es")) ??
+		voices.find((voice) => voice.lang.replace("_", "-") === locale) ??
+		(language === "es"
+			? voices.find((voice) =>
+					/^es[-_](US|MX|419|AR|CL|PE|VE)/i.test(voice.lang),
+				)
+			: undefined) ??
+		voices.find((voice) => voice.lang.toLowerCase().startsWith(language)) ??
 		null
 	);
 }
@@ -76,8 +84,9 @@ export function speak(text: string): void {
 	const clean = speakable(text);
 	if (!clean) return;
 	const utterance = new SpeechSynthesisUtterance(clean);
-	utterance.lang = LANG;
-	const voice = spanishVoice();
+	const locale = voiceLocale();
+	utterance.lang = locale;
+	const voice = preferredVoice(locale);
 	if (voice) utterance.voice = voice;
 	window.speechSynthesis.cancel();
 	window.speechSynthesis.speak(utterance);
@@ -159,7 +168,7 @@ export function useVoiceConduit(onFinal: (text: string) => void): VoiceConduit {
 		stopSpeaking();
 		recognition.current?.abort();
 		const instance = new Constructor();
-		instance.lang = LANG;
+		instance.lang = voiceLocale();
 		instance.continuous = false;
 		instance.interimResults = true;
 		instance.maxAlternatives = 1;

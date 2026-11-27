@@ -150,6 +150,21 @@ describe("parseAssistantRequest", () => {
 			expect((error as AssistantRequestError).status).toBe(400);
 		}
 	});
+
+	it("keeps the chosen interface language and drops unsupported ones", () => {
+		const body = (language: unknown) => ({
+			messages: [{ role: "user", text: "hola" }],
+			context: { ...context, language },
+		});
+		expect(parseAssistantRequest(body("fr")).context.language).toBe("fr");
+		expect(parseAssistantRequest(body("de")).context.language).toBeUndefined();
+		expect(
+			parseAssistantRequest({
+				messages: [{ role: "user", text: "hola" }],
+				context,
+			}).context.language,
+		).toBeUndefined();
+	});
 });
 
 describe("answer without Gemini", () => {

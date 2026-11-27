@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { BottomNav } from "../home/bottom-nav";
+import { LanguageSwitcher } from "../home/language-switcher";
 import type { NavSection } from "../home/nav-sections";
 import { QuillartLogo } from "../home/quillart-logo";
 import { ThemeToggle } from "../home/theme-toggle";
@@ -30,6 +31,7 @@ export function CommunityShell({
 					<QuillartLogo />
 				</a>
 				<TopNav current={current} aiHref={aiHref} />
+				<LanguageSwitcher />
 				<ThemeToggle />
 			</header>
 			{store.mode === "device" && (
