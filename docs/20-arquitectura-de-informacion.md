@@ -259,8 +259,8 @@ type CityEvent =
 
 Reglas:
 
-- Los tipos viven en `src/lib/city-events/city-events-types.ts` (lo crea #41). Nadie los copia.
-- Todos escuchan con un solo hook: `src/lib/city-events/use-city-events.ts`.
+- Los tipos ya viven en `src/lib/city-events/city-events-types.ts` (llegó con #66). Nadie los copia.
+- Todos escuchan con el hook que ya existe: `useCityState()` en `src/lib/city-events/use-city-state.ts`, sobre `connectCityEvents()` de `city-events-channel.ts`.
 - El canal es privado (Realtime Authorization): todos leen; solo el servidor y los roles `presenter` y `city` envían (ver 5.3).
 
 ### 4.2 Propuestas para agregar a la épica
@@ -343,7 +343,7 @@ Una migración nueva: `supabase/migrations/<fecha>_roles_host_presenter.sql`.
 
 | Issue | Construye | Archivos que crea |
 |---|---|---|
-| #41 Presentador | Tipos y canal, panel, llave de demo, reiniciar | `src/lib/city-events/city-events-types.ts`, `src/lib/city-events/city-events-channel.ts`, `src/lib/city-events/use-city-events.ts`, `src/pages/presentador/index.astro`, `src/pages/presentador/entrar.astro`, `src/pages/api/presentador/session.ts`, `src/pages/api/presentador/events.ts`, `src/components/presenter/presenter-panel.tsx` |
+| #41 Presentador | Tipos y canal, panel, llave de demo, reiniciar | `src/lib/city-events/*` (ya existe, se reutiliza), `src/pages/presentador/index.astro`, `src/pages/presentador/entrar.astro`, `src/pages/api/presentador/session.ts`, `src/pages/api/presentador/events.ts`, `src/components/presenter/presenter-panel.tsx` |
 | #56 (este, fase 2) | Roles y guardia | `src/lib/auth/auth-types.ts`, `src/lib/auth/role-routes.ts`, `src/middleware.ts`, `src/lib/supabase-server.ts`, migración de roles |
 | #42 Simulador | Capa de multitudes en el Centro de Mando | `src/components/city/crowd-simulator.tsx`, `src/lib/crowd/crowd-sim.ts` |
 | #43 QR del jurado | QR y contador de presencia | `src/components/presenter/jury-qr.tsx`, `src/lib/city-events/presence.ts` |

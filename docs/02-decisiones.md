@@ -141,7 +141,7 @@ Base: la asignación hecha por Sebastián en el tablero. Se completaron los issu
 
 ## Arquitectura de información y roles (26 nov 2026)
 
-Ver [17-arquitectura-de-informacion.md](17-arquitectura-de-informacion.md). Issue #56.
+Ver [20-arquitectura-de-informacion.md](20-arquitectura-de-informacion.md). Issue #56.
 
 - **Cinco superficies separadas:** visitante (`/`), vendedor (`/vendedor`), anfitrión (`/anfitrion`), ciudad (`/ciudad`) y presentador (`/presentador`). No hay menú que cruce de una a otra.
 - **Tema:** claro en las tres apps de celular (se usan en la calle); oscuro en ciudad y presentador.
