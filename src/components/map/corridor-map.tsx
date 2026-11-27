@@ -32,12 +32,15 @@ import type {
 	CorridorData,
 	CorridorDataSource,
 } from "../../lib/corridor/corridor-types";
+import { coolPoints } from "../../lib/corridor/heat-reference";
 import { useT } from "../../lib/i18n/use-language";
 import { DESTINATIONS, type DestinationKey } from "../../lib/trip/trip-planner";
 import { GuidePanel } from "../guide/guide-panel";
 import "./corridor-map.css";
 import { DetailCard } from "./detail-card";
 import { FloodAlertBanner } from "./flood-alert-banner";
+import { useHeatLayer } from "./heat-layer";
+import { HeatChip, HeatLegend, HeatNote } from "./heat-ui";
 import { MapHeader, type Theme } from "./map-header";
 import {
 	buildCorridorLayers,
@@ -158,6 +161,9 @@ export default function CorridorMap({
 		floodZones: true,
 		businesses: true,
 	});
+	/** "Calor y sombra" (#46): off until the visitor turns it on. */
+	const [heatOn, setHeatOn] = useState(false);
+	const coolCount = useMemo(() => coolPoints(data.stops).length, [data.stops]);
 
 	const stops = useMemo(() => orderedStops(data.stops), [data.stops]);
 	const { state: city, lastEvent, publish } = useCityState();
@@ -225,6 +231,8 @@ export default function CorridorMap({
 			tileLayerRef.current = null;
 		};
 	}, [data]);
+
+	useHeatLayer(mapRef, data, heatOn, t);
 
 	useEffect(() => {
 		const update = () => setOnline(navigator.onLine);
@@ -395,12 +403,15 @@ export default function CorridorMap({
 			/>
 
 			{/* The card below already carries the one "Datos de referencia" tag (rule 9). */}
-			{query.accessibleMode && (
+			{(query.accessibleMode || heatOn) && (
 				<div className="corridor-maptags">
-					<span className="q-badge q-badge--optimal corridor-maptags__badge">
-						<Accessibility size={14} strokeWidth={1.75} aria-hidden="true" />
-						{t.accessibleMode}
-					</span>
+					{query.accessibleMode && (
+						<span className="q-badge q-badge--optimal corridor-maptags__badge">
+							<Accessibility size={14} strokeWidth={1.75} aria-hidden="true" />
+							{t.accessibleMode}
+						</span>
+					)}
+					{heatOn && <HeatNote />}
 				</div>
 			)}
 
@@ -417,7 +428,13 @@ export default function CorridorMap({
 						businesses: data.businesses.length,
 					}}
 					onToggle={toggleLayer}
-				/>
+				>
+					<HeatChip
+						on={heatOn}
+						count={coolCount}
+						onToggle={() => setHeatOn((on) => !on)}
+					/>
+				</MapHeader>
 				<button
 					type="button"
 					className="q-btn q-btn--primary corridor-guide-button"
@@ -600,6 +617,7 @@ function MapLegend({ open, onClose }: { open: boolean; onClose: () => void }) {
 					</li>
 				))}
 			</ul>
+			<HeatLegend />
 		</section>
 	);
 }
