@@ -11,7 +11,7 @@ const linkClass = (active: boolean) =>
 	`inline-flex min-h-11 items-center gap-2 rounded-full px-4 text-[15px] font-semibold no-underline ${
 		active
 			? "bg-[var(--line)] text-[var(--ink)]"
-			: "bg-transparent text-[var(--ink-muted)] hover:text-[var(--ink)]"
+			: "bg-transparent text-[var(--ink-muted)] lg:hover:text-[var(--ink)]"
 	}`;
 
 /** Desktop navigation (hidden on small screens, where BottomNav takes over). */

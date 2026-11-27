@@ -99,11 +99,11 @@ svg.q-star-svg polygon { fill: currentColor; }
 .q-btn--icon { width: 48px; padding: 0; }
 .q-btn--primary { background: var(--action); color: var(--on-action); box-shadow: var(--action-glow); }
 .q-btn--secondary { background: var(--line); color: var(--ink); }
-.q-btn--secondary:hover:not(:disabled) { background: var(--surface-raised); box-shadow: var(--shadow-card); }
+@media (min-width: 1024px) { .q-btn--secondary:hover:not(:disabled) { background: var(--surface-raised); box-shadow: var(--shadow-card); } }
 .q-btn--alert { background: var(--red); color: var(--on-red); }
-.q-btn--alert:hover:not(:disabled) { box-shadow: var(--glow-red); }
+@media (min-width: 1024px) { .q-btn--alert:hover:not(:disabled) { box-shadow: var(--glow-red); } }
 .q-btn--ghost { background: transparent; color: var(--ink-muted); }
-.q-btn--ghost:hover:not(:disabled) { color: var(--ink); background: var(--line); }
+@media (min-width: 1024px) { .q-btn--ghost:hover:not(:disabled) { color: var(--ink); background: var(--line); } }
 .q-btn:disabled { cursor: not-allowed; opacity: .45; box-shadow: none; }
 .q-btn[aria-busy="true"] { opacity: .85; cursor: progress; }
 
@@ -138,7 +138,7 @@ svg.q-star-svg polygon { fill: currentColor; }
 /* ── Segmented control ── */
 .q-seg { display: inline-flex; gap: 2px; padding: 4px; border-radius: var(--radius-pill); background: var(--line); }
 .q-seg__opt { font: inherit; font-weight: 600; font-size: 13px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; border: 0; background: transparent; color: var(--ink-muted); border-radius: var(--radius-pill); cursor: pointer; padding: 0 14px; min-height: 40px; min-width: 44px; transition: background-color .2s, color .2s; }
-.q-seg__opt:hover { color: var(--ink); }
+@media (min-width: 1024px) { .q-seg__opt:hover { color: var(--ink); } }
 .q-seg__opt.is-on { background: var(--action); color: var(--on-action); box-shadow: var(--action-glow); }
 
 /* ── App header ── */
@@ -169,7 +169,8 @@ svg.q-star-svg polygon { fill: currentColor; }
 .q-pin--fluid .q-pin__head { background: var(--green); color: var(--on-green); }
 .q-pin--event .q-pin__head { background: var(--gold); color: var(--on-gold); }
 .q-pin--alert .q-pin__head { background: var(--red); color: var(--on-red); }
-.q-pin:hover .q-pin__head, .q-pin.is-selected .q-pin__head { transform: scale(1.14); }
+.q-pin.is-selected .q-pin__head { transform: scale(1.14); }
+@media (min-width: 1024px) { .q-pin:hover .q-pin__head { transform: scale(1.14); } }
 .q-pin--fluid.is-selected .q-pin__head { box-shadow: var(--glow-green); }
 .q-pin--event.is-selected .q-pin__head { box-shadow: var(--glow-gold); }
 .q-pin--alert.is-selected .q-pin__head { box-shadow: var(--glow-red); }
@@ -204,7 +205,7 @@ svg.q-star-svg polygon { fill: currentColor; }
 .q-thinking__dots i:nth-child(3) { animation-delay: .3s; }
 @keyframes q-dotjump { 0%, 80%, 100% { opacity: .25; transform: translateY(0); } 40% { opacity: 1; transform: translateY(-3px); } }
 .q-chip { font: inherit; font-size: 13px; line-height: 18px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 16px; border-radius: var(--radius-pill); border: 0; background: var(--gold-soft); color: var(--gold-text); cursor: pointer; transition: box-shadow .2s; }
-.q-chip:hover:not(:disabled) { box-shadow: var(--glow-gold); }
+@media (min-width: 1024px) { .q-chip:hover:not(:disabled) { box-shadow: var(--glow-gold); } }
 .q-chip:disabled { opacity: .45; cursor: not-allowed; }
 .q-prompt { display: flex; align-items: center; gap: 8px; padding: 4px 4px 4px 20px; border-radius: var(--radius-pill); border: 1px solid var(--line-control); background: var(--surface); }
 .q-prompt:focus-within { outline: 2px solid var(--focus); outline-offset: 2px; }
@@ -245,7 +246,7 @@ svg.q-star-svg polygon { fill: currentColor; }
 .q-zoom { display: flex; flex-direction: column; border-radius: var(--radius-pill); background: var(--surface-raised); box-shadow: var(--shadow-card); overflow: hidden; }
 .q-zoom button { width: 48px; height: 48px; display: grid; place-items: center; background: transparent; color: var(--ink); border: 0; padding: 0; cursor: pointer; }
 .q-zoom button + button { border-top: 1px solid var(--line); }
-.q-zoom button:hover:not(:disabled) { background: var(--line); }
+@media (min-width: 1024px) { .q-zoom button:hover:not(:disabled) { background: var(--line); } }
 .q-zoom button:disabled { color: var(--ink-subtle); opacity: .5; cursor: not-allowed; }
 
 /* ── Trip sheet: bottom sheet that follows a journey ── */
