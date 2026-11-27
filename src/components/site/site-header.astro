@@ -23,6 +23,8 @@ interface Props {
 	links?: boolean;
 	/** False hides the "Abrir Quillart AI" action. */
 	cta?: boolean;
+	/** True keeps the action visible on phones too (the landing has no tab bar). */
+	ctaOnPhone?: boolean;
 }
 
 const {
@@ -33,6 +35,7 @@ const {
 	titleKey,
 	links: showLinks = true,
 	cta = true,
+	ctaOnPhone = false,
 } = Astro.props;
 
 const links = [
@@ -49,7 +52,7 @@ const hasActions = Astro.slots.has("actions");
 ---
 
 <header
-	class:list={["l-header site-header", variant !== "default" && `site-header--${variant}`]}
+	class:list={["l-header site-header", variant !== "default" && `site-header--${variant}`, ctaOnPhone && "site-header--cta-phone"]}
 	data-landing-header
 >
 	<div class="l-header__bar">
@@ -84,16 +87,18 @@ const hasActions = Astro.slots.has("actions");
 		}
 		{hasActions && <div class="site-header__actions"><slot name="actions" /></div>}
 		<SecondaryMenu client:load />
-		{/* Secondary and hidden on phones: there the tab bar or the hero is the way in. */}
+		{/* Hidden on phones unless ctaOnPhone: elsewhere the tab bar is the way in. */}
 		{
 			cta && (
 				<a
 					href="/inicio"
-					class="site-header__cta q-btn q-btn--secondary q-btn--sm min-h-11 max-sm:hidden!"
+					class:list={["site-header__cta q-btn q-btn--secondary q-btn--sm min-h-11 shrink-0 gap-1.5 whitespace-nowrap", !ctaOnPhone && "max-sm:hidden!"]}
+					aria-label="Abrir Quillart AI"
+					data-i18n-attr="aria-label:landing.header.openAi"
 					aria-current={onAi ? "page" : undefined}
 				>
-					<span class="q-star" aria-hidden="true" />
-					<span data-i18n="landing.header.openAi">Abrir Quillart AI</span>
+					<span>Quillart</span>
+					<svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
 				</a>
 			)
 		}

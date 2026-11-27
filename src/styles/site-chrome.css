@@ -53,6 +53,13 @@
 	}
 }
 
+/* Landing on phones: the entry button stays, so the language chip yields (it is in the menu). */
+@media (max-width: 639px) {
+	.site-header--cta-phone .visitor-chip-btn {
+		display: none;
+	}
+}
+
 /* Overlay: floats over full-screen content (the map) and takes no layout space.
    The page keeps its own top controls clear with --site-header-space. */
 .site-header--overlay {
