@@ -232,18 +232,36 @@ export interface AnswerDeps {
 
 const ACCOUNT_ONLY_TOOLS: readonly AssistantToolName[] = ["my_registrations"];
 
+/** Said instead of the model's text when an action waits for the account. */
+export const ACTION_KEPT_TEXT =
+	"Te dejé la acción lista con el texto exacto. Entra a tu cuenta o créala para confirmarla; cuando vuelvas, sigue aquí.";
+
 /**
- * Safety net for the model: without a session, actions and personal reads
- * become a sign-in button instead.
+ * Safety net for the model without a session. Personal reads become a
+ * sign-in button. An action is kept as a pending card (U02): the card shows
+ * the exact text, asks to sign in instead of "Confirmar" and comes back
+ * ready after signing in, so nothing has to be said twice. It never runs
+ * without the account: the browser runs it with the person's own session.
  */
 export function enforceAccount(
 	turn: AgentTurn,
 	context: AssistantContext,
 ): AgentTurn {
 	if (context.signedIn) return turn;
-	const needsAccount = (name: AssistantToolName) =>
-		isActionTool(name) || ACCOUNT_ONLY_TOOLS.includes(name);
-	const kept = turn.toolCalls.filter((call) => !needsAccount(call.name));
+	// Keep an emergency reminder (Línea 123) if the model gave one.
+	const emergency = /\b123\b/.test(turn.text) ? `${EMERGENCY_TEXT} ` : "";
+	if (turn.toolCalls.some((call) => isActionTool(call.name))) {
+		return {
+			// The model's text may claim the action is done: never show it here.
+			text: `${emergency}${ACTION_KEPT_TEXT}`,
+			toolCalls: turn.toolCalls.filter(
+				(call) => !ACCOUNT_ONLY_TOOLS.includes(call.name),
+			),
+		};
+	}
+	const kept = turn.toolCalls.filter(
+		(call) => !ACCOUNT_ONLY_TOOLS.includes(call.name),
+	);
 	if (kept.length === turn.toolCalls.length) return turn;
 	const hasProfileLink = kept.some(
 		(call) => call.name === "open_page" && call.args.path === PROFILE_PATH,
@@ -257,8 +275,6 @@ export function enforceAccount(
 					args: { path: PROFILE_PATH, label: "Entrar o crear cuenta" },
 				},
 			];
-	// Keep an emergency reminder (Línea 123) if the model gave one.
-	const emergency = /\b123\b/.test(turn.text) ? `${EMERGENCY_TEXT} ` : "";
 	return {
 		text: `${emergency}Para eso necesitas entrar a tu cuenta. Entra o créala y seguimos.`,
 		toolCalls,

@@ -22,6 +22,12 @@ import type {
 import { isActionTool } from "../../lib/assistant/assistant-types";
 import { answerOffline } from "../../lib/assistant/offline-answer";
 import {
+	clearPendingAction,
+	loadPendingAction,
+	localStore,
+	savePendingAction,
+} from "../../lib/assistant/pending-action-store";
+import {
 	isScreenShared,
 	screenContext,
 } from "../../lib/assistant/screen-context-store";
@@ -95,18 +101,31 @@ interface Saved {
 	batch: OpenBatch | null;
 }
 
+function isSaved(value: unknown): value is Saved {
+	return Array.isArray((value as Partial<Saved> | null)?.messages);
+}
+
 function loadSaved(): Saved | null {
 	try {
 		const raw = sessionStorage.getItem(SAVED_KEY);
-		if (!raw) return null;
-		const saved = JSON.parse(raw) as Saved;
-		return Array.isArray(saved.messages) ? saved : null;
+		const saved: unknown = raw ? JSON.parse(raw) : null;
+		if (isSaved(saved)) return saved;
 	} catch {
-		return null;
+		// Fall through to the device copy.
 	}
+	// Signed in from another tab (an e-mail link): the waiting action is kept
+	// on the device for a short while (U02).
+	const pending = loadPendingAction<Saved>(localStore());
+	return isSaved(pending) ? pending : null;
 }
 
 function save(value: Saved): void {
+	// Only while an action waits is a copy kept beyond this tab.
+	if (value.batch && value.batch.remaining.length > 0) {
+		savePendingAction(localStore(), value);
+	} else {
+		clearPendingAction(localStore());
+	}
 	try {
 		sessionStorage.setItem(SAVED_KEY, JSON.stringify(value));
 	} catch {
@@ -179,6 +198,8 @@ export function useAssistant() {
 	const abort = useRef<AbortController | null>(null);
 	/** True right after the person stopped an answer. */
 	const [stopped, setStopped] = useState(false);
+	/** A waiting action came back from storage (after signing in, U02). */
+	const [resumed, setResumed] = useState(false);
 	const batch = useRef<OpenBatch | null>(null);
 	const busy = useRef(false);
 	const profileRef = useRef(profile);
@@ -249,6 +270,8 @@ export function useAssistant() {
 			const known: AssistantMessage[] =
 				results.length > 0 ? [...history, { role: "tool", results }] : history;
 			setPending(remaining.map((call) => toPending(call, agent, known)));
+			// Back from signing in, the card is the first thing to see (U02).
+			if (remaining.length > 0) setResumed(true);
 		}
 	}, [toPending]);
 
@@ -524,6 +547,7 @@ export function useAssistant() {
 		pending,
 		loading,
 		stopped,
+		resumed: resumed && pending.length > 0,
 		error,
 		suggestions,
 		signedIn: profile !== null,

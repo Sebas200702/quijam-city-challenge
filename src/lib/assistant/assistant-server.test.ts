@@ -10,6 +10,7 @@ import {
 	toolDeclarationsFor,
 } from "./assistant-agents";
 import {
+	ACTION_KEPT_TEXT,
 	AssistantRequestError,
 	answer,
 	MAX_MESSAGES,
@@ -281,7 +282,7 @@ describe("answer with a (fake) Gemini", () => {
 		expect(response.toolCalls[0].args).toEqual({ event_id: "e-1" });
 	});
 
-	it("turns actions into a sign-in button when not signed in", async () => {
+	it("keeps the action as a pending card without a session (U02)", async () => {
 		const response = await answer(
 			request("inscríbeme en el evento e-1", { signedIn: false }),
 			{
@@ -296,10 +297,15 @@ describe("answer with a (fake) Gemini", () => {
 				newId,
 			},
 		);
-		expect(response.toolCalls.map((call) => call.args)).toEqual([
-			{ path: "/perfil", label: "Entrar o crear cuenta" },
+		// The card asks to sign in; the browser never runs it without a session.
+		expect(response.toolCalls).toEqual([
+			{
+				id: expect.any(String),
+				name: "register_for_event",
+				args: { event_id: "e-1" },
+			},
 		]);
-		expect(response.text).toMatch(/cuenta/);
+		expect(response.text).toBe(ACTION_KEPT_TEXT);
 		expect(response.text).not.toMatch(/te inscribí/);
 	});
 });

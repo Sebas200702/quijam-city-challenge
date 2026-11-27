@@ -119,19 +119,57 @@ describe("agenda", () => {
 		]);
 	});
 
-	it("asks to sign in before an action", () => {
+	it("keeps the event draft without an account (U02)", () => {
 		const turn = answerLocally(
 			"agenda",
-			ask("Quiero publicar un evento"),
+			ask(
+				"Quiero publicar un evento: limpieza del arroyo en Rebolo el sábado a las 8 am",
+			),
 			anonymous,
 		);
 		expect(turn.toolCalls).toEqual([
 			{
-				name: "open_page",
-				args: { path: "/perfil", label: "Entrar o crear cuenta" },
+				name: "create_event",
+				args: {
+					title: "Limpieza del arroyo en Rebolo",
+					description: "Limpieza del arroyo en Rebolo el sábado a las 8 am",
+					category: "volunteer",
+					starts_at_local: "2026-11-28T08:00",
+				},
 			},
 		]);
-		expect(turn.text).toMatch(/cuenta/);
+	});
+
+	it("opens the form filled when the day or hour is missing (U14)", () => {
+		const turn = answerLocally(
+			"agenda",
+			ask("Quiero publicar un evento: taller de cumbia en Barrio Abajo"),
+			anonymous,
+		);
+		expect(turn.toolCalls[0]).toMatchObject({
+			name: "open_page",
+			args: { label: "Publicar un evento" },
+		});
+		const path = (turn.toolCalls[0].args as { path: string }).path;
+		expect(path.startsWith("/agenda/nuevo?")).toBe(true);
+		expect(new URLSearchParams(path.split("?")[1]).get("titulo")).toBe(
+			"Taller de cumbia en Barrio Abajo",
+		);
+	});
+
+	it("keeps a registration pending without an account (U02)", () => {
+		const turn = answerLocally("agenda", ask("Inscríbeme"), {
+			...anonymous,
+			screen: {
+				route: "/agenda/[id]",
+				title: "x",
+				role: "visitor",
+				entity: { kind: "event", id: "e-9", name: "x" },
+			},
+		});
+		expect(turn.toolCalls).toEqual([
+			{ name: "register_for_event", args: { event_id: "e-9" } },
+		]);
 	});
 });
 
@@ -191,9 +229,10 @@ describe("other agents", () => {
 				args: { description: text, place_slug: "gran-malecon" },
 			},
 		]);
+		// Without an account the report stays ready to confirm after signing in (U02).
 		const anon = answerLocally("city_reports", ask(text), anonymous);
 		expect(anon.text).toMatch(/123/);
-		expect(anon.toolCalls.map((call) => call.name)).toEqual(["open_page"]);
+		expect(anon.toolCalls.map((call) => call.name)).toEqual(["report_issue"]);
 	});
 
 	it("account lists my registrations", () => {

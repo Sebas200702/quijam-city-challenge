@@ -447,6 +447,9 @@ export function AssistantChat({
 								onScreen={assistant.onScreen}
 							/>
 						))}
+						{assistant.resumed && signedIn && (
+							<p className="q-sm q-muted pl-10">{t.dock.resumed}</p>
+						)}
 						{pending.map((action) => (
 							<div key={action.call.id} className="pl-10">
 								<ActionConfirmCard

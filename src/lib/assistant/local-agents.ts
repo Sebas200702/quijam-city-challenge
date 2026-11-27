@@ -234,6 +234,93 @@ const CREATE_EVENT_WORDS = [
 	"anunciar",
 ];
 
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+/** "8 am", "8:30 p. m.", "a las 18" → "08:00", "20:30", "18:00". */
+export function timeFromText(text: string): string | null {
+	const match =
+		/\b(\d{1,2})(?::(\d{2}))?\s*(a\.?\s?m\.?|p\.?\s?m\.?)/i.exec(text) ??
+		/\ba las (\d{1,2})(?::(\d{2}))?\b/i.exec(text);
+	if (!match) return null;
+	let hour = Number(match[1]);
+	const minutes = Number(match[2] ?? "0");
+	const meridiem = (match[3] ?? "").toLowerCase();
+	if (meridiem.startsWith("p") && hour < 12) hour += 12;
+	if (meridiem.startsWith("a") && hour === 12) hour = 0;
+	if (hour > 23 || minutes > 59) return null;
+	return `${String(hour).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
+}
+
+function capitalize(text: string): string {
+	return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
+/**
+ * What the person said about the event they want to publish, as a
+ * create_event draft: title, description (their words), category, start
+ * time when they gave a day and an hour, and the place.
+ */
+export function eventDraftFromText(
+	text: string,
+	context: AssistantContext,
+): Partial<AssistantToolArgs["create_event"]> & {
+	title: string;
+	description: string;
+	category: EventCategory;
+} {
+	const clean = text.trim().replace(/\s+/g, " ");
+	const colon = clean.indexOf(":");
+	const body = (
+		colon >= 0
+			? clean.slice(colon + 1)
+			: clean.replace(/^.*?\b(evento|plan|actividad)\b(\s+de)?/i, "")
+	).trim();
+	// "Quiero publicar un evento" alone: nothing to fill yet.
+	const description = capitalize(body).slice(0, 2000);
+	const title = capitalize(
+		body
+			.split(/\s+(?:el|este|esta|para el|hoy|mañana|a las)\s+/i)[0]
+			.replace(/[.,;]+$/, ""),
+	).slice(0, 80);
+	const normalized = normalizeText(clean);
+	const category = firstMatch(normalized, EVENT_CATEGORY_WORDS) ?? "community";
+	const draft: ReturnType<typeof eventDraftFromText> = {
+		title,
+		description,
+		category,
+	};
+	const days = daysAheadFrom(clean, context.now);
+	const time = timeFromText(clean);
+	if (days !== null && time) {
+		const now = Date.parse(context.now);
+		const today = new Date(
+			(Number.isNaN(now) ? Date.now() : now) + BOGOTA_OFFSET_MS,
+		);
+		const day = new Date(today.getTime() + days * DAY_MS)
+			.toISOString()
+			.slice(0, 10);
+		draft.starts_at_local = `${day}T${time}`;
+	}
+	const place = placeFor(clean, context);
+	if (place) draft.place_slug = place.slug;
+	return draft;
+}
+
+/** The event form, filled with what could be understood (U14). */
+function eventFormPath(draft: ReturnType<typeof eventDraftFromText>): string {
+	if (!draft.title) return "/agenda/nuevo";
+	const params = new URLSearchParams({
+		titulo: draft.title,
+		categoria: draft.category,
+	});
+	// Short enough for a link; a long text is better written in the form.
+	if (draft.description.length <= 160) {
+		params.set("descripcion", draft.description);
+	}
+	if (draft.place_slug) params.set("lugar", draft.place_slug);
+	return `/agenda/nuevo?${params.toString()}`;
+}
+
 function agendaTurn(
 	text: string,
 	messages: AssistantMessage[],
@@ -245,15 +332,29 @@ function agendaTurn(
 		hasAnyKeyword(normalized, CREATE_EVENT_WORDS) &&
 		hasAnyKeyword(normalized, ["evento*", "plan", "actividad*", "event"])
 	) {
-		if (!context.signedIn) {
-			return signInTurn("Para publicar un evento necesitas una cuenta.");
+		// Signed in or not, the draft is kept: without an account the card
+		// asks to sign in and comes back ready to confirm (U02).
+		const draft = eventDraftFromText(text, context);
+		if (draft.title && draft.starts_at_local) {
+			return {
+				text: "Te armé el evento con lo que me dijiste: revisa el texto exacto y confírmalo abajo. Antes de salir en la agenda pasa por una revisión rápida.",
+				toolCalls: [
+					{
+						name: "create_event",
+						args: draft as AssistantToolArgs["create_event"],
+					},
+				],
+			};
 		}
 		return {
-			text: "¡Qué buena! Llena el formulario con el nombre, la fecha y el lugar; antes de publicarse pasa por una revisión rápida.",
+			text: "Te dejé el formulario lleno con lo que me dijiste; complétalo con la fecha y la hora y publícalo.",
 			toolCalls: [
 				{
 					name: "open_page",
-					args: { path: "/agenda/nuevo", label: "Publicar un evento" },
+					args: {
+						path: eventFormPath(draft),
+						label: "Publicar un evento",
+					},
 				},
 			],
 		};
@@ -265,9 +366,6 @@ function agendaTurn(
 		const eventId =
 			pickEventId(text, recentEventIds(messages)) ??
 			screenEventId(context.screen);
-		if (!context.signedIn) {
-			return signInTurn("Para inscribirte necesitas una cuenta.");
-		}
 		if (eventId) {
 			return wantsOut
 				? {
@@ -323,9 +421,6 @@ function communityTurn(text: string, context: AssistantContext): AgentTurn {
 			"new thread",
 		])
 	) {
-		if (!context.signedIn) {
-			return signInTurn("Para escribir en el foro necesitas una cuenta.");
-		}
 		return {
 			text: "Abre una conversación nueva: cuéntale a la comunidad tu tema con respeto y pasa por moderación antes de salir.",
 			toolCalls: [
@@ -466,10 +561,7 @@ function cityReportsTurn(text: string, context: AssistantContext): AgentTurn {
 			],
 		};
 	}
-	if (!context.signedIn) {
-		const turn = signInTurn("Para enviar el reporte necesitas una cuenta.");
-		return { ...turn, text: `${prefix}${turn.text}` };
-	}
+	// Without an account the report stays ready: the card asks to sign in (U02).
 	const place = placeFor(text, context);
 	return {
 		text: `${prefix}Preparé tu reporte para la ciudad; revísalo y confírmalo abajo.`,

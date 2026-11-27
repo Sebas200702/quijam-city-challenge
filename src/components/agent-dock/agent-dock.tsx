@@ -294,6 +294,10 @@ export default function AgentDock({ role }: AgentDockProps) {
 							</button>
 						</div>
 
+						{assistant.resumed && signedIn && (
+							<p className="q-sm q-muted">{t.dock.resumed}</p>
+						)}
+
 						{/* The log is not a live region: the status line says what is new. */}
 						<div className="q-dock__log">
 							{messages.map((message, index) => (
