@@ -93,6 +93,13 @@ function withPrefill(
 		...(fields.locationText
 			? { locationText: fields.locationText, placeId: OTHER_PLACE }
 			: {}),
+		...(fields.capacity ? { capacity: fields.capacity } : {}),
+		// `costo=0` is a free event; any other amount is the entry price.
+		...(fields.price
+			? fields.price === "0"
+				? { isFree: true, price: "" }
+				: { isFree: false, price: fields.price }
+			: {}),
 	};
 }
 
@@ -125,6 +132,8 @@ const PREFILL_INPUTS: Record<string, keyof FormValues> = {
 	startTime: "startTime",
 	place: "placeId",
 	locationText: "locationText",
+	capacity: "capacity",
+	price: "price",
 };
 
 function toInput(values: FormValues): NewEventInput {

@@ -48,7 +48,7 @@ export interface ScreenContext {
 	/** What the person sees as the screen title. */
 	title: string;
 	entity?: ScreenEntity;
-	/** Active filters, by their URL name (`q`, `categoria`, `cuando`, `tipo`). */
+	/** Active filters, by their URL name (`q`, `categoria`, `fecha`, `tipo`). */
 	filters?: Record<string, string>;
 	map?: ScreenMapView;
 	draft?: ScreenDraft;

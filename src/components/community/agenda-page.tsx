@@ -1,5 +1,5 @@
 // Agenda: upcoming community events grouped by day, with search, categories
-// and a date filter. The filters live in the URL (`?q=&categoria=&cuando=`),
+// and a date filter. The filters live in the URL (`?q=&categoria=&fecha=`),
 // so they can be shared and Quillart AI can leave the list filtered (U13).
 
 import { Plus, Search } from "lucide-react";
@@ -65,7 +65,7 @@ function writeUrl(filters: AgendaFilters) {
 	const search = filtersSearch({
 		q: filters.q,
 		categoria: filters.categoria,
-		cuando: filters.cuando,
+		fecha: filters.cuando,
 	});
 	window.history.replaceState(
 		null,
@@ -99,7 +99,7 @@ export default function AgendaPage({ aiHref }: AgendaPageProps) {
 	usePublishScreen({
 		route: "/agenda",
 		title: t.agenda.title,
-		filters: activeFilters({ q: query, categoria: category, cuando }),
+		filters: activeFilters({ q: query, categoria: category, fecha: cuando }),
 	});
 
 	useUiAction("agenda.filter", (action) => {
@@ -107,7 +107,7 @@ export default function AgendaPage({ aiHref }: AgendaPageProps) {
 		const next: AgendaFilters = {
 			q: action.q ?? "",
 			categoria: action.categoria ?? null,
-			cuando: action.cuando ?? null,
+			cuando: action.fecha ?? null,
 		};
 		change(next, true);
 		return {
@@ -281,7 +281,7 @@ export default function AgendaPage({ aiHref }: AgendaPageProps) {
 	);
 }
 
-/** "Hoy", "Este finde", "Esta semana": the date filter (`?cuando=`). */
+/** "Hoy", "Este finde", "Esta semana": the date filter (`?fecha=`). */
 function WhenChips({
 	value,
 	onChange,

@@ -7,7 +7,7 @@ import type { EventCategory, PlaceKind } from "../community/community-types";
 import type { DestinationKey } from "../trip/trip-planner";
 import type { ScreenFormId } from "./screen-context-types";
 
-/** Agenda date filter, as in `/agenda?cuando=`. */
+/** Agenda date filter, as in `/agenda?fecha=` (shared URL contract). */
 export type AgendaWhen = "hoy" | "finde" | "semana";
 
 export interface MapPin {
@@ -43,7 +43,7 @@ export type UiAction = UiActionBase &
 				type: "agenda.filter";
 				q?: string;
 				categoria?: EventCategory;
-				cuando?: AgendaWhen;
+				fecha?: AgendaWhen;
 		  }
 		| { type: "places.filter"; q?: string; tipo?: PlaceKind }
 		| {
@@ -52,6 +52,8 @@ export type UiAction = UiActionBase &
 				lng: number;
 				zoom?: number;
 				label?: string;
+				/** Catalog place slug, for the `/mapa?lugar=` link. */
+				lugar?: string;
 		  }
 		| { type: "map.drop"; pins: MapPin[] }
 		| { type: "map.showRoute"; destino: DestinationKey; accesible?: boolean }

@@ -35,12 +35,12 @@ describe("parseScreenContext", () => {
 		expect(
 			parseScreenContext({
 				...eventScreen,
-				filters: { categoria: "music", cuando: "finde", q: "salsa" },
+				filters: { categoria: "music", fecha: "finde", q: "salsa" },
 				zone: "Barrio Abajo",
 			}),
 		).toEqual({
 			...eventScreen,
-			filters: { categoria: "music", cuando: "finde", q: "salsa" },
+			filters: { categoria: "music", fecha: "finde", q: "salsa" },
 			zone: "Barrio Abajo",
 		});
 	});
@@ -60,7 +60,7 @@ describe("parseScreenContext", () => {
 			route: "/agenda",
 			title: "Agenda",
 			role: "visitor",
-			filters: { categoria: "music", evil: "x", cuando: "siempre" },
+			filters: { categoria: "music", evil: "x", fecha: "siempre" },
 			entity: { kind: "user", id: "1", name: "x" },
 			draft: {
 				form: "event",

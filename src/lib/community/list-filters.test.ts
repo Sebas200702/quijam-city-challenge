@@ -10,7 +10,7 @@ import {
 
 describe("list filters in the URL (U13)", () => {
 	it("reads only known agenda filters", () => {
-		expect(readAgendaFilters("?q=salsa&categoria=music&cuando=finde")).toEqual({
+		expect(readAgendaFilters("?q=salsa&categoria=music&fecha=finde")).toEqual({
 			q: "salsa",
 			categoria: "music",
 			cuando: "finde",
@@ -66,7 +66,7 @@ describe("prefilled forms (U14, U16, U17)", () => {
 	it("builds links that open the form already filled", () => {
 		expect(
 			prefillHref("thread", { title: "Poste caído", body: "En la 79" }),
-		).toBe("/foro?nuevo=1&titulo=Poste+ca%C3%ADdo&texto=En+la+79");
+		).toBe("/foro?nuevo=1&titulo=Poste+ca%C3%ADdo&cuerpo=En+la+79");
 		expect(
 			prefillHref("overcharge", { amount: "25000", vehicle: "taxi" }),
 		).toBe("/reportar?monto=25000&vehiculo=taxi");

@@ -120,6 +120,7 @@ export function OverchargeReportPage({
 		const prefill = readPrefill("overcharge", window.location.search);
 		if (prefill.vehicle) setVehicle(prefill.vehicle as ReportTransportMode);
 		if (prefill.amount) setCharged(prefill.amount);
+		if (prefill.driverCode) setDriverCode(prefill.driverCode);
 		if (prefill.notes) setNotes(prefill.notes);
 	}, []);
 
@@ -134,13 +135,20 @@ export function OverchargeReportPage({
 
 	useUiAction("form.prefill", (action) => {
 		if (action.form !== "overcharge") return null;
-		const before = { segmentCode, vehicle, charged, notes };
-		const { segment, amount, vehicle: mode, notes: note } = action.fields;
+		const before = { segmentCode, vehicle, charged, driverCode, notes };
+		const {
+			segment,
+			amount,
+			vehicle: mode,
+			driverCode: code,
+			notes: note,
+		} = action.fields;
 		if (segment && routes.some((route) => route.segmentCode === segment)) {
 			setSegmentCode(segment);
 		}
 		if (mode) setVehicle(mode as ReportTransportMode);
 		if (amount) setCharged(amount);
+		if (code) setDriverCode(code);
 		if (note) setNotes(note);
 		setByAgent(true);
 		return {
@@ -149,6 +157,7 @@ export function OverchargeReportPage({
 				setSegmentCode(before.segmentCode);
 				setVehicle(before.vehicle);
 				setCharged(before.charged);
+				setDriverCode(before.driverCode);
 				setNotes(before.notes);
 				setByAgent(false);
 			},

@@ -19,14 +19,22 @@ export const PREFILL_PARAMS: Record<ScreenFormId, Record<string, string>> = {
 		startTime: "hora",
 		place: "lugar",
 		locationText: "direccion",
+		price: "costo",
+		capacity: "cupos",
 	},
-	thread: { title: "titulo", body: "texto", category: "categoria" },
+	thread: {
+		title: "titulo",
+		body: "cuerpo",
+		category: "categoria",
+		place: "lugar",
+	},
 	reply: { body: "respuesta" },
 	overcharge: {
 		segment: "segment",
 		amount: "monto",
 		vehicle: "vehiculo",
-		notes: "nota",
+		driverCode: "codigo",
+		notes: "notas",
 	},
 };
 
@@ -55,6 +63,10 @@ const FIELD_RULES: Record<string, (value: string) => boolean> = {
 	vehicle: (value) =>
 		(REPORT_TRANSPORT_MODES as readonly string[]).includes(value),
 	notes: (value) => value.length <= 500,
+	// Pesos; 0 means free.
+	price: (value) => /^\d{1,7}$/.test(value),
+	capacity: (value) => /^[1-9]\d{0,5}$/.test(value),
+	driverCode: (value) => /^[A-Za-z0-9-]{1,20}$/.test(value),
 };
 
 /** Keeps only the known fields of a form, trimmed and with a valid shape. */

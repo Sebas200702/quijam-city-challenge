@@ -1,5 +1,5 @@
 // Filters of the agenda and places lists, read from and written to the URL
-// (`/agenda?q=&categoria=&cuando=`, `/lugares?tipo=&q=`), so a filter can be
+// (`/agenda?q=&categoria=&fecha=`, `/lugares?tipo=&q=`), so a filter can be
 // shared, survives a reload and Quillart AI can leave a list filtered (U13).
 
 import type { AgendaWhen } from "../assistant/ui-action-types";
@@ -49,7 +49,8 @@ function query(params: URLSearchParams): string {
 export function readAgendaFilters(search: string): AgendaFilters {
 	const params = new URLSearchParams(search);
 	const categoria = params.get("categoria");
-	const cuando = params.get("cuando");
+	// `fecha` is the shared contract; `cuando` was the first name of it.
+	const cuando = params.get("fecha") ?? params.get("cuando");
 	return {
 		q: query(params),
 		categoria: isEventCategory(categoria) ? categoria : null,

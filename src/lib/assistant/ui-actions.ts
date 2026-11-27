@@ -145,7 +145,7 @@ export function sanitizeUiAction(value: unknown): UiAction | null {
 				categoria: isEventCategory(value.categoria)
 					? value.categoria
 					: undefined,
-				cuando: isAgendaWhen(value.cuando) ? value.cuando : undefined,
+				fecha: isAgendaWhen(value.fecha) ? value.fecha : undefined,
 			});
 			if (Object.keys(action).length === 0) return null;
 			return { ...base, type: "agenda.filter", ...action };
@@ -171,6 +171,11 @@ export function sanitizeUiAction(value: unknown): UiAction | null {
 				lng: value.lng as number,
 				zoom,
 				label: shortText(value.label, MAX_LABEL),
+				lugar:
+					typeof value.lugar === "string" &&
+					/^[a-z0-9-]{1,80}$/.test(value.lugar)
+						? value.lugar
+						: undefined,
 			});
 		}
 		case "map.drop": {
@@ -242,12 +247,20 @@ export function sanitizeUiActions(value: unknown): UiAction[] {
 export function uiActionHref(action: UiAction): string | null {
 	switch (action.type) {
 		case "agenda.filter":
-			return `/agenda${filtersSearch({ q: action.q, categoria: action.categoria, cuando: action.cuando })}`;
+			return `/agenda${filtersSearch({ q: action.q, categoria: action.categoria, fecha: action.fecha })}`;
 		case "places.filter":
 			return `/lugares${filtersSearch({ tipo: action.tipo, q: action.q })}`;
 		case "map.showRoute":
 			return `/mapa${filtersSearch({ destino: action.destino })}`;
+		// The /mapa contract of the metro-area map (map-url.ts): ?lugar= or a camera.
 		case "map.flyTo":
+			return action.lugar
+				? `/mapa${filtersSearch({ lugar: action.lugar })}`
+				: `/mapa${filtersSearch({
+						lat: action.lat.toFixed(5),
+						lng: action.lng.toFixed(5),
+						zoom: action.zoom === undefined ? null : String(action.zoom),
+					})}`;
 		case "map.drop":
 			return "/mapa";
 		case "form.prefill":
@@ -325,7 +338,7 @@ function fromCall(
 					type: "agenda.filter",
 					q: args.query,
 					categoria: args.category,
-					cuando: whenFromDaysAhead(args.days_ahead, userText),
+					fecha: whenFromDaysAhead(args.days_ahead, userText),
 				},
 			];
 		}
@@ -355,6 +368,7 @@ function fromCall(
 					lng: pin.lng,
 					zoom: 16,
 					label: pin.label,
+					lugar: args.place_slug,
 				},
 			];
 		}

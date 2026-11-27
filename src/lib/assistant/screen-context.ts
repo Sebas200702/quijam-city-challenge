@@ -46,17 +46,19 @@ export const DRAFT_FIELDS: Record<ScreenFormId, readonly string[]> = {
 		"startTime",
 		"place",
 		"locationText",
+		"price",
+		"capacity",
 	],
-	thread: ["title", "body", "category"],
+	thread: ["title", "body", "category", "place"],
 	reply: ["body"],
-	overcharge: ["segment", "amount", "vehicle", "notes"],
+	overcharge: ["segment", "amount", "vehicle", "driverCode", "notes"],
 };
 
 /** Filters a list screen may report, with the shape of their value. */
 export const FILTER_PATTERNS: Record<string, RegExp> = {
 	q: /^[^\n]{1,100}$/,
 	categoria: /^[a-z_]{1,30}$/,
-	cuando: /^(hoy|finde|semana)$/,
+	fecha: /^(hoy|finde|semana)$/,
 	tipo: /^[a-z_]{1,30}$/,
 };
 

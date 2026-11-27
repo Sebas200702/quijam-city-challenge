@@ -24,13 +24,13 @@ describe("sanitizeUiAction (whitelist)", () => {
 			sanitizeUiAction({
 				type: "agenda.filter",
 				categoria: "music",
-				cuando: "hoy",
+				fecha: "hoy",
 				q: "  salsa  ",
 			}),
 		).toEqual({
 			type: "agenda.filter",
 			categoria: "music",
-			cuando: "hoy",
+			fecha: "hoy",
 			q: "salsa",
 		});
 		expect(
@@ -133,9 +133,9 @@ describe("uiActionHref", () => {
 			uiActionHref({
 				type: "agenda.filter",
 				categoria: "nature",
-				cuando: "finde",
+				fecha: "finde",
 			}),
-		).toBe("/agenda?categoria=nature&cuando=finde");
+		).toBe("/agenda?categoria=nature&fecha=finde");
 		expect(uiActionHref({ type: "places.filter", tipo: "park" })).toBe(
 			"/lugares?tipo=park",
 		);
@@ -153,6 +153,52 @@ describe("uiActionHref", () => {
 			uiActionHref({ type: "ui.focus", target: "event-actions" }),
 		).toBeNull();
 	});
+
+	it("follows the shared URL contracts of the other screens", () => {
+		// /mapa?lugar= or ?lat=&lng=&zoom= (metro-area map, map-url.ts).
+		expect(
+			uiActionHref({
+				type: "map.flyTo",
+				lat: 11.0075,
+				lng: -74.7815,
+				zoom: 16,
+				lugar: "gran-malecon",
+			}),
+		).toBe("/mapa?lugar=gran-malecon");
+		expect(
+			uiActionHref({
+				type: "map.flyTo",
+				lat: 11.0075,
+				lng: -74.7815,
+				zoom: 16,
+			}),
+		).toBe("/mapa?lat=11.00750&lng=-74.78150&zoom=16");
+		// /agenda/nuevo?titulo=&fecha=&hora=&lugar=&costo=&cupos=&descripcion=
+		expect(
+			uiActionHref({
+				type: "form.prefill",
+				form: "event",
+				fields: {
+					title: "Limpieza",
+					date: "2026-11-28",
+					startTime: "08:00",
+					place: "gran-malecon",
+					price: "0",
+					capacity: "40",
+				},
+			}),
+		).toBe(
+			"/agenda/nuevo?titulo=Limpieza&fecha=2026-11-28&hora=08%3A00&lugar=gran-malecon&costo=0&cupos=40",
+		);
+		// /reportar?segment=&monto=&vehiculo=&codigo=&notas=
+		expect(
+			uiActionHref({
+				type: "form.prefill",
+				form: "overcharge",
+				fields: { amount: "20000", driverCode: "TX-12", notes: "De noche" },
+			}),
+		).toBe("/reportar?monto=20000&codigo=TX-12&notas=De+noche");
+	});
 });
 
 describe("uiActionsForCalls (derived on the server)", () => {
@@ -167,7 +213,7 @@ describe("uiActionsForCalls (derived on the server)", () => {
 				type: "agenda.filter",
 				fromCall: "c1",
 				categoria: "nature",
-				cuando: "finde",
+				fecha: "finde",
 			},
 		]);
 	});
