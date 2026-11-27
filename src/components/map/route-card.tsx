@@ -20,6 +20,7 @@ import { type ReactNode, useEffect, useState } from "react";
 import type { CorridorStop } from "../../lib/corridor/corridor-types";
 import type { PlanResponse } from "../../lib/routing/plan-route";
 import type { Itinerary, TransportMode } from "../../lib/routing/routing-types";
+import { AskQuillartButton } from "../assistant/ask-quillart-button";
 import {
 	confidenceLabel,
 	isRecalculated,
@@ -290,7 +291,10 @@ export function RouteCard({
 				}
 				text={routeWhy(plan)}
 				glyph={<StateArt src="/illustrations/walking.svg" />}
-			/>
+			>
+				{/* Hands off to the mobility agent in Quillart AI instead of a dead end. */}
+				<AskQuillartButton prompt={`¿Cómo llego a ${destination}?`} />
+			</StateBlock>
 		);
 	} else if (plan && route) {
 		body = (
@@ -395,7 +399,7 @@ export function RouteCard({
 							</ul>
 						) : null}
 						<p className="m-0">
-							Fuentes: datos abiertos de transporte y alertas de arroyos.
+							Fuente: datos de referencia del corredor y alertas de arroyos.
 						</p>
 					</div>
 				</details>
