@@ -36,7 +36,26 @@ Abrir con **http://127.0.0.1:4322**, no `localhost`: en esta máquina `localhost
 - **Gemini de texto da 404** con el modelo del `.env` (`gemini-flash-latest`). Poner un modelo válido en `GEMINI_TEXT_MODEL`; mientras tanto responden los agentes locales.
 - **La voz necesita HTTPS** fuera de `localhost`/`127.0.0.1`: en el celular por IP no hay micrófono. Desplegar `integ/ui-ux` en Dokploy (HTTPS) o hacer la voz desde el portátil.
 - **Cuenta de ciudad con TOTP** lista si la migración `20261128000006_city_mfa_aal2.sql` está aplicada.
-- **Simulación** (`feat/city-simulation`, en curso al cerrar la sesión): usuarios sintéticos `@sim.quillart.test`, eventos proyectados de ediciones pasadas marcados como tales, y `scripts/simulate-city.ts` con `--seed`, `--run`, `--reset`. Revisar que quedó subida, unirla a `integ/ui-ux` y correr `--reset` después de la demo.
+- **Simulación** (`feat/city-simulation`, commit `797bbb6`, **WIP**: el trabajo se detuvo a mitad). El `--seed` ya corrió contra la base compartida:
+  - 41 usuarios sintéticos (`@sim.quillart.test`).
+  - 118 lugares (55 reales nuevos de OSM en `supabase/seed-real/places-extra.json`).
+  - 52 eventos: 5 reales y 47 sintéticos o proyectados.
+  - 10 conversaciones y 145 inscripciones.
+  
+  Todo lo sintético está listado en `supabase/sim/manifest.json`. Falta revisar y terminar `scripts/simulate-city.ts` (`--run`, `--reset`), escribir `docs/32-simulacion.md` y unir la rama a `integ/ui-ux`. Después de la demo, correr `--reset`, o borrar con el manifiesto.
+- **Eventos recurrentes verificados** (investigación terminada, todavía no cargada; `scripts/sim/projected-events.ts` está casi vacío):
+  - Fechas oficiales del Carnaval 2027, anunciadas el 14 nov 2026 ([Infobae](https://www.infobae.com/colombia/2026/11/14/el-carnaval-de-barranquilla-2027-estrenara-escenarios-con-eventos-en-la-avenida-shakira-el-supermetro-y-el-romelio-martinez-anuncio-el-alcalde-alejandro-char/), [El Tiempo](https://www.eltiempo.com/colombia/barranquilla/el-traslado-al-malecon-no-va-confirman-que-la-via-40-seguira-siendo-sede-de-los-grandes-desfiles-del-carnaval-de-barranquilla-3601084), [Blu Radio](https://www.bluradio.com/regiones/caribe/coronacion-de-la-reina-del-carnaval-de-barranquilla-2027-sera-en-el-supermetro-rg10)):
+    - Carnaval: 6–9 feb.
+    - Lectura del Bando: 17 ene, Romelio Martínez.
+    - Guacherna: 29 ene.
+    - Desfile infantil: 31 ene, Avenida Shakira.
+    - Coronación: 5 feb, Supermetro.
+    - Rey Momo: 6 feb.
+    - Desfiles grandes: siguen en la Vía 40.
+  - Navidad: encendidos del Gran Malecón y Puerto Colombia, novenas 16–22 dic, Gran Parada de la Luz 8 dic, y Navidad y fin de año en el Gran Malecón (sin pólvora).
+  - Otros municipios: Gran Parada de Galapa y Batalla de Flores de Malambo.
+  - Escala real: 111.300 visitas al Gran Malecón el 24–25 dic 2025 (Blu Radio); unos 1,2 millones en la Batalla de Flores 2026 (Noticias RCN); 6 millones de espectadores en el Carnaval 2026 (El Tiempo).
+  - La lista completa, con 26 eventos y sus URL, está en la conversación de la sesión del 27 nov. Hay que pasarla a `scripts/sim/projected-events.ts` marcando cada evento como "Proyección basada en la edición 2025/2026 (fuente)".
 
 ### PR y fusiones
 - Abrir/fusionar el PR de `integ/ui-ux` → `main` (reemplaza a #208, #209 y #210). Los PR propios necesitan la aprobación de otra persona (Sebas).
