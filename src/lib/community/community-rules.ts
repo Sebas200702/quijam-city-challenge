@@ -143,6 +143,24 @@ export function registrationBlocker(
 	return null;
 }
 
+/** A capped event with no spots left. */
+export function isEventFull(event: CommunityEvent): boolean {
+	return event.capacity !== null && event.registeredCount >= event.capacity;
+}
+
+/** The waiting list (#126) is for full events that are still going to happen. */
+export function canJoinWaitlist(
+	event: CommunityEvent,
+	now: Date = new Date(),
+): boolean {
+	return (
+		event.status === "published" &&
+		event.moderationStatus === "published" &&
+		!isPastEvent(event, now) &&
+		isEventFull(event)
+	);
+}
+
 export function spotsLeft(event: CommunityEvent): number | null {
 	if (event.capacity === null) return null;
 	return Math.max(event.capacity - event.registeredCount, 0);

@@ -4,7 +4,8 @@ import type { AsyncChooser, RouteOption } from "./decider-types";
 function describeOption(option: RouteOption): string {
 	const fare = option.fareCop === 0 ? "free" : `${option.fareCop} COP`;
 	const crowd = Math.round(option.crowdLevel * 100);
-	return `${option.label}: ${option.durationMinutes} min, ${fare}, crowding ${crowd}%`;
+	const shade = Math.round((option.shadeShare ?? 0) * 100);
+	return `${option.label}: ${option.durationMinutes} min, ${fare}, crowding ${crowd}%, stops with shade ${shade}%`;
 }
 
 /**
@@ -25,7 +26,7 @@ export function createOpenJevChooser(client: OpenJevClient): AsyncChooser {
 				route: {
 					type: "choice",
 					instructions:
-						"Which route is best for this visitor: arrives on time, low cost, low crowding, low emissions",
+						"Which route is best for this visitor: arrives on time, low cost, low crowding, low emissions, shade against the heat",
 					criteria,
 				},
 			},

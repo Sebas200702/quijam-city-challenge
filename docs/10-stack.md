@@ -14,9 +14,9 @@ Decidido el 26 nov 2026. Las versiones exactas se fijan al crear el proyecto.
 | Agente Guía | Gemini Live API | Conversación multilingüe por voz en tiempo real, con chat de texto como respaldo. |
 | Agente Decisor | Reglas duras + OpenJev por API (Codiv) o puntaje ponderado | Función propia (estado + opciones → opción + confianza). Reglas descartan rutas con arroyo activo o no accesibles; OpenJev (`openjev-latest` en `https://api.codiv.ai`) elige entre las restantes; si la API falla o la confianza es baja, puntaje ponderado en código. Ver [13-openjev.md](13-openjev.md). |
 | Agente Recomendador | Reglas en código | Prioriza eventos ambientales y negocios de barrio según los gustos del visitante. |
-| Quillart AI (27 nov) | Orquestador + seis agentes; Gemini con llamadas a funciones o agente local | Puerta de entrada de la app. `POST /api/assistant`; las herramientas corren en el navegador con la sesión de la persona. Ver [21-quillart-ai.md](21-quillart-ai.md). |
+| Quillart AI (27 nov) | Orquestador + seis agentes; Gemini con llamadas a funciones o agente local | Puerta de entrada de la app. `POST /api/assistant`; las herramientas corren en el navegador con la sesión de la persona. Ver [28-quillart-ai.md](28-quillart-ai.md). |
 | Voz (27 nov) | Web Speech API del navegador | Habla a texto y texto a habla; solo conducto. Gemini Live queda en beta en `/prueba-guia`. |
-| Moderación (27 nov) | Reglas duras + OpenJev (`choice`) | Triaje de eventos, conversaciones y respuestas antes de guardarlos. Ver [20-comunidad-y-moderacion.md](20-comunidad-y-moderacion.md). |
+| Moderación (27 nov) | Reglas duras + OpenJev (`choice`) | Triaje de eventos, conversaciones y respuestas antes de guardarlos. Ver [27-comunidad-y-moderacion.md](27-comunidad-y-moderacion.md). |
 | Gestor de paquetes y runtime | Bun | Instalación, scripts y ejecución. |
 | Linter y formateador | Biome | Un solo comando para lint y formato. |
 | Pruebas | Vitest | Pruebas unitarias de reglas (tarifa justa, Decisor, recomendaciones). |
@@ -53,6 +53,25 @@ Todas las rutas de `src/pages/api/` pasan primero por `guardRequest` (límites d
 | `SUPABASE_SERVICE_ROLE_KEY` | Solo servidor, nunca con `PUBLIC_` | Insertar contenido público después del triaje y la cola de moderación. Salta RLS: solo la usan rutas que verifican primero a la persona (`src/lib/supabase-admin.ts`). | La comunidad funciona solo en el dispositivo |
 | `GEMINI_API_KEY` | Solo servidor | Quillart AI, Guía e informe de impacto | Agente local determinista |
 | `TYPESAFE_API_KEY` | Solo servidor | OpenJev: Decisor, moderación y enrutamiento | Puntaje ponderado, solo reglas y palabras clave |
+
+Las variables de servidor se leen en tiempo de ejecución con `getSecret()` de `astro:env/server`, no con `import.meta.env`: Astro 7 escribe los valores de `import.meta.env` dentro del build, y la llave quedaría dentro de la imagen. Las `PUBLIC_*` sí se escriben en el build porque las usa el navegador.
+
+## Despliegue en Dokploy (#25)
+
+La imagen se construye con el `Dockerfile` de la raíz: Bun instala y compila, y Node 24 corre `dist/server/entry.mjs` en el puerto 4321 con el usuario `node` y un healthcheck sobre `/`.
+
+1. En Dokploy, crear una aplicación con el repositorio, la rama `main` y el tipo de build **Dockerfile**.
+2. En **Build-time arguments**, poner `PUBLIC_SUPABASE_URL` y `PUBLIC_SUPABASE_PUBLISHABLE_KEY`.
+3. En **Environment**, poner las variables de servidor: `SUPABASE_SERVICE_ROLE_KEY`, `GEMINI_API_KEY`, `TYPESAFE_API_KEY` y, si hacen falta, `TYPESAFE_BASE_URL`, `OPENJEV_MODEL`, `GEMINI_TEXT_MODEL`, `GEMINI_LIVE_MODEL` y `GEMINI_REPORT_MODEL`. Nunca van como argumentos de build. Para cambiarlas basta con reiniciar, no hace falta reconstruir.
+4. En **Domains**, apuntar el dominio al puerto `4321` con HTTPS (Let's Encrypt).
+5. Desplegar y probar `/` y `POST /api/guide/token`. Si responde "GEMINI_API_KEY is not set on the server.", la variable no llegó al contenedor.
+
+Prueba local:
+
+```sh
+docker build -t quillart --build-arg PUBLIC_SUPABASE_URL=... --build-arg PUBLIC_SUPABASE_PUBLISHABLE_KEY=... .
+docker run --rm -p 4321:4321 --env-file .env quillart
+```
 
 ## Arquitectura de despliegue
 

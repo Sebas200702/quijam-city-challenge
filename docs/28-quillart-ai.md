@@ -73,7 +73,7 @@ Toda herramienta de acción (`ACTION_TOOLS`: inscribirse, cancelar inscripción,
 ## Voz como conducto
 
 - **Por defecto:** Web Speech API del navegador. Micrófono → texto (reconocimiento de voz) → el mismo flujo de texto. La respuesta se puede leer en voz alta (síntesis de voz). Si el navegador no soporta reconocimiento, el botón de micrófono no aparece y queda el texto.
-- **Beta:** Gemini Live sigue en `/prueba-guia` (ver [11-gemini-live.md](11-gemini-live.md)). Todavía no usa los agentes ni sus herramientas.
+- **Beta:** Gemini Live sigue en `/prueba-guia` (ver [29-gemini-live.md](29-gemini-live.md)). Todavía no usa los agentes ni sus herramientas.
 
 ## Entradas a la conversación
 

@@ -6,7 +6,6 @@ import type { VisitorLanguage, VisitorShellCopy } from "./home-content-types";
  */
 export const VISITOR_SHELL_COPY: Record<VisitorLanguage, VisitorShellCopy> = {
 	es: {
-		referenceTag: "Datos de referencia",
 		openMenu: "Abrir menú",
 		changeLanguage: (name) => `Idioma: ${name}. Cambiar`,
 		close: "Cerrar",
@@ -57,7 +56,6 @@ export const VISITOR_SHELL_COPY: Record<VisitorLanguage, VisitorShellCopy> = {
 		languageOfflineNote: "Sin conexión: el cambio funciona igual.",
 	},
 	en: {
-		referenceTag: "Reference data",
 		openMenu: "Open menu",
 		changeLanguage: (name) => `Language: ${name}. Change`,
 		close: "Close",
@@ -108,7 +106,6 @@ export const VISITOR_SHELL_COPY: Record<VisitorLanguage, VisitorShellCopy> = {
 		languageOfflineNote: "Offline: the change still works.",
 	},
 	pt: {
-		referenceTag: "Dados de referência",
 		openMenu: "Abrir menu",
 		changeLanguage: (name) => `Idioma: ${name}. Mudar`,
 		close: "Fechar",
@@ -159,7 +156,6 @@ export const VISITOR_SHELL_COPY: Record<VisitorLanguage, VisitorShellCopy> = {
 		languageOfflineNote: "Sem conexão: a mudança funciona do mesmo jeito.",
 	},
 	fr: {
-		referenceTag: "Données de référence",
 		openMenu: "Ouvrir le menu",
 		changeLanguage: (name) => `Langue : ${name}. Changer`,
 		close: "Fermer",

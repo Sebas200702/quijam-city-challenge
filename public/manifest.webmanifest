@@ -1,0 +1,27 @@
+{
+	"id": "/inicio",
+	"name": "QUILLART · Barranquilla",
+	"short_name": "QUILLART",
+	"description": "Quillart AI: planes, comunidad, lugares y rutas de Barranquilla en una conversación.",
+	"lang": "es-CO",
+	"dir": "ltr",
+	"start_url": "/inicio",
+	"scope": "/",
+	"display": "standalone",
+	"orientation": "portrait",
+	"background_color": "#F8F9FA",
+	"theme_color": "#007A33",
+	"categories": ["travel", "navigation", "lifestyle"],
+	"icons": [
+		{ "src": "/icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+		{ "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+		{ "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+		{ "src": "/icons/icon-maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+		{ "src": "/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+	],
+	"shortcuts": [
+		{ "name": "Agenda", "url": "/agenda", "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }] },
+		{ "name": "Lugares", "url": "/lugares", "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }] },
+		{ "name": "Mapa", "url": "/mapa", "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }] }
+	]
+}

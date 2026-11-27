@@ -47,7 +47,7 @@ La decisión de [02-decisiones.md](02-decisiones.md) es que el sello de negocio 
 |---|---|---|---|
 | Supabase Cloud (plan gratis) | Base de datos, autenticación y tiempo real. | Gratis | [10-stack.md](10-stack.md) |
 | OpenJev por API en Codiv | Agente Decisor. | Gratis ("Free public experiment") | [13-openjev.md](13-openjev.md) |
-| Gemini Live API | Agente Guía. | Por confirmar | [11-gemini-live.md](11-gemini-live.md) |
+| Gemini Live API | Agente Guía. | Por confirmar | [29-gemini-live.md](29-gemini-live.md) |
 | Dokploy en VPS propio | Despliegue. | Por confirmar | [10-stack.md](10-stack.md) |
 | Infraestructura que ya existe (paraderos, estaciones) | Soporte de los QR en lugar de tótems solares. | Bajo (impresión y permiso) | [02-decisiones.md](02-decisiones.md) |
 | Equipo de cinco personas que programan | Prototipo y programa. | — | README |

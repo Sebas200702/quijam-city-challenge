@@ -20,7 +20,8 @@ export interface PlanRequest {
 
 export interface PlanDeps {
 	segments: RouteSegment[];
-	stops: Pick<CorridorStop, "code" | "zone">[];
+	stops: (Pick<CorridorStop, "code" | "zone"> &
+		Partial<Pick<CorridorStop, "has_shade">>)[];
 	floodZones: Pick<FloodZone, "code" | "alert_active">[];
 	remote?: AsyncChooser;
 }
@@ -58,6 +59,9 @@ export async function planRoute(
 		origin: request.origin,
 		destination: request.destination,
 		crowdByZone: request.crowdByZone,
+		shadedStops: new Set(
+			deps.stops.filter((stop) => stop.has_shade).map((stop) => stop.code),
+		),
 	});
 	const activeFloodZoneIds = [
 		...new Set([

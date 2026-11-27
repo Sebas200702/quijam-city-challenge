@@ -84,6 +84,8 @@ export interface LiveIndicatorsRawInput {
 	forumThreads: readonly LiveCommunityNoticeRow[];
 	forumPosts: readonly LiveCommunityNoticeRow[];
 	openDatasetsCount: number;
+	/** Stamps given at verified businesses (passport_visits rows); 0 when unavailable. */
+	passportVisitsCount?: number;
 	/** Active flood zone codes broadcast over `city-events` (`aguacero`). */
 	liveEventFloodCodes?: readonly string[];
 }

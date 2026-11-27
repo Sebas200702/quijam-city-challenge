@@ -1,6 +1,20 @@
 // Shared contract for the Realtime channel `city-events` (epic #57).
 // Do not redefine these types elsewhere: add new event types here first.
 
+export type HostNeed = "movilidad_reducida";
+
+/** en_camino: the host accepted and walks to the meeting point. */
+export type HostStatus = "en_camino" | "llego" | "terminada";
+
+export interface HostAssignment {
+	id: string;
+	need: HostNeed;
+	meetingPointCode: string;
+	/** pendiente until the host accepts. */
+	status: "pendiente" | HostStatus;
+	etaMin?: number;
+}
+
 export type CityMode = "mundial" | "carnaval" | "cotidiano";
 
 export type CityEvent =
@@ -9,7 +23,20 @@ export type CityEvent =
 	| { type: "cobro_abusivo"; reportId: string }
 	| { type: "modo_ciudad"; mode: CityMode }
 	| { type: "tiempo"; hour: number }
-	| { type: "reiniciar" };
+	| { type: "reiniciar" }
+	// Host duo (#50). The Decider announces the assignment; the host moves it forward.
+	| {
+			type: "anfitrion_asignado";
+			assignmentId: string;
+			need: HostNeed;
+			meetingPointCode: string;
+	  }
+	| {
+			type: "anfitrion_estado";
+			assignmentId: string;
+			status: HostStatus;
+			etaMin?: number;
+	  };
 
 /** What every screen derives from the events it has received. */
 export interface CityState {
@@ -23,6 +50,8 @@ export interface CityState {
 	/** Gran Malecón occupancy, in percent of capacity. */
 	maleconCapacityPct: number;
 	lastOverchargeReportId: string | null;
+	/** The current host assignment (case 2); null when there is none. */
+	hostAssignment: HostAssignment | null;
 }
 
 export const CITY_EVENTS_CHANNEL = "city-events";

@@ -3,7 +3,7 @@
 Referencia del habla de Barranquilla y del Caribe colombiano para el equipo y para Quillart AI. Sirve para tres cosas:
 
 1. **Entender.** El Guía conversa en el idioma de cada persona y entiende cómo se habla aquí (ver [`20-identidad.md`](20-identidad.md) y [`21-respuestas.md`](21-respuestas.md)). Esta lista es su fuente de consulta.
-2. **No confundir cariño con insulto.** La moderación trata la jerga costeña amistosa como normal ([`20-comunidad-y-moderacion.md`](20-comunidad-y-moderacion.md)); aquí queda escrito qué es amistoso y qué pide cuidado.
+2. **No confundir cariño con insulto.** La moderación trata la jerga costeña amistosa como normal ([`27-comunidad-y-moderacion.md`](27-comunidad-y-moderacion.md)); aquí queda escrito qué es amistoso y qué pide cuidado.
 3. **Escribir con medida.** El modo Turista usa un lenguaje cercano que permite habla local ("trancón", "¡Ajá!"); el modo Lo que la ciudad aprende, no ([`03-diseno-actual.md`](03-diseno-actual.md)). Las reglas de uso están al final.
 
 > **En la app.** La página `/jerga` del menú del visitante y el glosario de la Guía usan hoy una lista corta y curada (`src/lib/visitor-menu/slang-source.ts`; el issue #48 prevé moverla al servidor). Este documento es la referencia más amplia: de aquí salen los términos que se sumen a esa lista, con su registro y su regla de uso.
@@ -158,7 +158,7 @@ Para no equivocarse al "hablar local":
 | **Lo que la ciudad aprende (Centro de Mando)** | Sin habla local ([`03-diseno-actual.md`](03-diseno-actual.md)). |
 | **Botones, menús y formularios** | Sin jerga: la interfaz se traduce a español, inglés, portugués y francés y la jerga no se traduce bien de forma literal. |
 | **Traducción de la interfaz** | Las expresiones locales no se traducen literalmente. Se mantienen con una glosa o se reemplazan por un equivalente natural. |
-| **Moderación** | Los términos de las secciones 1 a 8 no son insulto por sí solos. Los marcados ⚠ (**No joda**, **mamar gallo**, **cachaco**) se revisan por el contexto y el tono, no por la palabra. Las groserías fuertes siguen la lista de [`20-comunidad-y-moderacion.md`](20-comunidad-y-moderacion.md). |
+| **Moderación** | Los términos de las secciones 1 a 8 no son insulto por sí solos. Los marcados ⚠ (**No joda**, **mamar gallo**, **cachaco**) se revisan por el contexto y el tono, no por la palabra. Las groserías fuertes siguen la lista de [`27-comunidad-y-moderacion.md`](27-comunidad-y-moderacion.md). |
 | **Entender** | El Guía y los agentes entienden todas las expresiones de este documento aunque no las usen. |
 
 ## 12. Cómo ampliar el diccionario

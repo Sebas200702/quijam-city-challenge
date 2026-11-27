@@ -36,7 +36,7 @@ interface NextStepCardProps {
  * The map section's one "Tu siguiente paso" card (q-next-step) plus the Quillart AI bar,
  * which hands questions to the conversation instead of running a second assistant here.
  * One primary action (rule 2), a one-sentence why from the Decider (rule 6), the
- * corridor seed tagged once as "Datos de referencia" (rule 9) and every state (rule 8).
+ * corridor seed (the map header carries the one "Datos de referencia" tag, rule 9) and every state (rule 8).
  */
 export function NextStepCard({
 	copy,
@@ -65,7 +65,6 @@ export function NextStepCard({
 						<span className="q-star" aria-hidden="true" />
 						{copy.nextStepEyebrow}
 					</p>
-					<span className="q-sim-tag">{copy.referenceTag}</span>
 				</div>
 				{route ? (
 					<>

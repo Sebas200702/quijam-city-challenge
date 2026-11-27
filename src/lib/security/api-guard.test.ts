@@ -18,9 +18,9 @@ function contextFor(ip: string, forwardedFor?: string) {
 	};
 }
 
-function exhaust(ip: string, policy: keyof typeof RATE_LIMIT_POLICIES) {
+async function exhaust(ip: string, policy: keyof typeof RATE_LIMIT_POLICIES) {
 	for (let i = 0; i < RATE_LIMIT_POLICIES[policy].limit; i++) {
-		expect(guardRequest(contextFor(ip), policy)).toBeNull();
+		expect(await guardRequest(contextFor(ip), policy)).toBeNull();
 	}
 }
 
@@ -28,8 +28,11 @@ describe("guardRequest", () => {
 	beforeEach(() => resetRateLimiters());
 
 	it("returns a 429 JSON response with Retry-After once over the limit", async () => {
-		exhaust("203.0.113.5", "guide-token");
-		const response = guardRequest(contextFor("203.0.113.5"), "guide-token");
+		await exhaust("203.0.113.5", "guide-token");
+		const response = await guardRequest(
+			contextFor("203.0.113.5"),
+			"guide-token",
+		);
 		expect(response).not.toBeNull();
 		if (!response) return;
 		expect(response.status).toBe(429);
@@ -43,37 +46,43 @@ describe("guardRequest", () => {
 		});
 	});
 
-	it("limits each address independently", () => {
-		exhaust("203.0.113.5", "guide-token");
+	it("limits each address independently", async () => {
+		await exhaust("203.0.113.5", "guide-token");
 		expect(
-			guardRequest(contextFor("203.0.113.5"), "guide-token"),
+			await guardRequest(contextFor("203.0.113.5"), "guide-token"),
 		).not.toBeNull();
-		expect(guardRequest(contextFor("203.0.113.6"), "guide-token")).toBeNull();
+		expect(
+			await guardRequest(contextFor("203.0.113.6"), "guide-token"),
+		).toBeNull();
 	});
 
-	it("keys user policies on the user id, not the address", () => {
+	it("keys user policies on the user id, not the address", async () => {
 		for (let i = 0; i < RATE_LIMIT_POLICIES["publish-user"].limit; i++) {
 			expect(
-				guardRequest(contextFor(`198.51.100.${i}`), "publish-user", "user-1"),
+				await guardRequest(
+					contextFor(`198.51.100.${i}`),
+					"publish-user",
+					"user-1",
+				),
 			).toBeNull();
 		}
 		expect(
-			guardRequest(contextFor("198.51.100.99"), "publish-user", "user-1"),
+			await guardRequest(contextFor("198.51.100.99"), "publish-user", "user-1"),
 		).not.toBeNull();
 		expect(
-			guardRequest(contextFor("198.51.100.99"), "publish-user", "user-2"),
+			await guardRequest(contextFor("198.51.100.99"), "publish-user", "user-2"),
 		).toBeNull();
 	});
 });
 
 describe("getClientKey", () => {
-	it("hashes the address instead of keeping it raw", () => {
+	it("hashes the address instead of keeping it raw", async () => {
 		const key = getClientKey(contextFor("203.0.113.5"));
 		expect(key).toMatch(/^ip:[0-9a-f]{16}$/);
 		expect(key).not.toContain("203.0.113.5");
 	});
 
-	it("falls back to the first x-forwarded-for value, then unknown", () => {
+	it("falls back to the first x-forwarded-for value, then unknown", async () => {
 		const throwing = {
 			request: new Request("http://localhost", {
 				headers: { "x-forwarded-for": "203.0.113.7, 10.0.0.1" },

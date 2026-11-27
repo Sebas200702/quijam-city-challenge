@@ -4,6 +4,7 @@
 // moderation triage runs before anything is stored.
 
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { checkAppealMessage } from "../moderation/appeal-rules";
 import type { ContentKind } from "../moderation/moderation-types";
 import {
 	EVENT_COLUMNS,
@@ -24,6 +25,7 @@ import {
 	validateThreadInput,
 } from "./community-rules";
 import type {
+	AppealStatus,
 	CommunityEvent,
 	CommunityStore,
 	CommunityTopic,
@@ -282,6 +284,39 @@ export function createCloudCommunityStore(
 			if (error && error.code !== "23505") throw friendly(error);
 		},
 
+		async myWaitlist() {
+			const userId = await currentUserId();
+			if (!userId) return [];
+			const { data, error } = await supabase
+				.from("event_waitlist")
+				.select("event_id")
+				.eq("user_id", userId);
+			// A deployment without the migration simply has no waiting lists yet.
+			if (error) return [];
+			return (data ?? []).map((row) => String(row.event_id));
+		},
+
+		async joinWaitlist(eventId) {
+			const userId = await currentUserId();
+			if (!userId)
+				throw new Error("Inicia sesión para anotarte en la lista de espera.");
+			const { error } = await supabase.rpc("join_waitlist", {
+				p_event_id: eventId,
+			});
+			if (error) throw friendly(error);
+		},
+
+		async leaveWaitlist(eventId) {
+			const userId = await currentUserId();
+			if (!userId) throw new Error("Inicia sesión para continuar.");
+			const { error } = await supabase
+				.from("event_waitlist")
+				.delete()
+				.eq("event_id", eventId)
+				.eq("user_id", userId);
+			if (error) throw friendly(error);
+		},
+
 		async unregister(eventId) {
 			const userId = await currentUserId();
 			if (!userId) throw new Error("Inicia sesión para continuar.");
@@ -372,6 +407,60 @@ export function createCloudCommunityStore(
 				method: "POST",
 				body: { kind, id, action },
 			});
+		},
+
+		async listMyRemoved() {
+			const userId = await currentUserId();
+			if (!userId) return [];
+			const [events, threads, posts, appeals] = await Promise.all([
+				supabase
+					.from("events")
+					.select("id, title")
+					.eq("organizer_id", userId)
+					.eq("moderation_status", "removed"),
+				supabase
+					.from("forum_threads")
+					.select("id, title")
+					.eq("author_id", userId)
+					.eq("moderation_status", "removed"),
+				supabase
+					.from("forum_posts")
+					.select("id, body")
+					.eq("author_id", userId)
+					.eq("moderation_status", "removed"),
+				supabase
+					.from("moderation_appeals")
+					.select("kind, content_id, status")
+					.eq("appellant_id", userId),
+			]);
+			const status = new Map(
+				(appeals.data ?? []).map((row) => [
+					`${row.kind}:${row.content_id}`,
+					row.status as AppealStatus,
+				]),
+			);
+			const item = (kind: ContentKind, id: unknown, title: unknown) => ({
+				kind,
+				id: String(id),
+				title: String(title).slice(0, 80),
+				appealStatus: status.get(`${kind}:${id}`) ?? null,
+			});
+			return [
+				...(events.data ?? []).map((r) => item("event", r.id, r.title)),
+				...(threads.data ?? []).map((r) => item("thread", r.id, r.title)),
+				...(posts.data ?? []).map((r) => item("post", r.id, r.body)),
+			];
+		},
+
+		async appeal(kind, id, message) {
+			const check = checkAppealMessage(message);
+			if (!check.ok) throw new Error(check.error);
+			const { error } = await supabase.rpc("request_appeal", {
+				p_kind: kind,
+				p_content_id: id,
+				p_message: check.message,
+			});
+			if (error) throw friendly(error);
 		},
 
 		async reportContent(kind, id, reason) {

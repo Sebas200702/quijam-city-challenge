@@ -200,9 +200,9 @@ function WrongRoleCard({
 					<summary>Por qué no puedo entrar</summary>
 					<div className="q-details__body">
 						<p className="m-0">
-							El tablero de la ciudad solo se abre con cuentas que tienen el rol{" "}
-							<code>city</code> en Supabase Auth. Tu cuenta tiene el rol{" "}
-							<code>{session.role}</code>.
+							El tablero de la ciudad solo se abre con cuentas de operador de la
+							ciudad, y esta no lo es. Pide ese permiso a quien administra las
+							cuentas de tu entidad.
 						</p>
 					</div>
 				</details>

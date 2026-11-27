@@ -21,6 +21,7 @@ import {
 	formatTimeRange,
 } from "../../lib/community/community-labels";
 import {
+	canJoinWaitlist,
 	isPastEvent,
 	registrationBlocker,
 	spotsLeft,
@@ -58,15 +59,17 @@ export default function EventDetail({ id, aiHref }: EventDetailProps) {
 		async (store) => {
 			const event = await store.getEvent(id);
 			if (!event) return null;
-			const [places, registrations, threads] = await Promise.all([
+			const [places, registrations, waitlist, threads] = await Promise.all([
 				event.placeId ? store.listPlaces() : Promise.resolve([] as Place[]),
 				store.myRegistrations(),
+				store.myWaitlist(),
 				store.listThreads({ eventId: event.id }),
 			]);
 			return {
 				event,
 				place: places.find((place) => place.id === event.placeId) ?? null,
 				registered: registrations.includes(event.id),
+				waitlisted: waitlist.includes(event.id),
 				threads,
 			};
 		},
@@ -112,6 +115,7 @@ interface EventViewProps {
 	event: CommunityEvent;
 	place: Place | null;
 	registered: boolean;
+	waitlisted: boolean;
 	threads: ForumThread[];
 	profile: Profile | null;
 	sessionLoading: boolean;
@@ -122,6 +126,7 @@ function EventView({
 	event,
 	place,
 	registered,
+	waitlisted,
 	threads,
 	profile,
 	sessionLoading,
@@ -228,6 +233,7 @@ function EventView({
 				<RegistrationPanel
 					event={event}
 					registered={registered}
+					waitlisted={waitlisted}
 					signedIn={!!profile}
 					sessionLoading={sessionLoading}
 					onChange={onChange}
@@ -331,12 +337,14 @@ function Capacity({ event }: { event: CommunityEvent }) {
 function RegistrationPanel({
 	event,
 	registered,
+	waitlisted,
 	signedIn,
 	sessionLoading,
 	onChange,
 }: {
 	event: CommunityEvent;
 	registered: boolean;
+	waitlisted: boolean;
 	signedIn: boolean;
 	sessionLoading: boolean;
 	onChange: () => void;
@@ -356,6 +364,8 @@ function RegistrationPanel({
 		setError(null);
 		try {
 			if (registered) await store.unregister(event.id);
+			else if (waitlisted) await store.leaveWaitlist(event.id);
+			else if (canJoinWaitlist(event)) await store.joinWaitlist(event.id);
 			else await store.register(event.id);
 			onChange();
 		} catch (err) {
@@ -391,6 +401,34 @@ function RegistrationPanel({
 						{busy ? t.agenda.cancelling : t.agenda.cancelRegistration}
 					</button>
 				)}
+			</>
+		);
+	} else if (waitlisted) {
+		content = (
+			<>
+				<p className="q-p">{t.agenda.waitlistText}</p>
+				<button
+					type="button"
+					className="q-btn q-btn--secondary q-btn--block"
+					onClick={() => void toggle()}
+					disabled={busy}
+				>
+					{busy ? t.agenda.leavingWaitlist : t.agenda.leaveWaitlist}
+				</button>
+			</>
+		);
+	} else if (canJoinWaitlist(event)) {
+		content = (
+			<>
+				<p className="q-p q-muted">{t.agenda.waitlistHint}</p>
+				<button
+					type="button"
+					className="q-btn q-btn--primary q-btn--block"
+					onClick={() => void toggle()}
+					disabled={busy}
+				>
+					{busy ? t.agenda.joiningWaitlist : t.agenda.joinWaitlist}
+				</button>
 			</>
 		);
 	} else if (blocker) {

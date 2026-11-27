@@ -1,4 +1,5 @@
 import type { DecisionWithSource } from "./decider-types";
+import { isShadedRoute } from "./weighted-chooser";
 
 const copFormatter = new Intl.NumberFormat("es-CO", {
 	maximumFractionDigits: 0,
@@ -31,6 +32,9 @@ export function explainDecision(decision: DecisionWithSource): string {
 	}
 	if (decision.discarded.some((item) => item.reason === "not-accessible")) {
 		parts.push("Solo mostramos rutas accesibles.");
+	}
+	if (isShadedRoute(decision.option)) {
+		parts.push("Esta ruta tiene sombra en los paraderos.");
 	}
 	return parts.join(" ");
 }

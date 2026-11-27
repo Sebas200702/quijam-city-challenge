@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { decide } from "./decider";
 import type { Chooser, DecisionState, RouteOption } from "./decider-types";
 import { applyHardRules } from "./hard-rules";
-import { createWeightedChooser } from "./weighted-chooser";
+import { createWeightedChooser, scoreOptions } from "./weighted-chooser";
 
 function route(
 	overrides: Partial<RouteOption> & Pick<RouteOption, "id">,
@@ -155,6 +155,7 @@ describe("decide", () => {
 			duration: 0,
 			fare: 1,
 			crowd: 0,
+			shade: 0,
 		});
 		const decision = decide(
 			calm,
@@ -162,5 +163,50 @@ describe("decide", () => {
 			cheapFirst,
 		);
 		expect(decision.option?.id).toBe("stairs");
+	});
+});
+
+describe("shade criterion (Rutas frescas, #46)", () => {
+	const sunny = route({ id: "sunny", shadeShare: 0 });
+	const shaded = route({ id: "shaded", shadeShare: 1 });
+
+	it("prefers the shaded route when everything else is equal", () => {
+		const decision = decide(calm, [sunny, shaded]);
+		expect(decision.option?.id).toBe("shaded");
+		expect(decision.confidence).toBe(1);
+	});
+
+	it("counts a route without shade data as a route without shade", () => {
+		const unknown = route({ id: "unknown" });
+		expect(decide(calm, [unknown, shaded]).option?.id).toBe("shaded");
+	});
+
+	it("does not make a much slower route win only because it has shade", () => {
+		const fastSunny = route({ id: "fast", durationMinutes: 15, shadeShare: 0 });
+		const slowShaded = route({
+			id: "slow",
+			durationMinutes: 45,
+			shadeShare: 1,
+		});
+		expect(decide(calm, [slowShaded, fastSunny]).option?.id).toBe("fast");
+	});
+
+	it("never lets shade beat a hard rule", () => {
+		const shadedFlooded = route({
+			id: "flooded",
+			shadeShare: 1,
+			floodZoneIds: ["arroyo-84"],
+		});
+		const decision = decide(
+			{ activeFloodZoneIds: ["arroyo-84"], accessibleMode: false },
+			[shadedFlooded, sunny],
+		);
+		expect(decision.option?.id).toBe("sunny");
+	});
+
+	it("leaves out a criterion where every option is the same", () => {
+		const weights = { duration: 0, fare: 0, crowd: 0, shade: 1 };
+		expect(scoreOptions([sunny, shaded], weights)).toEqual([0, 1]);
+		expect(scoreOptions([shaded, shaded], weights)).toEqual([1, 1]);
 	});
 });

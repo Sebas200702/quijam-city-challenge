@@ -13,6 +13,7 @@ import { validateSignUp } from "../../lib/community/community-rules";
 import type { Profile } from "../../lib/community/community-types";
 import { useT } from "../../lib/i18n/use-language";
 import { AskQuillartButton } from "../assistant/ask-quillart-button";
+import { AppealsPanel } from "./appeals-panel";
 import { CommunityShell } from "./community-shell";
 import {
 	EmptyState,
@@ -670,6 +671,8 @@ function SignedInView({ profile }: { profile: Profile }) {
 					}
 				</Loaded>
 			</Section>
+
+			<AppealsPanel />
 
 			<MyDataPanel />
 

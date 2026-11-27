@@ -24,8 +24,8 @@ Cada una trae la recomendación que salió de la sesión de validación. La colu
 | 18 | Guion del video | Problema 40 s, propuesta 40 s, programa y dimensiones 60 s, demo de tres casos 120 s, impacto y legado 40 s. | Abierto |
 | 19 | Roles | Coordinación, investigación, diseño, prototipado y comunicación. Somos 5 y los 5 programan. | Decidido (26 nov): ver README |
 | 20 | Stack técnico | Ver [10-stack.md](10-stack.md). | Decidido (26 nov) |
-| 21 | Comunidad (eventos, inscripciones, foro) | Plataforma ciudadana real con moderación por triaje. | Decidido (27 nov): ver [20-comunidad-y-moderacion.md](20-comunidad-y-moderacion.md) |
-| 22 | Puerta de entrada | Quillart AI con orquestador y agentes especializados; la voz solo es el conducto. | Decidido (27 nov): ver [21-quillart-ai.md](21-quillart-ai.md) |
+| 21 | Comunidad (eventos, inscripciones, foro) | Plataforma ciudadana real con moderación por triaje. | Decidido (27 nov): ver [27-comunidad-y-moderacion.md](27-comunidad-y-moderacion.md) |
+| 22 | Puerta de entrada | Quillart AI con orquestador y agentes especializados; la voz solo es el conducto. | Decidido (27 nov): ver [28-quillart-ai.md](28-quillart-ai.md) |
 | 23 | Umbral de rechazo de OpenJev en moderación | 0,6: por debajo, el rechazo pasa a revisión humana. | Decidido (27 nov); revisar con lo que llegue a la cola |
 | 24 | Quién modera en el Demo Day | Una persona del equipo con rol `city` atiende `/moderacion`. | Abierto |
 | 25 | Despliegue de la capa de comunidad | Aplicar la migración y la semilla de comunidad en Supabase Cloud y cargar `SUPABASE_SERVICE_ROLE_KEY` en Dokploy. | Abierto |
@@ -47,7 +47,7 @@ Entregable: programa estructurado y prototipo inicial.
 
 Entregable: plataforma ciudadana real con Quillart AI como puerta de entrada.
 
-1. Terminar el orquestador, los seis agentes y `POST /api/assistant` (ver [21-quillart-ai.md](21-quillart-ai.md)).
+1. Terminar el orquestador, los seis agentes y `POST /api/assistant` (ver [28-quillart-ai.md](28-quillart-ai.md)).
 2. Desplegar la capa de comunidad en Supabase Cloud: migración, semilla, llave de servicio y rol de ciudad (punto 25).
 3. Definir quién modera durante el Demo Day (punto 24).
 4. Ensayar el recorrido: landing → conversación → inscripción → foro → aviso a la ciudad → cola de moderación.

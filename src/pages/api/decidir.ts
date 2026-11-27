@@ -23,7 +23,7 @@ function json(body: unknown, status: number): Response {
  * then the weighted score. Called by the map and by the Guide's function call.
  */
 export const POST: APIRoute = async (context) => {
-	const limited = guardRequest(context, "decidir");
+	const limited = await guardRequest(context, "decidir");
 	if (limited) return limited;
 	const { request } = context;
 	let body: unknown;

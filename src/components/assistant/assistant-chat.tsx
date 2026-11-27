@@ -26,6 +26,7 @@ import type {
 	AssistantToolResult,
 } from "../../lib/assistant/assistant-types";
 import { useT } from "../../lib/i18n/use-language";
+import { scrollBehavior } from "../../lib/reduced-motion";
 import {
 	ErrorNote,
 	PublishNotice,
@@ -204,6 +205,7 @@ export function AssistantChat({
 	const t = useT();
 	const {
 		messages,
+		draft: streaming,
 		pending,
 		loading,
 		error,
@@ -257,8 +259,11 @@ export function AssistantChat({
 	// biome-ignore lint/correctness/useExhaustiveDependencies: scroll when the log grows.
 	useEffect(() => {
 		if (messages.length === 0) return;
-		endRef.current?.scrollIntoView({ block: "end", behavior: "smooth" });
-	}, [messages.length, pending.length, loading]);
+		endRef.current?.scrollIntoView({
+			block: "end",
+			behavior: scrollBehavior(),
+		});
+	}, [messages.length, pending.length, loading, streaming?.text]);
 
 	const submit = (event: SyntheticEvent<HTMLFormElement>) => {
 		event.preventDefault();
@@ -407,7 +412,20 @@ export function AssistantChat({
 								/>
 							</div>
 						))}
-						{loading && (
+						{streaming && streaming.text !== "" && (
+							// Announced once, as a message, when the answer is complete.
+							<div aria-hidden="true">
+								<MessageView
+									message={{
+										role: "assistant",
+										agent: streaming.agent,
+										text: streaming.text,
+										toolCalls: [],
+									}}
+								/>
+							</div>
+						)}
+						{loading && !streaming?.text && (
 							<div className="q-msg q-msg--ai">
 								<AiAvatar thinking />
 								<div className="q-thinking">

@@ -130,7 +130,10 @@ export function userIcon({
 
 /** Marks a marker as selected (bigger pin, its glow and its label) or clears the mark. */
 export function setMarkerSelected(marker: L.Marker, selected: boolean) {
-	const pin = marker.getElement()?.querySelector(".q-pin");
-	pin?.classList.toggle("is-selected", selected);
+	const element = marker.getElement();
+	element?.querySelector(".q-pin")?.classList.toggle("is-selected", selected);
+	// Say it to screen readers too, not only with the glow and the label.
+	if (selected) element?.setAttribute("aria-current", "true");
+	else element?.removeAttribute("aria-current");
 	marker.setZIndexOffset(selected ? 1000 : 0);
 }

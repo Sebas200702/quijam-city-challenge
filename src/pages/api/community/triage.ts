@@ -19,7 +19,7 @@ const KINDS: ContentKind[] = ["event", "thread", "post"];
  * without storing anything. The cloud store uses /api/community/publish.
  */
 export const POST: APIRoute = async (context) => {
-	const limited = guardRequest(context, "triage");
+	const limited = await guardRequest(context, "triage");
 	if (limited) return limited;
 	const { request } = context;
 	try {

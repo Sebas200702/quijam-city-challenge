@@ -1,3 +1,4 @@
+import { getSecret } from "astro:env/server";
 import { GoogleGenAI } from "@google/genai";
 import type { APIRoute } from "astro";
 import type {
@@ -24,17 +25,17 @@ function json(body: unknown, status: number): Response {
 
 /** Issues an ephemeral Gemini Live token. The real API key never leaves the server. */
 export const POST: APIRoute = async (context) => {
-	const limited = guardRequest(context, "guide-token");
+	const limited = await guardRequest(context, "guide-token");
 	if (limited) return limited;
 	const { url } = context;
-	const apiKey = import.meta.env.GEMINI_API_KEY;
+	const apiKey = getSecret("GEMINI_API_KEY");
 	if (!apiKey) {
 		return json({ error: "GEMINI_API_KEY is not set on the server." }, 500);
 	}
 
 	const mode: GuideMode =
 		url.searchParams.get("mode") === "text" ? "text" : "audio";
-	const model = import.meta.env.GEMINI_LIVE_MODEL || DEFAULT_LIVE_MODEL;
+	const model = getSecret("GEMINI_LIVE_MODEL") || DEFAULT_LIVE_MODEL;
 	const config = buildLiveTokenConfig(model);
 
 	try {

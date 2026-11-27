@@ -23,7 +23,7 @@ function json(body: unknown, status: number): Response {
  * visitors may only insert open reports.
  */
 export const POST: APIRoute = async (context) => {
-	const limited = guardRequest(context, "reports");
+	const limited = await guardRequest(context, "reports");
 	if (limited) return limited;
 	const { request } = context;
 	let body: unknown;

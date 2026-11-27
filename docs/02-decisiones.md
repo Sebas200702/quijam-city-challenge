@@ -149,7 +149,7 @@ Base: la asignación hecha por Sebastián en el tablero. Se completaron los issu
 
 ## Plataforma ciudadana real y Quillart AI como puerta de entrada (27 nov 2026)
 
-Dirección del líder del equipo, en orden. Detalle en [20-comunidad-y-moderacion.md](20-comunidad-y-moderacion.md) y [21-quillart-ai.md](21-quillart-ai.md).
+Dirección del líder del equipo, en orden. Detalle en [27-comunidad-y-moderacion.md](27-comunidad-y-moderacion.md) y [28-quillart-ai.md](28-quillart-ai.md).
 
 1. **Entorno real, no simulación.** La app conecta a residentes de Barranquilla y visitantes entre sí y con el entorno: cada persona registra sus propios eventos, se inscribe con cupos, abre conversaciones en un foro y descubre espacios públicos y naturaleza. Se revisa la decisión "Sin red social" del 26 nov: hay comunidad, pero toda publicación pasa por el triaje de moderación.
 2. **No solo el mapa; foros moderados con OpenJev.** El mapa pasa a ser un apartado más. El foro, los eventos y las respuestas se moderan con triaje automático: reglas duras primero, OpenJev con tres preguntas (veredicto, etiqueta, prioridad) después, gana lo más estricto; un rechazo de OpenJev con confianza menor a 0,6 pasa a revisión humana; sin OpenJev decide solo con reglas. Los datos personales nunca se envían a OpenJev. Solo el servidor (llave de servicio) inserta contenido público. Lo retenido lo ven su autor y la ciudad, que lo revisa en `/moderacion`.
@@ -205,3 +205,13 @@ Ver [26-arquitectura-de-informacion.md](26-arquitectura-de-informacion.md). Issu
 
 - **Cinco dimensiones con separación real vs. referencia (regla 9 y épica #79):** el panel de indicadores en `/ciudad` muestra Territorio, Sostenibilidad, Ciudad inteligente, Ciudadanía y Economía con valor actual, meta y barra `.q-meter` con palabra de estado (`En meta`, `En avance`, `Por mejorar`). Cada tarjeta separa en bloques distintos los datos reales de la comunidad (`events`, `registered_count`, avisos cerrados con `triage_priority <> 'none'` y `city_resolved_at`, `places`) de los datos semilla del corredor (`Datos de referencia`).
 - **Actualización dual en tiempo real:** `LiveIndicatorsPanel` se suscribe a `supabase_realtime` (`events`, `forum_threads`, `forum_posts`, `overcharge_reports`, `flood_zones`, `businesses`, `route_segments`, `places`) y reacciona al canal compartido `city-events` (`cobro_abusivo`, `aguacero`, `reiniciar`). El conteo de conjuntos abiertos lee `/api/datos/` en vivo con respaldo base de 6 conjuntos.
+
+## App instalable y sin conexión (27 nov 2026)
+
+Issue #47.
+
+- **Inicio de la app instalada = `/inicio`** (Quillart AI). El manifiesto (`public/manifest.webmanifest`) y los íconos de `public/icons/` siguen el `.q-logo__tile`: baldosa verde, marco oro y la estrella blanca de 8 puntas.
+- **Service worker escrito a mano, sin dependencias nuevas.** La lógica vive en `src/lib/offline/` (TypeScript, con pruebas); la integración `service-worker-integration.ts` lo empaqueta con Vite después de `astro build`, lista los archivos del build para guardarlos y saca la versión de esa lista. Solo se registra en producción; en `astro dev` se borra cualquier worker que haya quedado.
+- **Estrategias:** páginas con red primero (espera 4 s) y copia guardada, después `/offline`; archivos con hash, caché primero; teselas del mapa con límite de 400; el catálogo de lugares de Supabase, red primero. Las `/api` y todo lo que no sea GET van siempre a la red.
+- **Sin red, Quillart AI responde con los agentes locales en el teléfono** (sin proponer acciones) y el Guía y `plan_route` responden las tres rutas desde el Gran Malecón con la semilla del corredor.
+- **Notificación de arroyo:** solo mientras la app está abierta (en primer o segundo plano); no hay Web Push. En el mapa sale solo con la app en segundo plano, porque en primer plano ya está el modal; en Quillart AI y en las pantallas de comunidad sale si la persona ya dio permiso. El permiso se pide únicamente con un botón bajo la banda del arroyo, nunca al cargar (regla 4). El formato (`AppNotification`) sirve para los recordatorios de eventos (#91).

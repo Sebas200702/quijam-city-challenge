@@ -1,12 +1,12 @@
 /**
- * Contextual notices for the visitor (docs/20, section 3). One slot, one
+ * Contextual notices for the visitor (docs/26, section 3). One slot, one
  * visible notice, a short queue behind it. Pure data: no React, no DOM.
  */
 
 /** What the notice is about. The order of `NOTICE_PRIORITY` is the priority. */
 export type NoticeKind = "arroyo" | "anfitrion" | "desvio" | "reporte";
 
-/** Lower number wins (docs/20, table 3.2). */
+/** Lower number wins (docs/26, table 3.2). */
 export const NOTICE_PRIORITY: Record<NoticeKind, number> = {
 	arroyo: 1,
 	anfitrion: 2,
@@ -63,7 +63,7 @@ export const MAX_WAITING = 3;
 /** No notice closes by itself before this (WCAG 2.2.1). */
 export const MIN_VISIBLE_MS = 20_000;
 
-/** A diversion suggestion expires after 20 min (docs/20, 3.3). */
+/** A diversion suggestion expires after 20 min (docs/26, 3.3). */
 export const DESVIO_TTL_MS = 20 * 60_000;
 
 /** What the visitor's route and position touch, to decide if an arroyo applies. */

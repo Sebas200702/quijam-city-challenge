@@ -6,7 +6,6 @@ import type {
 } from "../../../lib/city-dashboard-utils";
 import "./city-shell.css";
 import { CorridorZoneMap } from "./corridor-zone-map";
-import { DecisionsPlaceholder } from "./decisions-placeholder";
 import { DimensionKpis } from "./dimension-kpis";
 import { ShellNotice } from "./shell-notice";
 import { ShellState } from "./shell-state";
@@ -23,10 +22,12 @@ interface CommandCenterProps {
 	onDismissActionError: () => void;
 	onRetry: () => void;
 	clockLabel: string;
-	/** Decisor card from city/sections; an empty "Decisiones" panel by default. */
-	decisionSlot?: ReactNode;
+	/** Decisor card from city/sections: the diversion proposal or the active diversion. */
+	decisionSlot: ReactNode;
 	/** Higher-priority notice (an active arroyo); see ShellNotice. */
 	priorityNotice?: ReactNode;
+	/** Match-day timeline (#44), shown under the map. */
+	timelineSlot?: ReactNode;
 }
 
 /** Map on the left, indicators and panels on the right, with complete states. */
@@ -42,6 +43,7 @@ export function CommandCenter({
 	clockLabel,
 	decisionSlot,
 	priorityNotice,
+	timelineSlot,
 }: CommandCenterProps) {
 	const zones = snapshot?.zones ?? [];
 	const floodZones = snapshot?.floodZones ?? [];
@@ -85,7 +87,7 @@ export function CommandCenter({
 							onDismissError={onDismissActionError}
 							priority={priorityNotice}
 						/>
-						{decisionSlot ?? <DecisionsPlaceholder />}
+						{decisionSlot}
 						<StatusRowsPanel
 							floodZones={floodZones}
 							reports={snapshot.reports}
@@ -106,6 +108,7 @@ export function CommandCenter({
 				zones={zones}
 				floodZones={floodZones}
 				clockLabel={clockLabel}
+				timeline={timelineSlot}
 			/>
 			<div className="cs-right">{right}</div>
 		</div>

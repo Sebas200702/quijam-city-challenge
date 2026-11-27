@@ -11,6 +11,8 @@ Esquema inicial para el corredor piloto **Estadio Metropolitano – Troncal Muri
 | [`supabase/seed.sql`](../supabase/seed.sql) | Datos semilla simulados e idempotentes del corredor piloto 2034. |
 | [`supabase/migrations/20261127000001_community_schema.sql`](../supabase/migrations/20261127000001_community_schema.sql) | Capa de comunidad (27 nov): perfiles, lugares, eventos, inscripciones con cupos, foro, columnas de moderación, RLS y Realtime. |
 | [`supabase/seed-community.sql`](../supabase/seed-community.sql) | Lugares de la ciudad, agenda inicial ("Agenda QUILLART") con fechas relativas a hoy e hilo de bienvenida. Idempotente. |
+| [`supabase/migrations/20261127000004_vendor_portal.sql`](../supabase/migrations/20261127000004_vendor_portal.sql) | Portal del vendedor (#49): alta por QR, productos con precio, visitas y Realtime de negocios. |
+| [`supabase/tests/`](../supabase/tests/) | Pruebas de RLS y triggers en un PostgreSQL local (ver su README). |
 
 ## Tablas
 
@@ -51,12 +53,13 @@ Ejecutar en el **SQL Editor** de Supabase en este orden (todos los scripts son i
 3. `supabase/seed.sql`
 4. `supabase/migrations/20261127000001_community_schema.sql` (usa `current_user_role()` y `touch_updated_at()` de los pasos 1 y 2)
 5. `supabase/seed-community.sql`
+6. Las demás migraciones de `supabase/migrations/` en orden de nombre, incluida `20261127000004_vendor_portal.sql`
 
 Para habilitar un usuario con rol `city` o `vendor`, insertar su `user_id` (desde Authentication → Users) en `public.user_profiles` o definir `{"role": "city"}` en `app_metadata`.
 
 ## Capa de comunidad (27 nov 2026)
 
-Detalle funcional y del triaje en [20-comunidad-y-moderacion.md](20-comunidad-y-moderacion.md).
+Detalle funcional y del triaje en [27-comunidad-y-moderacion.md](27-comunidad-y-moderacion.md).
 
 | Tabla | Uso | Realtime |
 |---|---|---|
@@ -98,3 +101,26 @@ Detalle funcional y del triaje en [20-comunidad-y-moderacion.md](20-comunidad-y-
 Detalle en [22-seguridad-y-confianza.md](22-seguridad-y-confianza.md).
 
 Regla clave: **los clientes no tienen permiso de `INSERT` en `events`, `forum_threads` ni `forum_posts`**. Todo contenido público entra por `POST /api/community/publish`, que corre el triaje y escribe con la llave de servicio. Lo retenido solo lo ven su autor y la ciudad.
+
+## Portal del vendedor (#49)
+
+Migración `20261127000004_vendor_portal.sql`. Probada en un PostgreSQL local con `supabase/tests/vendor-portal-test.sql`.
+
+| Cambio | Detalle |
+|---|---|
+| `businesses.verification_status` | `pending` o `verified` (los negocios de la semilla quedan `verified`) |
+| `business_claims` (nueva) | Códigos de alta de un solo uso. Solo guarda el **SHA-256** del código; nadie la lee por la API |
+| `create_business_claim(code)` | Solo la ciudad (o el editor SQL). Devuelve el código **una vez** para imprimirlo como QR: `/vendedor/entrar?alta=<código>`. Un código nuevo reemplaza al anterior |
+| `claim_business(token)` | Quien inició sesión y escanea el QR queda como dueña del negocio y recibe el rol `vendor` (una cuenta `city` conserva su rol). El código se borra al usarse |
+| Guardia `trg_businesses_vendor_guard` | El vendedor solo cambia nombre, descripción y abierto/cerrado. Verificación, dueño, código, zona, ubicación, sin comisión y QR de sellos quedan para la ciudad |
+| `business_products` (nueva) | Nombre, precio en pesos (0 a 2.000.000), disponible y orden. Todos leen los disponibles; la dueña edita los suyos |
+| `business_visits` (nueva) | Solo negocio y hora, nada del visitante (Ley 1581 de 2012). Solo escribe el servidor (`POST /api/vendor/visit`, una visita por negocio cada 30 min por IP y solo si está abierto y verificado). Lee la dueña y la ciudad |
+| Realtime | `businesses` y `business_visits` entran a `supabase_realtime`: el mapa ve "Abierto" al instante y el vendedor ve sus visitas |
+
+**Dar de alta a una vendedora** (en el editor SQL, como la ciudad):
+
+```sql
+select public.create_business_claim('BIZ-FRITOS-ROSA');
+-- → 36 caracteres; imprimir el QR de https://<dominio>/vendedor/entrar?alta=<código>
+```
+

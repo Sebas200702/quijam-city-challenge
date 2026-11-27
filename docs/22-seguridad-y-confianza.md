@@ -1,6 +1,6 @@
 # Seguridad y confianza
 
-Cómo evitamos la información falsa, las estafas, la suplantación y el abuso en una plataforma abierta donde cualquiera publica, y cómo protegemos los datos de las personas. Complementa [20-comunidad-y-moderacion.md](20-comunidad-y-moderacion.md) y [21-quillart-ai.md](21-quillart-ai.md).
+Cómo evitamos la información falsa, las estafas, la suplantación y el abuso en una plataforma abierta donde cualquiera publica, y cómo protegemos los datos de las personas. Complementa [27-comunidad-y-moderacion.md](27-comunidad-y-moderacion.md) y [28-quillart-ai.md](28-quillart-ai.md).
 
 ## Principios
 
@@ -23,8 +23,38 @@ Cómo evitamos la información falsa, las estafas, la suplantación y el abuso e
 | Errores de la voz | El dictado entiende mal y publica otra cosa | La voz solo es el canal: el texto transcrito se ve y se puede editar en la confirmación antes de publicar. | `action-confirm-card.tsx` |
 | Moderador comprometido o arbitrario | Alguien aprueba lo que no debe | **Registro de auditoría**: quién aprobó, retiró, atendió o confirmó qué y cuándo (`moderation_actions`, solo lo lee la ciudad). Segundo factor para el rol ciudad (ver configuración). | `community-server.ts` (`applyModeration`), migración 2 |
 | Clickjacking y otros ataques del navegador | La app dentro de un iframe ajeno | Cabeceras en todas las respuestas: `X-Frame-Options: SAMEORIGIN`, `X-Content-Type-Options: nosniff`, `Referrer-Policy`, `Permissions-Policy` (micrófono solo para la propia app), `Cross-Origin-Opener-Policy`. | `src/middleware.ts` |
+| Script inyectado (XSS) | Un texto del foro logra meter `<script>` o un enlace a un script ajeno | **Content-Security-Policy** en cada página: solo corren nuestros scripts y los scripts en línea exactos de esa página (por hash). Sin `eval`, sin plugins, sin conexiones a sitios fuera de la lista. Ver la sección siguiente. | `src/lib/security/csp.ts`, `src/middleware.ts` |
 | Derechos sobre los datos | "Quiero ver y borrar lo que tienen de mí" | **Descargar mis datos** (JSON) y **Eliminar mi cuenta** (escribiendo ELIMINAR) en `/perfil`. Se borran conversaciones, respuestas, reportes e inscripciones; los eventos futuros se cancelan y los pasados quedan como "Cuenta eliminada". | `my-data-panel.tsx`, `DELETE /api/community/account`, `delete_community_account()` |
+| Retiro injusto | Un moderador retira algo que no debía | **Apelación**: quien publicó pide una segunda revisión una sola vez desde `/perfil`. Queda en la sección *Apelaciones* de `/moderacion` y en la auditoría (`appeal`, `appeal_upheld`, `appeal_overturned`). | `appeals-panel.tsx`, `appeal-rules.ts`, tabla `moderation_appeals`, función `request_appeal()` |
+| Un mismo riesgo reportado por muchas personas | Tres reportes del mismo hueco o arroyo, cada uno marcado "para la ciudad" | **Corroboración**: cuando **3 personas distintas** publican un reporte de riesgo en **el mismo lugar** dentro de **6 horas** (sin que la ciudad lo haya atendido), todos suben de *para la ciudad* a *urgente*. Queda en la auditoría como `corroborate`. Reportes sin lugar o de una misma persona no suman. | `corroboration.ts`, `corroborateRisk()` en `community-server.ts` |
+| Eventos llenos y cupos que se pierden | Alguien se inscribe y no va; otra persona se queda afuera | **Lista de espera**: cuando un evento se llena, las personas se anotan y la primera en orden de llegada entra sola apenas alguien cancela. Solo quien se anotó y quien organiza ven la lista (RLS). | `event_waitlist`, `join_waitlist()`, trigger `handle_event_registration`, `event-detail.tsx` |
 | Exponer quién va a un evento | Acosar a quien se inscribió | Las inscripciones solo las ven la persona y quien organiza (RLS). Nunca se muestran listas públicas. | migración 1 |
+
+## Content-Security-Policy
+
+Cada página HTML lleva la cabecera `Content-Security-Policy`. El middleware calcula en cada respuesta el SHA-256 de los scripts en línea que trae la página (el del tema y los cargadores de islas de Astro), así que no hace falta `'unsafe-inline'` para scripts.
+
+| Directiva | Permite | Por qué |
+|---|---|---|
+| `script-src` | `'self'` y los hashes de la página. En `/prueba-guia`, también `blob:` | El AudioWorklet de la prueba de voz se carga desde un `blob:` |
+| `style-src` | `'self'`, `'unsafe-inline'`, Google Fonts (CSS) | Astro y React escriben atributos `style`; el CSS inyectado es mucho menos riesgoso que un script |
+| `font-src` | `'self'`, `fonts.gstatic.com` | Inter y Space Grotesk |
+| `img-src` | `'self'`, `data:`, `blob:`, `tile.openstreetmap.org` | Teselas de Leaflet, QR e ilustraciones |
+| `connect-src` | `'self'`, Supabase (https y wss, sacado de `PUBLIC_SUPABASE_URL`), `generativelanguage.googleapis.com` (https y wss) | REST, Auth y Realtime de Supabase; Gemini Live desde el navegador |
+| `worker-src`, `media-src` | `'self'`, `blob:` | |
+| `object-src` | `'none'` | Sin plugins |
+| `base-uri`, `form-action`, `frame-ancestors` | `'self'` | Nadie cambia la base, recibe nuestros formularios ni nos mete en un iframe |
+| `report-uri` | `/api/csp-report` | Las violaciones quedan en el registro del servidor como `[csp] violation` |
+
+**Modo** con la variable `CSP_MODE` (se lee en tiempo de ejecución, se puede cambiar en Dokploy sin reconstruir):
+
+- `enforce` (por defecto): bloquea.
+- `report-only`: no bloquea, solo reporta. Sirve para probar un servicio o una página nueva.
+- `off`: sin política (solo para una emergencia en la demo).
+
+**Para agregar un servicio externo nuevo** (otro proveedor de teselas, una API llamada desde el navegador), agrégalo en `SOURCES` de `src/lib/security/csp.ts`, prueba con `CSP_MODE=report-only` y revisa que no aparezcan `[csp] violation` en el registro.
+
+Verificado el 27 nov 2026 con Playwright: primero en `report-only` y luego aplicada, en `/`, `/inicio`, `/mapa`, `/prueba-guia`, `/ciudad`, `/agenda`, `/foro`, `/lugares`, `/datos`, `/jerga`, `/moderacion`, `/pasaporte`, `/perfil` y `/reportar`. Hubo 0 violaciones y todas las islas se hidrataron, tanto con `build` como con `astro dev`. Con la política aplicada se bloquean un script inyectado, un script de otro sitio, una conexión a otro sitio y `eval`. Faltó probar las conexiones reales a Supabase y Gemini, porque no había llaves en el entorno.
 
 ## Límites de uso
 
@@ -38,9 +68,12 @@ Cómo evitamos la información falsa, las estafas, la suplantación y el abuso e
 | `reports` | 5 cada 10 min | IP |
 | `decidir` | 30 por minuto | IP |
 | `impact-report` | 5 por minuto | IP |
+| `csp-report` | 30 por minuto | IP |
 | `account` | 5 cada 10 min | IP |
 
-Las IP se guardan como un hash SHA-256 recortado, nunca en claro. El estado vive en la memoria del proceso: sirve para un solo contenedor en Dokploy; con varias réplicas hay que pasarlo a un almacén compartido.
+Las IP se guardan como un hash SHA-256 recortado, nunca en claro.
+
+**Contadores compartidos:** cada proceso cuenta en memoria primero (barato, y sigue protegiendo si algo falla) y, si hay `SUPABASE_SERVICE_ROLE_KEY`, también en la tabla `rate_limits` con la función `rate_limit_hit()` (ventana fija por política y llave). Así el límite vale para todas las réplicas de Dokploy y sobrevive a un reinicio. Si Supabase no responde en 800 ms o falla, manda la decisión en memoria: el límite nunca se vuelve un punto único de falla. Cada petición a una API con límite suma un viaje a Supabase.
 
 ## Modelo de datos (migración `20261127000002_trust_and_safety.sql`)
 
@@ -62,10 +95,6 @@ Hay que hacerla en los paneles de Supabase y Dokploy antes de abrir al público:
 
 ## Pendiente
 
-- **Content-Security-Policy:** requiere una lista permitida para teselas de Leaflet, Google Fonts, Supabase (REST y websocket) y Gemini (incluido el websocket de Live).
-- **Apelaciones:** que la persona cuyo contenido se retiró pueda pedir una segunda revisión.
-- **Corroboración automática:** subir la prioridad de un reporte cuando varias personas distintas reportan lo mismo en la misma zona.
-- **Límites compartidos:** mover los límites de uso a Supabase o Redis si hay más de una réplica.
 - **Lista de espera** cuando un evento se llena, y límite de inscripciones simultáneas por cuenta.
 - **Revisar en el código** si el modelo afirma una acción sin resultado de herramienta (hoy solo lo impide la instrucción).
 - **Informe público de moderación** (cuánto se retuvo, por qué y en cuánto tiempo).

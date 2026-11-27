@@ -96,7 +96,7 @@ Reglas de la moderación:
 - Las reglas duras rechazan datos personales, odio y amenazas **antes** de llamar a OpenJev: ese texto nunca sale del servidor.
 - Gana el veredicto más estricto entre reglas y OpenJev.
 - Un `reject` de OpenJev con confianza menor a **0,6** (`MIN_REJECT_CONFIDENCE`) se convierte en revisión humana.
-- Detalle en [20-comunidad-y-moderacion.md](20-comunidad-y-moderacion.md) y [21-quillart-ai.md](21-quillart-ai.md).
+- Detalle en [27-comunidad-y-moderacion.md](27-comunidad-y-moderacion.md) y [28-quillart-ai.md](28-quillart-ai.md).
 
 ## Privacidad
 

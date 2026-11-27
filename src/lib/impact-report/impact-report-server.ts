@@ -1,3 +1,4 @@
+import { getSecret } from "astro:env/server";
 import { GoogleGenAI } from "@google/genai";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import type { FloodZone, ZoneVisitorCount } from "../city-dashboard-types";
@@ -84,7 +85,7 @@ function template(
 export async function writeReport(
 	metrics: ImpactMetrics,
 ): Promise<ImpactReportResponse> {
-	const apiKey = import.meta.env.GEMINI_API_KEY;
+	const apiKey = getSecret("GEMINI_API_KEY");
 	if (!apiKey) {
 		return template(metrics, "No hay GEMINI_API_KEY en el servidor.");
 	}
@@ -92,7 +93,7 @@ export async function writeReport(
 	try {
 		const ai = new GoogleGenAI({ apiKey });
 		const response = await ai.models.generateContent({
-			model: import.meta.env.GEMINI_REPORT_MODEL || DEFAULT_REPORT_MODEL,
+			model: getSecret("GEMINI_REPORT_MODEL") || DEFAULT_REPORT_MODEL,
 			contents: buildReportPrompt(metrics),
 			config: {
 				systemInstruction: REPORT_SYSTEM_INSTRUCTION,

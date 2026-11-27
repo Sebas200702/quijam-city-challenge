@@ -490,7 +490,7 @@ export function JuryQrPanel({ summary, connectionState }: JuryQrPanelProps) {
 								type="button"
 								onClick={() => setExpanded(true)}
 								disabled={!qrReady}
-								className="q-btn q-btn--primary"
+								className="q-btn q-btn--secondary"
 							>
 								<Maximize2 {...ICON} />
 								Proyectar QR

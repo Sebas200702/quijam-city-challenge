@@ -83,4 +83,20 @@ describe("explainDecision", () => {
 			"Ahora no hay una ruta segura. Espera en un lugar seco o pide un anfitrión.",
 		);
 	});
+
+	it("says the route has shade when every stop has it", () => {
+		const text = explainDecision(
+			decision({ option: { ...transmetro, shadeShare: 1 } }),
+		);
+		expect(text).toBe(
+			"Te recomendamos Transmetro directo: 38 min, $3.500. Esta ruta tiene sombra en los paraderos.",
+		);
+	});
+
+	it("does not promise shade when only part of the route has it", () => {
+		const text = explainDecision(
+			decision({ option: { ...transmetro, shadeShare: 0.5 } }),
+		);
+		expect(text).not.toContain("sombra");
+	});
 });

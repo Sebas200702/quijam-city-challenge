@@ -9,6 +9,8 @@ interface ImportMetaEnv {
 	readonly GEMINI_LIVE_MODEL?: string;
 	readonly GEMINI_REPORT_MODEL?: string;
 	readonly GEMINI_TEXT_MODEL?: string;
+	readonly CSP_MODE?: string;
+	readonly DEMO_PRESENTER_KEY?: string;
 }
 
 interface ImportMeta {

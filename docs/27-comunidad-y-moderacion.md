@@ -164,7 +164,7 @@ Acciones (`POST /api/community/moderation`):
    - `PUBLIC_SUPABASE_URL` y `PUBLIC_SUPABASE_PUBLISHABLE_KEY`.
    - `SUPABASE_SERVICE_ROLE_KEY`: solo servidor; sin ella la comunidad funciona solo en el dispositivo.
    - `TYPESAFE_API_KEY`: OpenJev; sin ella el triaje usa solo reglas.
-   - `GEMINI_API_KEY`: Quillart AI (ver [21-quillart-ai.md](21-quillart-ai.md)).
+   - `GEMINI_API_KEY`: Quillart AI (ver [28-quillart-ai.md](28-quillart-ai.md)).
 4. En Authentication de Supabase, habilitar registro con correo.
 5. Dar rol de ciudad a quien modera: insertar su `user_id` en `public.user_profiles` con `role = 'city'`.
 6. Probar: publicar un evento normal (se publica), uno con un celular (rechazado), uno con una grosería (retenido) y uno que mencione un arroyo crecido (publicado y en la cola de la ciudad).

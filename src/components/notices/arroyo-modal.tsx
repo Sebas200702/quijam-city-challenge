@@ -71,6 +71,8 @@ export function ArroyoModal({ notice, onAction, onDismiss }: ArroyoModalProps) {
 			<div
 				ref={dialogRef}
 				className="q-alert q-alert--alert q-alert--modal q-notice"
+				// Spanish-only copy for now (WCAG 3.1.2, language of parts).
+				lang="es"
 				role="alertdialog"
 				aria-modal="true"
 				aria-labelledby={`${id}-title`}

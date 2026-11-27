@@ -155,12 +155,25 @@ export function sanitizeFunctionCalls(
 	return limitActionCalls(drafts).slice(0, MAX_TOOL_CALLS);
 }
 
-/** One agent turn with Gemini. Throws on failure so the caller falls back locally. */
+/** Visible text of a model reply; thoughts are skipped. */
+function visibleText(parts: Part[] | undefined): string {
+	return (parts ?? [])
+		.filter((part) => typeof part.text === "string" && !part.thought)
+		.map((part) => part.text)
+		.join("");
+}
+
+/**
+ * One agent turn with Gemini. Throws on failure so the caller falls back
+ * locally. With onText, the reply is streamed and each text piece is passed
+ * on as it arrives; the returned turn is the complete reply either way.
+ */
 export async function runGeminiAgent(
 	agent: AssistantAgentId,
 	messages: AssistantMessage[],
 	context: AssistantContext,
 	options: GeminiAgentOptions,
+	onText?: (text: string) => void,
 ): Promise<AgentTurn> {
 	// Loaded here so the local agents and their tests never pull in the SDK.
 	const { GoogleGenAI } = await import("@google/genai");
@@ -172,7 +185,7 @@ export async function runGeminiAgent(
 	const controller = new AbortController();
 	const timer = setTimeout(() => controller.abort(), timeoutMs);
 	try {
-		const response = await ai.models.generateContent({
+		const request = {
 			model: options.model,
 			contents: toGeminiContents(messages),
 			config: {
@@ -181,14 +194,29 @@ export async function runGeminiAgent(
 				tools: [{ functionDeclarations: toolDeclarationsFor(agent) }],
 				abortSignal: controller.signal,
 			},
-		});
-		const toolCalls = sanitizeFunctionCalls(agent, response.functionCalls);
-		// Read text parts directly: response.text warns when calls are present.
-		const text = (response.candidates?.[0]?.content?.parts ?? [])
-			.filter((part) => typeof part.text === "string" && !part.thought)
-			.map((part) => part.text)
-			.join("")
-			.trim();
+		};
+		let raw = "";
+		let calls: FunctionCall[] = [];
+		if (onText) {
+			for await (const chunk of await ai.models.generateContentStream(
+				request,
+			)) {
+				const piece = visibleText(chunk.candidates?.[0]?.content?.parts);
+				if (piece !== "") {
+					// Leading whitespace of the reply is dropped, like the trim below.
+					onText(raw === "" ? piece.trimStart() : piece);
+					raw += piece;
+				}
+				calls = [...calls, ...(chunk.functionCalls ?? [])];
+			}
+		} else {
+			const response = await ai.models.generateContent(request);
+			// Read text parts directly: response.text warns when calls are present.
+			raw = visibleText(response.candidates?.[0]?.content?.parts);
+			calls = response.functionCalls ?? [];
+		}
+		const toolCalls = sanitizeFunctionCalls(agent, calls);
+		const text = raw.trim();
 		if (text === "" && toolCalls.length === 0) {
 			throw new Error("Gemini returned neither text nor valid tool calls.");
 		}

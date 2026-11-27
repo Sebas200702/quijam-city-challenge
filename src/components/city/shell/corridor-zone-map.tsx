@@ -1,4 +1,5 @@
 import { CloudRain, Map as MapIcon, Users } from "lucide-react";
+import type { ReactNode } from "react";
 import type {
 	FloodZone,
 	ZoneVisitorCount,
@@ -27,6 +28,8 @@ interface CorridorZoneMapProps {
 	floodZones: readonly FloodZone[];
 	/** Clock shown in the map tag, e.g. "16:00". */
 	clockLabel: string;
+	/** Match-day timeline (#44), right under the map. */
+	timeline?: ReactNode;
 }
 
 function ZoneHalos({ zones }: { zones: readonly ZoneVisitorCount[] }) {
@@ -180,6 +183,7 @@ export function CorridorZoneMap({
 	zones,
 	floodZones,
 	clockLabel,
+	timeline,
 }: CorridorZoneMapProps) {
 	return (
 		<div className="cs-mapcol" id="mapa">
@@ -227,6 +231,7 @@ export function CorridorZoneMap({
 					<Stops />
 				</svg>
 			</div>
+			{timeline}
 			<ul className="cs-legend" aria-label="Leyenda del mapa">
 				<li>
 					<b>○ Fluido</b> halo continuo

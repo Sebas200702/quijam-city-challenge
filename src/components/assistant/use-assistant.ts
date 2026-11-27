@@ -6,6 +6,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { isActionGrounded } from "../../lib/assistant/action-provenance";
 import { sanitizeToolArgs } from "../../lib/assistant/assistant-agents";
+import {
+	ASSISTANT_STREAM_TYPE,
+	readAssistantStream,
+} from "../../lib/assistant/assistant-stream";
 import type {
 	AssistantAgentId,
 	AssistantMessage,
@@ -16,12 +20,20 @@ import type {
 	AssistantToolResult,
 } from "../../lib/assistant/assistant-types";
 import { isActionTool } from "../../lib/assistant/assistant-types";
+import { answerOffline } from "../../lib/assistant/offline-answer";
 import { declinedResult, runTool } from "../../lib/assistant/tool-executor";
+import { withOfflineGuide } from "../../lib/guide/guide-offline";
+import { messages as dictionaries } from "../../lib/i18n/messages";
 import { getLanguage } from "../../lib/i18n/use-language";
 import { useSession, useStore } from "../community/use-community";
 
 /** Follow-up calls with tool results after one message from the person. */
 const MAX_ROUNDS = 3;
+
+/** Read tools: plan_route still answers the three routes without network (#47). */
+const READ_TOOL_DEPS = {
+	fetch: withOfflineGuide((input, init) => fetch(input, init)),
+};
 
 /** Text fields the person may edit on the card before confirming. */
 export const EDITABLE_TEXT_FIELDS: Partial<
@@ -48,6 +60,12 @@ export interface PendingAction {
 	grounded: boolean;
 	/** Replaces editable text fields; false when the new text is not valid. */
 	edit: (text: EditableText) => boolean;
+}
+
+/** The answer being written, shown until the complete turn arrives. */
+export interface AssistantDraft {
+	agent: AssistantAgentId;
+	text: string;
 }
 
 export interface AssistantError {
@@ -147,6 +165,7 @@ export function useAssistant() {
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<AssistantError | null>(null);
 	const [suggestions, setSuggestions] = useState<string[]>([]);
+	const [draft, setDraft] = useState<AssistantDraft | null>(null);
 	const batch = useRef<OpenBatch | null>(null);
 	const busy = useRef(false);
 	const profileRef = useRef(profile);
@@ -235,12 +254,36 @@ export function useAssistant() {
 					language: getLanguage(),
 				},
 			};
-			const response = await fetch("/api/assistant", {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify(body),
-			});
+			let response: Response;
+			try {
+				response = await fetch("/api/assistant", {
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+						Accept: `${ASSISTANT_STREAM_TYPE}, application/json`,
+					},
+					body: JSON.stringify(body),
+				});
+			} catch {
+				// No network: the local agents answer on the phone (#47).
+				const { assistantOffline, assistantNoActions } =
+					dictionaries[getLanguage()].offline;
+				return answerOffline(body, {
+					offline: assistantOffline,
+					noActions: assistantNoActions,
+				});
+			}
 			if (!response.ok) throw new Error(`status ${response.status}`);
+			const type = response.headers.get("Content-Type") ?? "";
+			if (type.includes(ASSISTANT_STREAM_TYPE) && response.body) {
+				return readAssistantStream(response.body, {
+					onStart: (agent) => setDraft({ agent, text: "" }),
+					onText: (text) =>
+						setDraft((current) =>
+							current ? { ...current, text: current.text + text } : current,
+						),
+				});
+			}
 			const data: unknown = await response.json();
 			if (!isResponse(data)) throw new Error("invalid response");
 			return data;
@@ -258,6 +301,7 @@ export function useAssistant() {
 				response = await request(history);
 			} catch {
 				busy.current = false;
+				setDraft(null);
 				setLoading(false);
 				setError({
 					message:
@@ -273,6 +317,7 @@ export function useAssistant() {
 				toolCalls: response.toolCalls,
 			};
 			let next = [...history, turn];
+			setDraft(null);
 			setMessages(next);
 			setSuggestions(response.suggestions ?? []);
 
@@ -285,7 +330,9 @@ export function useAssistant() {
 			);
 			const actions = action ? [action] : [];
 			const results = [
-				...(await Promise.all(reads.map((call) => runTool(call, store)))),
+				...(await Promise.all(
+					reads.map((call) => runTool(call, store, READ_TOOL_DEPS)),
+				)),
 				...extraActions.map(droppedResult),
 			];
 
@@ -412,6 +459,7 @@ export function useAssistant() {
 
 	return {
 		messages,
+		draft,
 		pending,
 		loading,
 		error,

@@ -7,10 +7,13 @@ import { guide } from "./dictionaries/guide";
 import { inbox } from "./dictionaries/inbox";
 import { landing } from "./dictionaries/landing";
 import { map } from "./dictionaries/map";
+import { notifications } from "./dictionaries/notifications";
+import { offline } from "./dictionaries/offline";
 import { places } from "./dictionaries/places";
 import { profile } from "./dictionaries/profile";
 import { reports } from "./dictionaries/reports";
 import { shared } from "./dictionaries/shared";
+import { timeline } from "./dictionaries/timeline";
 import type { Language } from "./languages";
 
 const es = {
@@ -75,11 +78,14 @@ export type Messages = BaseMessages & {
 	forum: (typeof forum)[Language];
 	places: (typeof places)[Language];
 	map: (typeof map)[Language];
+	offline: (typeof offline)[Language];
+	notifications: (typeof notifications)[Language];
 	guide: (typeof guide)[Language];
 	profile: (typeof profile)[Language];
 	reports: (typeof reports)[Language];
 	inbox: (typeof inbox)[Language];
 	shared: (typeof shared)[Language];
+	timeline: (typeof timeline)[Language];
 };
 
 const en: BaseMessages = {
@@ -254,11 +260,14 @@ function build(language: Language): Messages {
 		forum: forum[language],
 		places: places[language],
 		map: map[language],
+		offline: offline[language],
+		notifications: notifications[language],
 		guide: guide[language],
 		profile: profile[language],
 		reports: reports[language],
 		inbox: inbox[language],
 		shared: shared[language],
+		timeline: timeline[language],
 	};
 }
 

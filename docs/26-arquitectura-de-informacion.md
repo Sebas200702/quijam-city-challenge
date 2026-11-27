@@ -11,7 +11,7 @@ Numeración: este documento usa el 26 según la propuesta de #141 (20 y 21 está
 | Tema | #137 (26 nov) | Ahora (27 nov, `main`) |
 |---|---|---|
 | Inicio de la persona | Mapa a pantalla completa, botón del Guía y tarjeta "tu siguiente paso" en `/` | Conversación con Quillart AI en `/inicio`. `/` es la landing pública. El mapa es un apartado (`/mapa`) y una tarjeta de sección dentro del inicio |
-| Guía | Asistente de voz o texto sobre el mapa | Quillart AI: orquestador con seis agentes; la voz es solo el conducto ([21-quillart-ai.md](21-quillart-ai.md)) |
+| Guía | Asistente de voz o texto sobre el mapa | Quillart AI: orquestador con seis agentes; la voz es solo el conducto ([28-quillart-ai.md](28-quillart-ai.md)) |
 | Entrada | "Sin registro" | Se navega sin cuenta; la cuenta se pide solo para participar (regla 5) |
 | Etiqueta de datos | "datos simulados 2034" (`.q-sim-tag`) | "Datos de referencia", solo sobre la semilla del corredor; el contenido de las personas no se marca (regla 9) |
 | Simulador | "Simulador de multitudes" | "Ensayo de escenarios", solo en el tablero de la ciudad |
@@ -142,7 +142,9 @@ flowchart TD
     MAP -.->|Malecón 85 % o más y está en el Malecón| DIVCARD["Aviso discreto: sugerencia Barrio Abajo"]
 ```
 
-### 2.2 Vendedor (pendiente, #49)
+### 2.2 Vendedor (#49)
+
+**Hecho:** `/vendedor/entrar` (alta con el QR de la ciudad), `/vendedor` (abierto o cerrado, productos y precios, visitas del día por hora) y, en `/mapa`, el pin y la tarjeta que cambian en vivo, el menú con precios y "Estoy aquí". Datos y RLS en [11-modelo-datos.md](11-modelo-datos.md) (Portal del vendedor). **Falta:** dar sellos (#45), los avisos de desvío (evento `desvio`) y la ayuda.
 
 **Pantalla de inicio:** tarjeta "tu siguiente paso" con el estado del negocio en palabra ("Cerrado") y la acción principal "Marcarme abierta". Abierta, la acción pasa a "Marcarme cerrada" (con confirmación).
 
@@ -223,7 +225,7 @@ flowchart LR
     LOGIN --> MOD["/moderacion: retenido y reportado"]
 ```
 
-### 2.5 Presentador (pendiente, #41)
+### 2.5 Presentador (#41)
 
 **Pantalla de inicio:** panel con los disparadores agrupados por caso. Cada botón tiene una sola acción y muestra el último envío ("Enviado hace 4 s").
 
@@ -445,18 +447,20 @@ Cuando el canal sea privado (5.3), el cliente se suscribe con `config: { private
 5. Un usuario `city` también entra al panel.
 6. Sin internet: el panel emite por `BroadcastChannel` entre pestañas del mismo portátil (ya lo hace `connectCityEvents()` sin Supabase).
 
+**Nota de implementación (#41):** la llave va en `DEMO_PRESENTER_KEY` (mínimo 12 caracteres). La cookie se firma con HMAC usando la misma llave, así que cambiar la llave cierra todas las sesiones. La API `events.ts` publica con `httpSend` y la llave de servicio. Si el servidor no tiene Realtime (503), el panel publica por el canal local. El registro muestra "confirmado en N ms" cuando el panel recibe su propio evento de vuelta. El caso 1 guarda un reporte de ejemplo con `POST /api/reports` (taxi Malecón → Estadio a $60.000) y publica el `reportId`; sin Supabase usa un id local y lo dice.
+
 ### 5.6 Qué issue construye cada pieza
 
 | Issue | Estado | Archivos |
 |---|---|---|
-| #41 Presentador | Pendiente | `src/pages/presentador/index.astro`, `src/pages/presentador/entrar.astro`, `src/pages/api/presentador/session.ts`, `src/pages/api/presentador/events.ts`, `src/components/presenter/presenter-panel.tsx`; reutiliza `src/lib/city-events/*` |
+| #41 Presentador | Hecho (ver nota) | `src/pages/presentador/index.astro`, `src/pages/presentador/entrar.astro`, `src/pages/api/presentador/session.ts`, `src/pages/api/presentador/events.ts`, `src/components/presenter/presenter-panel.tsx`; reutiliza `src/lib/city-events/*` |
 | #56 (este, fase 2) | Pendiente | `src/lib/auth/auth-types.ts`, `src/lib/auth/role-guard.ts`, cambio en `src/middleware.ts`, `src/lib/supabase-server.ts`, migración de roles |
 | #42 Ensayo de escenarios | En `main` | `src/components/crowd-sim-panel.tsx`, `src/lib/crowd-sim/*` |
 | #43 QR del jurado | En `main` | `src/components/jury-qr-panel.tsx`, `src/components/visitor-presence-beacon.tsx`, `src/lib/presence/*` |
 | #44 Línea de tiempo | Pendiente | `src/components/city/match-timeline.tsx`, `src/lib/timeline/timeline.ts` |
 | #45 Pasaporte | Pendiente | `src/pages/pasaporte.astro`, `src/components/visitor/passport.tsx`, `src/lib/passport/passport.ts` |
 | #46 Rutas frescas | Pendiente | `src/components/map/heat-layer.ts`, cambios en `src/lib/decider/` |
-| #47 Offline | Pendiente | `public/manifest.webmanifest`, `public/sw.js`, `src/lib/offline/offline-cache.ts` |
+| #47 Offline | En curso | `public/manifest.webmanifest`, `public/icons/`, `src/lib/offline/*` (`/sw.js` se genera en el build), `src/pages/offline.astro`, `src/lib/notifications/*` |
 | #48 Idiomas y jerga | En curso (PR #139) | `src/lib/i18n/*`, hoja de idioma y de jerga |
 | #49 Vendedor | Pendiente | `src/pages/vendedor/index.astro`, `src/pages/vendedor/entrar.astro`, `src/components/vendor/*` |
 | #50 Anfitrión | Pendiente | `src/pages/anfitrion/index.astro`, `src/pages/anfitrion/entrar.astro`, `src/components/host/*`, `src/lib/host/host-assignments.ts` |

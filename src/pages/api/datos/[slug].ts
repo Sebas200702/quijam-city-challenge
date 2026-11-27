@@ -24,7 +24,7 @@ function errorJson(message: string, status: number): Response {
  * Pass ?download=1 to force a file download header on JSON responses.
  */
 export const GET: APIRoute = async (context) => {
-	const limited = guardRequest(context, "open-data");
+	const limited = await guardRequest(context, "open-data");
 	if (limited) return limited;
 
 	const slug = context.params.slug ?? "";
