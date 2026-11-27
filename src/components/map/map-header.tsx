@@ -146,7 +146,7 @@ export function MapHeader({
 				)}
 			</div>
 
-			<fieldset className="corridor-chips">
+			<fieldset className="corridor-chips q-scroll-fade">
 				<legend className="q-sr">{copy.layers}</legend>
 				{LAYER_TOGGLES.map(({ key, label, tone, Icon }) => (
 					<button
