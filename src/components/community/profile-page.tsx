@@ -11,6 +11,7 @@ import {
 import { initials } from "../../lib/community/community-labels";
 import { validateSignUp } from "../../lib/community/community-rules";
 import type { Profile } from "../../lib/community/community-types";
+import { useT } from "../../lib/i18n/use-language";
 import { AskQuillartButton } from "../assistant/ask-quillart-button";
 import { CommunityShell } from "./community-shell";
 import {
@@ -77,13 +78,16 @@ function ResidencyField({
 	isVisitor: boolean;
 	onChange: (isVisitor: boolean) => void;
 }) {
+	const t = useT();
 	const options = [
-		{ value: false, label: "Vivo en Barranquilla" },
-		{ value: true, label: "Estoy de visita" },
+		{ value: false, label: t.profile.residencyLive },
+		{ value: true, label: t.profile.residencyVisit },
 	];
 	return (
 		<fieldset className="space-y-1.5">
-			<legend className="q-eyebrow mb-1.5 block">¿Vives aquí?</legend>
+			<legend className="q-eyebrow mb-1.5 block">
+				{t.profile.residencyLegend}
+			</legend>
 			<div className="q-seg flex w-full">
 				{options.map((option) => (
 					<label
@@ -106,16 +110,12 @@ function ResidencyField({
 }
 
 function PrivacyNote() {
-	return (
-		<p className="q-sm q-muted">
-			Solo tu nombre visible y tu barrio (si lo escribes) son públicos. Tu
-			correo no se muestra a nadie. Tratamos tus datos según la Ley 1581 de 2012
-			de protección de datos personales.
-		</p>
-	);
+	const t = useT();
+	return <p className="q-sm q-muted">{t.profile.privacyNote}</p>;
 }
 
 function SignInForm() {
+	const t = useT();
 	const store = useStore();
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
@@ -131,14 +131,14 @@ function SignInForm() {
 			const back = returnPath();
 			if (back) window.location.assign(back);
 		} catch (err) {
-			setError(errorText(err, "No pudimos entrar. Revisa tus datos."));
+			setError(errorText(err, t.profile.signInFailed));
 			setBusy(false);
 		}
 	}
 
 	return (
 		<form onSubmit={handleSubmit} className="space-y-4" noValidate>
-			<Field id="signin-email" label="Correo">
+			<Field id="signin-email" label={t.profile.email}>
 				<input
 					id="signin-email"
 					type="email"
@@ -149,7 +149,7 @@ function SignInForm() {
 					className={inputClass}
 				/>
 			</Field>
-			<Field id="signin-password" label="Contraseña">
+			<Field id="signin-password" label={t.profile.password}>
 				<input
 					id="signin-password"
 					type="password"
@@ -161,12 +161,17 @@ function SignInForm() {
 				/>
 			</Field>
 			{error && <ErrorNote message={error} />}
-			<SubmitButton busy={busy} label="Entrar" busyLabel="Entrando…" />
+			<SubmitButton
+				busy={busy}
+				label={t.profile.signIn}
+				busyLabel={t.profile.signingIn}
+			/>
 		</form>
 	);
 }
 
 function SignUpForm() {
+	const t = useT();
 	const store = useStore();
 	const [displayName, setDisplayName] = useState("");
 	const [email, setEmail] = useState("");
@@ -203,7 +208,7 @@ function SignUpForm() {
 			const back = returnPath();
 			if (back) window.location.assign(back);
 		} catch (err) {
-			setError(errorText(err, "No pudimos crear tu cuenta. Intenta de nuevo."));
+			setError(errorText(err, t.profile.signUpFailed));
 			setBusy(false);
 		}
 	}
@@ -214,9 +219,8 @@ function SignUpForm() {
 				role="status"
 				className="rounded-[var(--radius-md)] bg-[var(--green-soft)] px-4 py-3 text-sm text-[var(--green-text)]"
 			>
-				¡Casi listo! Te enviamos un correo a <strong>{confirmEmail}</strong>.
-				Abre el enlace para confirmar tu cuenta y después entra con tu correo y
-				contraseña.
+				{t.profile.almostDone} <strong>{confirmEmail}</strong>.{" "}
+				{t.profile.almostDoneRest}
 			</p>
 		);
 
@@ -224,8 +228,8 @@ function SignUpForm() {
 		<form onSubmit={handleSubmit} className="space-y-4" noValidate>
 			<Field
 				id="signup-name"
-				label="Nombre visible"
-				hint="Así te verán en la agenda y en la comunidad."
+				label={t.profile.displayName}
+				hint={t.profile.displayNameHint}
 			>
 				<input
 					id="signup-name"
@@ -237,7 +241,7 @@ function SignUpForm() {
 					className={inputClass}
 				/>
 			</Field>
-			<Field id="signup-email" label="Correo">
+			<Field id="signup-email" label={t.profile.email}>
 				<input
 					id="signup-email"
 					type="email"
@@ -250,8 +254,8 @@ function SignUpForm() {
 			</Field>
 			<Field
 				id="signup-password"
-				label="Contraseña"
-				hint="Mínimo 8 caracteres."
+				label={t.profile.password}
+				hint={t.profile.passwordHint}
 			>
 				<input
 					id="signup-password"
@@ -264,12 +268,12 @@ function SignUpForm() {
 					className={inputClass}
 				/>
 			</Field>
-			<Field id="signup-neighborhood" label="Barrio (opcional)">
+			<Field id="signup-neighborhood" label={t.profile.neighborhood}>
 				<input
 					id="signup-neighborhood"
 					autoComplete="address-level3"
 					maxLength={60}
-					placeholder="Ej.: El Prado"
+					placeholder={t.profile.neighborhoodPlaceholder}
 					value={neighborhood}
 					onChange={(event) => setNeighborhood(event.target.value)}
 					className={inputClass}
@@ -284,8 +288,8 @@ function SignUpForm() {
 			{error && <ErrorNote message={error} />}
 			<SubmitButton
 				busy={busy}
-				label="Crear cuenta"
-				busyLabel="Creando tu cuenta…"
+				label={t.profile.signUp}
+				busyLabel={t.profile.signingUp}
 			/>
 		</form>
 	);
@@ -294,23 +298,27 @@ function SignUpForm() {
 type AuthTab = "signin" | "signup";
 
 function AuthPanel() {
+	const t = useT();
 	const [tab, setTab] = useState<AuthTab>("signin");
 	const tabs: { value: AuthTab; label: string }[] = [
-		{ value: "signin", label: "Entrar" },
-		{ value: "signup", label: "Crear cuenta" },
+		{ value: "signin", label: t.profile.signIn },
+		{ value: "signup", label: t.profile.signUp },
 	];
 	return (
 		<>
 			<PageTitle
-				eyebrow="Tu cuenta"
-				title="Únete a la comunidad"
+				eyebrow={t.profile.authEyebrow}
+				title={t.profile.authTitle}
 				illustration="/illustrations/secure-login.svg"
 			>
-				Para mirar no necesitas cuenta. Créala para publicar eventos,
-				inscribirte o responder en la comunidad.
+				{t.profile.authIntro}
 			</PageTitle>
 			<section className="q-card mx-auto w-full max-w-md gap-5 p-5">
-				<div role="tablist" aria-label="Cuenta" className="q-seg flex w-full">
+				<div
+					role="tablist"
+					aria-label={t.profile.accountLabel}
+					className="q-seg flex w-full"
+				>
 					{tabs.map((option) => (
 						<button
 							key={option.value}
@@ -341,6 +349,7 @@ function EditProfileForm({
 	profile: Profile;
 	onDone: () => void;
 }) {
+	const t = useT();
 	const store = useStore();
 	const [displayName, setDisplayName] = useState(profile.displayName);
 	const [neighborhood, setNeighborhood] = useState(profile.neighborhood ?? "");
@@ -351,7 +360,7 @@ function EditProfileForm({
 	async function handleSubmit(event: SyntheticEvent<HTMLFormElement>) {
 		event.preventDefault();
 		if (displayName.trim().length < 2) {
-			setError("Escribe cómo quieres que te vean (mínimo 2 caracteres).");
+			setError(t.profile.nameTooShort);
 			return;
 		}
 		setBusy(true);
@@ -364,7 +373,7 @@ function EditProfileForm({
 			});
 			onDone();
 		} catch (err) {
-			setError(errorText(err, "No pudimos guardar los cambios."));
+			setError(errorText(err, t.profile.saveFailed));
 			setBusy(false);
 		}
 	}
@@ -377,9 +386,9 @@ function EditProfileForm({
 			noValidate
 		>
 			<h2 id="edit-profile-title" className="q-h3">
-				Editar perfil
+				{t.profile.editProfile}
 			</h2>
-			<Field id="edit-name" label="Nombre visible">
+			<Field id="edit-name" label={t.profile.displayName}>
 				<input
 					id="edit-name"
 					required
@@ -389,7 +398,7 @@ function EditProfileForm({
 					className={inputClass}
 				/>
 			</Field>
-			<Field id="edit-neighborhood" label="Barrio (opcional)">
+			<Field id="edit-neighborhood" label={t.profile.neighborhood}>
 				<input
 					id="edit-neighborhood"
 					maxLength={60}
@@ -412,7 +421,7 @@ function EditProfileForm({
 					aria-busy={busy}
 					className="q-btn q-btn--primary"
 				>
-					{busy ? "Guardando…" : "Guardar cambios"}
+					{busy ? t.profile.saving : t.profile.saveChanges}
 				</button>
 				<button
 					type="button"
@@ -420,7 +429,7 @@ function EditProfileForm({
 					className="q-btn q-btn--ghost"
 					disabled={busy}
 				>
-					Cancelar
+					{t.profile.cancel}
 				</button>
 			</div>
 		</form>
@@ -447,6 +456,7 @@ function Section({
 }
 
 function SignedInView({ profile }: { profile: Profile }) {
+	const t = useT();
 	const store = useStore();
 	const [editing, setEditing] = useState(false);
 	const [saved, setSaved] = useState(false);
@@ -494,8 +504,8 @@ function SignedInView({ profile }: { profile: Profile }) {
 	}
 
 	const residency = profile.isVisitor
-		? "De visita en Barranquilla"
-		: "Vive en Barranquilla";
+		? t.profile.visitorIn
+		: t.profile.residentIn;
 
 	return (
 		<>
@@ -507,9 +517,9 @@ function SignedInView({ profile }: { profile: Profile }) {
 					{initials(profile.displayName) || "?"}
 				</span>
 				<div className="min-w-0 flex-1">
-					<p className="q-eyebrow">Tu perfil</p>
+					<p className="q-eyebrow">{t.profile.yourProfile}</p>
 					<h1 className="q-h1 mt-1 break-words">
-						¡Hola, {profile.displayName}!
+						{t.profile.hello(profile.displayName)}
 					</h1>
 					<p className="q-p q-muted mt-1">
 						{profile.neighborhood
@@ -530,17 +540,17 @@ function SignedInView({ profile }: { profile: Profile }) {
 						className="q-btn q-btn--secondary q-btn--sm min-h-11!"
 					>
 						<Pencil size={16} aria-hidden="true" />
-						Editar perfil
+						{t.profile.editProfile}
 					</button>
 				)}
-				<AskQuillartButton prompt="¿Qué tengo esta semana?" />
+				<AskQuillartButton prompt={t.profile.askPrompt} />
 				{moderatorState.status === "ready" && moderatorState.data && (
 					<a
 						href="/moderacion"
 						className="q-btn q-btn--secondary q-btn--sm min-h-11!"
 					>
 						<ShieldCheck size={16} aria-hidden="true" />
-						Moderación
+						{t.profile.moderation}
 					</a>
 				)}
 			</div>
@@ -550,7 +560,7 @@ function SignedInView({ profile }: { profile: Profile }) {
 					role="status"
 					className="rounded-[var(--radius-md)] bg-[var(--green-soft)] px-4 py-3 text-sm text-[var(--green-text)]"
 				>
-					Listo, guardamos tus cambios.
+					{t.profile.saved}
 				</p>
 			)}
 			{editing && (
@@ -563,20 +573,23 @@ function SignedInView({ profile }: { profile: Profile }) {
 				/>
 			)}
 
-			<Section id="my-registrations" title="Mis inscripciones">
-				<Loaded state={eventsState} loadingLabel="Cargando tus inscripciones…">
+			<Section id="my-registrations" title={t.profile.myRegistrations}>
+				<Loaded
+					state={eventsState}
+					loadingLabel={t.profile.loadingRegistrations}
+				>
 					{({ registered, placeNames }) =>
 						registered.length === 0 ? (
 							<EmptyState
-								title="Aún no te has inscrito a nada"
+								title={t.profile.noRegistrations}
 								illustration="/illustrations/events-calendar.svg"
 								action={
 									<a href="/agenda" className="q-btn q-btn--primary">
-										Ver la agenda
+										{t.profile.viewAgenda}
 									</a>
 								}
 							>
-								Mira la agenda y apúntate a lo que te guste.
+								{t.profile.noRegistrationsText}
 							</EmptyState>
 						) : (
 							<ul className="grid grid-cols-1 gap-3 lg:grid-cols-2">
@@ -597,21 +610,20 @@ function SignedInView({ profile }: { profile: Profile }) {
 				</Loaded>
 			</Section>
 
-			<Section id="my-events" title="Eventos que organizo">
-				<Loaded state={eventsState} loadingLabel="Cargando tus eventos…">
+			<Section id="my-events" title={t.profile.myEvents}>
+				<Loaded state={eventsState} loadingLabel={t.profile.loadingEvents}>
 					{({ organized, placeNames }) =>
 						organized.length === 0 ? (
 							<EmptyState
-								title="Todavía no organizas eventos"
+								title={t.profile.noEvents}
 								illustration="/illustrations/publish-post.svg"
 								action={
 									<a href="/agenda/nuevo" className="q-btn q-btn--primary">
-										Organizar un evento
+										{t.profile.organizeEvent}
 									</a>
 								}
 							>
-								Una caminata, un taller, una limpieza: arma tu plan y la gente
-								se suma.
+								{t.profile.noEventsText}
 							</EmptyState>
 						) : (
 							<ul className="grid grid-cols-1 gap-3 lg:grid-cols-2">
@@ -631,23 +643,20 @@ function SignedInView({ profile }: { profile: Profile }) {
 				</Loaded>
 			</Section>
 
-			<Section id="my-threads" title="Mis conversaciones">
-				<Loaded
-					state={threadsState}
-					loadingLabel="Cargando tus conversaciones…"
-				>
+			<Section id="my-threads" title={t.profile.myThreads}>
+				<Loaded state={threadsState} loadingLabel={t.profile.loadingThreads}>
 					{(threads) =>
 						threads.length === 0 ? (
 							<EmptyState
-								title="No has abierto conversaciones"
+								title={t.profile.noThreads}
 								illustration="/illustrations/share-opinion.svg"
 								action={
 									<a href="/foro" className="q-btn q-btn--primary">
-										Ir a la comunidad
+										{t.profile.goCommunity}
 									</a>
 								}
 							>
-								Pregunta, recomienda o cuenta algo de tu barrio.
+								{t.profile.noThreadsText}
 							</EmptyState>
 						) : (
 							<ul className="space-y-3">
@@ -673,7 +682,7 @@ function SignedInView({ profile }: { profile: Profile }) {
 					className="q-btn q-btn--ghost"
 				>
 					<LogOut size={18} aria-hidden="true" />
-					{signingOut ? "Cerrando sesión…" : "Cerrar sesión"}
+					{signingOut ? t.profile.signingOut : t.profile.signOut}
 				</button>
 			</div>
 		</>
@@ -681,11 +690,12 @@ function SignedInView({ profile }: { profile: Profile }) {
 }
 
 export function ProfilePage({ aiHref }: { aiHref?: string }) {
+	const t = useT();
 	const { profile, loading } = useSession();
 	return (
 		<CommunityShell current="profile" aiHref={aiHref}>
 			{loading ? (
-				<Loading label="Revisando tu sesión…" />
+				<Loading label={t.profile.checkingSession} />
 			) : profile ? (
 				<SignedInView key={profile.id} profile={profile} />
 			) : (

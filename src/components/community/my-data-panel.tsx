@@ -4,12 +4,14 @@
 
 import { Download, Trash2 } from "lucide-react";
 import { useState } from "react";
+import { useT } from "../../lib/i18n/use-language";
 import { ErrorNote } from "./community-ui";
 import { useStore } from "./use-community";
 
 const CONFIRM_WORD = "ELIMINAR";
 
 export function MyDataPanel() {
+	const t = useT();
 	const store = useStore();
 	const [busy, setBusy] = useState<"export" | "delete" | null>(null);
 	const [error, setError] = useState<string | null>(null);
@@ -32,9 +34,7 @@ export function MyDataPanel() {
 			URL.revokeObjectURL(url);
 		} catch (caught) {
 			setError(
-				caught instanceof Error
-					? caught.message
-					: "No pudimos preparar tus datos.",
+				caught instanceof Error ? caught.message : t.profile.data.prepareFailed,
 			);
 		} finally {
 			setBusy(null);
@@ -49,9 +49,7 @@ export function MyDataPanel() {
 			window.location.assign("/");
 		} catch (caught) {
 			setError(
-				caught instanceof Error
-					? caught.message
-					: "No pudimos eliminar tu cuenta.",
+				caught instanceof Error ? caught.message : t.profile.data.deleteFailed,
 			);
 			setBusy(null);
 		}
@@ -61,12 +59,9 @@ export function MyDataPanel() {
 		<section aria-labelledby="my-data-title" className="q-card gap-4 px-5 py-5">
 			<div>
 				<h2 id="my-data-title" className="q-h3">
-					Tus datos
+					{t.profile.data.title}
 				</h2>
-				<p className="q-p q-muted mt-1">
-					Según la Ley 1581 de 2012 puedes conocer y borrar lo que guardamos de
-					ti.
-				</p>
+				<p className="q-p q-muted mt-1">{t.profile.data.intro}</p>
 			</div>
 			{error && <ErrorNote message={error} />}
 			<div className="flex flex-wrap gap-2">
@@ -78,7 +73,9 @@ export function MyDataPanel() {
 					aria-busy={busy === "export"}
 				>
 					<Download size={18} aria-hidden="true" />
-					{busy === "export" ? "Preparando…" : "Descargar mis datos"}
+					{busy === "export"
+						? t.profile.data.preparing
+						: t.profile.data.download}
 				</button>
 				{!confirming && (
 					<button
@@ -88,7 +85,7 @@ export function MyDataPanel() {
 						disabled={busy !== null}
 					>
 						<Trash2 size={18} aria-hidden="true" />
-						Eliminar mi cuenta
+						{t.profile.data.deleteAccount}
 					</button>
 				)}
 			</div>
@@ -100,13 +97,9 @@ export function MyDataPanel() {
 						if (typed.trim().toUpperCase() === CONFIRM_WORD) void remove();
 					}}
 				>
-					<p className="q-p text-[var(--red-text)]">
-						Se borrarán tus conversaciones, respuestas, reportes e
-						inscripciones, y se cancelarán los eventos que organizas. No se
-						puede deshacer.
-					</p>
+					<p className="q-p text-[var(--red-text)]">{t.profile.data.warning}</p>
 					<label htmlFor="confirm-delete" className="q-eyebrow">
-						Escribe {CONFIRM_WORD} para confirmar
+						{t.profile.data.typeToConfirm(CONFIRM_WORD)}
 					</label>
 					<input
 						id="confirm-delete"
@@ -124,7 +117,9 @@ export function MyDataPanel() {
 							}
 							aria-busy={busy === "delete"}
 						>
-							{busy === "delete" ? "Eliminando…" : "Eliminar definitivamente"}
+							{busy === "delete"
+								? t.profile.data.deleting
+								: t.profile.data.deleteForever}
 						</button>
 						<button
 							type="button"
@@ -134,7 +129,7 @@ export function MyDataPanel() {
 								setTyped("");
 							}}
 						>
-							Cancelar
+							{t.profile.data.cancel}
 						</button>
 					</div>
 				</form>
