@@ -193,6 +193,9 @@ export async function runGeminiAgent(
 			config: {
 				systemInstruction: systemInstructionFor(agent, context),
 				temperature: 0.3,
+				// Thinking pushed tool-routing turns past the timeout (504s);
+				// without it a turn answers in about 2 s.
+				thinkingConfig: { thinkingBudget: 0 },
 				tools: [{ functionDeclarations: toolDeclarationsFor(agent) }],
 				abortSignal: controller.signal,
 			},
