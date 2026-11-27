@@ -8,15 +8,14 @@ import type {
 } from "../../../lib/guide/guide-types";
 import {
 	type LiveTokenRequest,
-	liveAgentSetup,
+	liveConduitAgent,
+	liveConduitSetup,
 	parseLiveTokenRequest,
-	pickLiveAgent,
 } from "../../../lib/guide/live-agent";
 import {
 	buildLiveTokenConfig,
 	DEFAULT_LIVE_MODEL,
 } from "../../../lib/guide/live-token-config";
-import { getOpenJevClient } from "../../../lib/openjev/openjev-server";
 import { guardRequest } from "../../../lib/security/api-guard";
 
 export const prerender = false;
@@ -34,7 +33,7 @@ function json(body: unknown, status: number): Response {
 	});
 }
 
-/** Empty body: the beta Guide. A body with the conversation: a Quillart AI agent. */
+/** Empty body: the beta Guide. A body with the conversation: the Quillart AI voice. */
 async function readRequest(request: Request): Promise<LiveTokenRequest | null> {
 	const raw = await request.text();
 	if (raw.trim() === "") return null;
@@ -52,8 +51,9 @@ async function readRequest(request: Request): Promise<LiveTokenRequest | null> {
 
 /**
  * Issues an ephemeral Gemini Live token. The real API key never leaves the
- * server. With a conversation in the body, the same orchestrator as the text
- * chat picks the agent, and its instruction and tools are locked in the token.
+ * server. With a conversation in the body, Live is only the voice conduit: its
+ * instruction and its single tool (ask_quillart) are locked in the token, and
+ * every request goes through the same orchestrator as the text chat.
  */
 export const POST: APIRoute = async (context) => {
 	const limited = await guardRequest(context, "guide-token");
@@ -77,15 +77,11 @@ export const POST: APIRoute = async (context) => {
 	const mode: GuideMode =
 		url.searchParams.get("mode") === "text" ? "text" : "audio";
 	const model = getSecret("GEMINI_LIVE_MODEL") || DEFAULT_LIVE_MODEL;
-	const agent = liveRequest
-		? await pickLiveAgent(liveRequest, { openJev: getOpenJevClient() })
-		: null;
+	const agent = liveRequest ? liveConduitAgent(liveRequest) : null;
 	const config = buildLiveTokenConfig(
 		model,
 		new Date(),
-		agent && liveRequest
-			? liveAgentSetup(agent, liveRequest.context)
-			: undefined,
+		liveRequest ? liveConduitSetup(liveRequest.context) : undefined,
 	);
 
 	try {
