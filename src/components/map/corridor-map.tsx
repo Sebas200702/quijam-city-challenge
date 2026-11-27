@@ -15,7 +15,7 @@ import {
 	WifiOff,
 	X,
 } from "lucide-react";
-import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { crowdByZoneFrom } from "../../lib/city-events/city-state";
 import { useCityState } from "../../lib/city-events/use-city-state";
 import { boundsOf, corridorLine } from "../../lib/corridor/corridor-geometry";
@@ -33,11 +33,12 @@ import type {
 	CorridorDataSource,
 } from "../../lib/corridor/corridor-types";
 import { useT } from "../../lib/i18n/use-language";
+import type { VisitorContext } from "../../lib/notices/notice-types";
 import { DESTINATIONS, type DestinationKey } from "../../lib/trip/trip-planner";
 import { GuidePanel } from "../guide/guide-panel";
+import { NoticeSlot } from "../notices/notice-slot";
 import "./corridor-map.css";
 import { DetailCard } from "./detail-card";
-import { FloodAlertBanner } from "./flood-alert-banner";
 import { MapHeader, type Theme } from "./map-header";
 import {
 	buildCorridorLayers,
@@ -52,6 +53,7 @@ import { pinIcon, setMarkerSelected, userIcon } from "./map-markers";
 import { RouteCard } from "./route-card";
 import { StopList } from "./stop-list";
 import { useFloodCountdown } from "./use-flood-countdown";
+import { useFloodNotice } from "./use-flood-notice";
 import { type RouteQuery, useRoutePlan } from "./use-route-plan";
 
 // Standard OpenStreetMap tiles: no API key. The dark theme darkens them in CSS.
@@ -77,11 +79,6 @@ type TileStatus = "loading" | "ready" | "error";
 interface CorridorMapProps {
 	data: CorridorData;
 	source: CorridorDataSource;
-	/**
-	 * Contextual notices and the arroyo modal (epic #57, rules 2 to 4). Rendered at the map
-	 * root, above the card, the Guide and the detail, so a safety alert is never hidden.
-	 */
-	notices?: ReactNode;
 }
 
 /** Room the floating UI takes: the panel on top (phones) or left (wide), the sheet at the bottom. */
@@ -113,11 +110,7 @@ function fitCorridor(map: L.Map, data: CorridorData) {
 	else map.setView(FALLBACK_CENTER, 13);
 }
 
-export default function CorridorMap({
-	data,
-	source,
-	notices,
-}: CorridorMapProps) {
+export default function CorridorMap({ data, source }: CorridorMapProps) {
 	const t = useT().map;
 	// The map's effects read the language through a ref, so a change relabels the pins
 	// without building the map again.
@@ -173,6 +166,23 @@ export default function CorridorMap({
 		flood.blocked,
 		crowdByZone,
 	);
+	// "You are here": the trip's origin stands in for the visitor's position (no GPS in the pilot).
+	const origin = data.stops.find((stop) => stop.code === query.origin) ?? null;
+	// The arroyo modal only opens when it touches this route or the visitor's zone (docs/20, 3.1).
+	const route = plan?.route ?? null;
+	const visitor = useMemo<VisitorContext | undefined>(() => {
+		if (!route && !origin) return undefined;
+		const zoneOf = new Map(data.stops.map((stop) => [stop.code, stop.zone]));
+		return {
+			routeFloodZoneCodes: route?.floodZoneIds ?? [],
+			routeZones: (route?.stopCodes ?? []).flatMap((code) => {
+				const zone = zoneOf.get(code);
+				return zone ? [zone] : [];
+			}),
+			currentZone: origin?.zone ?? null,
+		};
+	}, [route, origin, data.stops]);
+	const floodNotice = useFloodNotice(flood.alert, visitor);
 	const planLayerRef = useRef<L.LayerGroup | null>(null);
 	const floodLayerRef = useRef<L.LayerGroup | null>(null);
 	const detail = useMemo(
@@ -277,8 +287,6 @@ export default function CorridorMap({
 		for (const line of routeLine(path, variant)) line.addTo(layer);
 	}, [plan, data.stops, query.accessibleMode]);
 
-	// "You are here": the trip's origin stands in for the visitor's position (no GPS in the pilot).
-	const origin = data.stops.find((stop) => stop.code === query.origin) ?? null;
 	useEffect(() => {
 		const layer = userLayerRef.current;
 		if (!layer) return;
@@ -512,14 +520,25 @@ export default function CorridorMap({
 							plan={plan}
 							loading={loading}
 							error={error}
-							alert={<FloodAlertBanner alert={flood.alert} />}
+							alert={floodNotice.band}
 							onOpenGuide={() => setGuideOpen(true)}
 						/>
 					))}
 			</div>
 
-			{/* Mount point for NoticeSlot and ArroyoModal: at the root, above card, Guide and detail. */}
-			{notices && <div className="corridor-app__notices">{notices}</div>}
+			{/* Notices and the arroyo modal live at the root, above the card, the Guide and the
+			    detail, so a safety alert is never hidden (epic #57, rules 3 and 4). */}
+			<div className="corridor-app__notices">
+				<NoticeSlot
+					queue={floodNotice.queue}
+					onAction={(_notice, actionId) => {
+						// "Cambiar ruta": the Decider already re-planned without the arroyo; show it.
+						if (actionId !== "change-route") return;
+						setGuideOpen(false);
+						setSelected(null);
+					}}
+				/>
+			</div>
 		</div>
 	);
 }

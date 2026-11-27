@@ -40,6 +40,8 @@ export function useFloodCountdown(
 	return useMemo(() => {
 		const urgent = mostUrgentAlert(floodZones, countdowns, now);
 		return {
+			countdowns,
+			now,
 			blocked: blockedFloodZoneIds(floodZones, countdowns, now),
 			// `activeAt` lets the arroyo modal show a live mm:ss countdown.
 			alert: urgent
