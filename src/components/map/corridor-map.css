@@ -472,6 +472,10 @@
 	overflow-x: auto;
 	scrollbar-width: none;
 }
+/* Phones: the row scrolls, so its end fades as a hint (audit U33). */
+.corridor-chips.q-scroll-fade {
+	padding-inline-end: 2.5rem;
+}
 .corridor-chip {
 	flex: none;
 	background: var(--surface-raised);
@@ -499,6 +503,10 @@
 	.corridor-chips {
 		flex-wrap: wrap;
 		overflow: visible;
+	}
+	.corridor-chips.q-scroll-fade {
+		mask-image: none;
+		padding-inline-end: 2px;
 	}
 }
 @media (max-width: 420px) {

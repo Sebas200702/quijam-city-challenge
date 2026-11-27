@@ -155,7 +155,7 @@ export function MapHeader({
 				)}
 			</div>
 
-			<fieldset className="corridor-chips">
+			<fieldset className="corridor-chips q-scroll-fade">
 				<legend className="q-sr">{copy.layers}</legend>
 				{[
 					...pointLayers,
