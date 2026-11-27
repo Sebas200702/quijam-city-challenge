@@ -27,6 +27,7 @@ import { withOfflineGuide } from "../../lib/guide/guide-offline";
 import { messages as dictionaries } from "../../lib/i18n/messages";
 import { getLanguage } from "../../lib/i18n/use-language";
 import { useSession, useStore } from "../community/use-community";
+import { canDropPending, partitionPending } from "./pending-actions";
 
 /** Follow-up calls with tool results after one message from the person. */
 const MAX_ROUNDS = 3;
@@ -183,6 +184,8 @@ export function useAssistant() {
 	const liveResponder = useRef<LiveResponder | null>(null);
 	/** Live turns that arrived while an action waited; shown after it settles. */
 	const liveQueue = useRef<AssistantMessage[]>([]);
+	/** Confirmed actions whose tool is running: only their real result settles them. */
+	const runningIds = useRef(new Set<string>());
 
 	/** Sets the conversation and keeps the ref in step for Live callbacks. */
 	const commit = useCallback((next: AssistantMessage[]) => {
@@ -490,7 +493,9 @@ export function useAssistant() {
 				isActionTool(call.name),
 			);
 			const results = [
-				...(await Promise.all(reads.map((call) => runTool(call, store)))),
+				...(await Promise.all(
+					reads.map((call) => runTool(call, store, READ_TOOL_DEPS)),
+				)),
 				...extraActions.map(droppedResult),
 			];
 			if (!action) {
@@ -524,19 +529,27 @@ export function useAssistant() {
 		(ids?: string[]) => {
 			const open = batch.current;
 			if (!open?.live) return;
-			if (ids && !open.remaining.some((call) => ids.includes(call.id))) return;
+			const { kept, dropped } = partitionPending(
+				open.remaining,
+				runningIds.current,
+				ids,
+			);
+			if (dropped.length === 0) return;
+			open.results = [
+				...open.results,
+				...dropped.map((call) => declinedResult(call)),
+			];
+			open.remaining = kept;
+			setPending((items) =>
+				items.filter((item) => kept.some((call) => call.id === item.call.id)),
+			);
+			// A running action stays: settle records its real result and answers Live.
+			if (kept.length > 0) return;
 			batch.current = null;
 			liveResponder.current = null;
-			setPending([]);
 			flushLiveQueue([
 				...open.messages,
-				{
-					role: "tool",
-					results: [
-						...open.results,
-						...open.remaining.map((call) => declinedResult(call)),
-					],
-				},
+				{ role: "tool", results: open.results },
 			]);
 		},
 		[flushLiveQueue],
@@ -545,14 +558,19 @@ export function useAssistant() {
 	const confirm = useCallback(
 		async (callId: string) => {
 			const call = batch.current?.remaining.find((item) => item.id === callId);
-			if (!call) return;
+			if (!call || runningIds.current.has(callId)) return;
+			runningIds.current.add(callId);
 			setPending((items) =>
 				items.map((item) =>
 					item.call.id === callId ? { ...item, running: true } : item,
 				),
 			);
-			const result = await runTool(call, store);
-			await settle(callId, result);
+			try {
+				const result = await runTool(call, store);
+				await settle(callId, result);
+			} finally {
+				runningIds.current.delete(callId);
+			}
 		},
 		[settle, store],
 	);
@@ -560,7 +578,7 @@ export function useAssistant() {
 	const cancel = useCallback(
 		async (callId: string) => {
 			const call = batch.current?.remaining.find((item) => item.id === callId);
-			if (!call) return;
+			if (!call || !canDropPending(runningIds.current.has(callId))) return;
 			await settle(callId, declinedResult(call));
 		},
 		[settle],
@@ -569,7 +587,8 @@ export function useAssistant() {
 	const send = useCallback(
 		async (text: string) => {
 			const clean = text.trim();
-			if (!clean || busy.current) return;
+			// Wait for a confirmed action to finish: it may already have happened.
+			if (!clean || busy.current || runningIds.current.size > 0) return;
 			let history = messages;
 			const open = batch.current;
 			if (open) {
@@ -618,6 +637,8 @@ export function useAssistant() {
 		confirm,
 		cancel,
 		reset,
+		/** True while a confirmed action runs; new messages wait for it. */
+		actionRunning: () => runningIds.current.size > 0,
 		currentContext,
 		appendLive,
 		runLiveTurn,

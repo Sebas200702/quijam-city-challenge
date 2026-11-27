@@ -275,7 +275,8 @@ export function AssistantChat({
 
 	const submit = (event: SyntheticEvent<HTMLFormElement>) => {
 		event.preventDefault();
-		if (!draft.trim() || loading) return;
+		// A confirmed action is running: keep the draft until it finishes.
+		if (!draft.trim() || loading || assistant.actionRunning()) return;
 		if (live.status === "live") {
 			// A new message means "not now" for the action still waiting.
 			for (const action of pending) void assistant.cancel(action.call.id);
