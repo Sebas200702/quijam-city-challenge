@@ -40,7 +40,9 @@ import {
 	Loaded,
 	SpotIllustration,
 } from "./community-ui";
+import { ReportButton } from "./report-button";
 import { ThreadCard } from "./thread-card";
+import { VerifiedOrganizerBadge } from "./trust-badges";
 import { signInHref, useLoad, useSession, useStore } from "./use-community";
 
 export interface EventDetailProps {
@@ -178,7 +180,10 @@ function EventView({
 						{place && <span className="q-muted"> · {place.neighborhood}</span>}
 					</InfoRow>
 					<InfoRow icon={<UserRound size={18} />} label="Organiza">
-						{event.organizerName}
+						<span className="inline-flex flex-wrap items-center gap-2">
+							{event.organizerName}
+							<VerifiedOrganizerBadge verified={event.organizerVerified} />
+						</span>
 					</InfoRow>
 					<InfoRow icon={<Ticket size={18} />} label="Entrada">
 						{event.isFree || !event.priceCop
@@ -208,6 +213,7 @@ function EventView({
 					<ShareButton title={event.title} />
 					<AskQuillartButton prompt={`¿Cómo llego a «${event.title}»?`} />
 				</div>
+				<ReportButton kind="event" id={event.id} ownerId={event.organizerId} />
 			</article>
 
 			{isOrganizer ? (

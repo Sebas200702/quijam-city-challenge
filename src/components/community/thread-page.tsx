@@ -24,6 +24,8 @@ import {
 	PublishNotice,
 	textareaClass,
 } from "./community-ui";
+import { ReportButton } from "./report-button";
+import { CitizenReportBadge } from "./trust-badges";
 import { signInHref, useLoad, useSession, useStore } from "./use-community";
 
 interface ThreadData {
@@ -113,6 +115,7 @@ function ThreadView({
 						{FORUM_CATEGORY_LABELS[thread.category]}
 					</span>
 					{thread.moderationStatus === "held" && <HeldBadge />}
+					<CitizenReportBadge thread={thread} />
 				</div>
 				<h1 className="q-h1 break-words">{thread.title}</h1>
 				<div className="q-sm q-muted flex items-center gap-2">
@@ -127,6 +130,7 @@ function ThreadView({
 				</div>
 				<p className="q-p whitespace-pre-line break-words">{thread.body}</p>
 				<LinkedContent placeId={thread.placeId} eventId={thread.eventId} />
+				<ReportButton kind="thread" id={thread.id} ownerId={thread.authorId} />
 			</article>
 
 			<section aria-labelledby="replies-heading" className="space-y-4">
@@ -185,6 +189,12 @@ function Reply({ post, own }: { post: ForumPost; own: boolean }) {
 						{formatRelative(post.createdAt)}
 					</time>
 					{own && post.moderationStatus === "held" && <HeldBadge />}
+					<ReportButton
+						kind="post"
+						id={post.id}
+						ownerId={post.authorId}
+						compact
+					/>
 				</span>
 			</div>
 		</li>
