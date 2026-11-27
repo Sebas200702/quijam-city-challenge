@@ -34,8 +34,8 @@ const links = [
 		</ul>
 	</nav>
 	<SecondaryMenu client:load />
-	{/* Secondary and hidden on phones: the hero's question box is the one primary action (rule 2). */}
-	<a href="/inicio" class="q-btn q-btn--secondary q-btn--sm min-h-11 max-sm:hidden!">
+	{/* Visible on phones too so visitors can always enter Quillart from the navbar. */}
+	<a href="/inicio" class="q-btn q-btn--secondary q-btn--sm min-h-11 shrink-0 whitespace-nowrap">
 		<span data-i18n="landing.header.openAi">Abrir Quillart AI</span>
 	</a>
 </header>
