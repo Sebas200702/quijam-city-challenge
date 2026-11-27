@@ -51,7 +51,7 @@ const COPY = {
 		access: "Silla de ruedas",
 		yes: "Sí",
 		no: "No",
-		sources: "Fuentes: datos abiertos de transporte y alertas de arroyos.",
+		sources: "Fuente: datos de referencia del corredor y alertas de arroyos.",
 		levels: ["Baja", "Media", "Alta"],
 	},
 	en: {
@@ -72,7 +72,7 @@ const COPY = {
 		access: "Wheelchair",
 		yes: "Yes",
 		no: "No",
-		sources: "Sources: open transport data and flood alerts.",
+		sources: "Source: corridor reference data and flood alerts.",
 		levels: ["Low", "Medium", "High"],
 	},
 } as const;
