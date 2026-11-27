@@ -4,6 +4,7 @@ import { BottomNav } from "../home/bottom-nav";
 import type { NavSection } from "../home/nav-sections";
 import { QuillartLogo } from "../home/quillart-logo";
 import { TopNav } from "../home/top-nav";
+import { EventNotifier } from "../notices/event-notifier";
 import { FloodNotifier } from "../notices/flood-notifier";
 import { SecondaryMenu } from "../visitor-home/secondary-menu";
 import { useStore } from "./use-community";
@@ -40,6 +41,7 @@ export function CommunityShell({
 					{t.shared.ui.deviceMode}
 				</p>
 			)}
+			<EventNotifier />
 			<main className="flex flex-1 flex-col gap-5 px-4 pt-4 pb-24 lg:gap-8 lg:px-8 lg:pt-8 lg:pb-16">
 				{children}
 			</main>

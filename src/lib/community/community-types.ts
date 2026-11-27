@@ -7,6 +7,9 @@ import type {
 	ModerationStatus,
 	TriagePriority,
 } from "../moderation/moderation-types";
+import type { UserNotification } from "../notifications/event-notifications-types";
+
+export type { UserNotification };
 
 /** Moderation state every piece of user content carries. */
 export interface Moderated {
@@ -247,7 +250,7 @@ export interface RemovedContentItem {
 /** Where the data lives: the shared cloud database, or this device only. */
 export type StoreMode = "cloud" | "device";
 
-export type CommunityTopic = "events" | "forum";
+export type CommunityTopic = "events" | "forum" | "notifications";
 
 export interface CommunityStore {
 	readonly mode: StoreMode;
@@ -307,6 +310,11 @@ export interface CommunityStore {
 	/** Ley 1581: the person can download and delete their data. */
 	exportMyData(): Promise<MyDataExport>;
 	deleteAccount(): Promise<void>;
+
+	/** In-app notifications for the signed-in person (#91, #92). */
+	listNotifications(): Promise<UserNotification[]>;
+	markNotificationRead(id: string): Promise<void>;
+	markAllNotificationsRead(): Promise<void>;
 
 	/** Calls the listener whenever someone else changes the topic. */
 	subscribe(topic: CommunityTopic, listener: () => void): () => void;

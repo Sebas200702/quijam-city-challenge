@@ -42,6 +42,7 @@ import type {
 	ReportReason,
 	SignUpInput,
 	ThreadQuery,
+	UserNotification,
 } from "./community-types";
 
 const AUTH_ERRORS: Record<string, string> = {
@@ -544,9 +545,56 @@ export function createCloudCommunityStore(
 			await supabase.auth.signOut();
 		},
 
+		async listNotifications(): Promise<UserNotification[]> {
+			const userId = await currentUserId();
+			if (!userId) return [];
+			const { data, error } = await supabase
+				.from("user_notifications")
+				.select("id, kind, title, body, href, event_id, read_at, created_at")
+				.eq("user_id", userId)
+				.order("created_at", { ascending: false })
+				.limit(50);
+			// A deployment without the migration simply has no stored notices yet.
+			if (error) return [];
+			return (data ?? []).map((row) => ({
+				id: String(row.id),
+				kind: row.kind as UserNotification["kind"],
+				title: String(row.title),
+				body: String(row.body),
+				href: String(row.href ?? "/inicio"),
+				eventId: (row.event_id as string | null) ?? null,
+				readAt: (row.read_at as string | null) ?? null,
+				createdAt: String(row.created_at),
+			}));
+		},
+
+		async markNotificationRead(id: string) {
+			const userId = await currentUserId();
+			if (!userId) return;
+			await supabase
+				.from("user_notifications")
+				.update({ read_at: new Date().toISOString() })
+				.eq("id", id)
+				.eq("user_id", userId);
+		},
+
+		async markAllNotificationsRead() {
+			const userId = await currentUserId();
+			if (!userId) return;
+			await supabase
+				.from("user_notifications")
+				.update({ read_at: new Date().toISOString() })
+				.eq("user_id", userId)
+				.is("read_at", null);
+		},
+
 		subscribe(topic: CommunityTopic, listener) {
 			const tables =
-				topic === "events" ? ["events"] : ["forum_threads", "forum_posts"];
+				topic === "events"
+					? ["events"]
+					: topic === "notifications"
+						? ["user_notifications"]
+						: ["forum_threads", "forum_posts"];
 			const channel = supabase.channel(
 				`community-${topic}-${crypto.randomUUID()}`,
 			);

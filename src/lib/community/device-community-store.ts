@@ -51,6 +51,7 @@ import type {
 	ReportReason,
 	SignUpInput,
 	ThreadQuery,
+	UserNotification,
 } from "./community-types";
 import { PLACES } from "./places-catalog";
 import { buildStarterEvents, buildStarterForum } from "./starter-content";
@@ -79,6 +80,10 @@ interface DeviceReport {
 	createdAt: string;
 }
 
+interface DeviceNotification extends UserNotification {
+	userId: string;
+}
+
 interface DeviceData {
 	accounts: DeviceAccount[];
 	sessionId: string | null;
@@ -98,6 +103,8 @@ interface DeviceData {
 	appeals?: DeviceAppeal[];
 	/** People waiting for a spot in a full event, in order of arrival. */
 	waitlist?: { eventId: string; userId: string; createdAt: string }[];
+	/** Per-user in-app notifications (#91, #92). */
+	notifications?: DeviceNotification[];
 }
 
 function reportCount(data: DeviceData, id: string): number {
@@ -288,8 +295,23 @@ export function createDeviceCommunityStore(): CommunityStore {
 			if (event.key !== STORAGE_KEY) return;
 			notify("events");
 			notify("forum");
+			notify("notifications");
 			emitSession(load());
 		});
+	}
+
+	function pushNotification(
+		data: DeviceData,
+		entry: Omit<DeviceNotification, "id" | "readAt" | "createdAt">,
+	) {
+		const list = data.notifications ?? [];
+		list.unshift({
+			...entry,
+			id: crypto.randomUUID(),
+			readAt: null,
+			createdAt: new Date().toISOString(),
+		});
+		data.notifications = list.slice(0, 200);
 	}
 
 	return {
@@ -444,9 +466,24 @@ export function createDeviceCommunityStore(): CommunityStore {
 			const event = data.events.find((item) => item.id === id);
 			if (!event || event.organizerId !== account.id)
 				throw new Error("Solo quien organiza puede cancelar el evento.");
+			const wasCancelled = event.status === "cancelled";
 			event.status = "cancelled";
+			if (!wasCancelled) {
+				for (const reg of data.registrations) {
+					if (reg.eventId !== event.id || reg.userId === account.id) continue;
+					pushNotification(data, {
+						userId: reg.userId,
+						kind: "event_cancelled",
+						title: `Evento cancelado: ${event.title}`,
+						body: `El organizador canceló "${event.title}". Revisa otros planes en la agenda.`,
+						href: `/agenda/${encodeURIComponent(event.id)}`,
+						eventId: event.id,
+					});
+				}
+			}
 			save(data);
 			notify("events");
+			notify("notifications");
 		},
 
 		async myRegistrations() {
@@ -746,9 +783,46 @@ export function createDeviceCommunityStore(): CommunityStore {
 					if (thread && wasPublished && action === "remove")
 						thread.replyCount = Math.max(thread.replyCount - 1, 0);
 				}
+				const ownerId =
+					kind === "event"
+						? (item as CommunityEvent).organizerId
+						: (item as ForumThread | ForumPost).authorId;
+				if (ownerId) {
+					const label =
+						kind === "post"
+							? "tu respuesta en el foro"
+							: `"${(item as CommunityEvent | ForumThread).title}"`;
+					const approvedHref =
+						kind === "event"
+							? `/agenda/${encodeURIComponent(id)}`
+							: kind === "thread"
+								? `/foro/${encodeURIComponent(id)}`
+								: `/foro/${encodeURIComponent((item as ForumPost).threadId)}`;
+					pushNotification(
+						data,
+						action === "approve"
+							? {
+									userId: ownerId,
+									kind: "moderation_approved",
+									title: "Tu publicación fue aprobada",
+									body: `${label} ya está visible en QUILLART.`,
+									href: approvedHref,
+									eventId: kind === "event" ? id : null,
+								}
+							: {
+									userId: ownerId,
+									kind: "moderation_removed",
+									title: "Tu publicación fue retirada",
+									body: `${label} fue retirada tras revisión. Puedes pedir una segunda revisión desde tu perfil.`,
+									href: "/perfil",
+									eventId: kind === "event" ? id : null,
+								},
+					);
+				}
 			}
 			save(data);
 			notify(kind === "event" ? "events" : "forum");
+			notify("notifications");
 		},
 
 		async listMyRemoved() {
@@ -931,12 +1005,49 @@ export function createDeviceCommunityStore(): CommunityStore {
 			data.reports = (data.reports ?? []).filter(
 				(report) => report.reporterId !== account.id,
 			);
+			data.notifications = (data.notifications ?? []).filter(
+				(item) => item.userId !== account.id,
+			);
 			data.accounts = data.accounts.filter((item) => item.id !== account.id);
 			data.sessionId = null;
 			save(data);
 			emitSession(data);
 			notify("events");
 			notify("forum");
+			notify("notifications");
+		},
+
+		async listNotifications() {
+			const data = load();
+			if (!data.sessionId) return [];
+			return (data.notifications ?? [])
+				.filter((item) => item.userId === data.sessionId)
+				.map(({ userId: _userId, ...notice }) => notice);
+		},
+
+		async markNotificationRead(id) {
+			const data = load();
+			if (!data.sessionId) return;
+			const target = (data.notifications ?? []).find(
+				(item) => item.id === id && item.userId === data.sessionId,
+			);
+			if (!target) return;
+			target.readAt = new Date().toISOString();
+			save(data);
+			notify("notifications");
+		},
+
+		async markAllNotificationsRead() {
+			const data = load();
+			if (!data.sessionId) return;
+			const now = new Date().toISOString();
+			for (const item of data.notifications ?? []) {
+				if (item.userId === data.sessionId && item.readAt === null) {
+					item.readAt = now;
+				}
+			}
+			save(data);
+			notify("notifications");
 		},
 
 		subscribe(topic, listener) {
