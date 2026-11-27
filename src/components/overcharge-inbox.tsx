@@ -3,7 +3,8 @@ import {
 	CheckCircle2,
 	Clock,
 	Eye,
-	RefreshCw,
+	Receipt,
+	SearchX,
 	Sparkles,
 	XCircle,
 } from "lucide-react";
@@ -17,14 +18,15 @@ import type {
 import {
 	calculateResolvedReportsRate,
 	filterReportsByStatus,
+	formatCop,
+	formatRelativeReportTime,
 	getReportStatusActions,
+	REPORT_STATUS_LABELS,
+	REPORT_TRANSPORT_LABELS,
 	ZONE_LABELS,
 } from "../lib/city-dashboard-utils";
-import { formatFare } from "../lib/guide/guide-local";
-import type { InboxMessages } from "../lib/i18n/dictionaries/inbox";
-import { useLanguage, useT } from "../lib/i18n/use-language";
-
 import { overchargePercent } from "../lib/reports/overcharge-report";
+import { SectionState } from "./city/sections/section-state";
 
 const PRIMARY_WORKFLOW_STATUSES: ReportStatus[] = [
 	"open",
@@ -32,42 +34,13 @@ const PRIMARY_WORKFLOW_STATUSES: ReportStatus[] = [
 	"resolved",
 ];
 
-const FILTER_VALUES: ReportFilter[] = [
-	"all",
-	"open",
-	"in_review",
-	"resolved",
-	"dismissed",
+const FILTER_OPTIONS: { value: ReportFilter; label: string }[] = [
+	{ value: "all", label: "Todos" },
+	{ value: "open", label: REPORT_STATUS_LABELS.open },
+	{ value: "in_review", label: REPORT_STATUS_LABELS.in_review },
+	{ value: "resolved", label: REPORT_STATUS_LABELS.resolved },
+	{ value: "dismissed", label: REPORT_STATUS_LABELS.dismissed },
 ];
-
-function formatRelativeTime(
-	t: InboxMessages,
-	createdAtIso: string,
-	nowMs: number,
-): string {
-	const diffSeconds = Math.max(
-		0,
-		Math.floor((nowMs - new Date(createdAtIso).getTime()) / 1000),
-	);
-	if (diffSeconds < 60) return t.justNow;
-	const diffMinutes = Math.floor(diffSeconds / 60);
-	if (diffMinutes < 60) return t.minutesAgo(diffMinutes);
-	const diffHours = Math.floor(diffMinutes / 60);
-	if (diffHours < 24) return t.hoursAgo(diffHours);
-	return t.daysAgo(Math.floor(diffHours / 24));
-}
-
-function actionLabel(
-	t: InboxMessages,
-	status: ReportStatus,
-	nextStatus: ReportStatus,
-): string {
-	if (nextStatus === "dismissed") return t.actions.dismiss;
-	if (nextStatus === "in_review") {
-		return status === "open" ? t.actions.review : t.actions.reopen;
-	}
-	return status === "open" ? t.actions.resolve : t.actions.markResolved;
-}
 
 function getStatusBadge(status: ReportStatus): {
 	className: string;
@@ -117,8 +90,6 @@ export function OverchargeInbox({
 	onStatusChange,
 	onRetry,
 }: OverchargeInboxProps) {
-	const t = useT().inbox;
-	const language = useLanguage();
 	const [filter, setFilter] = useState<ReportFilter>("all");
 
 	const resolvedRate = calculateResolvedReportsRate(summary);
@@ -127,10 +98,6 @@ export function OverchargeInbox({
 		() => filterReportsByStatus(reports, filter),
 		[reports, filter],
 	);
-
-	function filterLabel(value: ReportFilter): string {
-		return value === "all" ? t.all : t.status[value];
-	}
 
 	function countForFilter(value: ReportFilter): number {
 		if (value === "all") return summary.total;
@@ -146,9 +113,11 @@ export function OverchargeInbox({
 			<div className="q-band q-band--gold" aria-hidden="true" />
 			<div className="q-card__head">
 				<div>
-					<p className="q-eyebrow">{t.eyebrow}</p>
+					<p className="q-eyebrow">
+						Tarifa justa · Ciudadanía · Control en vivo
+					</p>
 					<h2 id="overcharge-inbox-title" className="q-h2 mt-1">
-						{t.title}
+						Bandeja de reportes de cobro abusivo
 					</h2>
 				</div>
 				<span
@@ -160,7 +129,7 @@ export function OverchargeInbox({
 								: "q-badge--alert"
 					}`}
 				>
-					{t.resolvedBadge(summary.resolved, summary.total, resolvedRate)}
+					{summary.resolved} / {summary.total} resueltos ({resolvedRate} %)
 				</span>
 			</div>
 
@@ -169,8 +138,10 @@ export function OverchargeInbox({
 				<div className="rounded-[var(--radius-md)] bg-[var(--bg)] p-4 space-y-3">
 					<div className="flex flex-wrap items-baseline justify-between gap-2">
 						<div>
-							<p className="q-eyebrow">{t.indicatorTitle}</p>
-							<p className="q-sm q-muted mt-0.5">{t.flow}</p>
+							<p className="q-eyebrow">Indicador de reportes resueltos</p>
+							<p className="q-sm q-muted mt-0.5">
+								Flujo operativo: Nuevo → En revisión → Resuelto
+							</p>
 						</div>
 						<p className="q-num text-2xl font-bold text-[var(--ink)]">
 							{resolvedRate} %
@@ -183,17 +154,17 @@ export function OverchargeInbox({
 							min={0}
 							max={Math.max(summary.total, 1)}
 							value={summary.resolved}
-							aria-label={t.meterLabel}
+							aria-label="Porcentaje de reportes de cobro abusivo resueltos"
 						>
-							{t.meterText(resolvedRate, summary.resolved, summary.total)}
+							{resolvedRate}% ({summary.resolved} de {summary.total})
 						</meter>
 						<div className="q-meter__head">
 							<span className="q-meter__state font-semibold">
 								{summary.total === 0
-									? t.noPending
-									: t.resolvedOf(summary.resolved, summary.total)}
+									? "Sin reportes pendientes"
+									: `${summary.resolved} resuelto(s) de ${summary.total}`}
 							</span>
-							<b>{t.newCount(summary.open)}</b>
+							<b>{summary.open} nuevo(s)</b>
 						</div>
 						<div className="q-meter__track" aria-hidden="true">
 							<div
@@ -203,7 +174,7 @@ export function OverchargeInbox({
 						</div>
 					</div>
 
-					<div className="grid grid-cols-3 gap-2.5 pt-1">
+					<div className="grid gap-2.5 pt-1 sm:grid-cols-3">
 						{PRIMARY_WORKFLOW_STATUSES.map((status) => {
 							const { className, Icon } = getStatusBadge(status);
 							return (
@@ -216,7 +187,7 @@ export function OverchargeInbox({
 										)
 									}
 									aria-pressed={filter === status}
-									className={`flex min-h-11 flex-col items-start justify-between rounded-[var(--radius-md)] border p-3 text-left transition-colors ${
+									className={`flex min-h-11 items-center justify-between gap-2 sm:flex-col sm:items-start rounded-[var(--radius-md)] border p-3 text-left transition-colors ${
 										filter === status
 											? "border-[var(--action)] bg-[var(--surface-raised)]"
 											: "border-[var(--line)] bg-[var(--surface)]"
@@ -224,9 +195,9 @@ export function OverchargeInbox({
 								>
 									<span className={`q-badge ${className}`}>
 										<Icon size={12} strokeWidth={2} aria-hidden="true" />
-										{t.status[status]}
+										{REPORT_STATUS_LABELS[status]}
 									</span>
-									<span className="q-num mt-2 text-2xl font-bold text-[var(--ink)]">
+									<span className="q-num text-2xl font-bold text-[var(--ink)] sm:mt-2">
 										{summary[status]}
 									</span>
 								</button>
@@ -238,54 +209,58 @@ export function OverchargeInbox({
 				{/* Filter bar */}
 				<fieldset
 					className="q-seg m-0 flex-wrap border-0"
-					aria-label={t.filterAria}
+					aria-label="Filtrar reportes por estado"
 				>
-					{FILTER_VALUES.map((value) => (
+					{FILTER_OPTIONS.map((option) => (
 						<button
-							key={value}
+							key={option.value}
 							type="button"
-							aria-pressed={filter === value}
-							onClick={() => setFilter(value)}
+							aria-pressed={filter === option.value}
+							onClick={() => setFilter(option.value)}
 							className={`q-seg__opt min-h-11 ${
-								filter === value ? "is-on" : ""
+								filter === option.value ? "is-on" : ""
 							}`}
 						>
-							{filterLabel(value)} ({countForFilter(value)})
+							{option.label} ({countForFilter(option.value)})
 						</button>
 					))}
 				</fieldset>
 
 				{/* Complete states: loading, error, empty, list */}
 				{isLoading ? (
-					<div className="flex items-center justify-center gap-3 rounded-[var(--radius-md)] bg-[var(--bg)] px-4 py-10">
-						<span
-							className="q-star q-star--think text-[var(--gold)]"
-							aria-hidden="true"
-						/>
-						<span className="q-sm q-muted">{t.loading}</span>
-					</div>
+					<SectionState
+						compact
+						kind="loading"
+						title="Cargando reportes"
+						text="Traemos los cobros abusivos que enviaron los visitantes."
+					/>
 				) : error && reports.length === 0 ? (
-					<div
-						role="alert"
-						className="flex flex-wrap items-center justify-between gap-3 rounded-[var(--radius-md)] bg-[var(--red-soft)] p-4 text-sm text-[var(--red-text)]"
-					>
-						<span>{error}</span>
-						<button
-							type="button"
-							onClick={onRetry}
-							className="q-btn q-btn--secondary q-btn--sm min-h-11"
-						>
-							<RefreshCw size={16} strokeWidth={1.75} aria-hidden="true" />
-							{t.retry}
-						</button>
-					</div>
+					<SectionState
+						compact
+						kind="error"
+						icon={Receipt}
+						title="No pudimos cargar los reportes"
+						text={error}
+						onRetry={onRetry}
+					/>
 				) : visibleReports.length === 0 ? (
-					<div className="rounded-[var(--radius-md)] bg-[var(--bg)] px-4 py-8 text-center">
-						<p className="q-p font-medium text-[var(--ink)]">
-							{filter === "all" ? t.emptyAll : t.emptyStatus(t.status[filter])}
-						</p>
-						<p className="q-sm q-muted mt-1">{t.emptyHint}</p>
-					</div>
+					filter === "all" ? (
+						<SectionState
+							compact
+							kind="empty"
+							illustration="/illustrations/transport.svg"
+							title="No hay cobros abusivos reportados"
+							text="Cuando un visitante reporte uno desde Reportar o el Guía, aparece aquí al momento."
+						/>
+					) : (
+						<SectionState
+							compact
+							kind="empty"
+							icon={SearchX}
+							title={`No hay reportes en «${REPORT_STATUS_LABELS[filter]}»`}
+							text="Cambia el filtro para ver los demás."
+						/>
+					)
 				) : (
 					<ul className="space-y-3">
 						{visibleReports.map((report) => {
@@ -313,7 +288,7 @@ export function OverchargeInbox({
 											<div className="flex flex-wrap items-center gap-2">
 												<span className={`q-badge ${className}`}>
 													<Icon size={12} strokeWidth={2} aria-hidden="true" />
-													{t.status[report.status]}
+													{REPORT_STATUS_LABELS[report.status]}
 												</span>
 												{isHighlighted && (
 													<span className="q-badge q-badge--event">
@@ -322,7 +297,7 @@ export function OverchargeInbox({
 															strokeWidth={2}
 															aria-hidden="true"
 														/>
-														{t.justArrived}
+														Recién llegado
 													</span>
 												)}
 												<span className="q-sm q-subtle inline-flex items-center gap-1">
@@ -331,14 +306,14 @@ export function OverchargeInbox({
 														strokeWidth={1.75}
 														aria-hidden="true"
 													/>
-													{formatRelativeTime(t, report.created_at, nowMs)}
+													{formatRelativeReportTime(report.created_at, nowMs)}
 												</span>
 											</div>
 
 											<h3 className="q-h3 text-[var(--ink)]">{routeTitle}</h3>
 											<p className="q-sm q-muted">
 												{ZONE_LABELS[report.zone]} ·{" "}
-												{t.transport[report.transport_mode]}
+												{REPORT_TRANSPORT_LABELS[report.transport_mode]}
 												{report.driver_qr_code
 													? ` · QR ${report.driver_qr_code}`
 													: ""}
@@ -347,15 +322,15 @@ export function OverchargeInbox({
 
 										<div className="flex flex-wrap items-center gap-4 text-right">
 											<div>
-												<p className="q-eyebrow">{t.charged}</p>
+												<p className="q-eyebrow">Cobrado</p>
 												<p className="q-num text-lg font-bold text-[var(--red-text)]">
-													{formatFare(report.charged_fare_cop, language)}
+													{formatCop(report.charged_fare_cop)}
 												</p>
 											</div>
 											<div>
-												<p className="q-eyebrow">{t.reference}</p>
+												<p className="q-eyebrow">Referencia</p>
 												<p className="q-num text-lg font-semibold text-[var(--green-text)]">
-													{formatFare(report.reference_fare_cop, language)}
+													{formatCop(report.reference_fare_cop)}
 												</p>
 											</div>
 											{pct !== null && pct > 0 && (
@@ -394,7 +369,7 @@ export function OverchargeInbox({
 																: "q-btn--ghost"
 													}`}
 												>
-													{actionLabel(t, report.status, action.nextStatus)}
+													{action.label}
 												</button>
 											))}
 										</div>

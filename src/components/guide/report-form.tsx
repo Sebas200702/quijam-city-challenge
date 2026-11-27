@@ -1,20 +1,27 @@
-import { CircleCheck, CloudOff, Send, X } from "lucide-react";
-import { useId, useState } from "react";
+import { CircleAlert, Send, X } from "lucide-react";
+import { useEffect, useId, useRef, useState } from "react";
 import { formatFare, type GuideLanguage } from "../../lib/guide/guide-local";
 import { useLanguage } from "../../lib/i18n/use-language";
+import {
+	isValidDriverCode,
+	parseFareAmount,
+} from "../../lib/reports/fare-amount";
 import {
 	REPORT_TRANSPORT_MODES,
 	type ReportTransportMode,
 } from "../../lib/reports/overcharge-report";
-import { evaluateOvercharge } from "../../lib/reports/overcharge-routes";
+import {
+	evaluateOvercharge,
+	queuePendingReport,
+} from "../../lib/reports/overcharge-routes";
+import { sendPendingReports } from "../../lib/reports/pending-report-sync";
 import {
 	DESTINATIONS,
 	type TripPlan,
 	VISITOR_ORIGIN,
 } from "../../lib/trip/trip-planner";
+import { ReportIllustration } from "../reports/report-illustration";
 import { guideText } from "./guide-text";
-
-const PENDING_KEY = "quillart-pending-reports";
 
 type Status =
 	| { kind: "idle" }
@@ -30,16 +37,6 @@ interface ReportFormProps {
 	onReportSaved?: (reportId: string) => void;
 }
 
-/** Keeps a report on the phone when the server cannot save it. */
-function keepOnPhone(report: unknown) {
-	try {
-		const pending = JSON.parse(localStorage.getItem(PENDING_KEY) ?? "[]");
-		localStorage.setItem(PENDING_KEY, JSON.stringify([...pending, report]));
-	} catch {
-		// Storage blocked: nothing else to do; the visitor still sees the message.
-	}
-}
-
 export function ReportForm({
 	plan,
 	language,
@@ -53,27 +50,66 @@ export function ReportForm({
 	const [driverCode, setDriverCode] = useState("");
 	const [notes, setNotes] = useState("");
 	const [status, setStatus] = useState<Status>({ kind: "idle" });
+	const [showErrors, setShowErrors] = useState(false);
+	const amountRef = useRef<HTMLInputElement>(null);
+	const driverRef = useRef<HTMLInputElement>(null);
+
+	// Reports kept on the phone earlier go out as soon as the form opens online.
+	const onSavedRef = useRef(onReportSaved);
+	onSavedRef.current = onReportSaved;
+	useEffect(() => {
+		if (navigator.onLine) {
+			void sendPendingReports({
+				onSaved: (reportId) => onSavedRef.current?.(reportId),
+			});
+		}
+	}, []);
 
 	// The report points at the leg the visitor took: the taxi leg for taxis,
 	// the green leg otherwise.
 	const segment =
 		mode === "taxi" ? (plan.taxi ?? plan.green) : (plan.green ?? plan.taxi);
 	const routeLabel = `${VISITOR_ORIGIN.name} → ${DESTINATIONS[plan.destination].name}`;
+	const amount = parseFareAmount(charged);
 	const comparison =
-		segment && charged.trim() !== ""
-			? evaluateOvercharge(Number(charged), segment.reference_fare_cop)
+		segment && amount.ok
+			? evaluateOvercharge(amount.value, segment.reference_fare_cop)
+			: null;
+	const amountError =
+		showErrors && !amount.ok
+			? {
+					empty: text.amountEmpty,
+					format: text.amountFormat,
+					range: text.amountRange,
+				}[amount.reason]
+			: null;
+	const driverError =
+		showErrors && !isValidDriverCode(driverCode)
+			? text.driverCodeInvalid
 			: null;
 
 	const submit = async (event: { preventDefault: () => void }) => {
 		event.preventDefault();
-		if (!segment) return;
+		if (!segment || status.kind === "sending") return;
+		// Field errors say how to fix them; focus goes to the first one.
+		setShowErrors(true);
+		if (!amount.ok) {
+			amountRef.current?.focus();
+			return;
+		}
+		if (!isValidDriverCode(driverCode)) {
+			driverRef.current?.focus();
+			return;
+		}
 		const report = {
 			segmentCode: segment.code,
 			transportMode: mode,
-			chargedFareCop: Number(charged),
-			driverQrCode: driverCode,
-			notes,
+			chargedFareCop: amount.value,
+			driverQrCode: driverCode.trim(),
+			notes: notes.trim(),
 		};
+		const keepOnPhone = () =>
+			queuePendingReport({ ...report, queuedAt: new Date().toISOString() });
 		setStatus({ kind: "sending" });
 		try {
 			const response = await fetch("/api/reports", {
@@ -91,13 +127,13 @@ export function ReportForm({
 				}
 				setStatus({ kind: "saved", percent: body.overchargePercent });
 			} else if (response.status >= 500) {
-				keepOnPhone(report);
+				keepOnPhone();
 				setStatus({ kind: "offline" });
 			} else {
 				setStatus({ kind: "error" });
 			}
 		} catch {
-			keepOnPhone(report);
+			keepOnPhone();
 			setStatus({ kind: "offline" });
 		}
 	};
@@ -108,11 +144,10 @@ export function ReportForm({
 				className={`guide-report guide-report--${status.kind}`}
 				role="status"
 			>
-				{status.kind === "saved" ? (
-					<CircleCheck size={22} strokeWidth={1.75} aria-hidden="true" />
-				) : (
-					<CloudOff size={22} strokeWidth={1.75} aria-hidden="true" />
-				)}
+				<ReportIllustration
+					kind={status.kind === "saved" ? "sent" : "saved"}
+					className="w-16 shrink-0"
+				/>
 				<p className="q-p">
 					{status.kind === "saved"
 						? text.saved(status.percent)
@@ -120,7 +155,7 @@ export function ReportForm({
 				</p>
 				<button
 					type="button"
-					className="q-btn q-btn--ghost q-btn--sm"
+					className="q-btn q-btn--ghost q-btn--sm guide-report__close"
 					onClick={onClose}
 				>
 					<X size={16} strokeWidth={1.75} aria-hidden="true" />
@@ -134,6 +169,7 @@ export function ReportForm({
 		<form
 			className="guide-report"
 			onSubmit={submit}
+			noValidate
 			aria-labelledby={`${id}-title`}
 		>
 			<h3 id={`${id}-title`} className="q-h3">
@@ -182,18 +218,26 @@ export function ReportForm({
 			<label className="guide-report__field" htmlFor={`${id}-charged`}>
 				<span className="q-sm q-muted">{text.charged}</span>
 				<input
+					ref={amountRef}
 					id={`${id}-charged`}
 					className="guide-input"
-					type="number"
+					type="text"
 					inputMode="numeric"
-					min={1}
-					max={2_000_000}
-					step={1}
+					autoComplete="off"
+					placeholder="35000"
 					required
+					aria-invalid={amountError !== null}
+					aria-describedby={amountError ? `${id}-charged-error` : undefined}
 					value={charged}
 					onChange={(event) => setCharged(event.target.value)}
 				/>
 			</label>
+			{amountError && (
+				<p className="q-sm guide-report__error" id={`${id}-charged-error`}>
+					<CircleAlert size={14} strokeWidth={1.75} aria-hidden="true" />
+					{amountError}
+				</p>
+			)}
 
 			{comparison && (
 				<p
@@ -218,15 +262,24 @@ export function ReportForm({
 					{text.driverCode} ({text.optional})
 				</span>
 				<input
+					ref={driverRef}
 					id={`${id}-driver`}
 					className="guide-input"
 					type="text"
 					maxLength={40}
-					pattern="[A-Za-z0-9\-]+"
+					autoComplete="off"
+					aria-invalid={driverError !== null}
+					aria-describedby={driverError ? `${id}-driver-error` : undefined}
 					value={driverCode}
 					onChange={(event) => setDriverCode(event.target.value)}
 				/>
 			</label>
+			{driverError && (
+				<p className="q-sm guide-report__error" id={`${id}-driver-error`}>
+					<CircleAlert size={14} strokeWidth={1.75} aria-hidden="true" />
+					{driverError}
+				</p>
+			)}
 
 			<label className="guide-report__field" htmlFor={`${id}-notes`}>
 				<span className="q-sm q-muted">

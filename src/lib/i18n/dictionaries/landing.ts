@@ -99,6 +99,7 @@ const es = {
 		voiceGuide: "Guía por voz (beta)",
 		myAccount: "Mi cuenta",
 		moderation: "Moderación",
+		openData: "Datos abiertos",
 		commandCenter: "Centro de Mando",
 		legal:
 			"Tratamiento de datos según la Ley 1581 de 2012. Hecho en Barranquilla.",
@@ -200,6 +201,7 @@ const en: LandingMessages = {
 		voiceGuide: "Voice guide (beta)",
 		myAccount: "My account",
 		moderation: "Moderation",
+		openData: "Open data",
 		commandCenter: "Command Center",
 		legal: "Data processing under Law 1581 of 2012. Made in Barranquilla.",
 	},
@@ -301,6 +303,7 @@ const pt: LandingMessages = {
 		voiceGuide: "Guia por voz (beta)",
 		myAccount: "Minha conta",
 		moderation: "Moderação",
+		openData: "Dados abertos",
 		commandCenter: "Centro de Comando",
 		legal:
 			"Tratamento de dados conforme a Lei 1581 de 2012. Feito em Barranquilla.",
@@ -406,6 +409,7 @@ const fr: LandingMessages = {
 		voiceGuide: "Guide vocal (bêta)",
 		myAccount: "Mon compte",
 		moderation: "Modération",
+		openData: "Données ouvertes",
 		commandCenter: "Centre de commandement",
 		legal:
 			"Traitement des données selon la loi 1581 de 2012. Fait à Barranquilla.",

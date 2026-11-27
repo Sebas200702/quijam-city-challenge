@@ -1,57 +1,61 @@
 // The chosen interface language: one shared value for every React island on the
-// page, kept in localStorage and mirrored on <html lang>.
+// page. It is read from, and saved through, the visitor language module
+// (src/lib/home-content-language.ts): the saved choice first, then the browser's
+// language, then Spanish. The visitor shell (language sheet, secondary menu) and
+// the translated pages follow each other through its change event.
 
 import { useSyncExternalStore } from "react";
 import {
+	browserLanguages,
 	DEFAULT_LANGUAGE,
-	isLanguage,
+	detectLanguage,
+	LANGUAGE_CHANGE_EVENT,
 	LANGUAGE_STORAGE_KEY,
-	type Language,
-} from "./languages";
+	readSavedLanguage,
+	saveLanguage,
+} from "../home-content-language";
+import type { Language } from "./languages";
 import { type Messages, messages } from "./messages";
 
 const listeners = new Set<() => void>();
 let current: Language | null = null;
 
-function readStored(): Language {
-	try {
-		const stored = localStorage.getItem(LANGUAGE_STORAGE_KEY);
-		if (isLanguage(stored)) return stored;
-	} catch {
-		// Storage can be blocked (private mode): fall back to the default.
-	}
-	return DEFAULT_LANGUAGE;
+function resolve(): Language {
+	return (
+		readSavedLanguage() ??
+		detectLanguage(browserLanguages()) ??
+		DEFAULT_LANGUAGE
+	);
 }
 
 export function getLanguage(): Language {
 	if (typeof window === "undefined") return DEFAULT_LANGUAGE;
-	current ??= readStored();
+	current ??= resolve();
 	return current;
 }
 
+/** Saves the choice on this device and tells every island (ours and the visitor shell). */
 export function setLanguage(next: Language): void {
-	current = next;
-	try {
-		localStorage.setItem(LANGUAGE_STORAGE_KEY, next);
-	} catch {
-		// The language still applies for this visit.
-	}
-	document.documentElement.lang = next;
-	for (const listener of listeners) listener();
+	saveLanguage(next);
 }
 
 function subscribe(listener: () => void): () => void {
 	listeners.add(listener);
-	// Another tab changed the language.
-	const onStorage = (event: StorageEvent) => {
-		if (event.key !== LANGUAGE_STORAGE_KEY) return;
-		current = readStored();
+	const refresh = () => {
+		current = resolve();
 		document.documentElement.lang = current;
 		listener();
 	};
+	const onStorage = (event: StorageEvent) => {
+		if (event.key === LANGUAGE_STORAGE_KEY) refresh();
+	};
+	// The visitor shell and `setLanguage` announce changes with this event;
+	// another tab changes the language through `storage`.
+	window.addEventListener(LANGUAGE_CHANGE_EVENT, refresh);
 	window.addEventListener("storage", onStorage);
 	return () => {
 		listeners.delete(listener);
+		window.removeEventListener(LANGUAGE_CHANGE_EVENT, refresh);
 		window.removeEventListener("storage", onStorage);
 	};
 }

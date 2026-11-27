@@ -42,6 +42,8 @@ export function applyStaticText(root: ParentNode = document): void {
 
 /** Applies the language now and every time it changes. */
 export function initStaticText(): void {
+	// The language may come from the browser (nothing saved yet): mirror it on <html lang>.
+	document.documentElement.lang = getLanguage();
 	applyStaticText();
 	subscribeLanguage(() => applyStaticText());
 }
