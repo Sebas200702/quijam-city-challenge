@@ -302,3 +302,71 @@ describe("tool-result wrap-up", () => {
 		expect(wrapUpResults([result({ name: "open_page" })])).toMatch(/Listo/);
 	});
 });
+
+describe("reply language", () => {
+	const result = (
+		partial: Partial<AssistantToolResult> & Pick<AssistantToolResult, "name">,
+	): AssistantToolResult => ({ callId: "c1", summary: {}, ...partial });
+	const inLanguage = (language: "es" | "en" | "pt" | "fr") => ({
+		...signedIn,
+		language,
+	});
+
+	it.each([
+		["en", /^Let me look for music and dance plans for you\./],
+		["pt", /^Vou procurar planos de música e dança para você\./],
+		["fr", /^Je cherche des sorties musique et danse pour toi\./],
+	] as const)("the local agenda agent answers in %s", (language, expected) => {
+		const turn = answerLocally("agenda", ask("concert"), inLanguage(language));
+		expect(turn.text).toMatch(expected);
+		expect(turn.toolCalls).toEqual([
+			{ name: "search_events", args: { category: "music" } },
+		]);
+	});
+
+	it.each([
+		["en", "Sign in or create an account"],
+		["pt", "Entrar ou criar conta"],
+		["fr", "Se connecter ou créer un compte"],
+	] as const)("the sign-in button is labeled in %s", (language, label) => {
+		const turn = answerLocally("account", ask("profile"), {
+			...anonymous,
+			language,
+		});
+		expect(turn.toolCalls).toEqual([
+			{ name: "open_page", args: { path: "/perfil", label } },
+		]);
+	});
+
+	it.each([
+		["en", /^I found 3 plans\./],
+		["pt", /^Encontrei 3 planos\./],
+		["fr", /^J'ai trouvé 3 sorties\./],
+	] as const)("wraps up tool results in %s", (language, expected) => {
+		expect(
+			wrapUpResult(
+				result({ name: "search_events", summary: { count: 3 } }),
+				language,
+			),
+		).toMatch(expected);
+	});
+
+	it("keeps Spanish replies unchanged when the language is Spanish or missing", () => {
+		const spanish = answerLocally("agenda", ask("concierto"), inLanguage("es"));
+		expect(spanish).toEqual(
+			answerLocally("agenda", ask("concierto"), signedIn),
+		);
+		expect(spanish.text).toBe(
+			"Déjame buscar planes de música y baile para ti.",
+		);
+		expect(
+			wrapUpResult(
+				result({ name: "search_events", summary: { count: 3 } }),
+				"es",
+			),
+		).toBe("Encontré 3 planes. ¿Te inscribo en alguno?");
+		expect(wrapUpResults([result({ name: "open_page" })], "es")).toBe(
+			"Listo. ¿Te ayudo con algo más?",
+		);
+	});
+});

@@ -12,6 +12,7 @@ import {
 import {
 	AssistantRequestError,
 	answer,
+	enforceAccount,
 	MAX_MESSAGES,
 	parseAssistantRequest,
 } from "./assistant-server";
@@ -427,5 +428,49 @@ describe("agent registry and Gemini helpers", () => {
 		expect(facts).toMatch(/10:00/);
 		expect(facts).toMatch(/visitor/);
 		expect(contextFacts({ ...context, signedIn: false })).not.toMatch(/Ana/);
+	});
+});
+
+describe("enforceAccount language", () => {
+	const actionTurn: AgentTurn = {
+		text: "Te inscribo.",
+		toolCalls: [{ name: "register_for_event", args: { event_id: "e1" } }],
+	};
+	const anonymous = { ...context, signedIn: false, displayName: null };
+
+	it.each([
+		["en", "You need to sign in for that.", "Sign in or create an account"],
+		[
+			"pt",
+			"Para isso você precisa entrar na sua conta.",
+			"Entrar ou criar conta",
+		],
+		[
+			"fr",
+			"Pour cela, tu dois te connecter à ton compte.",
+			"Se connecter ou créer un compte",
+		],
+	] as const)("asks to sign in in %s", (language, start, label) => {
+		const turn = enforceAccount(actionTurn, { ...anonymous, language });
+		expect(turn.text.startsWith(start)).toBe(true);
+		expect(turn.toolCalls).toEqual([
+			{ name: "open_page", args: { path: "/perfil", label } },
+		]);
+	});
+
+	it("keeps the Spanish text unchanged", () => {
+		const expected = {
+			text: "Para eso necesitas entrar a tu cuenta. Entra o créala y seguimos.",
+			toolCalls: [
+				{
+					name: "open_page",
+					args: { path: "/perfil", label: "Entrar o crear cuenta" },
+				},
+			],
+		};
+		expect(enforceAccount(actionTurn, anonymous)).toEqual(expected);
+		expect(
+			enforceAccount(actionTurn, { ...anonymous, language: "es" }),
+		).toEqual(expected);
 	});
 });
