@@ -18,8 +18,8 @@ import {
 } from "react";
 import { formatCop } from "../../lib/city-dashboard-utils";
 import { useCityState } from "../../lib/city-events/use-city-state";
+import { useT } from "../../lib/i18n/use-language";
 import {
-	type FareAmountResult,
 	isValidDriverCode,
 	parseFareAmount,
 } from "../../lib/reports/fare-amount";
@@ -38,24 +38,6 @@ import {
 } from "../../lib/reports/overcharge-routes";
 import { sendPendingReports } from "../../lib/reports/pending-report-sync";
 import { ReportIllustration } from "./report-illustration";
-
-const VEHICLE_LABELS: Record<ReportTransportMode, string> = {
-	taxi: "Taxi",
-	bus: "Bus",
-	informal: "Informal",
-	other: "Otro",
-};
-
-const AMOUNT_ERRORS: Record<
-	Extract<FareAmountResult, { ok: false }>["reason"],
-	string
-> = {
-	empty: "Escribe cuánto te cobraron. Ejemplo: 35000.",
-	format: "Escribe cuánto te cobraron, solo con números. Ejemplo: 35000.",
-	range: "Revisa el monto: debe estar entre $1 y $2.000.000.",
-};
-const DRIVER_CODE_ERROR =
-	"El código solo lleva letras, números y guiones. Ejemplo: DRV-104.";
 
 type FormStatus =
 	| { kind: "idle" }
@@ -101,6 +83,7 @@ export function OverchargeReportPage({
 	routes,
 	initialSegmentCode,
 }: OverchargeReportPageProps) {
+	const t = useT().reports;
 	const id = useId();
 	const { publish } = useCityState();
 
@@ -179,9 +162,9 @@ export function OverchargeReportPage({
 		return evaluateOvercharge(chargedCop, selectedRoute.referenceFareCop);
 	}, [selectedRoute, chargedCop]);
 	const amountError =
-		showErrors && !amount.ok ? AMOUNT_ERRORS[amount.reason] : null;
+		showErrors && !amount.ok ? t.amountErrors[amount.reason] : null;
 	const driverError =
-		showErrors && !isValidDriverCode(driverCode) ? DRIVER_CODE_ERROR : null;
+		showErrors && !isValidDriverCode(driverCode) ? t.driverCodeError : null;
 
 	function handleRouteChange(nextCode: string) {
 		setSegmentCode(nextCode);
@@ -271,9 +254,7 @@ export function OverchargeReportPage({
 			} | null;
 			setStatus({
 				kind: "error",
-				message:
-					body?.error ??
-					"No pudimos validar el reporte. Revisa los datos e intenta de nuevo.",
+				message: body?.error ?? t.serverFallbackError,
 			});
 		} catch {
 			const count = queuePendingReport({
@@ -291,20 +272,17 @@ export function OverchargeReportPage({
 				<div className="q-band q-band--gold" aria-hidden="true" />
 				<div className="q-card__head">
 					<div>
-						<p className="q-eyebrow">Tarifa justa</p>
+						<p className="q-eyebrow">{t.empty.eyebrow}</p>
 						<h1 id={`${id}-empty`} className="q-h2 mt-1">
-							No hay trayectos disponibles
+							{t.empty.title}
 						</h1>
 					</div>
 				</div>
 				<div className="q-card__body">
-					<p className="q-p q-muted">
-						No pudimos cargar los trayectos del corredor en este momento. Vuelve
-						al mapa para consultar las tarifas oficiales.
-					</p>
+					<p className="q-p q-muted">{t.empty.body}</p>
 					<a href="/mapa" className="q-btn q-btn--primary">
 						<ArrowLeft size={18} strokeWidth={1.75} aria-hidden="true" />
-						Volver al mapa
+						{t.backToMap}
 					</a>
 				</div>
 			</section>
@@ -316,9 +294,9 @@ export function OverchargeReportPage({
 			<div className="flex flex-wrap items-center justify-between gap-2">
 				<a href="/mapa" className="q-btn q-btn--ghost q-btn--sm">
 					<ArrowLeft size={18} strokeWidth={1.75} aria-hidden="true" />
-					Volver al mapa
+					{t.backToMap}
 				</a>
-				<span className="q-sim-tag">Datos de referencia</span>
+				<span className="q-sim-tag">{t.referenceData}</span>
 			</div>
 
 			{!isOnline && (
@@ -332,10 +310,7 @@ export function OverchargeReportPage({
 						className="shrink-0 text-[var(--gold-text)]"
 						aria-hidden="true"
 					/>
-					<span>
-						Sin conexión. Puedes llenar el reporte igual: lo guardaremos en este
-						teléfono para enviarlo después.
-					</span>
+					<span>{t.offlineBanner}</span>
 				</div>
 			)}
 
@@ -344,10 +319,7 @@ export function OverchargeReportPage({
 					role="status"
 					className="flex flex-wrap items-center justify-between gap-3 rounded-[var(--radius-md)] bg-[var(--gold-soft)] px-4 py-3 text-sm text-[var(--ink)]"
 				>
-					<span>
-						Tienes {pendingCount} reporte(s) pendiente(s) guardado(s) sin
-						conexión.
-					</span>
+					<span>{t.pendingBanner(pendingCount)}</span>
 					<button
 						type="button"
 						className="q-btn q-btn--secondary q-btn--sm"
@@ -356,7 +328,7 @@ export function OverchargeReportPage({
 						onClick={() => void syncPendingQueue()}
 					>
 						<RefreshCw size={16} strokeWidth={1.75} aria-hidden="true" />
-						{syncingPending ? "Reenviando…" : "Reenviar ahora"}
+						{syncingPending ? t.resending : t.resendNow}
 					</button>
 				</div>
 			)}
@@ -378,32 +350,40 @@ export function OverchargeReportPage({
 								aria-hidden="true"
 							/>
 							<div>
-								<p className="q-eyebrow">Reporte enviado</p>
+								<p className="q-eyebrow">{t.saved.eyebrow}</p>
 								<h1 id={`${id}-saved-title`} className="q-h2 mt-0.5">
-									La ciudad ya recibió tu reporte
+									{t.saved.title}
 								</h1>
 							</div>
 						</div>
-						<span className="q-badge q-badge--alert">Nuevo</span>
+						<span className="q-badge q-badge--alert">{t.status.new}</span>
 					</div>
 					<div className="q-card__body space-y-4">
 						<ReportIllustration kind="sent" className="mx-auto w-36" />
 						<p className="q-p">
 							{status.percent !== null && status.percent > 0
-								? `Reportaste un cobro de ${formatCop(status.chargedCop)} (${status.percent} % por encima de la tarifa de referencia de ${formatCop(status.referenceCop)}).`
-								: `Reportaste un cobro de ${formatCop(status.chargedCop)} frente a una tarifa de referencia de ${formatCop(status.referenceCop)}.`}
+								? t.saved.withPercent(
+										formatCop(status.chargedCop),
+										status.percent,
+										formatCop(status.referenceCop),
+									)
+								: t.saved.withoutPercent(
+										formatCop(status.chargedCop),
+										formatCop(status.referenceCop),
+									)}
 						</p>
 						<div className="rounded-[var(--radius-md)] bg-[var(--bg)] p-4 text-sm space-y-1.5">
 							<p className="font-semibold text-[var(--ink)]">
 								{status.routeLabel}
 							</p>
 							<p className="q-sm q-muted">
-								Estado actual: <strong>Nuevo</strong> · Pasará a{" "}
-								<strong>En revisión</strong> y <strong>Resuelto</strong> en el
-								tablero de ciudad.
+								{t.saved.currentStatus} <strong>{t.status.new}</strong> ·{" "}
+								{t.saved.willMoveTo} <strong>{t.status.inReview}</strong>{" "}
+								{t.saved.and} <strong>{t.status.resolved}</strong>{" "}
+								{t.saved.onCityBoard}
 							</p>
 							<p className="font-mono text-xs text-[var(--ink-subtle)]">
-								Referencia #{status.reportId.slice(0, 8)}
+								{t.saved.reference(status.reportId.slice(0, 8))}
 							</p>
 						</div>
 						<div className="q-row">
@@ -412,10 +392,10 @@ export function OverchargeReportPage({
 								className="q-btn q-btn--primary"
 								onClick={resetForm}
 							>
-								Reportar otro cobro
+								{t.saved.reportAnother}
 							</button>
 							<a href="/mapa" className="q-btn q-btn--secondary">
-								Volver al mapa
+								{t.backToMap}
 							</a>
 						</div>
 					</div>
@@ -437,20 +417,16 @@ export function OverchargeReportPage({
 								aria-hidden="true"
 							/>
 							<div>
-								<p className="q-eyebrow">Guardado sin conexión</p>
+								<p className="q-eyebrow">{t.offline.eyebrow}</p>
 								<h1 id={`${id}-offline-title`} className="q-h2 mt-0.5">
-									Tu reporte quedó en este teléfono
+									{t.offline.title}
 								</h1>
 							</div>
 						</div>
 					</div>
 					<div className="q-card__body space-y-4">
 						<ReportIllustration kind="saved" className="mx-auto w-36" />
-						<p className="q-p q-muted">
-							No pudimos conectarnos con el servidor en este momento. Guardamos
-							tu reporte ({status.queuedCount} en cola) y lo enviamos solo
-							cuando vuelva la señal.
-						</p>
+						<p className="q-p q-muted">{t.offline.body(status.queuedCount)}</p>
 						<div className="q-row">
 							<button
 								type="button"
@@ -459,14 +435,14 @@ export function OverchargeReportPage({
 								onClick={() => void syncPendingQueue()}
 							>
 								<RefreshCw size={18} strokeWidth={1.75} aria-hidden="true" />
-								{syncingPending ? "Reintentando…" : "Reintentar envío"}
+								{syncingPending ? t.offline.retrying : t.offline.retry}
 							</button>
 							<button
 								type="button"
 								className="q-btn q-btn--secondary"
 								onClick={resetForm}
 							>
-								Nuevo reporte
+								{t.offline.newReport}
 							</button>
 						</div>
 					</div>
@@ -476,9 +452,9 @@ export function OverchargeReportPage({
 					<div className="q-band q-band--gold" aria-hidden="true" />
 					<div className="q-card__head">
 						<div>
-							<p className="q-eyebrow">Tarifa justa · Reporte anónimo</p>
+							<p className="q-eyebrow">{t.form.eyebrow}</p>
 							<h1 id={`${id}-title`} className="q-h1 mt-1">
-								Reportar cobro abusivo
+								{t.form.title}
 							</h1>
 						</div>
 					</div>
@@ -490,7 +466,7 @@ export function OverchargeReportPage({
 					>
 						<label className="block space-y-1.5" htmlFor={`${id}-route`}>
 							<span className="q-sm font-semibold text-[var(--ink)]">
-								Trayecto del corredor
+								{t.form.route}
 							</span>
 							<select
 								id={`${id}-route`}
@@ -500,7 +476,7 @@ export function OverchargeReportPage({
 							>
 								{routes.map((route) => (
 									<option key={route.segmentCode} value={route.segmentCode}>
-										{route.label} ({VEHICLE_LABELS[route.defaultVehicle]} ·{" "}
+										{route.label} ({t.vehicles[route.defaultVehicle]} ·{" "}
 										{formatCop(route.referenceFareCop)})
 									</option>
 								))}
@@ -512,7 +488,7 @@ export function OverchargeReportPage({
 							aria-live="polite"
 						>
 							<p className="q-eyebrow text-[var(--green-text)]">
-								Tarifa oficial de referencia
+								{t.form.referenceFare}
 							</p>
 							<div className="mt-1 flex flex-wrap items-baseline justify-between gap-2">
 								<span className="q-num text-2xl font-bold text-[var(--ink)]">
@@ -520,8 +496,10 @@ export function OverchargeReportPage({
 								</span>
 								{selectedRoute.fareMinCop !== selectedRoute.fareMaxCop && (
 									<span className="q-sm q-muted">
-										Rango justo: {formatCop(selectedRoute.fareMinCop)} –{" "}
-										{formatCop(selectedRoute.fareMaxCop)}
+										{t.form.fairRange(
+											formatCop(selectedRoute.fareMinCop),
+											formatCop(selectedRoute.fareMaxCop),
+										)}
 									</span>
 								)}
 							</div>
@@ -529,7 +507,7 @@ export function OverchargeReportPage({
 
 						<fieldset className="m-0 border-0 p-0 space-y-2">
 							<legend className="q-sm font-semibold text-[var(--ink)]">
-								¿En qué ibas?
+								{t.form.vehicleLegend}
 							</legend>
 							<div className="q-seg w-full">
 								{REPORT_TRANSPORT_MODES.map((option) => (
@@ -542,7 +520,7 @@ export function OverchargeReportPage({
 											vehicle === option ? "is-on" : ""
 										}`}
 									>
-										{VEHICLE_LABELS[option]}
+										{t.vehicles[option]}
 									</button>
 								))}
 							</div>
@@ -551,7 +529,7 @@ export function OverchargeReportPage({
 						<div className="space-y-2">
 							<label className="block space-y-1.5" htmlFor={`${id}-charged`}>
 								<span className="q-sm font-semibold text-[var(--ink)]">
-									Monto cobrado (COP)
+									{t.form.amountLabel}
 								</span>
 								<input
 									ref={amountRef}
@@ -560,7 +538,7 @@ export function OverchargeReportPage({
 									inputMode="numeric"
 									autoComplete="off"
 									required
-									placeholder="Ej. 55000"
+									placeholder={t.form.amountPlaceholder}
 									aria-invalid={amountError !== null}
 									aria-describedby={
 										amountError ? `${id}-charged-error` : undefined
@@ -600,12 +578,12 @@ export function OverchargeReportPage({
 									)}
 									<span>
 										{comparison.isOvercharge
-											? `Sobrecobro estimado: +${formatCop(comparison.deltaCop)}${
+											? `${t.form.overchargeEstimate(formatCop(comparison.deltaCop))}${
 													comparison.percent !== null
-														? ` (+${comparison.percent} % sobre referencia)`
+														? t.form.overchargePercent(comparison.percent)
 														: ""
 												}`
-											: "Dentro de la tarifa de referencia."}
+											: t.form.withinReference}
 									</span>
 								</div>
 							)}
@@ -613,9 +591,9 @@ export function OverchargeReportPage({
 
 						<label className="block space-y-1.5" htmlFor={`${id}-driver`}>
 							<span className="q-sm font-semibold text-[var(--ink)]">
-								Código QR del conductor{" "}
+								{t.form.driverLabel}{" "}
 								<span className="font-normal text-[var(--ink-muted)]">
-									(opcional)
+									{t.form.optional}
 								</span>
 							</span>
 							<input
@@ -624,7 +602,7 @@ export function OverchargeReportPage({
 								type="text"
 								maxLength={40}
 								autoComplete="off"
-								placeholder="Ej. DRV-104"
+								placeholder={t.form.driverPlaceholder}
 								aria-invalid={driverError !== null}
 								aria-describedby={
 									driverError ? `${id}-driver-error` : undefined
@@ -640,16 +618,16 @@ export function OverchargeReportPage({
 
 						<label className="block space-y-1.5" htmlFor={`${id}-notes`}>
 							<span className="q-sm font-semibold text-[var(--ink)]">
-								¿Qué pasó?{" "}
+								{t.form.notesLabel}{" "}
 								<span className="font-normal text-[var(--ink-muted)]">
-									(opcional)
+									{t.form.optional}
 								</span>
 							</span>
 							<textarea
 								id={`${id}-notes`}
 								rows={3}
 								maxLength={280}
-								placeholder="Describe brevemente el cobro sin incluir datos personales."
+								placeholder={t.form.notesPlaceholder}
 								value={notes}
 								onChange={(event) => setNotes(event.target.value)}
 								className="min-h-11 w-full rounded-[var(--radius-md)] border border-[var(--line-control)] bg-[var(--surface-raised)] px-3.5 py-2.5 text-[15px] text-[var(--ink)]"
@@ -672,8 +650,7 @@ export function OverchargeReportPage({
 								className="shrink-0"
 								aria-hidden="true"
 							/>
-							Anónimo (Ley 1581 de 2012): no pedimos tu nombre ni tu ubicación
-							exacta.
+							{t.form.privacy}
 						</p>
 
 						<button
@@ -683,9 +660,7 @@ export function OverchargeReportPage({
 							aria-busy={status.kind === "sending"}
 						>
 							<Send size={18} strokeWidth={1.75} aria-hidden="true" />
-							{status.kind === "sending"
-								? "Enviando reporte…"
-								: "Enviar reporte"}
+							{status.kind === "sending" ? t.form.sending : t.form.submit}
 						</button>
 					</form>
 				</section>
