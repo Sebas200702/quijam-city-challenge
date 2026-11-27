@@ -6,6 +6,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { isActionGrounded } from "../../lib/assistant/action-provenance";
 import { sanitizeToolArgs } from "../../lib/assistant/assistant-agents";
+import {
+	ASSISTANT_STREAM_TYPE,
+	readAssistantStream,
+} from "../../lib/assistant/assistant-stream";
 import type {
 	AssistantAgentId,
 	AssistantMessage,
@@ -48,6 +52,12 @@ export interface PendingAction {
 	grounded: boolean;
 	/** Replaces editable text fields; false when the new text is not valid. */
 	edit: (text: EditableText) => boolean;
+}
+
+/** The answer being written, shown until the complete turn arrives. */
+export interface AssistantDraft {
+	agent: AssistantAgentId;
+	text: string;
 }
 
 export interface AssistantError {
@@ -147,6 +157,7 @@ export function useAssistant() {
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<AssistantError | null>(null);
 	const [suggestions, setSuggestions] = useState<string[]>([]);
+	const [draft, setDraft] = useState<AssistantDraft | null>(null);
 	const batch = useRef<OpenBatch | null>(null);
 	const busy = useRef(false);
 	const profileRef = useRef(profile);
@@ -237,10 +248,23 @@ export function useAssistant() {
 			};
 			const response = await fetch("/api/assistant", {
 				method: "POST",
-				headers: { "Content-Type": "application/json" },
+				headers: {
+					"Content-Type": "application/json",
+					Accept: `${ASSISTANT_STREAM_TYPE}, application/json`,
+				},
 				body: JSON.stringify(body),
 			});
 			if (!response.ok) throw new Error(`status ${response.status}`);
+			const type = response.headers.get("Content-Type") ?? "";
+			if (type.includes(ASSISTANT_STREAM_TYPE) && response.body) {
+				return readAssistantStream(response.body, {
+					onStart: (agent) => setDraft({ agent, text: "" }),
+					onText: (text) =>
+						setDraft((current) =>
+							current ? { ...current, text: current.text + text } : current,
+						),
+				});
+			}
 			const data: unknown = await response.json();
 			if (!isResponse(data)) throw new Error("invalid response");
 			return data;
@@ -258,6 +282,7 @@ export function useAssistant() {
 				response = await request(history);
 			} catch {
 				busy.current = false;
+				setDraft(null);
 				setLoading(false);
 				setError({
 					message:
@@ -273,6 +298,7 @@ export function useAssistant() {
 				toolCalls: response.toolCalls,
 			};
 			let next = [...history, turn];
+			setDraft(null);
 			setMessages(next);
 			setSuggestions(response.suggestions ?? []);
 
@@ -412,6 +438,7 @@ export function useAssistant() {
 
 	return {
 		messages,
+		draft,
 		pending,
 		loading,
 		error,

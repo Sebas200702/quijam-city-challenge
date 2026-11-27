@@ -1,3 +1,4 @@
+import { getSecret } from "astro:env/server";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
 let cached: SupabaseClient | null | undefined;
@@ -11,7 +12,7 @@ let cached: SupabaseClient | null | undefined;
 export function getSupabaseAdmin(): SupabaseClient | null {
 	if (cached !== undefined) return cached;
 	const url = import.meta.env.PUBLIC_SUPABASE_URL;
-	const serviceKey = import.meta.env.SUPABASE_SERVICE_ROLE_KEY;
+	const serviceKey = getSecret("SUPABASE_SERVICE_ROLE_KEY");
 	cached =
 		url && serviceKey
 			? createClient(url, serviceKey, {

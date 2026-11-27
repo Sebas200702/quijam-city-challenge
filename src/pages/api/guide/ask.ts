@@ -1,3 +1,4 @@
+import { getSecret } from "astro:env/server";
 import type { APIRoute } from "astro";
 import { loadCorridorData } from "../../../lib/corridor/corridor-data";
 import {
@@ -51,7 +52,7 @@ export const POST: APIRoute = async (context) => {
 	}
 
 	const { data } = await loadCorridorData();
-	const apiKey = import.meta.env.GEMINI_API_KEY;
+	const apiKey = getSecret("GEMINI_API_KEY");
 	let answer: GuideAnswer;
 	if (apiKey) {
 		try {
@@ -59,7 +60,7 @@ export const POST: APIRoute = async (context) => {
 				data,
 				question,
 				apiKey,
-				import.meta.env.GEMINI_TEXT_MODEL || DEFAULT_TEXT_MODEL,
+				getSecret("GEMINI_TEXT_MODEL") || DEFAULT_TEXT_MODEL,
 			);
 		} catch (error) {
 			console.warn("[guide] Gemini failed, using the local Guide", error);
