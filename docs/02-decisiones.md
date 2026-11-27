@@ -215,3 +215,11 @@ Issue #47.
 - **Estrategias:** páginas con red primero (espera 4 s) y copia guardada, después `/offline`; archivos con hash, caché primero; teselas del mapa con límite de 400; el catálogo de lugares de Supabase, red primero. Las `/api` y todo lo que no sea GET van siempre a la red.
 - **Sin red, Quillart AI responde con los agentes locales en el teléfono** (sin proponer acciones) y el Guía y `plan_route` responden las tres rutas desde el Gran Malecón con la semilla del corredor.
 - **Notificación de arroyo:** solo mientras la app está abierta (en primer o segundo plano); no hay Web Push. En el mapa sale solo con la app en segundo plano, porque en primer plano ya está el modal; en Quillart AI y en las pantallas de comunidad sale si la persona ya dio permiso. El permiso se pide únicamente con un botón bajo la banda del arroyo, nunca al cargar (regla 4). El formato (`AppNotification`) sirve para los recordatorios de eventos (#91).
+
+## Recordatorios y notificaciones de eventos (27 nov 2026)
+
+Issue #91.
+
+- **Bandeja privada con RLS y cascada (Ley 1581):** se crea `public.user_notifications` (`20261128000008_user_notifications.sql`) registrada en `supabase_realtime`, con lectura/actualización/borrado restringidos al propio usuario e inserciones únicamente desde el servidor (service role) o triggers `security definer` (`trg_events_notify_cancelled` al cancelar un evento). Al eliminar la cuenta se borran en cascada.
+- **Presupuesto de interrupciones (regla 4 de #57):** ningún recordatorio de evento ni aviso de moderación abre modal ni pide permiso al cargar. Dentro de la app aparece como máximo una tarjeta discreta (`EventNotifier`) y la bandeja completa en `/perfil#mis-avisos` (`NotificationsPanel`); las notificaciones web reutilizan `AppNotification` con `requireInteraction: false` y el usuario puede desactivar ambos canales en cualquier momento.
+- **Recordatorios del día anterior sin cron externo:** los eventos inscritos que comienzan en las próximas 24 horas generan recordatorios deterministas por día (`buildUpcomingEventReminders`) deduplicados localmente.
