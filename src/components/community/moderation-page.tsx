@@ -135,15 +135,18 @@ function ModerationQueue({ profileId }: { profileId: string }) {
 
 	async function act(item: ModerationQueueItem, action: ModerationAction) {
 		const key = keyOf(item);
-		const next: Override =
+		// Confirming a citizen report keeps it in the queue until it is attended.
+		const next: Override | null =
 			action === "approve"
 				? "published"
 				: action === "remove"
 					? "removed"
-					: "resolved";
+					: action === "resolve"
+						? "resolved"
+						: null;
 		setError(null);
 		setPending((value) => ({ ...value, [key]: true }));
-		setOverrides((value) => ({ ...value, [key]: next }));
+		if (next) setOverrides((value) => ({ ...value, [key]: next }));
 		try {
 			await store.moderate(item.kind, item.id, action);
 			reload();
@@ -170,7 +173,12 @@ function ModerationQueue({ profileId }: { profileId: string }) {
 					const visible = items.flatMap((item) => {
 						const override = overrides[keyOf(item)];
 						if (override === "removed" || override === "resolved") return [];
-						if (override === "published" && item.priority === "none") return [];
+						if (
+							override === "published" &&
+							item.priority === "none" &&
+							item.communityReports === 0
+						)
+							return [];
 						return [override ? { ...item, status: override } : item];
 					});
 					if (visible.length === 0)
@@ -190,6 +198,12 @@ function ModerationQueue({ profileId }: { profileId: string }) {
 					);
 					const held = visible.filter(
 						(item) => item.priority === "none" && item.status === "held",
+					);
+					const reported = visible.filter(
+						(item) =>
+							item.priority === "none" &&
+							item.status === "published" &&
+							item.communityReports > 0,
 					);
 					return (
 						<>
@@ -212,8 +226,16 @@ function ModerationQueue({ profileId }: { profileId: string }) {
 							<QueueSection
 								id="held"
 								title="En revisión"
-								hint="Contenido retenido por el triaje. Decide si se publica."
+								hint="Contenido retenido por el triaje o por reportes de la comunidad. Decide si se publica."
 								items={held}
+								pending={pending}
+								onAct={act}
+							/>
+							<QueueSection
+								id="reported"
+								title="Reportado por la comunidad"
+								hint="Publicado, pero alguien lo reportó. Con 3 reportes se oculta solo."
+								items={reported}
 								pending={pending}
 								onAct={act}
 							/>
@@ -300,6 +322,13 @@ function QueueItem({
 				) : (
 					<span className="q-badge q-badge--optimal">Publicado</span>
 				)}
+				{item.communityReports > 0 && (
+					<span className="q-badge q-badge--alert">
+						{item.communityReports === 1
+							? "Reportado por 1 persona"
+							: `Reportado por ${item.communityReports} personas`}
+					</span>
+				)}
 			</div>
 			<h3 className="q-h3 break-words">{item.title || "Sin título"}</h3>
 			<p className="q-p q-muted line-clamp-3 whitespace-pre-line break-words">
@@ -340,6 +369,16 @@ function QueueItem({
 						onClick={() => onAct(item, "resolve")}
 					>
 						Marcar atendido
+					</button>
+				)}
+				{item.kind === "thread" && item.priority !== "none" && !held && (
+					<button
+						type="button"
+						className="q-btn q-btn--secondary"
+						disabled={busy}
+						onClick={() => onAct(item, "verify")}
+					>
+						Confirmar reporte
 					</button>
 				)}
 				<button
