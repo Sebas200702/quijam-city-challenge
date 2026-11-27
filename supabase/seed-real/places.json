@@ -1,0 +1,1180 @@
+[
+	{
+		"slug": "cienaga-de-mallorquin",
+		"name": "Ecoparque Ciénaga de Mallorquín",
+		"kind": "nature",
+		"municipality": "barranquilla",
+		"neighborhood": "Las Flores",
+		"description": "Ecoparque con senderos y muelle junto a la Ciénaga de Mallorquín, cuerpo de agua con manglar cerca de la desembocadura del río Magdalena.",
+		"address": "Muelle",
+		"latitude": 11.03248,
+		"longitude": -74.84451,
+		"is_accessible": false,
+		"is_free": true,
+		"opening_hours": null,
+		"source": {
+			"osm": "https://www.openstreetmap.org/node/12647606292",
+			"retrieved": "2026-11-27",
+			"license": "ODbL — © OpenStreetMap contributors"
+		}
+	},
+	{
+		"slug": "gran-malecon",
+		"name": "Gran Malecón del Río",
+		"kind": "waterfront",
+		"municipality": "barranquilla",
+		"neighborhood": "Barranquilla",
+		"description": "Paseo público a orillas del río Magdalena, con zonas verdes, áreas deportivas, juegos infantiles y oferta gastronómica.",
+		"address": null,
+		"latitude": 11.00627,
+		"longitude": -74.77845,
+		"is_accessible": false,
+		"is_free": true,
+		"opening_hours": null,
+		"source": {
+			"osm": "https://www.openstreetmap.org/way/907104484",
+			"retrieved": "2026-11-27",
+			"license": "ODbL — © OpenStreetMap contributors"
+		}
+	},
+	{
+		"slug": "bocas-de-ceniza",
+		"name": "Bocas de Ceniza y Tajamar",
+		"kind": "nature",
+		"municipality": "barranquilla",
+		"neighborhood": "Las Flores",
+		"description": "Punto donde el río Magdalena desemboca en el mar Caribe, al final del tajamar del barrio Las Flores.",
+		"address": null,
+		"latitude": 11.106,
+		"longitude": -74.85468,
+		"is_accessible": false,
+		"is_free": false,
+		"opening_hours": null,
+		"source": {
+			"osm": "https://www.openstreetmap.org/node/1157676656",
+			"retrieved": "2026-11-27",
+			"license": "ODbL — © OpenStreetMap contributors"
+		}
+	},
+	{
+		"slug": "parque-washington",
+		"name": "Parque Washington",
+		"kind": "park",
+		"municipality": "barranquilla",
+		"neighborhood": "Barranquilla",
+		"description": "Parque arborizado del norte de Barranquilla, usado para caminar, trotar y pasear mascotas.",
+		"address": null,
+		"latitude": 11.00549,
+		"longitude": -74.81099,
+		"is_accessible": false,
+		"is_free": true,
+		"opening_hours": null,
+		"source": {
+			"osm": "https://www.openstreetmap.org/way/374224418",
+			"retrieved": "2026-11-27",
+			"license": "ODbL — © OpenStreetMap contributors"
+		}
+	},
+	{
+		"slug": "zoologico-barranquilla",
+		"name": "Zoológico de Barranquilla",
+		"kind": "nature",
+		"municipality": "barranquilla",
+		"neighborhood": "La Concepción",
+		"description": "Zoológico de la ciudad, con fauna de Colombia y otras regiones y programas de educación ambiental.",
+		"address": "Calle 76 # 68",
+		"latitude": 11.01098,
+		"longitude": -74.798,
+		"is_accessible": false,
+		"is_free": false,
+		"opening_hours": null,
+		"source": {
+			"osm": "https://www.openstreetmap.org/way/50548263",
+			"retrieved": "2026-11-27",
+			"license": "ODbL — © OpenStreetMap contributors"
+		}
+	},
+	{
+		"slug": "parque-cultural-del-caribe",
+		"name": "Parque Cultural del Caribe",
+		"kind": "culture",
+		"municipality": "barranquilla",
+		"neighborhood": "Barranquilla",
+		"description": "Complejo cultural del centro que reúne el Museo del Caribe, plaza pública y espacios para exposiciones y conciertos.",
+		"address": null,
+		"latitude": 10.98638,
+		"longitude": -74.77801,
+		"is_accessible": false,
+		"is_free": true,
+		"opening_hours": null,
+		"source": {
+			"osm": "https://www.openstreetmap.org/way/404984600",
+			"retrieved": "2026-11-27",
+			"license": "ODbL — © OpenStreetMap contributors"
+		}
+	},
+	{
+		"slug": "paseo-bolivar",
+		"name": "Paseo Bolívar",
+		"kind": "heritage",
+		"municipality": "barranquilla",
+		"neighborhood": "Centro",
+		"description": "Bulevar histórico del centro de Barranquilla, con la estatua ecuestre de Simón Bolívar y edificios republicanos.",
+		"address": null,
+		"latitude": 10.98332,
+		"longitude": -74.77753,
+		"is_accessible": false,
+		"is_free": true,
+		"opening_hours": null,
+		"source": {
+			"osm": "https://www.openstreetmap.org/relation/11161198",
+			"retrieved": "2026-11-27",
+			"license": "ODbL — © OpenStreetMap contributors"
+		}
+	},
+	{
+		"slug": "plaza-de-la-paz",
+		"name": "Plaza de la Paz",
+		"kind": "heritage",
+		"municipality": "barranquilla",
+		"neighborhood": "El Rosario",
+		"description": "Plaza frente a la Catedral Metropolitana María Reina, escenario habitual de actos públicos y conciertos.",
+		"address": "Plaza de la Paz",
+		"latitude": 10.98802,
+		"longitude": -74.78901,
+		"is_accessible": false,
+		"is_free": true,
+		"opening_hours": null,
+		"source": {
+			"osm": "https://www.openstreetmap.org/way/1005042626",
+			"retrieved": "2026-11-27",
+			"license": "ODbL — © OpenStreetMap contributors"
+		}
+	},
+	{
+		"slug": "estadio-metropolitano",
+		"name": "Estadio Metropolitano Roberto Meléndez",
+		"kind": "sport",
+		"municipality": "barranquilla",
+		"neighborhood": "Ciudadela 20 de Julio",
+		"description": "Estadio de fútbol más grande de la ciudad, sede del Junior y de partidos de la Selección Colombia.",
+		"address": "Vía Estadio",
+		"latitude": 10.92695,
+		"longitude": -74.80051,
+		"is_accessible": false,
+		"is_free": false,
+		"opening_hours": null,
+		"source": {
+			"osm": "https://www.openstreetmap.org/way/201775192",
+			"retrieved": "2026-11-27",
+			"license": "ODbL — © OpenStreetMap contributors"
+		}
+	},
+	{
+		"slug": "muelle-puerto-colombia",
+		"name": "Muelle de Puerto Colombia",
+		"kind": "waterfront",
+		"municipality": "puertoColombia",
+		"neighborhood": "Puerto Colombia",
+		"description": "Muelle histórico de Puerto Colombia sobre el mar Caribe, reconstruido como muelle turístico.",
+		"address": "Calle 2",
+		"latitude": 10.98962,
+		"longitude": -74.96047,
+		"is_accessible": false,
+		"is_free": true,
+		"opening_hours": null,
+		"source": {
+			"osm": "https://www.openstreetmap.org/way/1024056501",
+			"retrieved": "2026-11-27",
+			"license": "ODbL — © OpenStreetMap contributors"
+		}
+	},
+	{
+		"slug": "catedral-metropolitana",
+		"name": "Catedral Metropolitana María Reina",
+		"kind": "heritage",
+		"municipality": "barranquilla",
+		"neighborhood": "Boston",
+		"description": "Catedral de la Arquidiócesis de Barranquilla, frente a la Plaza de la Paz.",
+		"address": "Carrera 45 # 53-38",
+		"latitude": 10.9885,
+		"longitude": -74.79057,
+		"is_accessible": false,
+		"is_free": true,
+		"opening_hours": null,
+		"source": {
+			"osm": "https://www.openstreetmap.org/way/1005042625",
+			"retrieved": "2026-11-27",
+			"license": "ODbL — © OpenStreetMap contributors"
+		}
+	},
+	{
+		"slug": "plaza-san-nicolas",
+		"name": "Plaza de San Nicolás",
+		"kind": "heritage",
+		"municipality": "barranquilla",
+		"neighborhood": "Centro",
+		"description": "Plaza tradicional del centro histórico, frente a la iglesia de San Nicolás de Tolentino.",
+		"address": null,
+		"latitude": 10.97978,
+		"longitude": -74.77744,
+		"is_accessible": false,
+		"is_free": true,
+		"opening_hours": null,
+		"source": {
+			"osm": "https://www.openstreetmap.org/way/742982767",
+			"retrieved": "2026-11-27",
+			"license": "ODbL — © OpenStreetMap contributors"
+		}
+	},
+	{
+		"slug": "iglesia-san-nicolas",
+		"name": "Iglesia de San Nicolás de Tolentino",
+		"kind": "heritage",
+		"municipality": "barranquilla",
+		"neighborhood": "Centro",
+		"description": "Templo del centro histórico de Barranquilla, junto a la Plaza de San Nicolás.",
+		"address": "Calle 34",
+		"latitude": 10.98014,
+		"longitude": -74.77796,
+		"is_accessible": false,
+		"is_free": true,
+		"opening_hours": null,
+		"source": {
+			"osm": "https://www.openstreetmap.org/way/101518306",
+			"retrieved": "2026-11-27",
+			"license": "ODbL — © OpenStreetMap contributors"
+		}
+	},
+	{
+		"slug": "antigua-aduana",
+		"name": "Edificio de la Antigua Aduana",
+		"kind": "heritage",
+		"municipality": "barranquilla",
+		"neighborhood": "Barlovento",
+		"description": "Edificio histórico de la antigua aduana de Barranquilla, hoy sede cultural y de la Biblioteca Piloto del Caribe.",
+		"address": "Vía 40 # 36-135",
+		"latitude": 10.98841,
+		"longitude": -74.77888,
+		"is_accessible": false,
+		"is_free": true,
+		"opening_hours": null,
+		"source": {
+			"osm": "https://www.openstreetmap.org/way/681681889",
+			"retrieved": "2026-11-27",
+			"license": "ODbL — © OpenStreetMap contributors"
+		}
+	},
+	{
+		"slug": "estacion-montoya",
+		"name": "Estación Montoya",
+		"kind": "heritage",
+		"municipality": "barranquilla",
+		"neighborhood": "Barlovento",
+		"description": "Antigua estación del ferrocarril de Bolívar, primera línea férrea de la ciudad, junto al conjunto de la Aduana.",
+		"address": "Vía 40 # 36-135",
+		"latitude": 10.98955,
+		"longitude": -74.77957,
+		"is_accessible": false,
+		"is_free": true,
+		"opening_hours": null,
+		"source": {
+			"osm": "https://www.openstreetmap.org/way/111665901",
+			"retrieved": "2026-11-27",
+			"license": "ODbL — © OpenStreetMap contributors"
+		}
+	},
+	{
+		"slug": "casa-del-carnaval",
+		"name": "Casa del Carnaval",
+		"kind": "culture",
+		"municipality": "barranquilla",
+		"neighborhood": "Villa Country",
+		"description": "Sede de la organización del Carnaval de Barranquilla, con el Museo del Carnaval, en el barrio Abajo.",
+		"address": "Carrera 54 # 49B-39",
+		"latitude": 10.99284,
+		"longitude": -74.78767,
+		"is_accessible": true,
+		"is_free": false,
+		"opening_hours": null,
+		"source": {
+			"osm": "https://www.openstreetmap.org/way/1004988083",
+			"retrieved": "2026-11-27",
+			"license": "ODbL — © OpenStreetMap contributors"
+		}
+	},
+	{
+		"slug": "fabrica-de-cultura",
+		"name": "Fábrica de Cultura",
+		"kind": "culture",
+		"municipality": "barranquilla",
+		"neighborhood": "Barlovento",
+		"description": "Centro de formación artística y cultural del Distrito en el barrio Abajo.",
+		"address": "Calle 40 # 46-223",
+		"latitude": 10.98859,
+		"longitude": -74.78085,
+		"is_accessible": false,
+		"is_free": true,
+		"opening_hours": null,
+		"source": {
+			"osm": "https://www.openstreetmap.org/way/1004988084",
+			"retrieved": "2026-11-27",
+			"license": "ODbL — © OpenStreetMap contributors"
+		}
+	},
+	{
+		"slug": "museo-de-arte-moderno",
+		"name": "Museo de Arte Moderno de Barranquilla (MAMB)",
+		"kind": "culture",
+		"municipality": "barranquilla",
+		"neighborhood": "Barlovento",
+		"description": "Museo de arte moderno y contemporáneo ubicado en el Parque Cultural del Caribe.",
+		"address": "Calle 36 # 46-66",
+		"latitude": 10.98697,
+		"longitude": -74.77805,
+		"is_accessible": false,
+		"is_free": false,
+		"opening_hours": null,
+		"source": {
+			"osm": "https://www.openstreetmap.org/way/676328186",
+			"retrieved": "2026-11-27",
+			"license": "ODbL — © OpenStreetMap contributors"
+		}
+	},
+	{
+		"slug": "museo-del-atlantico",
+		"name": "Museo del Atlántico",
+		"kind": "culture",
+		"municipality": "barranquilla",
+		"neighborhood": "Centro",
+		"description": "Museo del departamento del Atlántico en el centro de Barranquilla.",
+		"address": "Carrera 39 # 35-21",
+		"latitude": 10.97825,
+		"longitude": -74.7799,
+		"is_accessible": false,
+		"is_free": false,
+		"opening_hours": null,
+		"source": {
+			"osm": "https://www.openstreetmap.org/way/782421123",
+			"retrieved": "2026-11-27",
+			"license": "ODbL — © OpenStreetMap contributors"
+		}
+	},
+	{
+		"slug": "teatro-amira-de-la-rosa",
+		"name": "Teatro Amira de la Rosa",
+		"kind": "culture",
+		"municipality": "barranquilla",
+		"neighborhood": "Villa Country",
+		"description": "Teatro municipal de Barranquilla, sede tradicional de conciertos y artes escénicas.",
+		"address": "Carrera 54 # 58",
+		"latitude": 10.99345,
+		"longitude": -74.78965,
+		"is_accessible": false,
+		"is_free": false,
+		"opening_hours": null,
+		"source": {
+			"osm": "https://www.openstreetmap.org/way/1254484830",
+			"retrieved": "2026-11-27",
+			"license": "ODbL — © OpenStreetMap contributors"
+		}
+	},
+	{
+		"slug": "teatro-jose-consuegra-higgins",
+		"name": "Teatro José Consuegra Higgins",
+		"kind": "culture",
+		"municipality": "barranquilla",
+		"neighborhood": "Modelo",
+		"description": "Teatro de la Universidad Simón Bolívar, con programación de música y artes escénicas.",
+		"address": "Calle 58",
+		"latitude": 10.99386,
+		"longitude": -74.79187,
+		"is_accessible": false,
+		"is_free": false,
+		"opening_hours": null,
+		"source": {
+			"osm": "https://www.openstreetmap.org/way/695758845",
+			"retrieved": "2026-11-27",
+			"license": "ODbL — © OpenStreetMap contributors"
+		}
+	},
+	{
+		"slug": "centro-de-eventos-puerta-de-oro",
+		"name": "Centro de Eventos Puerta de Oro",
+		"kind": "culture",
+		"municipality": "barranquilla",
+		"neighborhood": "El Castillo",
+		"description": "Centro de convenciones y eventos de Barranquilla a orillas del río Magdalena, junto al Gran Malecón.",
+		"address": "Vía 40",
+		"latitude": 11.02385,
+		"longitude": -74.79982,
+		"is_accessible": false,
+		"is_free": false,
+		"opening_hours": null,
+		"source": {
+			"osm": "https://www.openstreetmap.org/way/1326352281",
+			"retrieved": "2026-11-27",
+			"license": "ODbL — © OpenStreetMap contributors"
+		}
+	},
+	{
+		"slug": "ventana-al-mundo",
+		"name": "Ventana al Mundo",
+		"kind": "heritage",
+		"municipality": "puertoColombia",
+		"neighborhood": "Puerto Colombia",
+		"description": "Monumento de gran formato en la entrada norte de la ciudad, símbolo de Barranquilla como puerta al mundo.",
+		"address": "Avenida Circunvalar",
+		"latitude": 11.03316,
+		"longitude": -74.83143,
+		"is_accessible": false,
+		"is_free": true,
+		"opening_hours": null,
+		"source": {
+			"osm": "https://www.openstreetmap.org/way/815351398",
+			"retrieved": "2026-11-27",
+			"license": "ODbL — © OpenStreetMap contributors"
+		}
+	},
+	{
+		"slug": "ventana-de-campeones",
+		"name": "Ventana de Campeones",
+		"kind": "heritage",
+		"municipality": "barranquilla",
+		"neighborhood": "Barranquilla",
+		"description": "Monumento al deporte en el Gran Malecón del Río, junto al río Magdalena.",
+		"address": "Rotonda Aleta del Tiburón",
+		"latitude": 10.99829,
+		"longitude": -74.77278,
+		"is_accessible": false,
+		"is_free": true,
+		"opening_hours": null,
+		"source": {
+			"osm": "https://www.openstreetmap.org/way/907107216",
+			"retrieved": "2026-11-27",
+			"license": "ODbL — © OpenStreetMap contributors"
+		}
+	},
+	{
+		"slug": "parque-sagrado-corazon",
+		"name": "Parque Sagrado Corazón",
+		"kind": "park",
+		"municipality": "barranquilla",
+		"neighborhood": "Barranquilla",
+		"description": "Parque de barrio en el norte de Barranquilla, frente a la iglesia del Sagrado Corazón.",
+		"address": null,
+		"latitude": 10.99359,
+		"longitude": -74.81811,
+		"is_accessible": false,
+		"is_free": true,
+		"opening_hours": null,
+		"source": {
+			"osm": "https://www.openstreetmap.org/way/101010097",
+			"retrieved": "2026-11-27",
+			"license": "ODbL — © OpenStreetMap contributors"
+		}
+	},
+	{
+		"slug": "parque-venezuela",
+		"name": "Parque Venezuela",
+		"kind": "park",
+		"municipality": "barranquilla",
+		"neighborhood": "La campiña",
+		"description": "Parque público del norte de Barranquilla con zonas verdes y senderos.",
+		"address": null,
+		"latitude": 11.00146,
+		"longitude": -74.82417,
+		"is_accessible": false,
+		"is_free": true,
+		"opening_hours": null,
+		"source": {
+			"osm": "https://www.openstreetmap.org/way/97854569",
+			"retrieved": "2026-11-27",
+			"license": "ODbL — © OpenStreetMap contributors"
+		}
+	},
+	{
+		"slug": "parque-cisneros",
+		"name": "Parque Cisneros",
+		"kind": "park",
+		"municipality": "barranquilla",
+		"neighborhood": "Barranquilla",
+		"description": "Parque del barrio El Prado, uno de los más tradicionales de la ciudad.",
+		"address": null,
+		"latitude": 11.0013,
+		"longitude": -74.79127,
+		"is_accessible": false,
+		"is_free": true,
+		"opening_hours": null,
+		"source": {
+			"osm": "https://www.openstreetmap.org/way/233196869",
+			"retrieved": "2026-11-27",
+			"license": "ODbL — © OpenStreetMap contributors"
+		}
+	},
+	{
+		"slug": "parque-suri-salcedo",
+		"name": "Parque Tomás Suri Salcedo",
+		"kind": "park",
+		"municipality": "barranquilla",
+		"neighborhood": "Barranquilla",
+		"description": "Parque público del centro-norte de Barranquilla, cerca del estadio Romelio Martínez.",
+		"address": null,
+		"latitude": 10.99409,
+		"longitude": -74.80427,
+		"is_accessible": false,
+		"is_free": true,
+		"opening_hours": null,
+		"source": {
+			"osm": "https://www.openstreetmap.org/way/561419756",
+			"retrieved": "2026-11-27",
+			"license": "ODbL — © OpenStreetMap contributors"
+		}
+	},
+	{
+		"slug": "parque-de-los-fundadores",
+		"name": "Parque de los Fundadores",
+		"kind": "park",
+		"municipality": "barranquilla",
+		"neighborhood": "Barranquilla",
+		"description": "Parque público del centro-norte de Barranquilla.",
+		"address": null,
+		"latitude": 10.99449,
+		"longitude": -74.79331,
+		"is_accessible": false,
+		"is_free": true,
+		"opening_hours": null,
+		"source": {
+			"osm": "https://www.openstreetmap.org/way/341281657",
+			"retrieved": "2026-11-27",
+			"license": "ODbL — © OpenStreetMap contributors"
+		}
+	},
+	{
+		"slug": "parque-de-la-electrificadora",
+		"name": "Parque de la Electrificadora",
+		"kind": "park",
+		"municipality": "barranquilla",
+		"neighborhood": "Barranquilla",
+		"description": "Parque público del norte de Barranquilla con zonas verdes.",
+		"address": null,
+		"latitude": 11.01392,
+		"longitude": -74.81383,
+		"is_accessible": false,
+		"is_free": true,
+		"opening_hours": null,
+		"source": {
+			"osm": "https://www.openstreetmap.org/way/113970711",
+			"retrieved": "2026-11-27",
+			"license": "ODbL — © OpenStreetMap contributors"
+		}
+	},
+	{
+		"slug": "parque-bicentenario",
+		"name": "Parque Bicentenario",
+		"kind": "park",
+		"municipality": "barranquilla",
+		"neighborhood": "La Paz",
+		"description": "Parque público del suroccidente de Barranquilla con zonas verdes y espacios recreativos.",
+		"address": null,
+		"latitude": 10.96338,
+		"longitude": -74.83651,
+		"is_accessible": false,
+		"is_free": true,
+		"opening_hours": null,
+		"source": {
+			"osm": "https://www.openstreetmap.org/way/520798368",
+			"retrieved": "2026-11-27",
+			"license": "ODbL — © OpenStreetMap contributors"
+		}
+	},
+	{
+		"slug": "reserva-alameda-del-rio",
+		"name": "Reserva Natural Alameda del Río",
+		"kind": "nature",
+		"municipality": "barranquilla",
+		"neighborhood": "Barranquilla",
+		"description": "Área natural protegida dentro del desarrollo urbano Alameda del Río, en el occidente de Barranquilla.",
+		"address": null,
+		"latitude": 10.98925,
+		"longitude": -74.85401,
+		"is_accessible": false,
+		"is_free": true,
+		"opening_hours": null,
+		"source": {
+			"osm": "https://www.openstreetmap.org/way/921761234",
+			"retrieved": "2026-11-27",
+			"license": "ODbL — © OpenStreetMap contributors"
+		}
+	},
+	{
+		"slug": "estadio-romelio-martinez",
+		"name": "Estadio Romelio Martínez",
+		"kind": "sport",
+		"municipality": "barranquilla",
+		"neighborhood": "Olaya",
+		"description": "Estadio histórico de fútbol de Barranquilla, en la calle 72.",
+		"address": "Calle 72",
+		"latitude": 10.99381,
+		"longitude": -74.80709,
+		"is_accessible": false,
+		"is_free": false,
+		"opening_hours": null,
+		"source": {
+			"osm": "https://www.openstreetmap.org/way/201777372",
+			"retrieved": "2026-11-27",
+			"license": "ODbL — © OpenStreetMap contributors"
+		}
+	},
+	{
+		"slug": "coliseo-elias-chegwin",
+		"name": "Coliseo Elías Chegwin",
+		"kind": "sport",
+		"municipality": "barranquilla",
+		"neighborhood": "Barrio Colombia",
+		"description": "Coliseo cubierto para deportes de salón y eventos, junto al estadio Romelio Martínez.",
+		"address": "Carrera 47",
+		"latitude": 10.99443,
+		"longitude": -74.80481,
+		"is_accessible": false,
+		"is_free": false,
+		"opening_hours": null,
+		"source": {
+			"osm": "https://www.openstreetmap.org/way/443978364",
+			"retrieved": "2026-11-27",
+			"license": "ODbL — © OpenStreetMap contributors"
+		}
+	},
+	{
+		"slug": "estadio-edgar-renteria",
+		"name": "Estadio de Béisbol Édgar Rentería",
+		"kind": "sport",
+		"municipality": "barranquilla",
+		"neighborhood": "Barrio Abajo",
+		"description": "Estadio de béisbol de Barranquilla, sede de partidos de la liga profesional colombiana.",
+		"address": "Avenida Murillo",
+		"latitude": 10.99568,
+		"longitude": -74.78411,
+		"is_accessible": false,
+		"is_free": false,
+		"opening_hours": null,
+		"source": {
+			"osm": "https://www.openstreetmap.org/way/1576936174",
+			"retrieved": "2026-11-27",
+			"license": "ODbL — © OpenStreetMap contributors"
+		}
+	},
+	{
+		"slug": "museo-bolivariano-soledad",
+		"name": "Casa Museo Bolivariana de Soledad",
+		"kind": "heritage",
+		"municipality": "soledad",
+		"neighborhood": "Soledad",
+		"description": "Casa donde se alojó Simón Bolívar en Soledad, hoy museo, junto a la plaza principal del municipio.",
+		"address": "Calle 13",
+		"latitude": 10.9158,
+		"longitude": -74.76252,
+		"is_accessible": false,
+		"is_free": true,
+		"opening_hours": null,
+		"source": {
+			"osm": "https://www.openstreetmap.org/way/214363944",
+			"retrieved": "2026-11-27",
+			"license": "ODbL — © OpenStreetMap contributors"
+		}
+	},
+	{
+		"slug": "iglesia-san-antonio-soledad",
+		"name": "Iglesia San Antonio de Padua",
+		"kind": "heritage",
+		"municipality": "soledad",
+		"neighborhood": "Soledad",
+		"description": "Templo principal del centro histórico de Soledad, frente a la plaza.",
+		"address": "Calle 15",
+		"latitude": 10.91564,
+		"longitude": -74.76384,
+		"is_accessible": false,
+		"is_free": true,
+		"opening_hours": null,
+		"source": {
+			"osm": "https://www.openstreetmap.org/way/214363945",
+			"retrieved": "2026-11-27",
+			"license": "ODbL — © OpenStreetMap contributors"
+		}
+	},
+	{
+		"slug": "plaza-de-soledad",
+		"name": "Plaza de Soledad",
+		"kind": "heritage",
+		"municipality": "soledad",
+		"neighborhood": "Soledad",
+		"description": "Plaza principal del centro histórico de Soledad.",
+		"address": "Plaza de Soledad",
+		"latitude": 10.91552,
+		"longitude": -74.76313,
+		"is_accessible": false,
+		"is_free": true,
+		"opening_hours": null,
+		"source": {
+			"osm": "https://www.openstreetmap.org/way/1334328904",
+			"retrieved": "2026-11-27",
+			"license": "ODbL — © OpenStreetMap contributors"
+		}
+	},
+	{
+		"slug": "parque-tambora-soledad",
+		"name": "Parque Tambora",
+		"kind": "park",
+		"municipality": "soledad",
+		"neighborhood": "Soledad",
+		"description": "Parque público de Soledad.",
+		"address": null,
+		"latitude": 10.91854,
+		"longitude": -74.78032,
+		"is_accessible": false,
+		"is_free": true,
+		"opening_hours": null,
+		"source": {
+			"osm": "https://www.openstreetmap.org/way/671754300",
+			"retrieved": "2026-11-27",
+			"license": "ODbL — © OpenStreetMap contributors"
+		}
+	},
+	{
+		"slug": "parque-los-fundadores-soledad",
+		"name": "Parque Los Fundadores (Soledad)",
+		"kind": "park",
+		"municipality": "soledad",
+		"neighborhood": "Soledad",
+		"description": "Parque público de Soledad.",
+		"address": null,
+		"latitude": 10.9185,
+		"longitude": -74.78876,
+		"is_accessible": false,
+		"is_free": true,
+		"opening_hours": null,
+		"source": {
+			"osm": "https://www.openstreetmap.org/way/1459159011",
+			"retrieved": "2026-11-27",
+			"license": "ODbL — © OpenStreetMap contributors"
+		}
+	},
+	{
+		"slug": "parque-ferrocarril-soledad",
+		"name": "Parque Ferrocarril",
+		"kind": "park",
+		"municipality": "soledad",
+		"neighborhood": "Soledad",
+		"description": "Parque público de Soledad.",
+		"address": null,
+		"latitude": 10.92254,
+		"longitude": -74.77667,
+		"is_accessible": false,
+		"is_free": true,
+		"opening_hours": null,
+		"source": {
+			"osm": "https://www.openstreetmap.org/way/1058369080",
+			"retrieved": "2026-11-27",
+			"license": "ODbL — © OpenStreetMap contributors"
+		}
+	},
+	{
+		"slug": "parque-muvdi-soledad",
+		"name": "Parque Muvdi",
+		"kind": "park",
+		"municipality": "soledad",
+		"neighborhood": "Soledad",
+		"description": "Parque público de Soledad.",
+		"address": null,
+		"latitude": 10.92841,
+		"longitude": -74.78255,
+		"is_accessible": false,
+		"is_free": true,
+		"opening_hours": null,
+		"source": {
+			"osm": "https://www.openstreetmap.org/way/374618898",
+			"retrieved": "2026-11-27",
+			"license": "ODbL — © OpenStreetMap contributors"
+		}
+	},
+	{
+		"slug": "polideportivo-soledad-2000",
+		"name": "Polideportivo de Soledad 2000",
+		"kind": "sport",
+		"municipality": "soledad",
+		"neighborhood": "Soledad",
+		"description": "Polideportivo con canchas públicas en Soledad.",
+		"address": null,
+		"latitude": 10.9042,
+		"longitude": -74.78542,
+		"is_accessible": false,
+		"is_free": true,
+		"opening_hours": null,
+		"source": {
+			"osm": "https://www.openstreetmap.org/way/214008100",
+			"retrieved": "2026-11-27",
+			"license": "ODbL — © OpenStreetMap contributors"
+		}
+	},
+	{
+		"slug": "parroquia-santa-maria-magdalena-malambo",
+		"name": "Parroquia Santa María Magdalena",
+		"kind": "heritage",
+		"municipality": "malambo",
+		"neighborhood": "Malambo",
+		"description": "Parroquia católica de Malambo.",
+		"address": "Carrera 12",
+		"latitude": 10.85939,
+		"longitude": -74.77247,
+		"is_accessible": false,
+		"is_free": true,
+		"opening_hours": null,
+		"source": {
+			"osm": "https://www.openstreetmap.org/way/982103417",
+			"retrieved": "2026-11-27",
+			"license": "ODbL — © OpenStreetMap contributors"
+		}
+	},
+	{
+		"slug": "parque-favio-miranda-malambo",
+		"name": "Parque Favio Miranda Varela",
+		"kind": "park",
+		"municipality": "malambo",
+		"neighborhood": "Malambo",
+		"description": "Parque público de Malambo.",
+		"address": null,
+		"latitude": 10.8578,
+		"longitude": -74.77595,
+		"is_accessible": false,
+		"is_free": true,
+		"opening_hours": null,
+		"source": {
+			"osm": "https://www.openstreetmap.org/way/768008012",
+			"retrieved": "2026-11-27",
+			"license": "ODbL — © OpenStreetMap contributors"
+		}
+	},
+	{
+		"slug": "parque-la-bombonera-malambo",
+		"name": "Parque La Bombonera",
+		"kind": "park",
+		"municipality": "malambo",
+		"neighborhood": "Malambo",
+		"description": "Parque público de Malambo.",
+		"address": null,
+		"latitude": 10.87058,
+		"longitude": -74.77979,
+		"is_accessible": false,
+		"is_free": true,
+		"opening_hours": null,
+		"source": {
+			"osm": "https://www.openstreetmap.org/way/768008004",
+			"retrieved": "2026-11-27",
+			"license": "ODbL — © OpenStreetMap contributors"
+		}
+	},
+	{
+		"slug": "parque-virgen-del-carmen-malambo",
+		"name": "Parque Virgen del Carmen",
+		"kind": "park",
+		"municipality": "malambo",
+		"neighborhood": "Malambo",
+		"description": "Parque público de Malambo.",
+		"address": null,
+		"latitude": 10.87257,
+		"longitude": -74.78102,
+		"is_accessible": false,
+		"is_free": true,
+		"opening_hours": null,
+		"source": {
+			"osm": "https://www.openstreetmap.org/way/984969507",
+			"retrieved": "2026-11-27",
+			"license": "ODbL — © OpenStreetMap contributors"
+		}
+	},
+	{
+		"slug": "reciparque-la-victoria-malambo",
+		"name": "Reciparque La Victoria",
+		"kind": "park",
+		"municipality": "malambo",
+		"neighborhood": "Malambo",
+		"description": "Parque público de Malambo.",
+		"address": null,
+		"latitude": 10.8592,
+		"longitude": -74.78267,
+		"is_accessible": false,
+		"is_free": true,
+		"opening_hours": null,
+		"source": {
+			"osm": "https://www.openstreetmap.org/way/1082767801",
+			"retrieved": "2026-11-27",
+			"license": "ODbL — © OpenStreetMap contributors"
+		}
+	},
+	{
+		"slug": "polideportivo-isolina-majul-malambo",
+		"name": "Polideportivo Isolina Majul",
+		"kind": "sport",
+		"municipality": "malambo",
+		"neighborhood": "Malambo",
+		"description": "Polideportivo con canchas públicas en Malambo.",
+		"address": null,
+		"latitude": 10.86996,
+		"longitude": -74.77776,
+		"is_accessible": false,
+		"is_free": true,
+		"opening_hours": null,
+		"source": {
+			"osm": "https://www.openstreetmap.org/way/768008003",
+			"retrieved": "2026-11-27",
+			"license": "ODbL — © OpenStreetMap contributors"
+		}
+	},
+	{
+		"slug": "parque-plaza-galapa",
+		"name": "Parque Plaza de Galapa",
+		"kind": "park",
+		"municipality": "galapa",
+		"neighborhood": "Galapa",
+		"description": "Parque de la plaza principal de Galapa, frente a la iglesia de Nuestra Señora de la Candelaria.",
+		"address": null,
+		"latitude": 10.89952,
+		"longitude": -74.88637,
+		"is_accessible": false,
+		"is_free": true,
+		"opening_hours": null,
+		"source": {
+			"osm": "https://www.openstreetmap.org/way/524258511",
+			"retrieved": "2026-11-27",
+			"license": "ODbL — © OpenStreetMap contributors"
+		}
+	},
+	{
+		"slug": "iglesia-candelaria-galapa",
+		"name": "Iglesia Nuestra Señora de la Candelaria",
+		"kind": "heritage",
+		"municipality": "galapa",
+		"neighborhood": "Galapa",
+		"description": "Templo principal de Galapa, en la plaza del municipio.",
+		"address": "Carrera 18 # 12-10",
+		"latitude": 10.89933,
+		"longitude": -74.88602,
+		"is_accessible": false,
+		"is_free": true,
+		"opening_hours": null,
+		"source": {
+			"osm": "https://www.openstreetmap.org/way/88173450",
+			"retrieved": "2026-11-27",
+			"license": "ODbL — © OpenStreetMap contributors"
+		}
+	},
+	{
+		"slug": "megaparque-mundo-feliz-galapa",
+		"name": "Megaparque Mundo Feliz",
+		"kind": "park",
+		"municipality": "galapa",
+		"neighborhood": "Galapa",
+		"description": "Parque público de Galapa.",
+		"address": null,
+		"latitude": 10.91695,
+		"longitude": -74.88528,
+		"is_accessible": false,
+		"is_free": true,
+		"opening_hours": null,
+		"source": {
+			"osm": "https://www.openstreetmap.org/way/1177261388",
+			"retrieved": "2026-11-27",
+			"license": "ODbL — © OpenStreetMap contributors"
+		}
+	},
+	{
+		"slug": "parque-lineal-villa-olimpica-galapa",
+		"name": "Parque Lineal Villa Olímpica",
+		"kind": "park",
+		"municipality": "galapa",
+		"neighborhood": "Galapa",
+		"description": "Parque lineal del sector Villa Olímpica, en Galapa.",
+		"address": null,
+		"latitude": 10.91623,
+		"longitude": -74.86511,
+		"is_accessible": false,
+		"is_free": true,
+		"opening_hours": null,
+		"source": {
+			"osm": "https://www.openstreetmap.org/way/1286934421",
+			"retrieved": "2026-11-27",
+			"license": "ODbL — © OpenStreetMap contributors"
+		}
+	},
+	{
+		"slug": "parque-mirador-villa-olimpica-galapa",
+		"name": "Parque Mirador de Villa Olímpica",
+		"kind": "park",
+		"municipality": "galapa",
+		"neighborhood": "Galapa",
+		"description": "Parque mirador del sector Villa Olímpica, en Galapa.",
+		"address": null,
+		"latitude": 10.91977,
+		"longitude": -74.86,
+		"is_accessible": false,
+		"is_free": true,
+		"opening_hours": null,
+		"source": {
+			"osm": "https://www.openstreetmap.org/way/1286934393",
+			"retrieved": "2026-11-27",
+			"license": "ODbL — © OpenStreetMap contributors"
+		}
+	},
+	{
+		"slug": "castillo-de-salgar",
+		"name": "Castillo de San Antonio de Salgar",
+		"kind": "heritage",
+		"municipality": "puertoColombia",
+		"neighborhood": "Puerto Colombia",
+		"description": "Fortificación del siglo XIX sobre la costa de Salgar, en Puerto Colombia, con vista al mar Caribe.",
+		"address": "Vía al Castillo de San Antonio de Salgar",
+		"latitude": 11.01822,
+		"longitude": -74.94165,
+		"is_accessible": false,
+		"is_free": false,
+		"opening_hours": null,
+		"source": {
+			"osm": "https://www.openstreetmap.org/way/671836025",
+			"retrieved": "2026-11-27",
+			"license": "ODbL — © OpenStreetMap contributors"
+		}
+	},
+	{
+		"slug": "plaza-cisneros-puerto-colombia",
+		"name": "Plaza Francisco Javier Cisneros",
+		"kind": "heritage",
+		"municipality": "puertoColombia",
+		"neighborhood": "Puerto Colombia",
+		"description": "Plaza de Puerto Colombia dedicada al ingeniero del ferrocarril y del muelle, cerca del malecón.",
+		"address": null,
+		"latitude": 10.98874,
+		"longitude": -74.95966,
+		"is_accessible": false,
+		"is_free": true,
+		"opening_hours": null,
+		"source": {
+			"osm": "https://www.openstreetmap.org/way/788052414",
+			"retrieved": "2026-11-27",
+			"license": "ODbL — © OpenStreetMap contributors"
+		}
+	},
+	{
+		"slug": "parque-7-de-agosto-puerto-colombia",
+		"name": "Parque 7 de Agosto",
+		"kind": "park",
+		"municipality": "puertoColombia",
+		"neighborhood": "Puerto Colombia",
+		"description": "Parque público del casco urbano de Puerto Colombia.",
+		"address": null,
+		"latitude": 10.98813,
+		"longitude": -74.95374,
+		"is_accessible": false,
+		"is_free": true,
+		"opening_hours": null,
+		"source": {
+			"osm": "https://www.openstreetmap.org/way/788054366",
+			"retrieved": "2026-11-27",
+			"license": "ODbL — © OpenStreetMap contributors"
+		}
+	},
+	{
+		"slug": "playa-miramar",
+		"name": "Playa Miramar",
+		"kind": "waterfront",
+		"municipality": "puertoColombia",
+		"neighborhood": "Puerto Colombia",
+		"description": "Playa del casco urbano de Puerto Colombia, junto al malecón.",
+		"address": null,
+		"latitude": 10.99884,
+		"longitude": -74.9544,
+		"is_accessible": false,
+		"is_free": true,
+		"opening_hours": null,
+		"source": {
+			"osm": "https://www.openstreetmap.org/way/1309504219",
+			"retrieved": "2026-11-27",
+			"license": "ODbL — © OpenStreetMap contributors"
+		}
+	},
+	{
+		"slug": "playa-pescadores-puerto-colombia",
+		"name": "Playa Pescadores",
+		"kind": "waterfront",
+		"municipality": "puertoColombia",
+		"neighborhood": "Puerto Colombia",
+		"description": "Playa de Puerto Colombia cercana al muelle.",
+		"address": null,
+		"latitude": 10.99646,
+		"longitude": -74.95506,
+		"is_accessible": false,
+		"is_free": true,
+		"opening_hours": null,
+		"source": {
+			"osm": "https://www.openstreetmap.org/way/1571124229",
+			"retrieved": "2026-11-27",
+			"license": "ODbL — © OpenStreetMap contributors"
+		}
+	},
+	{
+		"slug": "playas-de-salgar",
+		"name": "Playas de Salgar",
+		"kind": "waterfront",
+		"municipality": "puertoColombia",
+		"neighborhood": "Puerto Colombia",
+		"description": "Playas del corregimiento de Salgar, en Puerto Colombia, cerca del castillo.",
+		"address": null,
+		"latitude": 11.0231,
+		"longitude": -74.92892,
+		"is_accessible": false,
+		"is_free": true,
+		"opening_hours": null,
+		"source": {
+			"osm": "https://www.openstreetmap.org/way/1574883904",
+			"retrieved": "2026-11-27",
+			"license": "ODbL — © OpenStreetMap contributors"
+		}
+	},
+	{
+		"slug": "playa-modelo-sabanilla",
+		"name": "Playa Modelo (Sabanilla)",
+		"kind": "waterfront",
+		"municipality": "puertoColombia",
+		"neighborhood": "Puerto Colombia",
+		"description": "Playa del sector de Sabanilla, en Puerto Colombia.",
+		"address": null,
+		"latitude": 11.02806,
+		"longitude": -74.92262,
+		"is_accessible": false,
+		"is_free": true,
+		"opening_hours": null,
+		"source": {
+			"osm": "https://www.openstreetmap.org/way/1574883903",
+			"retrieved": "2026-11-27",
+			"license": "ODbL — © OpenStreetMap contributors"
+		}
+	},
+	{
+		"slug": "parque-mirador-lago-del-cisne",
+		"name": "Parque Mirador Lago del Cisne",
+		"kind": "park",
+		"municipality": "puertoColombia",
+		"neighborhood": "Puerto Colombia",
+		"description": "Parque mirador junto al Lago del Cisne, en la vía al mar.",
+		"address": null,
+		"latitude": 11.01395,
+		"longitude": -74.89082,
+		"is_accessible": false,
+		"is_free": true,
+		"opening_hours": null,
+		"source": {
+			"osm": "https://www.openstreetmap.org/way/694598382",
+			"retrieved": "2026-11-27",
+			"license": "ODbL — © OpenStreetMap contributors"
+		}
+	}
+]

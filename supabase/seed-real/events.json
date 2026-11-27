@@ -1,0 +1,72 @@
+[
+	{
+		"key": "caravana-navidad-coca-cola-2026",
+		"title": "Caravana de Navidad Coca-Cola 2026 en Barranquilla",
+		"category": "community",
+		"starts_at": "2026-12-04T18:00:00-05:00",
+		"ends_at": null,
+		"place_slug": "gran-malecon",
+		"location_text": "Recorrido por Rebolo, Gran Malecón del Río, Aleta del Tiburón y Ventana al Mundo (salida y llegada exactas se anuncian tres días antes)",
+		"is_free": true,
+		"price_cop": null,
+		"summary": "Caravana navideña de camiones iluminados que recorre Barranquilla desde las 6:00 p. m. La ruta anunciada pasa por Rebolo, el Gran Malecón del Río, la Aleta del Tiburón y la Ventana al Mundo; los puntos exactos de salida y llegada se publican tres días antes.",
+		"source_url": "https://www.elheraldo.co/sociedad/2026/11/18/coca-cola-anuncio-recorrido-de-su-caravana-navidena-por-barranquilla-y-otras-tres-ciudades/",
+		"source_published": "2026-11-18"
+	},
+	{
+		"key": "camilo-tour-2026-barranquilla",
+		"title": "Camilo – Tour 2026 en Barranquilla",
+		"category": "music",
+		"starts_at": "2026-12-05T20:00:00-05:00",
+		"ends_at": null,
+		"place_slug": "centro-de-eventos-puerta-de-oro",
+		"location_text": "Centro de Eventos Puerta de Oro",
+		"is_free": false,
+		"price_cop": 157000,
+		"summary": "Concierto del cantante Camilo dentro de su gira 2026. Apertura de puertas a las 5:00 p. m.; boletería en TuBoleta desde $157.000 más cargo de servicio (gradería).",
+		"source_url": "https://tuboleta.com/es/eventos/camilo-tour-2026-barranquilla",
+		"source_published": null
+	},
+	{
+		"key": "gran-parada-de-la-luz-2026",
+		"title": "Gran Parada de la Luz 2026",
+		"category": "culture",
+		"starts_at": "2026-12-08T17:30:00-05:00",
+		"ends_at": null,
+		"place_slug": "plaza-de-la-paz",
+		"location_text": "Desde la Carrera 44 con Calle 70 hasta la Calle 53, Plaza de la Paz y alrededores del Teatro Amira de la Rosa",
+		"is_free": true,
+		"price_cop": null,
+		"summary": "Desfile navideño de la Fundación Pan y Panela, de unas tres horas, que sale de la Carrera 44 con Calle 70 y termina en los alrededores del Teatro Amira de la Rosa pasando por la Plaza de la Paz. Los palcos en la Plaza de la Paz y la Catedral piden una donación de $70.000 por puesto.",
+		"source_url": "https://www.elheraldo.co/sociedad/2026/11/25/la-gran-parada-de-la-luz-iluminara-barranquilla-el-proximo-8-de-diciembre/",
+		"source_published": "2026-11-25"
+	},
+	{
+		"key": "the-last-dance-teofilo-gutierrez",
+		"title": "The Last Dance: despedida de Teófilo Gutiérrez",
+		"category": "sport",
+		"starts_at": "2026-12-19T17:00:00-05:00",
+		"ends_at": null,
+		"place_slug": "estadio-metropolitano",
+		"location_text": "Estadio Metropolitano Roberto Meléndez",
+		"is_free": false,
+		"price_cop": 102500,
+		"summary": "Partido de despedida del futbolista Teófilo Gutiérrez. Apertura de puertas a las 2:00 p. m.; boletería desde $102.500.",
+		"source_url": "https://colombiamove.com/eventos/the-last-dance-despedida-de-teofilo-gutierrez-719f2565",
+		"source_published": null
+	},
+	{
+		"key": "el-cascanueces-barranquilla-2026",
+		"title": "El Cascanueces – International Ballet Company",
+		"category": "culture",
+		"starts_at": "2026-12-19T17:00:00-05:00",
+		"ends_at": null,
+		"place_slug": "teatro-jose-consuegra-higgins",
+		"location_text": "Teatro José Consuegra Higgins",
+		"is_free": false,
+		"price_cop": 145500,
+		"summary": "Función navideña de ballet basada en El Cascanueces. Apertura de puertas a las 4:00 p. m.; edad mínima 4 años; boletería desde $145.500 (balcón).",
+		"source_url": "https://colombiamove.com/eventos/el-cascanueces-en-barranquilla-international-ballet-company-7cdd3aaf",
+		"source_published": null
+	}
+]
