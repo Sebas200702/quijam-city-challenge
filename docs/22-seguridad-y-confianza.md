@@ -1,6 +1,6 @@
 # Seguridad y confianza
 
-Cómo evitamos la información falsa, las estafas, la suplantación y el abuso en una plataforma abierta donde cualquiera publica, y cómo protegemos los datos de las personas. Complementa [20-comunidad-y-moderacion.md](20-comunidad-y-moderacion.md) y [21-quillart-ai.md](21-quillart-ai.md).
+Cómo evitamos la información falsa, las estafas, la suplantación y el abuso en una plataforma abierta donde cualquiera publica, y cómo protegemos los datos de las personas. Complementa [27-comunidad-y-moderacion.md](27-comunidad-y-moderacion.md) y [28-quillart-ai.md](28-quillart-ai.md).
 
 ## Principios
 

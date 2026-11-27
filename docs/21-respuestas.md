@@ -12,6 +12,14 @@ QUILLART es el **intérprete de la ciudad**. Toma ese saber local y lo convierte
 
 > "QUILLART hace que Barranquilla se entienda, para el que llega y para el que vive aquí, y hace que la ciudad, por fin, escuche a su gente."
 
+## Cómo se entra, quién participa y cómo se cuida
+
+Tres ideas que todo el equipo dice igual:
+
+- **La puerta de entrada es una conversación.** Se abre QUILLART y se habla con **Quillart AI**, por voz o por texto. Detrás hay agentes especializados, uno por apartado (agenda, comunidad, lugares, mapa), y Quillart AI nunca hace nada a nombre de la persona sin mostrarle el texto exacto y esperar a que toque "Confirmar". Detalle en [28-quillart-ai.md](28-quillart-ai.md).
+- **La ciudad la construye su gente.** Residentes y visitantes publican eventos y se inscriben, conversan en el foro, descubren lugares públicos y le avisan a la ciudad de problemas en la calle. Se navega sin cuenta; la cuenta solo hace falta para participar. Detalle en [27-comunidad-y-moderacion.md](27-comunidad-y-moderacion.md).
+- **Nada se publica sin revisión.** Todo lo que alguien escribe pasa por un triaje: reglas duras primero, OpenJev después y una persona de la ciudad cuando hay duda. Las alertas oficiales, como las de arroyos, solo salen de la ciudad, nunca del foro. Detalle en [22-seguridad-y-confianza.md](22-seguridad-y-confianza.md).
+
 ## Si tienes 10 segundos
 
 "QUILLART es el intérprete de Barranquilla. Al vecino le avisa antes de que un arroyo se crezca y le garantiza una tarifa justa en el taxi. Al visitante del Mundial le explica la ciudad en su propio idioma. Y quienes mejor conocen la ciudad, nuestra gente, reciben ingresos por compartir lo que saben."
@@ -55,6 +63,18 @@ QUILLART convierte ese saber en un servicio para toda la ciudad. Les da al barra
 ### "¿Qué pasa si la inteligencia artificial se equivoca con un arroyo?"
 
 "No puede hacerlo, porque esa decisión nunca se le deja a ella. Antes de que la inteligencia artificial opine, unas reglas de seguridad descartan cualquier ruta que cruce un arroyo activo o que no sea accesible para quien la necesita. La tecnología propone entre opciones seguras; la seguridad de las personas no se negocia."
+
+### "¿Por qué empezar con una conversación y no con un mapa?"
+
+"Porque así es como la gente pregunta en la calle. Quien llega no sabe qué buscar en un menú; sabe lo que necesita: 'cómo llego al estadio', 'qué hay este fin de semana', 'dónde hay un parque con sombra'. Quillart AI entiende la pregunta, en el idioma de cada quien, y lleva a la persona al apartado correcto: el mapa, la agenda, el foro o los lugares. Si la persona pide una acción, como inscribirse en un evento, Quillart AI le muestra exactamente lo que va a hacer y solo lo hace cuando ella confirma."
+
+### "Si cualquiera puede publicar, ¿qué evita las noticias falsas y las estafas?"
+
+"Nada se publica directo. Todo pasa por un triaje: primero unas reglas que bloquean datos personales, enlaces sospechosos y cuentas que se hacen pasar por la Alcaldía; después un modelo que marca lo dudoso, y al final una persona de la ciudad decide lo que no está claro. Cualquiera puede reportar una publicación, y con tres reportes de personas distintas se oculta mientras se revisa. Los reportes de riesgo se muestran como 'sin confirmar' hasta que la ciudad los confirma, y las alertas de arroyos solo salen del canal oficial."
+
+### "¿La inteligencia artificial puede hacer algo a mi nombre?"
+
+"No sin que tú lo veas y lo apruebes. Toda acción, como publicar, inscribirse o reportar, aparece en una tarjeta con el texto exacto y solo se ejecuta cuando tocas 'Confirmar'. Además, se ejecuta con tus propios permisos, nunca con unos especiales."
 
 ### "¿Qué pasa si se cae el internet?"
 

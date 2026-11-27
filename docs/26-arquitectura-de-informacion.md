@@ -11,7 +11,7 @@ Numeración: este documento usa el 26 según la propuesta de #141 (20 y 21 está
 | Tema | #137 (26 nov) | Ahora (27 nov, `main`) |
 |---|---|---|
 | Inicio de la persona | Mapa a pantalla completa, botón del Guía y tarjeta "tu siguiente paso" en `/` | Conversación con Quillart AI en `/inicio`. `/` es la landing pública. El mapa es un apartado (`/mapa`) y una tarjeta de sección dentro del inicio |
-| Guía | Asistente de voz o texto sobre el mapa | Quillart AI: orquestador con seis agentes; la voz es solo el conducto ([21-quillart-ai.md](21-quillart-ai.md)) |
+| Guía | Asistente de voz o texto sobre el mapa | Quillart AI: orquestador con seis agentes; la voz es solo el conducto ([28-quillart-ai.md](28-quillart-ai.md)) |
 | Entrada | "Sin registro" | Se navega sin cuenta; la cuenta se pide solo para participar (regla 5) |
 | Etiqueta de datos | "datos simulados 2034" (`.q-sim-tag`) | "Datos de referencia", solo sobre la semilla del corredor; el contenido de las personas no se marca (regla 9) |
 | Simulador | "Simulador de multitudes" | "Ensayo de escenarios", solo en el tablero de la ciudad |

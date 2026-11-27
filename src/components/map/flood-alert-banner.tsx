@@ -15,7 +15,7 @@ interface FloodAlertBannerProps {
 	alert: FloodAlert;
 	/**
 	 * The visitor's route and zone. When given, the modal only opens if the
-	 * arroyo touches them (docs/20, 3.1); otherwise the zone is only painted
+	 * arroyo touches them (docs/26, 3.1); otherwise the zone is only painted
 	 * red on the map. Without it, safety wins and the modal opens.
 	 */
 	visitor?: VisitorContext;

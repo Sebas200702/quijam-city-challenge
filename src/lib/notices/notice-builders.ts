@@ -21,7 +21,7 @@ export interface ArroyoAlert {
 }
 
 /**
- * Does the arroyo touch the visitor's route or current zone (docs/20, 3.1)?
+ * Does the arroyo touch the visitor's route or current zone (docs/26, 3.1)?
  * Without any context we cannot tell, so safety wins and it applies.
  */
 export function floodTouchesVisitor(

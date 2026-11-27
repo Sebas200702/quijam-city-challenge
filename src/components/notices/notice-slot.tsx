@@ -15,7 +15,7 @@ interface NoticeSlotProps {
 }
 
 /**
- * The one notice slot above "Tu siguiente paso" (docs/20, 3.3). Discreet
+ * The one notice slot above "Tu siguiente paso" (docs/26, 3.3). Discreet
  * notices live in a persistent role="status" region so screen readers hear
  * them; the arroyo modal takes the same slot as an alertdialog.
  */

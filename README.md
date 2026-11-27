@@ -89,14 +89,16 @@ Detalle en [`docs/`](docs/).
 | [`docs/17-informe-impacto.md`](docs/17-informe-impacto.md) | Informe de impacto con IA: cifras agregadas, verificación de números y respaldo sin IA |
 | [`docs/18-simulador-multitudes.md`](docs/18-simulador-multitudes.md) | Simulador de multitudes: eventos, reglas del desvío, conteos y rendimiento |
 | [`docs/19-caso-1.md`](docs/19-caso-1.md) | Caso 1 de punta a punta: requisitos, guion de ensayo de 2 minutos, plan B y registro de ensayos |
-| [`docs/20-comunidad-y-moderacion.md`](docs/20-comunidad-y-moderacion.md) | Comunidad (eventos, inscripciones, foro, lugares) y moderación por triaje con reglas duras y OpenJev; cola de la ciudad y puesta en marcha |
-| [`docs/21-quillart-ai.md`](docs/21-quillart-ai.md) | Quillart AI como puerta de entrada: orquestador, agentes especializados, confirmación de acciones y voz como conducto |
 | [`docs/20-identidad.md`](docs/20-identidad.md) | Identidad: el intérprete de la ciudad, qué no somos (gemelo digital), vocabulario y orden de la demo |
 | [`docs/21-respuestas.md`](docs/21-respuestas.md) | Qué responder cuando pregunten por el proyecto: versiones de 10 s, 30 s y 1 min, y preguntas difíciles |
 | [`docs/22-seguridad-y-confianza.md`](docs/22-seguridad-y-confianza.md) | Seguridad y confianza: desinformación, suplantación, estafas, reportes, límites de uso, IA blindada y derechos sobre los datos |
 | [`docs/23-jergas-costenas.md`](docs/23-jergas-costenas.md) | Diccionario de jergas costeñas y barranquilleras: significado, registro, uso en Quillart y reglas para hablar local con medida |
 | [`docs/24-datos-faltantes-ui.md`](docs/24-datos-faltantes-ui.md) | Datos que faltan para que las pantallas de la maqueta y los componentes rediseñados funcionen con datos reales, por superficie, con propuestas de esquema y de eventos |
+| [`docs/25-arbol-de-causas-y-actores.md`](docs/25-arbol-de-causas-y-actores.md) | Árbol de causas y mapa de actores del problema |
 | [`docs/26-arquitectura-de-informacion.md`](docs/26-arquitectura-de-informacion.md) | Arquitectura de información: las 5 superficies, Quillart AI como inicio, cuenta solo para participar, avisos, superficie × `city-events`, plan de roles, glosario y guion de prueba |
+| [`docs/27-comunidad-y-moderacion.md`](docs/27-comunidad-y-moderacion.md) | Comunidad (eventos, inscripciones, foro, lugares) y moderación por triaje con reglas duras y OpenJev; cola de la ciudad y puesta en marcha |
+| [`docs/28-quillart-ai.md`](docs/28-quillart-ai.md) | Quillart AI como puerta de entrada: orquestador, agentes especializados, confirmación de acciones y voz como conducto |
+| [`docs/29-gemini-live.md`](docs/29-gemini-live.md) | Conexión segura con Gemini Live: tokens efímeros emitidos por el servidor, variables de entorno y plan B de texto |
 | [`docs/feedback.md`](docs/feedback.md) | Registro de retroalimentación por sprint y validación con personas ajenas |
 
 ## Equipo
@@ -132,7 +134,7 @@ bun run dev            # http://localhost:4321
 | `GEMINI_API_KEY` | Solo servidor | Quillart AI y Guía. Sin ella responde el agente local. |
 | `TYPESAFE_API_KEY` | Solo servidor | OpenJev: Decisor, moderación y enrutamiento. Sin ella, reglas y puntaje ponderado. |
 
-Puesta en marcha de la comunidad (migración, semilla y rol de ciudad): [`docs/20-comunidad-y-moderacion.md`](docs/20-comunidad-y-moderacion.md).
+Puesta en marcha de la comunidad (migración, semilla y rol de ciudad): [`docs/27-comunidad-y-moderacion.md`](docs/27-comunidad-y-moderacion.md).
 
 | Comando | Qué hace |
 |---|---|

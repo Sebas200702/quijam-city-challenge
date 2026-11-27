@@ -56,7 +56,7 @@ Para habilitar un usuario con rol `city` o `vendor`, insertar su `user_id` (desd
 
 ## Capa de comunidad (27 nov 2026)
 
-Detalle funcional y del triaje en [20-comunidad-y-moderacion.md](20-comunidad-y-moderacion.md).
+Detalle funcional y del triaje en [27-comunidad-y-moderacion.md](27-comunidad-y-moderacion.md).
 
 | Tabla | Uso | Realtime |
 |---|---|---|

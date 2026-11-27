@@ -14,9 +14,9 @@ Decidido el 26 nov 2026. Las versiones exactas se fijan al crear el proyecto.
 | Agente Guía | Gemini Live API | Conversación multilingüe por voz en tiempo real, con chat de texto como respaldo. |
 | Agente Decisor | Reglas duras + OpenJev por API (Codiv) o puntaje ponderado | Función propia (estado + opciones → opción + confianza). Reglas descartan rutas con arroyo activo o no accesibles; OpenJev (`openjev-latest` en `https://api.codiv.ai`) elige entre las restantes; si la API falla o la confianza es baja, puntaje ponderado en código. Ver [13-openjev.md](13-openjev.md). |
 | Agente Recomendador | Reglas en código | Prioriza eventos ambientales y negocios de barrio según los gustos del visitante. |
-| Quillart AI (27 nov) | Orquestador + seis agentes; Gemini con llamadas a funciones o agente local | Puerta de entrada de la app. `POST /api/assistant`; las herramientas corren en el navegador con la sesión de la persona. Ver [21-quillart-ai.md](21-quillart-ai.md). |
+| Quillart AI (27 nov) | Orquestador + seis agentes; Gemini con llamadas a funciones o agente local | Puerta de entrada de la app. `POST /api/assistant`; las herramientas corren en el navegador con la sesión de la persona. Ver [28-quillart-ai.md](28-quillart-ai.md). |
 | Voz (27 nov) | Web Speech API del navegador | Habla a texto y texto a habla; solo conducto. Gemini Live queda en beta en `/prueba-guia`. |
-| Moderación (27 nov) | Reglas duras + OpenJev (`choice`) | Triaje de eventos, conversaciones y respuestas antes de guardarlos. Ver [20-comunidad-y-moderacion.md](20-comunidad-y-moderacion.md). |
+| Moderación (27 nov) | Reglas duras + OpenJev (`choice`) | Triaje de eventos, conversaciones y respuestas antes de guardarlos. Ver [27-comunidad-y-moderacion.md](27-comunidad-y-moderacion.md). |
 | Gestor de paquetes y runtime | Bun | Instalación, scripts y ejecución. |
 | Linter y formateador | Biome | Un solo comando para lint y formato. |
 | Pruebas | Vitest | Pruebas unitarias de reglas (tarifa justa, Decisor, recomendaciones). |

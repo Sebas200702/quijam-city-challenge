@@ -7,7 +7,7 @@ import {
 } from "./notice-types";
 
 /**
- * The single notice slot (docs/20, 3.3): one visible, up to three waiting,
+ * The single notice slot (docs/26, 3.3): one visible, up to three waiting,
  * priority arroyo > anfitrión > desvío > reporte, dedupe by key, expiry and a
  * 20 s minimum before anything closes by itself. Every function is pure and
  * returns the same object when nothing changed.

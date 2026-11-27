@@ -4,7 +4,7 @@ Nombre del producto: **QUILLART** (Quilla + Smart + Art). Identidad: **el intér
 
 Interpreta el saber local de Barranquilla para quien la visita en el Mundial: el idioma, el precio justo, el peligro de los arroyos y el barrio. Lo hace con un guía conversacional (**Quillart AI**), un motor de decisiones (**Decisor**) y una red de anfitriones en la calle. No es un gemelo digital.
 
-**Actualización 27 nov 2026:** QUILLART es una **plataforma ciudadana real**, no un gemelo virtual ni una simulación. Conecta a residentes y visitantes entre sí y con la ciudad (eventos propios, inscripciones con cupos, foro moderado, espacios públicos y naturaleza). La puerta de entrada es **Quillart AI**: una conversación con agentes especializados por apartado, donde la voz es solo el conducto. Ver [20-comunidad-y-moderacion.md](20-comunidad-y-moderacion.md) y [21-quillart-ai.md](21-quillart-ai.md).
+**Actualización 27 nov 2026:** QUILLART es una **plataforma ciudadana real**, no un gemelo virtual ni una simulación. Conecta a residentes y visitantes entre sí y con la ciudad (eventos propios, inscripciones con cupos, foro moderado, espacios públicos y naturaleza). La puerta de entrada es **Quillart AI**: una conversación con agentes especializados por apartado, donde la voz es solo el conducto. Ver [27-comunidad-y-moderacion.md](27-comunidad-y-moderacion.md) y [28-quillart-ai.md](28-quillart-ai.md).
 
 ## Problema central
 

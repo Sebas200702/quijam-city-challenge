@@ -149,7 +149,7 @@ Base: la asignación hecha por Sebastián en el tablero. Se completaron los issu
 
 ## Plataforma ciudadana real y Quillart AI como puerta de entrada (27 nov 2026)
 
-Dirección del líder del equipo, en orden. Detalle en [20-comunidad-y-moderacion.md](20-comunidad-y-moderacion.md) y [21-quillart-ai.md](21-quillart-ai.md).
+Dirección del líder del equipo, en orden. Detalle en [27-comunidad-y-moderacion.md](27-comunidad-y-moderacion.md) y [28-quillart-ai.md](28-quillart-ai.md).
 
 1. **Entorno real, no simulación.** La app conecta a residentes de Barranquilla y visitantes entre sí y con el entorno: cada persona registra sus propios eventos, se inscribe con cupos, abre conversaciones en un foro y descubre espacios públicos y naturaleza. Se revisa la decisión "Sin red social" del 26 nov: hay comunidad, pero toda publicación pasa por el triaje de moderación.
 2. **No solo el mapa; foros moderados con OpenJev.** El mapa pasa a ser un apartado más. El foro, los eventos y las respuestas se moderan con triaje automático: reglas duras primero, OpenJev con tres preguntas (veredicto, etiqueta, prioridad) después, gana lo más estricto; un rechazo de OpenJev con confianza menor a 0,6 pasa a revisión humana; sin OpenJev decide solo con reglas. Los datos personales nunca se envían a OpenJev. Solo el servidor (llave de servicio) inserta contenido público. Lo retenido lo ven su autor y la ciudad, que lo revisa en `/moderacion`.
