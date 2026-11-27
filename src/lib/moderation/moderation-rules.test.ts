@@ -85,6 +85,11 @@ describe("hard rules in English, Portuguese and French", () => {
 		"On se retrouve au parc demain avec les enfants ?",
 		"I'm going to kill it at the salsa class, con mucho sabor",
 		"Le concert est complet, quelle idiote je suis de ne pas avoir réservé",
+		"We need to kill all the mosquitoes before the party",
+		"Temos que matar o tempo antes do show",
+		"Il faut tuer le temps avant le concert",
+		"J'ai acheté de la mort aux rats pour la cuisine",
+		"Quiero jugar buraco esta noche",
 	])("publishes ordinary text: %s", (body) => {
 		expect(outcome(body)).toEqual({
 			verdict: "publish",
@@ -92,6 +97,24 @@ describe("hard rules in English, Portuguese and French", () => {
 			priority: "none",
 		});
 	});
+
+	it.each([
+		["I’m going to kill you", "reject", "threat"],
+		["I'll kill you", "reject", "threat"],
+		["I’ll kill you", "reject", "threat"],
+		["vou-te matar", "reject", "threat"],
+		["just kill yourself", "reject", "threat"],
+		["the media won’t tell you this", "review", "misinformation"],
+		["vai se foder", "review", "harassment"],
+		["va te faire foutre", "review", "harassment"],
+	])(
+		"catches %s (typographic apostrophes and hyphens included)",
+		(body, verdict, label) => {
+			const found = rules(body);
+			expect(found.verdict).toBe(verdict);
+			expect(found.labels).toEqual([label]);
+		},
+	);
 
 	it("keeps Spanish findings unchanged", () => {
 		expect(rules("eres un idiota, te voy a matar, hay un herido")).toEqual({

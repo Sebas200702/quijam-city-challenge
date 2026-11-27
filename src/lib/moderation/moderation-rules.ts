@@ -11,12 +11,18 @@ import type {
 } from "./moderation-types";
 
 export function normalizeText(text: string): string {
-	return text
-		.normalize("NFD")
-		.replace(/\p{Diacritic}/gu, "")
-		.toLowerCase()
-		.replace(/[0@]/g, (char) => (char === "0" ? "o" : "a"))
-		.replace(/(.)\1{2,}/g, "$1$1");
+	return (
+		text
+			.normalize("NFD")
+			.replace(/\p{Diacritic}/gu, "")
+			.toLowerCase()
+			.replace(/[0@]/g, (char) => (char === "0" ? "o" : "a"))
+			// Phone keyboards type "’" (I’m, won’t): match it like "'".
+			.replace(/[’‘ʼ]/g, "'")
+			// "vou-te matar" matches "vou te matar"; only a hyphen between letters.
+			.replace(/(\p{L})-(?=\p{L})/gu, "$1 ")
+			.replace(/(.)\1{2,}/g, "$1$1")
+	);
 }
 
 // Personal data (Ley 1581 de 2012): phone numbers, e-mails and ID numbers.
@@ -145,13 +151,16 @@ const IMPERSONATION_TERMS = [
  * same findings as before. Same normalization: lower case, no accents.
  */
 const OTHER_LANGUAGE_TERMS = {
+	// Aimed at people by origin; generic "kill all the" or "mort aux" also say
+	// "kill all the mosquitoes" or "mort aux rats", so they are not here.
 	hate: [
 		"go back to your country",
-		"kill all the",
-		"morte aos",
-		"temos que matar",
-		"mort aux",
-		"il faut tuer",
+		"kill all immigrants",
+		"kill all the immigrants",
+		"morte aos estrangeiros",
+		"morte aos imigrantes",
+		"mort aux etrangers",
+		"mort aux immigres",
 	],
 	insult: [
 		"asshole",
@@ -169,11 +178,15 @@ const OTHER_LANGUAGE_TERMS = {
 		"salope",
 		"encule",
 		"ta gueule",
+		"vai se foder",
+		"va te faire foutre",
 	],
 	threat: [
 		"i will kill you",
+		"i'll kill you",
 		"i'm going to kill you",
 		"im going to kill you",
+		"kill yourself",
 		"we will find you",
 		"vou te matar",
 		"je vais te tuer",
@@ -202,7 +215,11 @@ const OTHER_LANGUAGE_TERMS = {
 		"fallen tree",
 		"power outage",
 		"overcharged",
-		"buraco",
+		// Not "buraco" alone: in Spanish it is also a card game.
+		"buraco na rua",
+		"buracos na rua",
+		"buraco na estrada",
+		"buraco enorme",
 		"alagamento",
 		"rua alagada",
 		"arvore caida",
