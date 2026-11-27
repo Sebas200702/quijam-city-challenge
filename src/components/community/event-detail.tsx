@@ -542,6 +542,8 @@ function RegistrationPanel({
 
 	return (
 		<section
+			// Target of the assistant's focus_on "event-actions" (and get_event on screen).
+			id="event-actions"
 			className={`q-card ev-panel ev-panel--gold space-y-3 p-5 ${
 				primary
 					? "max-lg:sticky! max-lg:bottom-[4.5rem] max-lg:z-20 max-lg:shadow-[var(--shadow-modal)]!"

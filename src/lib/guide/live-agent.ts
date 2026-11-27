@@ -1,9 +1,13 @@
 // Server side of Gemini Live in the main chat. The dock uses the conduit setup
 // (liveConduitSetup): Live is only the voice and hands every request to the
 // orchestrator through ask_quillart. liveAgentSetup/pickLiveAgent (one agent's
-// own instruction and tools) are kept for reference and tests.
+// focused instruction, every tool) are kept for reference and tests.
 
-import { AGENT_IDS, toolDeclarationsFor } from "../assistant/assistant-agents";
+import {
+	AGENT_IDS,
+	ORCHESTRATOR_AGENT,
+	toolDeclarationsFor,
+} from "../assistant/assistant-agents";
 import {
 	AssistantRequestError,
 	parseAssistantRequest,
@@ -113,7 +117,8 @@ export function liveAgentSetup(
 ): LiveAgentSetup {
 	return {
 		systemInstruction: `${systemInstructionFor(agent, context)}\n\n${LIVE_VOICE_RULES}`,
-		tools: [{ functionDeclarations: toolDeclarationsFor(agent) }],
+		// Same toolset as the text model: the agent only sets the focus.
+		tools: [{ functionDeclarations: toolDeclarationsFor(ORCHESTRATOR_AGENT) }],
 	};
 }
 

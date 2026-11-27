@@ -19,10 +19,13 @@ import type {
 	Place,
 	PublishResult,
 } from "../community/community-types";
+import { PLACES } from "../community/places-catalog";
 import { ambAnchor } from "../geo/amb-boundary";
 import type { DimensionIndicator } from "../indicators/live-indicators-types";
 import { mapHref } from "../map/map-url";
 import type { OpenDataRecord } from "../open-data/open-data-types";
+import { filterSlang } from "../visitor-menu/slang-search";
+import { loadSlangEntries } from "../visitor-menu/slang-source";
 import type {
 	AssistantDisplay,
 	AssistantToolArgs,
@@ -75,6 +78,9 @@ const MAX_THREADS = 6;
 const MAX_LEGS = 12;
 const MAX_RECORDS = 10;
 const MAX_NEWS_EVENTS = 4;
+const MAX_SLANG = 5;
+/** Without a term, a short taste of the glossary; the rest is on /jerga. */
+const SLANG_SAMPLE = 3;
 const DAY_MS = 24 * 60 * 60 * 1000;
 const BOGOTA_OFFSET_MS = 5 * 60 * 60 * 1000;
 
@@ -309,6 +315,19 @@ export function reportTitle(description: string): string {
 /** A path inside this app ("/agenda"), never another site. */
 export function isSafePath(path: string): boolean {
 	return path.startsWith("/") && !path.startsWith("//") && !path.includes("\\");
+}
+
+/**
+ * UI tools only change the screen (ui-actions.ts turns the same call into a
+ * whitelisted UI action the browser applies). The change itself and the
+ * dock's change chips are the feedback, so there is no card: the model only
+ * gets a compact echo of what is now on screen.
+ */
+function uiDone(echo: Record<string, unknown> = {}): ToolOutcome {
+	const shown = Object.fromEntries(
+		Object.entries(echo).filter(([, value]) => value !== undefined),
+	);
+	return { summary: { done: true, ...shown } };
 }
 
 const HANDLERS: { [N in AssistantToolName]: Handler<N> } = {
@@ -764,13 +783,91 @@ const HANDLERS: { [N in AssistantToolName]: Handler<N> } = {
 		};
 	},
 
+	async lookup_slang(args) {
+		const entries = await loadSlangEntries();
+		const term = args.term?.trim() ?? "";
+		const found = term
+			? filterSlang(entries, term).slice(0, MAX_SLANG)
+			: entries.slice(0, SLANG_SAMPLE);
+		return {
+			summary: {
+				...(term ? { term } : {}),
+				count: found.length,
+				// Curated by the team, not written by people: plain fields.
+				entries: found.map((entry) => ({
+					term: entry.term,
+					meaning_es: entry.meaningEs,
+					meaning_en: entry.meaningEn,
+					example: entry.example,
+				})),
+			},
+			display:
+				found.length > 0
+					? {
+							kind: "notice",
+							tone: "ok",
+							text: found
+								.map((entry) => `${entry.term}: ${entry.meaningEs}`)
+								.join("\n"),
+						}
+					: { kind: "link", href: "/jerga", label: "Ver el glosario" },
+		};
+	},
+
 	async open_page(args) {
 		if (!isSafePath(args.path))
 			throw new ToolError("Ese enlace no es de Quillart.");
+		// Kept as a button too: it is the way in when the screen cannot open itself.
 		return {
 			summary: { shown: args.path },
 			display: { kind: "link", href: args.path, label: args.label },
 		};
+	},
+
+	async filter_agenda(args) {
+		return uiDone({
+			screen: "/agenda",
+			query: args.query,
+			category: args.category,
+			when: args.when,
+		});
+	},
+
+	async filter_places(args) {
+		return uiDone({ screen: "/lugares", query: args.query, kind: args.kind });
+	},
+
+	async show_on_map(args) {
+		// The map pins come from the public catalog (ui-actions.ts): an unknown
+		// slug would show nothing, so the model must not say it is on the map.
+		const place = PLACES.find((item) => item.slug === args.place_slug);
+		if (!place)
+			throw new ToolError(
+				`No encontramos «${args.place_slug}» en el mapa. Busca el lugar primero.`,
+			);
+		return uiDone({ screen: "/mapa", place: place.name, slug: place.slug });
+	},
+
+	async show_route(args) {
+		const destination = args.destination?.trim();
+		if (!destination) throw new ToolError("Dime a dónde quieres ir.");
+		return uiDone({ screen: "/mapa", destination });
+	},
+
+	async set_language(args) {
+		return uiDone({ language: args.language });
+	},
+
+	async set_theme(args) {
+		return uiDone({ theme: args.theme });
+	},
+
+	async focus_on(args) {
+		return uiDone({ target: args.target });
+	},
+
+	async go_back() {
+		return uiDone({ back: true });
 	},
 };
 

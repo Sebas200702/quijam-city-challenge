@@ -27,10 +27,10 @@ const context: AssistantContext = {
 };
 
 describe("liveAgentSetup", () => {
-	it("declares exactly the chosen agent's tools, as gemini-agent does", () => {
+	it("declares the orchestrator's tools whatever the agent, as gemini-agent does", () => {
 		const setup = liveAgentSetup("community", context);
 		expect(setup.tools).toEqual([
-			{ functionDeclarations: toolDeclarationsFor("community") },
+			{ functionDeclarations: toolDeclarationsFor("quillart") },
 		]);
 	});
 
@@ -93,6 +93,28 @@ describe("liveConduitSetup", () => {
 		]) {
 			expect(LIVE_CONDUIT_INSTRUCTION).toMatch(topic);
 		}
+	});
+
+	it("relays app control to ask_quillart instead of refusing it", () => {
+		expect(LIVE_CONDUIT_INSTRUCTION).toMatch(
+			new RegExp(`${ASK_QUILLART_TOOL} also CONTROLS THE APP`),
+		);
+		for (const control of [
+			/opening any screen/i,
+			/filtering the agenda or places/i,
+			/showing a place on the map/i,
+			/drawing a route/i,
+			/app language/i,
+			/light\/dark mode/i,
+			/pointing at a part of the screen/i,
+			/going back/i,
+			/costeño slang/i,
+		]) {
+			expect(LIVE_CONDUIT_INSTRUCTION).toMatch(control);
+		}
+		expect(LIVE_CONDUIT_INSTRUCTION).toMatch(
+			/never say you cannot open, show or change something in the app/i,
+		);
 	});
 
 	it("never lets Live state prices from memory", () => {

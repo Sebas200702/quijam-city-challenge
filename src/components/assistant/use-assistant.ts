@@ -503,8 +503,11 @@ export function useAssistant() {
 			if (results.length > 0) {
 				next = [...next, { role: "tool", results }];
 				commit(next);
-				// Pure screen changes (open, filter, map, language, theme) need no new round.
-				const onlyUi = reads.every((call) => isUiTool(call.name));
+				// Pure screen changes (open, filter, map, language, theme) need no new
+				// round, unless one failed (an unknown place): the model then recovers.
+				const onlyUi =
+					reads.every((call) => isUiTool(call.name)) &&
+					results.every((result) => !result.declined);
 				if (!onlyUi && rounds < MAX_ROUNDS) {
 					return converse(next, rounds + 1);
 				}

@@ -8,6 +8,9 @@
 // 2. Keywords. A pure, accent-insensitive keyword score in Spanish, English,
 //    Portuguese and French. The agent with the highest score wins when it is
 //    the only one on top.
+//    A question about a word of the costeño slang glossary ("¿qué significa
+//    bacano?") always goes to Places, which owns lookup_slang, even as a short
+//    follow-up or on another section's screen.
 // 3. Screen. Without a clear keyword, the agent that owns the screen the
 //    person is looking at answers (Agenda on /agenda, Mobility on /mapa), and
 //    it wins a keyword tie it is part of (audit v2, U06).
@@ -20,8 +23,14 @@
 //    without a place go to Places through the keywords instead).
 
 import type { OpenJevClient } from "../openjev/openjev-types";
+import { SLANG_TERMS } from "../visitor-menu/slang-source";
 import { AGENT_IDS, AGENTS } from "./assistant-agents";
-import { countKeywords, hasAnyKeyword, normalizeText } from "./assistant-text";
+import {
+	countKeywords,
+	hasAnyKeyword,
+	hasKeyword,
+	normalizeText,
+} from "./assistant-text";
 import type {
 	AssistantAgentId,
 	AssistantContext,
@@ -141,6 +150,13 @@ const AGENT_KEYWORDS: Record<AssistantAgentId, string[]> = {
 		"outdoor*",
 		"turismo",
 		"recomiend*",
+		// The slang glossary (lookup_slang) lives with Places.
+		"jerga",
+		"significa",
+		"slang",
+		"costeno",
+		"costenol",
+		"palabra",
 	],
 	mobility: [
 		"como llego",
@@ -543,6 +559,64 @@ export function latestUserText(messages: AssistantMessage[]): string {
 	return "";
 }
 
+/** Words that ask what something means, in the four languages. */
+const MEANING_CUES = [
+	"significa*",
+	"significado",
+	"quiere decir",
+	"que es",
+	"que son",
+	"what does",
+	"what is",
+	"mean",
+	"means",
+	"meaning",
+	"define",
+	"o que e",
+	"quer dizer",
+	"veut dire",
+	"c est quoi",
+	"qu est ce",
+	"signifie",
+];
+
+/**
+ * Every other word a slang question may carry besides the term: the meaning
+ * cue itself, articles, courtesy and "here / in Barranquilla". Anything else
+ * ("¿qué es el trancón en la vía 40 hoy?") makes it a different question.
+ */
+const SLANG_QUESTION_WORDS = new Set([
+	...[
+		"que significa significan significado quiere decir es son eso esto esa este",
+		"what does is s mean means meaning define that this the word",
+		"o que e quer dizer isso palavra significa",
+		"c est quoi qu ce veut dire signifie mot",
+		"un una el la lo los las a an um uma le les une de del da do du",
+		"palabra expresion termino term expression termo jerga slang giria argot",
+		"en in em a barranquilla costa costeno costenol aqui here aca",
+		"por favor please oye hey quillart y and me dime explicame explica tell",
+		"espanol ingles english spanish portugues frances french anglais",
+	].flatMap((line) => line.split(" ")),
+]);
+
+/**
+ * The glossary term a message asks the meaning of ("¿qué significa bacano?",
+ * "what does mamar gallo mean"), or null for any other message.
+ */
+export function slangQuestionTerm(text: string): string | null {
+	const normalized = normalizeText(text);
+	if (!hasAnyKeyword(normalized, MEANING_CUES)) return null;
+	for (const term of SLANG_TERMS) {
+		const key = normalizeText(term).trim();
+		if (!key || !hasKeyword(normalized, key)) continue;
+		const rest = normalized.replace(` ${key} `, " ").trim().split(" ");
+		if (rest.every((word) => word === "" || SLANG_QUESTION_WORDS.has(word))) {
+			return term;
+		}
+	}
+	return null;
+}
+
 /** Choice question over the agents; only the message text leaves the server. */
 export async function routeWithOpenJev(
 	client: OpenJevClient,
@@ -586,6 +660,9 @@ export async function routeMessage(
 	}
 
 	const text = latestUserText(messages);
+	// Only Places holds lookup_slang: a slang question never stays elsewhere.
+	if (slangQuestionTerm(text)) return { agent: "places", routedBy: "keywords" };
+
 	const byKeywords = routeByKeywords(text);
 	// A follow-up that clearly names another section ("¿y planes esta noche?")
 	// goes there; otherwise it stays with the previous agent.

@@ -62,6 +62,27 @@ const es: LocalCopy = {
 	openData: "Te muestro los datos abiertos de la ciudad.",
 	indicators: "Te traigo los indicadores de la ciudad.",
 	openDataLabel: "Ver datos abiertos",
+	app: {
+		languageSet: "Listo, ahora te hablo en español.",
+		themeDark: "Listo, activé el modo oscuro.",
+		themeLight: "Listo, activé el modo claro.",
+		back: "Listo, volvemos a la pantalla anterior.",
+		opening: (label) => `Listo, aquí tienes: ${label}.`,
+		screens: {
+			inicio: "Inicio",
+			agenda: "Agenda",
+			foro: "Foro",
+			lugares: "Lugares",
+			mapa: "Mapa",
+			reportar: "Reportar",
+			perfil: "Mi perfil",
+			pasaporte: "Pasaporte",
+			jerga: "Jerga costeña",
+			datos: "Datos abiertos",
+		},
+		onMap: (place) => `Te muestro ${place} en el mapa.`,
+		slang: "Te explico qué significa en Barranquilla.",
+	},
 	wrapUp: {
 		failed: "Uy, no se pudo completar. ¿Probamos de otra forma?",
 		held: "Quedó en revisión: un moderador lo mira pronto y te avisamos.",
@@ -109,6 +130,9 @@ const es: LocalCopy = {
 		openDataRecords: (count) =>
 			`Este conjunto tiene ${plural(count, "registro", "registros")}.`,
 		indicators: (list) => `Indicadores de la ciudad: ${list}.`,
+		slang: (list) => `Así se dice en Barranquilla: ${list}`,
+		slangNone:
+			"No encontré esa palabra en el glosario; échale un ojo a la jerga completa.",
 		fallback: "Listo. ¿Te ayudo con algo más?",
 	},
 };
@@ -166,6 +190,27 @@ const en: LocalCopy = {
 	openData: "Here is the city's open data.",
 	indicators: "Here are the city indicators.",
 	openDataLabel: "View open data",
+	app: {
+		languageSet: "Done, I'll talk to you in English now.",
+		themeDark: "Done, dark mode is on.",
+		themeLight: "Done, light mode is on.",
+		back: "Okay, going back to the previous screen.",
+		opening: (label) => `Here you go: ${label}.`,
+		screens: {
+			inicio: "Home",
+			agenda: "Agenda",
+			foro: "Forum",
+			lugares: "Places",
+			mapa: "Map",
+			reportar: "Report",
+			perfil: "My profile",
+			pasaporte: "Passport",
+			jerga: "Costeño slang",
+			datos: "Open data",
+		},
+		onMap: (place) => `Here's ${place} on the map.`,
+		slang: "Here's what it means in Barranquilla.",
+	},
 	wrapUp: {
 		failed: "Oops, that couldn't be completed. Shall we try another way?",
 		held: "It's under review: a moderator will look at it soon and we'll let you know.",
@@ -217,6 +262,9 @@ const en: LocalCopy = {
 		openDataRecords: (count) =>
 			`This dataset has ${plural(count, "record", "records")}.`,
 		indicators: (list) => `City indicators: ${list}.`,
+		slang: (list) => `As we say in Barranquilla: ${list}`,
+		slangNone:
+			"I couldn't find that word in the glossary; have a look at the full slang list.",
 		fallback: "Done. Can I help with anything else?",
 	},
 };
@@ -274,6 +322,27 @@ const pt: LocalCopy = {
 	openData: "Eu te mostro os dados abertos da cidade.",
 	indicators: "Aqui estão os indicadores da cidade.",
 	openDataLabel: "Ver dados abertos",
+	app: {
+		languageSet: "Pronto, agora falo com você em português.",
+		themeDark: "Pronto, ativei o modo escuro.",
+		themeLight: "Pronto, ativei o modo claro.",
+		back: "Certo, voltando à tela anterior.",
+		opening: (label) => `Pronto, aqui está: ${label}.`,
+		screens: {
+			inicio: "Início",
+			agenda: "Agenda",
+			foro: "Fórum",
+			lugares: "Lugares",
+			mapa: "Mapa",
+			reportar: "Relatar",
+			perfil: "Meu perfil",
+			pasaporte: "Passaporte",
+			jerga: "Gíria costeña",
+			datos: "Dados abertos",
+		},
+		onMap: (place) => `Eu te mostro ${place} no mapa.`,
+		slang: "Eu te explico o que significa em Barranquilla.",
+	},
 	wrapUp: {
 		failed: "Opa, não deu para concluir. Tentamos de outro jeito?",
 		held: "Ficou em revisão: um moderador vai olhar em breve e te avisamos.",
@@ -322,6 +391,9 @@ const pt: LocalCopy = {
 		openDataRecords: (count) =>
 			`Este conjunto tem ${plural(count, "registro", "registros")}.`,
 		indicators: (list) => `Indicadores da cidade: ${list}.`,
+		slang: (list) => `Assim se diz em Barranquilla: ${list}`,
+		slangNone:
+			"Não encontrei essa palavra no glossário; dê uma olhada na gíria completa.",
 		fallback: "Pronto. Posso te ajudar com mais alguma coisa?",
 	},
 };
@@ -380,6 +452,27 @@ const fr: LocalCopy = {
 	openData: "Voici les données ouvertes de la ville.",
 	indicators: "Voici les indicateurs de la ville.",
 	openDataLabel: "Voir les données ouvertes",
+	app: {
+		languageSet: "C'est fait, je te parle en français maintenant.",
+		themeDark: "C'est fait, mode sombre activé.",
+		themeLight: "C'est fait, mode clair activé.",
+		back: "D'accord, on revient à l'écran précédent.",
+		opening: (label) => `Et voilà : ${label}.`,
+		screens: {
+			inicio: "Accueil",
+			agenda: "Agenda",
+			foro: "Forum",
+			lugares: "Lieux",
+			mapa: "Carte",
+			reportar: "Signaler",
+			perfil: "Mon profil",
+			pasaporte: "Passeport",
+			jerga: "Argot costeño",
+			datos: "Données ouvertes",
+		},
+		onMap: (place) => `Je te montre ${place} sur la carte.`,
+		slang: "Je t'explique ce que ça veut dire à Barranquilla.",
+	},
 	wrapUp: {
 		failed: "Oups, ça n'a pas pu aboutir. On essaie autrement ?",
 		held: "C'est en cours de vérification : un modérateur va regarder bientôt et on te prévient.",
@@ -430,6 +523,9 @@ const fr: LocalCopy = {
 		openDataRecords: (count) =>
 			`Ce jeu de données compte ${plural(count, "enregistrement", "enregistrements")}.`,
 		indicators: (list) => `Indicateurs de la ville : ${list}.`,
+		slang: (list) => `Comme on dit à Barranquilla : ${list}`,
+		slangNone:
+			"Je n'ai pas trouvé ce mot dans le glossaire ; jette un œil à l'argot complet.",
 		fallback: "C'est fait. Je peux t'aider avec autre chose ?",
 	},
 };

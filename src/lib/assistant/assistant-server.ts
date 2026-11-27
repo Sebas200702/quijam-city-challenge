@@ -13,6 +13,7 @@ import {
 	limitActionCalls,
 	ORCHESTRATOR_AGENT,
 	PROFILE_PATH,
+	sanitizeToolArgs,
 	TOOL_SCHEMAS,
 	type ToolCallDraft,
 } from "./assistant-agents";
@@ -322,11 +323,23 @@ export async function answer(
 		source === "gemini"
 			? AGENTS[ORCHESTRATOR_AGENT].tools
 			: AGENTS[agent].tools;
+	const permitted = turn.toolCalls.filter((call) =>
+		allowed.includes(call.name),
+	);
+	// Model calls are checked against the schema once more: UI actions are
+	// derived from these args, and runGemini is injectable.
+	const checked =
+		source === "gemini"
+			? permitted.flatMap((call) => {
+					const args = sanitizeToolArgs(call.name, call.args);
+					return args ? [{ name: call.name, args } as ToolCallDraft] : [];
+				})
+			: permitted;
 	// One action per turn, for Gemini and the local agents alike: a single
 	// confirmation card, never a chain of writes.
-	const toolCalls = limitActionCalls(
-		turn.toolCalls.filter((call) => allowed.includes(call.name)),
-	).map((call) => ({ id: newId(), ...call }) as AssistantToolCall);
+	const toolCalls = limitActionCalls(checked).map(
+		(call) => ({ id: newId(), ...call }) as AssistantToolCall,
+	);
 	// Only screen changes and no words: no later round will write any, so say
 	// it is done instead of leaving an empty bubble.
 	const text =

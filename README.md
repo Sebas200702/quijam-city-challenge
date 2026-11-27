@@ -109,6 +109,8 @@ El asistente de texto (y la voz, que le pasa todo por `ask_quillart`) maneja la 
 - **Un solo orquestador con todas las herramientas.** Con Gemini, cada turno tiene todas las herramientas; el agente especialista que elige el orquestador solo define el foco y la etiqueta. Si el enrutamiento falla, el modelo no se queda sin la herramienta que necesita.
 - **Herramientas de UI** (actúan de inmediato, sin tarjeta de confirmación y sin otra ronda del modelo): `open_page` (abre la pantalla), `filter_agenda`, `filter_places`, `show_on_map`, `show_route`, `set_language`, `set_theme`, `focus_on` y `go_back`. El servidor las convierte en acciones de UI con lista blanca (`ui-actions.ts`).
 - **Acciones de toda la app** (`app.language`, `app.theme`, `app.back`): el bus (`ui-action-bus.ts`) las aplica en cualquier pantalla, con "Deshacer".
+- **Jerga costeña** (`lookup_slang`, herramienta de lectura): explica términos del glosario de `/jerga`, que `open_page` también abre (igual que `/ciudad`).
+- **La voz** (Gemini Live) solo tiene `ask_quillart`: cada pedido hablado pasa por el mismo ciclo que el texto (`converse()` en `use-assistant.ts`), aplica las mismas acciones de UI y abre la pantalla nueva cuando termina de decir la respuesta.
 - **Sin modelo** (sin `GEMINI_API_KEY` o si falla), los agentes locales entienden los mismos comandos: "modo oscuro", "ponlo en inglés", "abre el mapa", "vuelve atrás", "¿qué significa bololó?".
 - Las escrituras (inscribirse, publicar, responder, reportar) siguen pasando por la tarjeta de confirmación, una por turno.
 

@@ -13,7 +13,12 @@ import { detectDestination } from "../guide/guide-local";
 import type { Language } from "../i18n/languages";
 import { messages as dictionaries } from "../i18n/messages";
 import { OPEN_DATA_CATALOG } from "../open-data/open-data-catalog";
-import { type AgentTurn, PROFILE_PATH } from "./assistant-agents";
+import {
+	AGENTS,
+	type AgentTurn,
+	PROFILE_PATH,
+	type ToolCallDraft,
+} from "./assistant-agents";
 import { hasAnyKeyword, matchPlace, normalizeText } from "./assistant-text";
 import {
 	type AssistantAgentId,
@@ -38,8 +43,12 @@ import {
 	withoutQuotes,
 } from "./event-text";
 import { LOCAL_COPY, localCopy } from "./local-copy";
-import type { LocalCopy } from "./local-copy-types";
-import { latestUserText, matchedAgents } from "./orchestrator";
+import type { AppScreen, LocalCopy } from "./local-copy-types";
+import {
+	latestUserText,
+	matchedAgents,
+	slangQuestionTerm,
+} from "./orchestrator";
 import { screenEventId, screenPlaceSlug } from "./screen-context";
 
 const BOGOTA_OFFSET_MS = -5 * 60 * 60 * 1000;
@@ -771,6 +780,603 @@ function accountTurn(text: string, context: AssistantContext): AgentTurn {
 	};
 }
 
+// --- App commands -------------------------------------------------------------
+// Requests to drive the app itself (language, light/dark mode, back, open a
+// screen, show a place on the map, a slang word), answered the same way by
+// every agent before its own turn. Deliberately strict: a data question
+// ("¿qué eventos hay hoy?") or a place ("llévame al Malecón") never matches,
+// so it still reaches the agent that looks the data up.
+
+/** Courtesy and "can you / I want to" openers, stripped before matching. */
+const COMMAND_OPENERS = [
+	"por favor",
+	"porfa",
+	"oye",
+	"hola",
+	"hey",
+	"quillart",
+	"please",
+	"ok",
+	"okay",
+	"dale",
+	"bueno",
+	"y",
+	"me puedes",
+	"me podrias",
+	"puedes",
+	"podrias",
+	"quiero",
+	"quisiera",
+	"necesito",
+	"can you",
+	"could you",
+	"i want to",
+	"i d like to",
+	"i would like to",
+	"let s",
+	"voce pode",
+	"pode",
+	"eu quero",
+	"quero",
+	"gostaria de",
+	"peux tu",
+	"tu peux",
+	"pouvez vous",
+	"je veux",
+	"je voudrais",
+	"s il te plait",
+	"s il vous plait",
+	"stp",
+	"svp",
+];
+
+const COMMAND_CLOSERS = [
+	"por favor",
+	"porfa",
+	"please",
+	"pls",
+	"s il te plait",
+	"s il vous plait",
+	"stp",
+	"svp",
+	"gracias",
+	"thanks",
+	"obrigado",
+	"obrigada",
+	"merci",
+	"ya",
+	"ahora",
+	"now",
+	"agora",
+	"maintenant",
+	"quillart",
+];
+
+/** The command itself, without openers and closers: " abre el mapa ". */
+function commandCore(normalized: string): string {
+	let core = normalized;
+	for (let changed = true; changed; ) {
+		changed = false;
+		for (const phrase of COMMAND_OPENERS) {
+			if (core.startsWith(` ${phrase} `)) {
+				core = core.slice(phrase.length + 1);
+				changed = true;
+			}
+		}
+		for (const phrase of COMMAND_CLOSERS) {
+			if (core.endsWith(` ${phrase} `)) {
+				core = core.slice(0, core.length - phrase.length - 1);
+				changed = true;
+			}
+		}
+	}
+	return core;
+}
+
+function wordsOf(core: string): string[] {
+	return core.trim().split(" ").filter(Boolean);
+}
+
+const LANGUAGE_WORDS: Record<Language, string[]> = {
+	es: ["espanol", "castellano", "spanish", "espagnol", "espanhol"],
+	en: ["ingles", "english", "anglais"],
+	pt: ["portugues", "portuguese", "portugais"],
+	fr: ["frances", "french", "francais"],
+};
+
+function languageOf(word: string | undefined): Language | null {
+	if (!word) return null;
+	for (const [language, words] of Object.entries(LANGUAGE_WORDS) as [
+		Language,
+		string[],
+	][]) {
+		if (words.includes(word)) return language;
+	}
+	return null;
+}
+
+/** Words that start a language change: "habla…", "cambia el idioma…". */
+const LANGUAGE_LEADS = new Set([
+	"idioma",
+	"lenguaje",
+	"lengua",
+	"language",
+	"langue",
+	"lingua",
+	"habla",
+	"hablame",
+	"hablemos",
+	"hable",
+	"hablar",
+	"responde",
+	"respondeme",
+	"responder",
+	"contesta",
+	"contestame",
+	"escribe",
+	"escribeme",
+	"cambia",
+	"cambiar",
+	"cambialo",
+	"cambiame",
+	"pon",
+	"ponlo",
+	"ponme",
+	"pasa",
+	"pasalo",
+	"pasame",
+	"speak",
+	"talk",
+	"answer",
+	"reply",
+	"write",
+	"switch",
+	"change",
+	"set",
+	"fala",
+	"fale",
+	"falar",
+	"responda",
+	"mude",
+	"mudar",
+	"muda",
+	"troca",
+	"trocar",
+	"coloca",
+	"parle",
+	"parlez",
+	"parler",
+	"reponds",
+	"repondez",
+	"ecris",
+	"passe",
+	"passer",
+	"mets",
+	"changer",
+]);
+
+/** Words allowed between the lead and the language: "el idioma de la app a". */
+const LANGUAGE_LINKS = new Set([
+	...LANGUAGE_LEADS,
+	..."en in em a al to para o l into me la el le lo los the de del da do du it us nos con conmigo with com avec".split(
+		" ",
+	),
+	..."app aplicacion aplicativo todo everything tudo tout pagina page site sitio web plataforma platform interfaz interface mejor better solo only mi my tu your su et y and".split(
+		" ",
+	),
+]);
+
+/**
+ * "en inglés", "cambia el idioma a inglés", "habla en inglés", "switch to
+ * english", "em português", "en français" → that language. The language must
+ * end the command, so "¿hay eventos en inglés?" stays a question.
+ */
+function languageCommand(core: string): Language | null {
+	const words = wordsOf(core);
+	const language = languageOf(words.at(-1));
+	if (!language) return null;
+	if (words.length === 1) return language;
+	if (words.length === 2 && LANGUAGE_LINKS.has(words[0])) return language;
+	if (!LANGUAGE_LEADS.has(words[0])) return null;
+	const middle = words.slice(1, -1);
+	return middle.every((word) => LANGUAGE_LINKS.has(word) || languageOf(word))
+		? language
+		: null;
+}
+
+const DARK_PHRASES = [
+	"modo oscuro",
+	"tema oscuro",
+	"fondo oscuro",
+	"modo noche",
+	"modo nocturno",
+	"dark mode",
+	"dark theme",
+	"night mode",
+	"modo escuro",
+	"tema escuro",
+	"mode sombre",
+	"theme sombre",
+	"mode nuit",
+];
+const LIGHT_PHRASES = [
+	"modo claro",
+	"tema claro",
+	"fondo claro",
+	"modo dia",
+	"modo de dia",
+	"light mode",
+	"light theme",
+	"day mode",
+	"mode clair",
+	"theme clair",
+	"mode jour",
+];
+const TURN_OFF_WORDS = [
+	"quita*",
+	"desactiva*",
+	"apaga*",
+	"turn off",
+	"switch off",
+	"disable",
+	"desliga*",
+	"desativ*",
+	"eteins",
+	"enleve",
+];
+
+/** Last position of any of the phrases in the text, or -1. */
+function lastIndexOfAny(normalized: string, phrases: string[]): number {
+	return Math.max(
+		...phrases.map((phrase) => normalized.lastIndexOf(` ${phrase} `)),
+	);
+}
+
+/** "modo oscuro", "dark mode", "quita el modo oscuro" → the theme to set. */
+function themeCommand(normalized: string): "light" | "dark" | null {
+	if (wordsOf(normalized).length > 10) return null;
+	const dark = lastIndexOfAny(normalized, DARK_PHRASES);
+	const light = lastIndexOfAny(normalized, LIGHT_PHRASES);
+	if (dark < 0 && light < 0) return null;
+	// "de modo claro a modo oscuro": the one said last wins.
+	const named = dark > light ? "dark" : "light";
+	const both = dark >= 0 && light >= 0;
+	if (!both && hasAnyKeyword(normalized, TURN_OFF_WORDS)) {
+		return named === "dark" ? "light" : "dark";
+	}
+	return named;
+}
+
+const BACK_COMMANDS = new Set([
+	"atras",
+	"ve atras",
+	"ir atras",
+	"vamos atras",
+	"vuelve atras",
+	"volver atras",
+	"vuelvete",
+	"regresa",
+	"regresar",
+	"regresa atras",
+	"regresar atras",
+	"regresate",
+	"devuelvete",
+	"devuelveme",
+	"pa tras",
+	"pa atras",
+	"para atras",
+	"volver",
+	"vuelve a la pantalla anterior",
+	"vuelve a la pagina anterior",
+	"volver a la pantalla anterior",
+	"volver a la pagina anterior",
+	"regresa a la pantalla anterior",
+	"regresa a la pagina anterior",
+	"pantalla anterior",
+	"pagina anterior",
+	"go back",
+	"back",
+	"previous page",
+	"previous screen",
+	"voltar",
+	"volta",
+	"volte",
+	"voltar atras",
+	"volta atras",
+	"tela anterior",
+	"retour",
+	"reviens",
+	"revenir",
+	"retourne",
+	"retour en arriere",
+	"reviens en arriere",
+	"revenir en arriere",
+	"en arriere",
+	"page precedente",
+	"ecran precedent",
+]);
+const MAX_BACK_WORDS = 5;
+
+/** "atrás", "vuelve atrás", "regresa", "go back": short and nothing else. */
+function isBackCommand(core: string): boolean {
+	const words = wordsOf(core);
+	return (
+		words.length > 0 &&
+		words.length <= MAX_BACK_WORDS &&
+		BACK_COMMANDS.has(words.join(" "))
+	);
+}
+
+/** Verbs that open or show something, longest first so "show me" wins over "show". */
+const OPEN_VERBS = [
+	"llevame a la seccion de",
+	"llevame a la seccion",
+	"emmene moi a",
+	"take me to the",
+	"take me to",
+	"me leva para",
+	"me leve para",
+	"llevame a",
+	"llevame al",
+	"go back to",
+	"vamos a",
+	"vamos al",
+	"montre moi",
+	"me mostre",
+	"show me",
+	"ensename",
+	"muestrame",
+	"mostrame",
+	"pasame a",
+	"pasame al",
+	"entra a",
+	"entra al",
+	"entrar a",
+	"entrar al",
+	"vuelve a",
+	"vuelve al",
+	"volver a",
+	"volver al",
+	"regresa a",
+	"regresa al",
+	"regresar a",
+	"regresar al",
+	"aller a",
+	"allons a",
+	"retourne a",
+	"retour a",
+	"ir para",
+	"vai para",
+	"va para",
+	"back to",
+	"go to",
+	"ir a",
+	"ir al",
+	"ve a",
+	"ve al",
+	"va a",
+	"abreme",
+	"abrime",
+	"abre",
+	"abrir",
+	"abra",
+	"muestra",
+	"mostrar",
+	"mostre",
+	"mostra",
+	"ouvre",
+	"ouvrir",
+	"ouvrez",
+	"montre",
+	"affiche",
+	"open",
+	"show",
+	"see",
+	"view",
+	"go",
+	"ver",
+	"veamos",
+	"voir",
+];
+
+/** Articles and "section of" between the verb and the screen. */
+const SCREEN_LINKS = new Set(
+	"a al la el los las lo mi mis my the to de del seccion section pantalla screen pagina page o os as meu minha meus minhas do da para secao tela le les l mon ma mes du des au aux ecran rubrique onglet tab".split(
+		" ",
+	),
+);
+
+/** What each screen is called; the whole rest of the command must be one of these. */
+const SCREEN_WORDS: Record<AppScreen, string[]> = {
+	mapa: ["mapa", "map", "carte", "mapa de la ciudad", "city map"],
+	agenda: [
+		"agenda",
+		"eventos",
+		"events",
+		"evenements",
+		"planes",
+		"plans",
+		"calendario",
+		"calendar",
+		"agenda de eventos",
+	],
+	foro: [
+		"foro",
+		"forum",
+		"comunidad",
+		"community",
+		"comunidade",
+		"communaute",
+		"conversaciones",
+	],
+	lugares: ["lugares", "places", "sitios", "lieux", "endroits"],
+	perfil: [
+		"perfil",
+		"profile",
+		"cuenta",
+		"account",
+		"profil",
+		"compte",
+		"conta",
+	],
+	datos: [
+		"datos",
+		"datos abiertos",
+		"open data",
+		"dados",
+		"dados abertos",
+		"donnees",
+		"donnees ouvertes",
+	],
+	reportar: [
+		"reportar",
+		"reportes",
+		"reporte",
+		"report",
+		"reports",
+		"reportar un problema",
+		"signaler",
+		"signalements",
+		"relatar",
+	],
+	jerga: [
+		"jerga",
+		"jerga costena",
+		"slang",
+		"glosario",
+		"glossary",
+		"glossario",
+		"glossaire",
+		"argot",
+		"giria",
+		"diccionario costeno",
+	],
+	pasaporte: ["pasaporte", "passport", "passaporte", "passeport"],
+	inicio: [
+		"inicio",
+		"home",
+		"pagina principal",
+		"pantalla principal",
+		"principal",
+		"accueil",
+	],
+};
+
+/** "abre el mapa", "llévame a la sección de lugares", "go to my profile". */
+function screenCommand(core: string): AppScreen | null {
+	const verb = OPEN_VERBS.find((phrase) => core.startsWith(` ${phrase} `));
+	if (!verb) return null;
+	const rest = wordsOf(core.slice(verb.length + 1));
+	while (rest.length > 1 && SCREEN_LINKS.has(rest[0])) rest.shift();
+	const name = rest.join(" ");
+	for (const [screen, words] of Object.entries(SCREEN_WORDS) as [
+		AppScreen,
+		string[],
+	][]) {
+		if (words.includes(name)) return screen;
+	}
+	return null;
+}
+
+const ON_MAP_PHRASES = [
+	"en el mapa",
+	"en mapa",
+	"on the map",
+	"in the map",
+	"no mapa",
+	"sur la carte",
+];
+const SHOW_WORDS = [
+	"muestra*",
+	"ensena*",
+	"ubica*",
+	"localiza*",
+	"donde",
+	"show*",
+	"where",
+	"locate",
+	"find",
+	"mostr*",
+	"montre*",
+	"ou est",
+	"ver",
+	"see",
+	"voir",
+	"marca*",
+	"pon",
+	"ponme",
+];
+
+/** "muéstrame el Malecón en el mapa" → that catalog place, or null. */
+function onMapPlace(text: string, normalized: string) {
+	if (!hasAnyKeyword(normalized, ON_MAP_PHRASES)) return null;
+	if (!hasAnyKeyword(normalized, SHOW_WORDS)) return null;
+	// "¿Cómo llego…?" is a route: the agent answers it with directions.
+	if (hasAnyKeyword(normalized, DIRECTIONS_WORDS)) return null;
+	return matchPlace(text);
+}
+
+/** The app command in the text, as a turn, or null when it is not one. */
+export function appCommand(
+	text: string,
+	agent: AssistantAgentId,
+	context: AssistantContext,
+): AgentTurn | null {
+	const copy = localCopy(context.language);
+	const normalized = normalizeText(text);
+	const core = commandCore(normalized);
+	const turn = (reply: string, ...toolCalls: ToolCallDraft[]): AgentTurn => ({
+		text: reply,
+		toolCalls,
+	});
+
+	const language = languageCommand(core);
+	if (language) {
+		// Said in the language the person just chose.
+		return turn(localCopy(language).app.languageSet, {
+			name: "set_language",
+			args: { language },
+		});
+	}
+	const theme = themeCommand(normalized);
+	if (theme) {
+		return turn(theme === "dark" ? copy.app.themeDark : copy.app.themeLight, {
+			name: "set_theme",
+			args: { theme },
+		});
+	}
+	if (isBackCommand(core)) {
+		return turn(copy.app.back, { name: "go_back", args: {} });
+	}
+	const place = onMapPlace(text, normalized);
+	if (place) {
+		return turn(copy.app.onMap(place.name), {
+			name: "show_on_map",
+			args: { place_slug: place.slug },
+		});
+	}
+	const screen = screenCommand(core);
+	if (screen) {
+		const label = copy.app.screens[screen];
+		return turn(copy.app.opening(label), {
+			name: "open_page",
+			args: { path: `/${screen}`, label },
+		});
+	}
+	const term = slangQuestionTerm(text);
+	if (term) {
+		// The orchestrator routes slang to Places; any other agent opens the glossary.
+		const label = copy.app.screens.jerga;
+		return AGENTS[agent].tools.includes("lookup_slang")
+			? turn(copy.app.slang, { name: "lookup_slang", args: { term } })
+			: turn(copy.app.opening(label), {
+					name: "open_page",
+					args: { path: "/jerga", label },
+				});
+	}
+	return null;
+}
+
 // --- Tool-result wrap-up ------------------------------------------------------
 
 function countIn(summary: Record<string, unknown>): number | null {
@@ -893,7 +1499,41 @@ export function wrapUpResult(
 					)
 				: words.fallback;
 		}
+		case "lookup_slang": {
+			const list = slangList(result.summary.entries, language);
+			return list ? words.slang(list) : words.slangNone;
+		}
+		// The screen already changed: just say so.
+		case "filter_agenda":
+		case "filter_places":
+		case "show_on_map":
+		case "show_route":
+		case "set_language":
+		case "set_theme":
+		case "focus_on":
+		case "go_back":
+			return copy.uiDone;
 	}
+}
+
+const MAX_SLANG_WRAP_UP = 3;
+
+/** "Bacano: Muy bueno, chévere." lines of a lookup_slang summary, or "". */
+function slangList(entries: unknown, language?: Language): string {
+	if (!Array.isArray(entries)) return "";
+	return entries
+		.slice(0, MAX_SLANG_WRAP_UP)
+		.flatMap((entry) => {
+			const item = entry as Record<string, unknown>;
+			const meaning =
+				language === "en"
+					? item.meaning_en
+					: (item.meaning_es ?? item.meaning_en);
+			return typeof item.term === "string" && typeof meaning === "string"
+				? [`${item.term}: ${meaning}`]
+				: [];
+		})
+		.join(" ");
 }
 
 export function wrapUpResults(
@@ -944,6 +1584,9 @@ export function answerLocally(
 		};
 	}
 	const text = latestUserText(messages);
+	// Driving the app (language, theme, back, a screen) works from any agent.
+	const command = appCommand(text, agent, context);
+	if (command) return command;
 	switch (agent) {
 		case "agenda":
 			return agendaTurn(text, messages, context);
