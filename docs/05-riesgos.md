@@ -7,3 +7,4 @@
 - **Alcance.** Tres agentes reales, tablero, pasaporte y rutas pueden no caber en dos días.
 - **Referencia a Watch Dogs 2.** La estética sirve; nombrar el juego ante un jurado con gente de la Alcaldía puede leerse como vigilancia.
 - **Datos reales.** La alerta de arroyos y el tiempo real de buses dependen de datos que hoy no son públicos. En la demo son simulados y hay que decirlo.
+- **Presencia pública en la demo.** El canal `visitor-presence` es público con la `publishable key` para permitir que el visitante entre sin registro; cualquier cliente podría inflar el conteo o declarar `entry: "qr"`. Se usa la clave de presencia del canal como identidad y se acepta el riesgo acotado para el Demo Day.
