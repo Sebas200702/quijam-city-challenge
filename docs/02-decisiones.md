@@ -215,3 +215,13 @@ Issue #47.
 - **Estrategias:** páginas con red primero (espera 4 s) y copia guardada, después `/offline`; archivos con hash, caché primero; teselas del mapa con límite de 400; el catálogo de lugares de Supabase, red primero. Las `/api` y todo lo que no sea GET van siempre a la red.
 - **Sin red, Quillart AI responde con los agentes locales en el teléfono** (sin proponer acciones) y el Guía y `plan_route` responden las tres rutas desde el Gran Malecón con la semilla del corredor.
 - **Notificación de arroyo:** solo mientras la app está abierta (en primer o segundo plano); no hay Web Push. En el mapa sale solo con la app en segundo plano, porque en primer plano ya está el modal; en Quillart AI y en las pantallas de comunidad sale si la persona ya dio permiso. El permiso se pide únicamente con un botón bajo la banda del arroyo, nunca al cargar (regla 4). El formato (`AppNotification`) sirve para los recordatorios de eventos (#91).
+
+## Mapa limitado al Área Metropolitana (27 nov 2026)
+
+Auditoría UI/UX v2 ([30-auditoria-ui-ux.md](30-auditoria-ui-ux.md), U07, U09, U32) y decisión del líder de producto.
+
+- **El mapa muestra solo el Área Metropolitana de Barranquilla** (Barranquilla, Soledad, Malambo, Puerto Colombia y Galapa). Lo de afuera no se ve: una máscara opaca del color del tema lo cubre (sin mar, río ni calles), la cámara no sale de la caja del AMB y las teselas solo se piden sobre ella. Mismo marco en `/mapa` y en el Ensayo de escenarios (`createMetroMap()`).
+- **Límites de OpenStreetMap** (ODbL), simplificados y guardados en el repositorio; el crédito "OpenStreetMap contributors" va en el mapa. Fuente en [04-cifras-verificadas.md](04-cifras-verificadas.md).
+- **El mapa georreferencia el resto de la app sin ser el inicio.** Capas de puntos registrables (hoy Lugares; luego eventos y conversaciones), enlaces `/mapa?lugar=…&evento=…&lat=…&lng=…` y `focusMap()` para el dock del agente. Detalle en [24-datos-faltantes-ui.md](24-datos-faltantes-ui.md).
+- **Los lugares fuera del AMB no se borran**: siguen en `/lugares` con la etiqueta "Fuera del área metropolitana" y sin pin.
+- **Agrupación de pines propia** (sin `Leaflet.markercluster`): círculos numerados por debajo del zoom 15.

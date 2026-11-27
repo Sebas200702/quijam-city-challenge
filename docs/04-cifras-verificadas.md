@@ -14,6 +14,7 @@ Usar estas cifras, siempre con su fuente.
 | Atlántico: 4,4 % del PIB nacional y 29,8 % del PIB de la región Caribe, 2025 preliminar. El 4,4 % es un cálculo sobre la tabla del boletín. | DANE. |
 | El sur de la ciudad (estratos 1 a 3) registra hasta 5 °C más de temperatura superficial que el norte (estratos 4 a 6). | Núñez, Hoyos y Arellana, *Urban Climate*, vol. 52 (2023), con cobertura de prensa en feb 2024. Ver nota en "Verificación del 26 nov". |
 | El estadio está en el extremo sur; la zona turística, en el norte. | — |
+| Límites del Área Metropolitana de Barranquilla (Barranquilla, Soledad, Malambo, Puerto Colombia y Galapa) que usa el mapa. Simplificados (tolerancia de 50 m por municipio y 20 m en el contorno); sirven para enmascarar el mapa y decidir si un punto está dentro, **no** para dar áreas oficiales (el área oficial del distrito es la del deck: 154 km²). | OpenStreetMap, relaciones 1335179, 1341569, 1341567, 1335183 y 1341561, descargadas con Nominatim el 27 nov 2026. © OpenStreetMap contributors, licencia ODbL. Datos en `src/lib/geo/amb-boundary-data.ts`. |
 
 ## Verificación del 26 nov
 

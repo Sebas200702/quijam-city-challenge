@@ -182,6 +182,32 @@ Regla de la épica #57: un tipo nuevo se agrega **primero** en `src/lib/city-eve
 
 No van por `city-events` (son estado privado y guardado): asignaciones de anfitrión, negocio abierto o cerrado, estado de un reporte, sellos. Van por `postgres_changes` filtrado por RLS.
 
+## Mapa del Área Metropolitana (27 nov 2026)
+
+El mapa muestra solo el Área Metropolitana de Barranquilla (AMB: Barranquilla, Soledad, Malambo, Puerto Colombia y Galapa). Lo de afuera queda cubierto por una máscara opaca (`--map-outside`) y la cámara no sale de la caja del AMB ([30-auditoria-ui-ux.md](30-auditoria-ui-ux.md), U09). Código: `src/lib/geo/amb-boundary.ts` (contorno, `isInsideAmb`, `ambAnchor`) y `src/components/map/metro-frame.ts` (`createMetroMap`), usado en `/mapa` y en el Ensayo de escenarios de `/ciudad`.
+
+**Lugares del catálogo y el AMB.** Ningún lugar se borró. Regla: un punto dentro del contorno se dibuja tal cual; uno sobre el agua a menos de 600 m de la orilla (muelles, ciénagas) se dibuja en la orilla; uno más lejos no se dibuja y su ficha lo dice.
+
+| Lugar (`places.slug`) | Coordenada | Qué pasa | Pendiente |
+|---|---|---|---|
+| `isla-salamanca` (Vía Parque Isla de Salamanca, Sitionuevo, Magdalena) | 11,0215 / -74,66, a 11,5 km del AMB | **Fuera del AMB.** Sigue en `/lugares` con la etiqueta "Fuera del área metropolitana" y una nota en su ficha; no tiene pin ni "Ver en el mapa" | Decidir si sale del catálogo |
+| `muelle-puerto-colombia` | En el mar, a 55 m de la orilla | Pin en la orilla, junto al muelle | Coordenada de la entrada en tierra |
+| `cienaga-de-mallorquin` | En la ciénaga, a 525 m de la orilla | Pin en la orilla sur (Las Flores) | Coordenada de la entrada del ecoparque |
+| `bocas-de-ceniza` | Dentro, a 11 m del borde norte | Pin normal | — |
+
+**Restricciones de coordenadas en la base.** Paraderos, arroyos y negocios pasan de la caja del piloto (que dejaba fuera a Puerto Colombia) a la caja del AMB: 10,81–11,11 / -74,99 a -74,72 (`20261129000001_metro_area_bounds.sql`). `places` conserva su caja más amplia (10,80–11,15 / -75,00 a -74,60) mientras el catálogo tenga la Isla de Salamanca; si sale, se puede cerrar a la del AMB.
+
+**Contrato de enlaces de `/mapa`** (`src/lib/map/map-url.ts`, `mapHref()` y `parseMapUrl()`):
+
+| Parámetro | Qué hace | Estado |
+|---|---|---|
+| `?lugar=<slug>` | Selecciona y centra el lugar; si está fuera o no existe, el mapa lo dice | Hecho |
+| `?negocio=<code>` | Abre la tarjeta del negocio | Hecho (ya existía) |
+| `?lat=&lng=&zoom=` | Centra un punto dentro del AMB (zoom 10 a 19) | Hecho |
+| `?evento=<id>` | Selecciona un evento | Falta: capa de eventos con coordenadas (U08) |
+
+**Para quien sigue.** `focusMap({ lat, lng, zoom, select })` (`src/lib/map/map-focus.ts`) mueve el mapa desde cualquier parte de la página (el dock del agente). `registerMapLayer()` (`src/components/map/map-layer-registry.ts`) agrega capas de puntos con su chip, búsqueda, agrupación, tarjeta y parámetro de URL; `places-layer.ts` es el ejemplo. Falta: columnas de punto en `events` y `forum_threads` (U08, U15, U16), el minimapa en los detalles (U37) y validar en el servidor contra el contorno, no solo contra la caja.
+
 ## Conteo
 
 | Superficie | Huecos |
