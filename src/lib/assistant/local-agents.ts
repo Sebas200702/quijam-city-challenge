@@ -39,7 +39,7 @@ import {
 } from "./event-text";
 import { LOCAL_COPY, localCopy } from "./local-copy";
 import type { LocalCopy } from "./local-copy-types";
-import { latestUserText } from "./orchestrator";
+import { latestUserText, matchedAgents } from "./orchestrator";
 import { screenEventId, screenPlaceSlug } from "./screen-context";
 
 const BOGOTA_OFFSET_MS = -5 * 60 * 60 * 1000;
@@ -908,6 +908,28 @@ export function wrapUpResults(
 	return sentences.slice(0, 3).join(" ") || localCopy(language).wrapUp.fallback;
 }
 
+/**
+ * The orchestrator without Gemini: every specialist the keywords point to
+ * takes its part, and their sentences and tool calls are joined.
+ */
+function orchestratorTurn(
+	text: string,
+	messages: AssistantMessage[],
+	context: AssistantContext,
+): AgentTurn {
+	const parts = matchedAgents(text).filter((id) => id !== "quillart");
+	const turns = (parts.length > 0 ? parts : ["agenda" as const]).map((id) =>
+		answerLocally(id, messages, context),
+	);
+	return {
+		text: turns
+			.map((turn) => turn.text)
+			.filter(Boolean)
+			.join(" "),
+		toolCalls: turns.flatMap((turn) => turn.toolCalls),
+	};
+}
+
 /** One local agent turn: a wrap-up after tool results, or tool calls from the text. */
 export function answerLocally(
 	agent: AssistantAgentId,
@@ -937,5 +959,7 @@ export function answerLocally(
 			return accountTurn(text, context);
 		case "city_data":
 			return cityDataTurn(text, context);
+		case "quillart":
+			return orchestratorTurn(text, messages, context);
 	}
 }

@@ -56,6 +56,7 @@ export const AGENT_IDS: readonly AssistantAgentId[] = [
 	"city_reports",
 	"account",
 	"city_data",
+	"quillart",
 ];
 
 export const EVENT_CATEGORIES = Object.keys(
@@ -74,7 +75,9 @@ export const ROUTE_DESTINATIONS = [
 /** Where the person signs in or creates an account. */
 export const PROFILE_PATH = "/perfil";
 
-export const AGENTS: Record<AssistantAgentId, AgentDefinition> = {
+type SpecialistId = Exclude<AssistantAgentId, "quillart">;
+
+const SPECIALIST_AGENTS: Record<SpecialistId, AgentDefinition> = {
 	agenda: {
 		id: "agenda",
 		label: AGENT_LABELS.agenda,
@@ -217,6 +220,36 @@ export const AGENTS: Record<AssistantAgentId, AgentDefinition> = {
 			"¿Qué novedades hay hoy?",
 			"¿Qué datos abiertos tienen?",
 			"Indicadores de la ciudad",
+		],
+	},
+};
+
+const SPECIALISTS = Object.keys(SPECIALIST_AGENTS) as SpecialistId[];
+
+/**
+ * The orchestrator agent for typed requests that span several sections or fit
+ * none clearly: it holds every specialist's tools and rules, like the voice
+ * conduit, so one turn can chain events, routes, fares, places, news and data.
+ */
+export const AGENTS: Record<AssistantAgentId, AgentDefinition> = {
+	...SPECIALIST_AGENTS,
+	quillart: {
+		id: "quillart",
+		label: AGENT_LABELS.quillart,
+		description:
+			"Quillart AI orchestrator: requests that mix several sections (events and how to get there, places and fares, news and data) or that do not clearly belong to one",
+		tools: [
+			...new Set(SPECIALISTS.flatMap((id) => SPECIALIST_AGENTS[id].tools)),
+		],
+		rules: [
+			"You coordinate every Quillart AI specialist and hold all their tools: for a request with several parts, call the tools each part needs (several tools in one turn are fine) and answer every part.",
+			"Never say a request belongs to another section or agent: answer it yourself with the tools.",
+			...SPECIALISTS.flatMap((id) => SPECIALIST_AGENTS[id].rules),
+		],
+		suggestions: [
+			"¿Qué eventos hay hoy y cómo llego?",
+			"¿Qué novedades hay en la ciudad?",
+			"¿Cuánto cuesta el Transmetro?",
 		],
 	},
 };

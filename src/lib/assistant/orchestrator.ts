@@ -32,6 +32,8 @@ import { agentForScreen } from "./screen-context";
 
 export const MIN_ROUTING_CONFIDENCE = 0.35;
 export const DEFAULT_AGENT: AssistantAgentId = "agenda";
+/** Takes typed requests that span several sections or match none. */
+export const ORCHESTRATOR_AGENT: AssistantAgentId = "quillart";
 
 /** Tie-break order, most time-sensitive first. */
 const TIE_BREAK_ORDER: readonly AssistantAgentId[] = [
@@ -42,6 +44,7 @@ const TIE_BREAK_ORDER: readonly AssistantAgentId[] = [
 	"community",
 	"places",
 	"city_data",
+	"quillart",
 ];
 
 export interface RouteDecision {
@@ -259,6 +262,8 @@ const AGENT_KEYWORDS: Record<AssistantAgentId, string[]> = {
 		"occupancy",
 		"aforo",
 	],
+	// The orchestrator has no keywords of its own: it takes compound requests.
+	quillart: [],
 };
 
 /**
@@ -376,6 +381,8 @@ const OTHER_LANGUAGE_KEYWORDS: Record<AssistantAgentId, string[]> = {
 		"frequentation",
 		"lotacao",
 	],
+	// The orchestrator has no keywords of its own: it takes compound requests.
+	quillart: [],
 };
 
 /** Score per agent; phrases (with a space) weigh 2, single words 1. */
@@ -411,6 +418,26 @@ function rankByKeywords(
 	return AGENT_IDS.map((agent) => ({ agent, score: scores[agent] }))
 		.filter((entry) => entry.score > 0)
 		.sort((a, b) => b.score - a.score);
+}
+
+/** Words that join two requests in one message, in the four languages. */
+const JOINERS = ["y", "e", "and", "et", "ademas", "tambien", "also", "aussi"];
+
+/**
+ * A request for several sections: keywords of two or more agents, either tied
+ * on top or joined ("eventos hoy y cómo llego"). A weak extra match without a
+ * joiner ("planes ... cerca del parque") stays with the top agent.
+ */
+export function isCompound(text: string): boolean {
+	const ranked = rankByKeywords(text);
+	if (ranked.length < 2) return false;
+	if (ranked[0].score === ranked[1].score) return true;
+	return countKeywords(normalizeText(text), JOINERS) > 0;
+}
+
+/** Every agent at least one keyword points to. */
+export function matchedAgents(text: string): AssistantAgentId[] {
+	return rankByKeywords(text).map((entry) => entry.agent);
 }
 
 /** Agents tied on top, in tie-break order; empty when no keyword matched. */
@@ -570,6 +597,12 @@ export async function routeMessage(
 		return { agent: previous, routedBy: "continuation" };
 	}
 
+	// Several sections in one request ("eventos hoy y cómo llego"): the
+	// orchestrator agent holds every tool and answers each part.
+	if (isCompound(text)) {
+		return { agent: ORCHESTRATOR_AGENT, routedBy: "keywords" };
+	}
+
 	if (byKeywords) return { agent: byKeywords, routedBy: "keywords" };
 
 	const tied = tiedAgents(text);
@@ -583,5 +616,5 @@ export async function routeMessage(
 		if (chosen) return { agent: chosen, routedBy: "openjev" };
 	}
 
-	return { agent: tied[0] ?? DEFAULT_AGENT, routedBy: "keywords" };
+	return { agent: tied[0] ?? ORCHESTRATOR_AGENT, routedBy: "keywords" };
 }

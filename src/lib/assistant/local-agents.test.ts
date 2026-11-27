@@ -618,3 +618,27 @@ describe("city data and fares without a model", () => {
 		).toBe("Tarifas vigentes en pesos: Transmetro: $3.500.");
 	});
 });
+
+describe("orchestrator agent without Gemini", () => {
+	it("lets each section take its part of a compound request", () => {
+		const turn = answerLocally(
+			"quillart",
+			ask("eventos este sábado y cuánto cuesta el pasaje"),
+			signedIn,
+		);
+		const names = turn.toolCalls.map((call) => call.name);
+		expect(names).toContain("search_events");
+		expect(names).toContain("get_fares");
+		for (const name of names) {
+			expect(AGENTS.quillart.tools).toContain(name);
+		}
+	});
+
+	it("holds every specialist's tools", () => {
+		for (const id of AGENT_IDS) {
+			for (const tool of AGENTS[id].tools) {
+				expect(AGENTS.quillart.tools).toContain(tool);
+			}
+		}
+	});
+});

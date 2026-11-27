@@ -208,7 +208,7 @@ describe("answer without Gemini", () => {
 			gemini: null,
 		});
 		expect(decide).toHaveBeenCalledTimes(1);
-		expect(response.agent).toBe("agenda");
+		expect(response.agent).toBe("quillart");
 		expect(response.routedBy).toBe("keywords");
 	});
 
