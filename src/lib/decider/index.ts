@@ -23,5 +23,6 @@ export { createOpenJevChooser } from "./openjev-chooser";
 export {
 	createWeightedChooser,
 	DEFAULT_WEIGHTS,
+	isShadedRoute,
 	scoreOptions,
 } from "./weighted-chooser";

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
+import { isShadedRoute } from "../../lib/decider/weighted-chooser";
 import type { MapMessages } from "../../lib/i18n/dictionaries/map";
 import type { PlanResponse } from "../../lib/routing/plan-route";
 import type { CrowdByZone } from "../../lib/routing/routing-types";
@@ -126,11 +127,13 @@ export function routeWhy(plan: PlanResponse, t: MapMessages): string {
 	const feature =
 		steps && route.accessible
 			? t.whyWheelchair
-			: route.isGreen
-				? t.whyGreen
-				: route.accessible
-					? t.whyWheelchair
-					: t.whyNoFlood;
+			: isShadedRoute(route)
+				? t.whyShade
+				: route.isGreen
+					? t.whyGreen
+					: route.accessible
+						? t.whyWheelchair
+						: t.whyNoFlood;
 	return `${avoided}; ${feature}.`;
 }
 

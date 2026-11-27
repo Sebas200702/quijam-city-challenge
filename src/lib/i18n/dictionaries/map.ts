@@ -22,6 +22,20 @@ const es = {
 	layerFlood: "Arroyos",
 	layerBusinesses: "Negocios",
 	referenceTag: "Datos de referencia",
+	heat: {
+		chip: "Calor y sombra",
+		hotter: "Más calor (sur)",
+		middle: "Calor intermedio",
+		cooler: "Menos calor (norte)",
+		coolPoint: "Paradero con sombra o agua",
+		figure: (delta: number) =>
+			`El sur registra hasta ${delta} °C más de temperatura en la superficie que el norte.`,
+		note: (delta: number) => `El sur, hasta ${delta} °C más caliente`,
+		source: "Fuente",
+		guide: "Los colores del calor son una guía, no una medición en cada zona.",
+		coolPin: (name: string, shade: boolean, water: boolean) =>
+			`${name}: ${[shade && "sombra", water && "agua"].filter(Boolean).join(" y ")}`,
+	},
 	offline: "Sin conexión",
 	stopsTitle: "Paradas del corredor",
 	stopsOrder: "De sur a norte",
@@ -225,6 +239,7 @@ const es = {
 	whyWheelchair: "esta es accesible en silla de ruedas",
 	whyGreen: "esta ruta es verde: transporte público o a pie",
 	whyNoFlood: "esta ruta no cruza arroyos activos",
+	whyShade: "esta ruta tiene sombra en los paraderos",
 	confidenceLevels: { high: "Alta", medium: "Media", low: "Baja" },
 	confidenceValue: (level: string, percent: number) =>
 		`${level} · ${percent} %`,
@@ -249,6 +264,20 @@ const en: MapMessages = {
 	layerFlood: "Arroyos",
 	layerBusinesses: "Businesses",
 	referenceTag: "Reference data",
+	heat: {
+		chip: "Heat and shade",
+		hotter: "Hotter (south)",
+		middle: "Medium heat",
+		cooler: "Cooler (north)",
+		coolPoint: "Stop with shade or water",
+		figure: (delta: number) =>
+			`The south registers up to ${delta} °C more surface temperature than the north.`,
+		note: (delta: number) => `The south, up to ${delta} °C hotter`,
+		source: "Source",
+		guide: "The heat colours are a guide, not a measurement in each area.",
+		coolPin: (name: string, shade: boolean, water: boolean) =>
+			`${name}: ${[shade && "shade", water && "water"].filter(Boolean).join(" and ")}`,
+	},
 	offline: "Offline",
 	stopsTitle: "Corridor stops",
 	stopsOrder: "South to north",
@@ -447,6 +476,7 @@ const en: MapMessages = {
 	whyWheelchair: "this one is wheelchair accessible",
 	whyGreen: "this route is green: public transport or on foot",
 	whyNoFlood: "this route does not cross active arroyos",
+	whyShade: "this route has shade at its stops",
 	confidenceLevels: { high: "High", medium: "Medium", low: "Low" },
 	confidenceValue: (level: string, percent: number) => `${level} · ${percent}%`,
 };
@@ -467,6 +497,20 @@ const pt: MapMessages = {
 	layerFlood: "Arroios",
 	layerBusinesses: "Comércios",
 	referenceTag: "Dados de referência",
+	heat: {
+		chip: "Calor e sombra",
+		hotter: "Mais calor (sul)",
+		middle: "Calor intermediário",
+		cooler: "Menos calor (norte)",
+		coolPoint: "Parada com sombra ou água",
+		figure: (delta: number) =>
+			`O sul registra até ${delta} °C a mais de temperatura na superfície que o norte.`,
+		note: (delta: number) => `O sul, até ${delta} °C mais quente`,
+		source: "Fonte",
+		guide: "As cores do calor são um guia, não uma medição em cada zona.",
+		coolPin: (name: string, shade: boolean, water: boolean) =>
+			`${name}: ${[shade && "sombra", water && "água"].filter(Boolean).join(" e ")}`,
+	},
 	offline: "Sem conexão",
 	stopsTitle: "Paradas do corredor",
 	stopsOrder: "De sul a norte",
@@ -668,6 +712,7 @@ const pt: MapMessages = {
 	whyWheelchair: "esta é acessível para cadeira de rodas",
 	whyGreen: "esta rota é verde: transporte público ou a pé",
 	whyNoFlood: "esta rota não atravessa arroios ativos",
+	whyShade: "esta rota tem sombra nas paradas",
 	confidenceLevels: { high: "Alta", medium: "Média", low: "Baixa" },
 	confidenceValue: (level: string, percent: number) => `${level} · ${percent}%`,
 };
@@ -689,6 +734,21 @@ const fr: MapMessages = {
 	layerFlood: "Ruisseaux",
 	layerBusinesses: "Commerces",
 	referenceTag: "Données de référence",
+	heat: {
+		chip: "Chaleur et ombre",
+		hotter: "Plus chaud (sud)",
+		middle: "Chaleur moyenne",
+		cooler: "Moins chaud (nord)",
+		coolPoint: "Arrêt avec ombre ou eau",
+		figure: (delta: number) =>
+			`Le sud enregistre jusqu’à ${delta} °C de plus en surface que le nord.`,
+		note: (delta: number) => `Le sud, jusqu’à ${delta} °C de plus`,
+		source: "Source",
+		guide:
+			"Les couleurs de la chaleur sont un repère, pas une mesure dans chaque zone.",
+		coolPin: (name: string, shade: boolean, water: boolean) =>
+			`${name} : ${[shade && "ombre", water && "eau"].filter(Boolean).join(" et ")}`,
+	},
 	offline: "Hors ligne",
 	stopsTitle: "Arrêts du corridor",
 	stopsOrder: "Du sud au nord",
@@ -895,6 +955,7 @@ const fr: MapMessages = {
 	whyWheelchair: "celui-ci est accessible en fauteuil roulant",
 	whyGreen: "cet itinéraire est vert : transport public ou à pied",
 	whyNoFlood: "cet itinéraire ne traverse aucun ruisseau en alerte",
+	whyShade: "cet itinéraire a de l’ombre aux arrêts",
 	confidenceLevels: { high: "Élevée", medium: "Moyenne", low: "Faible" },
 	confidenceValue: (level: string, percent: number) =>
 		`${level} · ${percent} %`,

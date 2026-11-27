@@ -12,6 +12,11 @@ export interface RouteOption {
 	accessible: boolean;
 	/** Flood-prone stream ("arroyo") zones the route crosses. */
 	floodZoneIds: string[];
+	/**
+	 * Share of the route's stops with shade, from 0 (none) to 1 (every stop).
+	 * Missing means unknown and counts as no shade.
+	 */
+	shadeShare?: number;
 }
 
 /** Current state of the city the Decider reads before choosing. */
@@ -27,6 +32,8 @@ export interface DecisionWeights {
 	duration: number;
 	fare: number;
 	crowd: number;
+	/** Shade along the route (Rutas frescas, #46): the south is hotter than the north. */
+	shade: number;
 }
 
 export type DiscardReason = "active-flood" | "not-accessible";

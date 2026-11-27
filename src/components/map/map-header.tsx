@@ -9,7 +9,7 @@ import {
 	Sun,
 	WifiOff,
 } from "lucide-react";
-import { useId, useState } from "react";
+import { type ReactNode, useId, useState } from "react";
 import type {
 	CorridorDataSource,
 	StatusTone,
@@ -55,6 +55,8 @@ interface MapHeaderProps {
 	source?: CorridorDataSource;
 	/** The screen's single "datos de referencia" tag for the corridor seed (rule 9). Defaults to true. */
 	showReferenceTag?: boolean;
+	/** More layer chips after the built-in ones (the heat layer, #46). */
+	children?: ReactNode;
 }
 
 /**
@@ -71,6 +73,7 @@ export function MapHeader({
 	onToggle,
 	source,
 	showReferenceTag = true,
+	children,
 }: MapHeaderProps) {
 	const copy = useT().map;
 	const listId = useId();
@@ -158,6 +161,7 @@ export function MapHeader({
 						<span className="corridor-chip__count">{counts[key]}</span>
 					</button>
 				))}
+				{children}
 			</fieldset>
 
 			{(showReferenceTag || source === "seed") && (
