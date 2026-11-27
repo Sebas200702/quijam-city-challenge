@@ -17,6 +17,11 @@ export interface ScreenContextStore {
 	reset(): void;
 	/** Base values for this page: its route, title and surface role. */
 	setDefaults(defaults: Partial<ScreenContext>): void;
+	/**
+	 * The page title changed (translated): new default title, shown now unless
+	 * a screen published its own.
+	 */
+	setDefaultTitle(title: string): void;
 	subscribe(listener: Listener): () => void;
 }
 
@@ -83,6 +88,11 @@ export function createScreenContextStore(
 			defaults = { ...defaults, ...values };
 			set({ ...current, ...values });
 		},
+		setDefaultTitle: (title) => {
+			const followsDefault = current.title === defaults.title;
+			defaults = { ...defaults, title };
+			if (followsDefault) set({ ...current, title });
+		},
 		subscribe: (listener) => {
 			listeners.add(listener);
 			return () => listeners.delete(listener);
@@ -102,6 +112,21 @@ function pageDefaults(): Partial<ScreenContext> {
 export const screenContext: ScreenContextStore = createScreenContextStore(
 	pageDefaults(),
 );
+
+// The static-text script translates <title> after this module may have read
+// it, and again on every language change: follow it.
+if (typeof window !== "undefined" && typeof MutationObserver !== "undefined") {
+	const titleElement = document.querySelector("title");
+	if (titleElement) {
+		new MutationObserver(() => {
+			screenContext.setDefaultTitle(document.title.split("·")[0]?.trim() ?? "");
+		}).observe(titleElement, {
+			childList: true,
+			characterData: true,
+			subtree: true,
+		});
+	}
+}
 
 /** Kept for this tab: the person can stop sharing the screen from the dock. */
 const SHARE_KEY = "quillart-share-screen";
