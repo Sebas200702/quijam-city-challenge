@@ -4,6 +4,7 @@ import {
 	ReportAccessError,
 	writeReport,
 } from "../../../lib/impact-report/impact-report-server";
+import { guardRequest } from "../../../lib/security/api-guard";
 
 export const prerender = false;
 
@@ -18,7 +19,10 @@ function json(body: unknown, status: number): Response {
 }
 
 /** Daily impact report for the city dashboard. Needs the operator's Supabase access token. */
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async (context) => {
+	const limited = guardRequest(context, "impact-report");
+	if (limited) return limited;
+	const { request } = context;
 	const accessToken = request.headers
 		.get("Authorization")
 		?.replace(/^Bearer\s+/i, "");
