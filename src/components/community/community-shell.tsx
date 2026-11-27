@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { useT } from "../../lib/i18n/use-language";
 import { BottomNav } from "../home/bottom-nav";
 import type { NavSection } from "../home/nav-sections";
+import { EventNotifier } from "../notices/event-notifier";
 import { FloodNotifier } from "../notices/flood-notifier";
 import { useStore } from "./use-community";
 
@@ -35,6 +36,7 @@ export function CommunityShell({
 			</main>
 			<BottomNav current={current} aiHref={aiHref} />
 			<FloodNotifier />
+			<EventNotifier />
 		</div>
 	);
 }
