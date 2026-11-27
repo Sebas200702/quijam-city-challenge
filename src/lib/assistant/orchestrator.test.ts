@@ -7,6 +7,7 @@ import {
 	MIN_ROUTING_CONFIDENCE,
 	routeByKeywords,
 	routeMessage,
+	slangQuestionTerm,
 } from "./orchestrator";
 
 const context: AssistantContext = {
@@ -250,5 +251,60 @@ describe("multilingual keywords", () => {
 		expect(schema.agent.instructions).toMatch(
 			/Spanish, English, Portuguese or French/,
 		);
+	});
+});
+
+describe("slang questions", () => {
+	it.each([
+		["¿Qué significa bacano?", "Bacano"],
+		["que quiere decir mamar gallo en Barranquilla", "Mamar gallo"],
+		["What does mi llave mean?", "Mi llave"],
+		["O que é trancón?", "Trancón"],
+		["¿Qué es ajá?", "¡Ajá!"],
+	])("%s asks about %s", (text, term) => {
+		expect(slangQuestionTerm(text)).toBe(term);
+	});
+
+	it.each([
+		"bacano",
+		"El Malecón está bacano",
+		"¿Qué es el trancón en la vía 40 hoy?",
+		"¿Qué es una alerta de arroyo?",
+		"¿Qué eventos hay hoy?",
+	])("%s is not a slang question", (text) => {
+		expect(slangQuestionTerm(text)).toBeNull();
+	});
+
+	it("routes slang words to places by keyword", () => {
+		expect(routeByKeywords("¿Qué significa esa palabra en costeño?")).toBe(
+			"places",
+		);
+		expect(routeByKeywords("Enséñame la jerga")).toBe("places");
+	});
+
+	it("sends a glossary word to places, even as a follow-up or on another screen", async () => {
+		const agendaTurn: AssistantMessage = {
+			role: "assistant",
+			agent: "agenda",
+			text: "Busco planes.",
+			toolCalls: [],
+		};
+		expect(
+			await routeMessage(
+				[user("planes hoy"), agendaTurn, user("¿qué es bacano?")],
+				context,
+				{ openJev: null },
+			),
+		).toEqual({ agent: "places", routedBy: "keywords" });
+		expect(
+			await routeMessage(
+				[user("¿Qué significa mamar gallo?")],
+				{
+					...context,
+					screen: { route: "/agenda", title: "Agenda", role: "visitor" },
+				},
+				{ openJev: null },
+			),
+		).toEqual({ agent: "places", routedBy: "keywords" });
 	});
 });

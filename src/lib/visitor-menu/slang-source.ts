@@ -79,6 +79,14 @@ const SLANG_GLOSSARY: SlangEntry[] = [
 	},
 ];
 
+/**
+ * The glossary's terms, read synchronously: the assistant uses them to tell a
+ * slang question ("¿qué significa bacano?") from any other question.
+ */
+export const SLANG_TERMS: readonly string[] = SLANG_GLOSSARY.map(
+	(entry) => entry.term,
+);
+
 export async function loadSlangEntries(): Promise<SlangEntry[]> {
 	return structuredClone(SLANG_GLOSSARY);
 }

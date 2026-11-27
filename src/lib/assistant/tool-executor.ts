@@ -19,10 +19,13 @@ import type {
 	Place,
 	PublishResult,
 } from "../community/community-types";
+import { PLACES } from "../community/places-catalog";
 import { ambAnchor } from "../geo/amb-boundary";
 import type { DimensionIndicator } from "../indicators/live-indicators-types";
 import { mapHref } from "../map/map-url";
 import type { OpenDataRecord } from "../open-data/open-data-types";
+import { filterSlang } from "../visitor-menu/slang-search";
+import { loadSlangEntries } from "../visitor-menu/slang-source";
 import type {
 	AssistantDisplay,
 	AssistantToolArgs,
@@ -36,6 +39,7 @@ import {
 	formatIndicators,
 	MODE_LABELS,
 } from "./city-data-format";
+import { routeDestination, safeOpenPath } from "./ui-actions";
 import {
 	UNTRUSTED_BODY_MAX,
 	UNTRUSTED_TITLE_MAX,
@@ -75,6 +79,9 @@ const MAX_THREADS = 6;
 const MAX_LEGS = 12;
 const MAX_RECORDS = 10;
 const MAX_NEWS_EVENTS = 4;
+const MAX_SLANG = 5;
+/** Without a term, a short taste of the glossary; the rest is on /jerga. */
+const SLANG_SAMPLE = 3;
 const DAY_MS = 24 * 60 * 60 * 1000;
 const BOGOTA_OFFSET_MS = 5 * 60 * 60 * 1000;
 
@@ -309,6 +316,19 @@ export function reportTitle(description: string): string {
 /** A path inside this app ("/agenda"), never another site. */
 export function isSafePath(path: string): boolean {
 	return path.startsWith("/") && !path.startsWith("//") && !path.includes("\\");
+}
+
+/**
+ * UI tools only change the screen (ui-actions.ts turns the same call into a
+ * whitelisted UI action the browser applies). The change itself and the
+ * dock's change chips are the feedback, so there is no card: the model only
+ * gets a compact echo of what is now on screen.
+ */
+function uiDone(echo: Record<string, unknown> = {}): ToolOutcome {
+	const shown = Object.fromEntries(
+		Object.entries(echo).filter(([, value]) => value !== undefined),
+	);
+	return { summary: { done: true, ...shown } };
 }
 
 const HANDLERS: { [N in AssistantToolName]: Handler<N> } = {
@@ -764,13 +784,106 @@ const HANDLERS: { [N in AssistantToolName]: Handler<N> } = {
 		};
 	},
 
+	async lookup_slang(args) {
+		const entries = await loadSlangEntries();
+		const term = args.term?.trim() ?? "";
+		const found = term
+			? filterSlang(entries, term).slice(0, MAX_SLANG)
+			: entries.slice(0, SLANG_SAMPLE);
+		return {
+			summary: {
+				...(term ? { term } : {}),
+				count: found.length,
+				// Curated by the team, not written by people: plain fields.
+				entries: found.map((entry) => ({
+					term: entry.term,
+					meaning_es: entry.meaningEs,
+					meaning_en: entry.meaningEn,
+					example: entry.example,
+				})),
+			},
+			display:
+				found.length > 0
+					? {
+							kind: "notice",
+							tone: "ok",
+							text: found
+								.map((entry) => `${entry.term}: ${entry.meaningEs}`)
+								.join("\n"),
+						}
+					: { kind: "link", href: "/jerga", label: "Ver el glosario" },
+		};
+	},
+
 	async open_page(args) {
 		if (!isSafePath(args.path))
 			throw new ToolError("Ese enlace no es de Quillart.");
+		// The screen only opens through the same whitelist as the UI action: a
+		// path outside it is an error, so the model can recover with another one.
+		if (!safeOpenPath(args.path))
+			throw new ToolError("Esa pantalla no se puede abrir desde Quillart.");
+		// Kept as a button too: it is the way in when the screen cannot open itself.
 		return {
 			summary: { shown: args.path },
 			display: { kind: "link", href: args.path, label: args.label },
 		};
+	},
+
+	async filter_agenda(args) {
+		return uiDone({
+			screen: "/agenda",
+			query: args.query,
+			category: args.category,
+			when: args.when,
+		});
+	},
+
+	async filter_places(args) {
+		return uiDone({ screen: "/lugares", query: args.query, kind: args.kind });
+	},
+
+	async show_on_map(args) {
+		// The map pins come from the public catalog (ui-actions.ts): an unknown
+		// slug would show nothing, so the model must not say it is on the map.
+		const place = PLACES.find((item) => item.slug === args.place_slug);
+		if (!place)
+			throw new ToolError(
+				`No encontramos «${args.place_slug}» en el mapa. Busca el lugar primero.`,
+			);
+		return uiDone({ screen: "/mapa", place: place.name, slug: place.slug });
+	},
+
+	async show_route(args) {
+		const asked = args.destination?.trim();
+		if (!asked) throw new ToolError("Dime a dónde quieres ir.");
+		// Same resolution as the map action (ui-actions.ts): a destination the
+		// map cannot place draws nothing, so the model must not say it did.
+		const destination = routeDestination(asked);
+		if (!destination)
+			throw new ToolError(
+				`No conozco «${asked}» en el mapa. Usa estadio, barrio_abajo, centro, un código de parada o un lugar del catálogo.`,
+			);
+		return uiDone({
+			screen: "/mapa",
+			destination: destination.key,
+			name: destination.name,
+		});
+	},
+
+	async set_language(args) {
+		return uiDone({ language: args.language });
+	},
+
+	async set_theme(args) {
+		return uiDone({ theme: args.theme });
+	},
+
+	async focus_on(args) {
+		return uiDone({ target: args.target });
+	},
+
+	async go_back() {
+		return uiDone({ back: true });
 	},
 };
 

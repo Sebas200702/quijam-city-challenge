@@ -69,4 +69,19 @@ describe("answerOffline", () => {
 		expect(response.text.startsWith("[offline]")).toBe(false);
 		expect(response.toolCalls).toEqual([]);
 	});
+
+	it("obeys app commands offline: the screen changes without network", async () => {
+		const response = await answerOffline(
+			{ messages: ask("modo oscuro"), context },
+			notes,
+			ids,
+		);
+		expect(response.toolCalls).toEqual([
+			{ id: "id-1", name: "set_theme", args: { theme: "dark" } },
+		]);
+		expect(response.text).toBe("[offline] Listo, activé el modo oscuro.");
+		expect(response.uiActions).toContainEqual(
+			expect.objectContaining({ type: "app.theme", theme: "dark" }),
+		);
+	});
 });

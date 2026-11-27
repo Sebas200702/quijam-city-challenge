@@ -1,5 +1,18 @@
 // Shape of the sentences the local agents say, one copy per interface language.
 
+/** Screens a local app command can open ("abre el mapa"), by path segment. */
+export type AppScreen =
+	| "inicio"
+	| "agenda"
+	| "foro"
+	| "lugares"
+	| "mapa"
+	| "reportar"
+	| "perfil"
+	| "pasaporte"
+	| "jerga"
+	| "datos";
+
 export interface LocalCopy {
 	/** Appended after the reason when an account is needed. */
 	signIn: (reason: string) => string;
@@ -15,6 +28,8 @@ export interface LocalCopy {
 	needAccount: string;
 	/** Server safety net: a proposed action waits on its card for sign-in (U02). */
 	actionKept: string;
+	/** A turn that only changed the screen (UI tools) and said nothing else. */
+	uiDone: string;
 	createEvent: string;
 	createEventLabel: string;
 	/** A complete event draft waits on its confirmation card. */
@@ -50,6 +65,21 @@ export interface LocalCopy {
 	openData: string;
 	indicators: string;
 	openDataLabel: string;
+	/** Local app commands (no model): they only change the screen. */
+	app: {
+		/** Said in the NEW language right after switching to it. */
+		languageSet: string;
+		themeDark: string;
+		themeLight: string;
+		back: string;
+		/** `label` is one of `screens`, already in this language. */
+		opening: (label: string) => string;
+		/** Button label of each screen. */
+		screens: Record<AppScreen, string>;
+		onMap: (place: string) => string;
+		/** Looking up a word of the costeño slang glossary. */
+		slang: string;
+	};
 	wrapUp: {
 		failed: string;
 		held: string;
@@ -86,6 +116,9 @@ export interface LocalCopy {
 		openDataRecords: (count: number) => string;
 		/** `list` is already formatted ("Territorio: 80 % (Meta: 90 %); ..."). */
 		indicators: (list: string) => string;
+		/** `list` is already formatted ("Bacano: Muy bueno, chévere."). */
+		slang: (list: string) => string;
+		slangNone: string;
 		fallback: string;
 	};
 }

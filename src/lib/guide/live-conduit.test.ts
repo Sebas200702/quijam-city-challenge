@@ -40,6 +40,26 @@ describe("ASK_QUILLART_DECLARATION", () => {
 		}
 		expect(description).toMatch(/never answer those from memory/i);
 	});
+
+	// Live only sees this description: without it, a voice request such as
+	// "modo oscuro" or "vuelve atrás" would never reach the text pipeline.
+	it("says it also controls the app on screen", () => {
+		const description = ASK_QUILLART_DECLARATION.description ?? "";
+		expect(description).toMatch(/controls the app/i);
+		for (const control of [
+			/opens screens/i,
+			/filters the agenda or places/i,
+			/map/i,
+			/routes/i,
+			/language/i,
+			/light\/dark mode/i,
+			/points at parts of the screen/i,
+			/goes back/i,
+			/slang/i,
+		]) {
+			expect(description).toMatch(control);
+		}
+	});
 });
 
 describe("toConduitCalls", () => {

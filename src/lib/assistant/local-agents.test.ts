@@ -642,3 +642,224 @@ describe("orchestrator agent without Gemini", () => {
 		}
 	});
 });
+
+describe("app commands without a model", () => {
+	const calls = (
+		text: string,
+		agent: (typeof AGENT_IDS)[number] = "agenda",
+		context: AssistantContext = signedIn,
+	) => answerLocally(agent, ask(text), context).toolCalls;
+
+	it.each([
+		["en inglés", "en"],
+		["cambia el idioma a inglés", "en"],
+		["Cambiar el idioma a inglés, por favor", "en"],
+		["habla en inglés", "en"],
+		["switch to English", "en"],
+		["in english please", "en"],
+		["em português", "pt"],
+		["Fala em português", "pt"],
+		["en français", "fr"],
+		["en español", "es"],
+		["cambia de inglés a español", "es"],
+	] as const)("«%s» sets the language to %s", (text, language) => {
+		expect(calls(text)).toEqual([{ name: "set_language", args: { language } }]);
+	});
+
+	it("answers a language change in the new language", () => {
+		expect(answerLocally("agenda", ask("en inglés"), signedIn).text).toBe(
+			"Done, I'll talk to you in English now.",
+		);
+		expect(
+			answerLocally("places", ask("en español"), {
+				...signedIn,
+				language: "en",
+			}).text,
+		).toBe("Listo, ahora te hablo en español.");
+	});
+
+	it.each([
+		["modo oscuro", "dark"],
+		["Pon el tema oscuro", "dark"],
+		["dark mode", "dark"],
+		["activa el modo claro", "light"],
+		["light mode please", "light"],
+		["quita el modo oscuro", "light"],
+		["mode sombre", "dark"],
+	] as const)("«%s» sets the %s theme", (text, theme) => {
+		expect(calls(text)).toEqual([{ name: "set_theme", args: { theme } }]);
+	});
+
+	it.each([
+		"atrás",
+		"Vuelve atrás",
+		"volver atrás",
+		"regresa",
+		"go back",
+		"por favor, vuelve a la pantalla anterior",
+	])("«%s» goes back", (text) => {
+		expect(calls(text)).toEqual([{ name: "go_back", args: {} }]);
+		expect(answerLocally("mobility", ask(text), signedIn).text).toBe(
+			"Listo, volvemos a la pantalla anterior.",
+		);
+	});
+
+	it.each([
+		["abre el mapa", "/mapa", "Mapa"],
+		["Muéstrame la agenda", "/agenda", "Agenda"],
+		["ir al foro", "/foro", "Foro"],
+		["llévame a la sección de lugares", "/lugares", "Lugares"],
+		["Quiero ir a mi perfil", "/perfil", "Mi perfil"],
+		["Muéstrame los datos abiertos", "/datos", "Datos abiertos"],
+		["ve a reportar", "/reportar", "Reportar"],
+		["abre la jerga", "/jerga", "Jerga costeña"],
+		["abre el glosario", "/jerga", "Jerga costeña"],
+		["muéstrame mi pasaporte", "/pasaporte", "Pasaporte"],
+		["volver al inicio", "/inicio", "Inicio"],
+		["¿Puedes abrir los eventos?", "/agenda", "Agenda"],
+	] as const)("«%s» opens %s", (text, path, label) => {
+		expect(calls(text)).toEqual([{ name: "open_page", args: { path, label } }]);
+	});
+
+	it.each([
+		["open the map", "/mapa", "Map"],
+		["go to my profile", "/perfil", "My profile"],
+		["show me the forum", "/foro", "Forum"],
+		["ouvre la carte", "/mapa", "Map"],
+	] as const)("«%s» opens %s in other languages", (text, path, label) => {
+		expect(calls(text, "agenda", { ...signedIn, language: "en" })).toEqual([
+			{ name: "open_page", args: { path, label } },
+		]);
+	});
+
+	it.each(AGENT_IDS)("%s obeys app commands with its own tools", (agent) => {
+		for (const text of ["abre el mapa", "modo oscuro", "en inglés", "atrás"]) {
+			const turn = answerLocally(agent, ask(text), anonymous);
+			expect(turn.toolCalls).toHaveLength(1);
+			for (const call of turn.toolCalls) {
+				expect(AGENTS[agent].tools).toContain(call.name);
+			}
+		}
+	});
+
+	it("shows a named place on the map", () => {
+		expect(calls("muéstrame el Malecón en el mapa", "places")).toEqual([
+			{ name: "show_on_map", args: { place_slug: "gran-malecon" } },
+		]);
+	});
+
+	it("leaves data questions, places and reports to their agents", () => {
+		expect(calls("¿Qué eventos hay hoy?")).toEqual([
+			{ name: "search_events", args: { days_ahead: 0 } },
+		]);
+		expect(calls("ver eventos de música hoy")).toEqual([
+			{ name: "search_events", args: { days_ahead: 0, category: "music" } },
+		]);
+		expect(calls("llévame al Malecón", "mobility")).toEqual([
+			{ name: "get_directions", args: { place_slug: "gran-malecon" } },
+		]);
+		expect(calls("¿Hay eventos en inglés?")[0]?.name).toBe("search_events");
+		expect(calls("¿Alguien habla inglés en el Malecón?", "places")).toEqual([
+			{ name: "get_place", args: { place_slug: "gran-malecon" } },
+		]);
+		expect(calls("vuelve a buscar planes")[0]?.name).toBe("search_events");
+		expect(
+			calls("Quiero reportar un hueco en la calle 72", "city_reports")[0]?.name,
+		).toBe("report_issue");
+		expect(calls("Quiero abrir una conversación", "community")).toEqual([
+			{
+				name: "open_page",
+				args: { path: "/foro?nuevo=1", label: "Abrir conversación" },
+			},
+		]);
+	});
+
+	it.each([
+		["¿Qué significa bacano?", "Bacano"],
+		["que es mamar gallo", "Mamar gallo"],
+		["What does mi llave mean?", "Mi llave"],
+		["¿Qué es un arroyo?", "Arroyo"],
+	] as const)("«%s» looks up %s in the glossary", (text, term) => {
+		const turn = answerLocally("places", ask(text), signedIn);
+		expect(turn.toolCalls).toEqual([{ name: "lookup_slang", args: { term } }]);
+		expect(turn.text).toBe("Te explico qué significa en Barranquilla.");
+	});
+
+	it("opens the glossary from an agent without lookup_slang", () => {
+		expect(calls("¿Qué significa bacano?", "agenda")).toEqual([
+			{
+				name: "open_page",
+				args: { path: "/jerga", label: "Jerga costeña" },
+			},
+		]);
+	});
+
+	it("does not take a traffic question for a slang one", () => {
+		expect(
+			calls("¿Qué es el trancón en la vía 40 hoy?", "places").some(
+				(call) => call.name === "lookup_slang",
+			),
+		).toBe(false);
+	});
+});
+
+describe("wrap-up of UI tools and slang", () => {
+	const result = (
+		partial: Partial<AssistantToolResult> & Pick<AssistantToolResult, "name">,
+	): AssistantToolResult => ({ callId: "c1", summary: {}, ...partial });
+	const bacano = {
+		count: 1,
+		entries: [
+			{
+				term: "Bacano",
+				meaning_es: "Muy bueno, chévere.",
+				meaning_en: "Great, cool.",
+				example: "El Malecón está bacano.",
+			},
+		],
+	};
+
+	it.each([
+		"filter_agenda",
+		"filter_places",
+		"show_on_map",
+		"show_route",
+		"set_language",
+		"set_theme",
+		"focus_on",
+		"go_back",
+	] as const)("%s says it is on screen", (name) => {
+		expect(wrapUpResult(result({ name, summary: { done: true } }))).toBe(
+			"Listo, ya lo tienes en pantalla.",
+		);
+		expect(wrapUpResult(result({ name, summary: { done: true } }), "en")).toBe(
+			"Done, it's on your screen.",
+		);
+	});
+
+	it("repeats the glossary meaning in the person's language", () => {
+		expect(
+			wrapUpResult(result({ name: "lookup_slang", summary: bacano })),
+		).toBe("Así se dice en Barranquilla: Bacano: Muy bueno, chévere.");
+		expect(
+			wrapUpResult(result({ name: "lookup_slang", summary: bacano }), "en"),
+		).toBe("As we say in Barranquilla: Bacano: Great, cool.");
+		expect(
+			wrapUpResult(
+				result({ name: "lookup_slang", summary: { count: 0, entries: [] } }),
+			),
+		).toMatch(/^No encontré esa palabra/);
+	});
+
+	it("still reports a failed UI tool", () => {
+		expect(
+			wrapUpResult(
+				result({
+					name: "show_on_map",
+					declined: true,
+					summary: { error: "No encontramos «x» en el mapa." },
+				}),
+			),
+		).toMatch(/no se pudo/);
+	});
+});

@@ -7,6 +7,7 @@ import {
 	agentInstruction,
 	limitActionCalls,
 	sanitizeToolArgs,
+	TOOL_SCHEMAS,
 	toolDeclarationsFor,
 } from "./assistant-agents";
 import {
@@ -16,13 +17,20 @@ import {
 	MAX_MESSAGES,
 	parseAssistantRequest,
 } from "./assistant-server";
-import type { AssistantContext, AssistantRequest } from "./assistant-types";
+import {
+	type AssistantAgentId,
+	type AssistantContext,
+	type AssistantRequest,
+	UI_TOOLS,
+} from "./assistant-types";
 import {
 	contextFacts,
+	MAX_TOOL_CALLS,
 	sanitizeFunctionCalls,
 	systemInstructionFor,
 	toGeminiContents,
 } from "./gemini-agent";
+import { localCopy } from "./local-copy";
 
 const context: AssistantContext = {
 	now: "2026-11-26T15:00:00.000Z",
@@ -219,22 +227,54 @@ describe("answer without Gemini", () => {
 		});
 		expect(response.toolCalls[0].id).toMatch(/^[0-9a-f-]{36}$/);
 	});
+
+	// The README promises these exact commands work without a model: each one
+	// must survive routing, the routed agent's tool filter and the UI whitelist.
+	it.each([
+		["modo oscuro", "set_theme", "app.theme"],
+		["ponlo en inglés", "set_language", "app.language"],
+		["abre el mapa", "open_page", "ui.open"],
+		["vuelve atrás", "go_back", "app.back"],
+	])("obeys «%s» locally with %s and a %s action", async (text, tool, type) => {
+		const response = await answer(request(text, { fromPath: "/inicio" }), {
+			openJev: null,
+			gemini: null,
+			newId,
+		});
+		expect(response.source).toBe("local");
+		expect(response.toolCalls.map((call) => call.name)).toEqual([tool]);
+		expect(response.uiActions?.map((action) => action.type)).toContain(type);
+		expect(response.text).not.toBe("");
+	});
+
+	it("explains costeño slang locally from the glossary", async () => {
+		const response = await answer(request("¿Qué significa bololó?"), {
+			openJev: null,
+			gemini: null,
+			newId,
+		});
+		expect(response.toolCalls).toMatchObject([
+			{ name: "lookup_slang", args: { term: "Bololó" } },
+		]);
+	});
 });
 
 describe("answer with a (fake) Gemini", () => {
 	const gemini = { apiKey: "test", model: "test-model" };
 
-	it("keeps only tools of the routed agent", async () => {
-		const runGemini = vi.fn(async () => ({
-			text: "Te armo la ruta.",
-			toolCalls: [
-				{
-					name: "plan_route" as const,
-					args: { destination: "centro" as const },
-				},
-				{ name: "create_event" as const, args: {} as never },
-			],
-		}));
+	it("keeps any tool from Gemini, whatever the route, but drops bad args", async () => {
+		const runGemini = vi.fn(
+			async (_agent: AssistantAgentId): Promise<AgentTurn> => ({
+				text: "Te armo la ruta.",
+				toolCalls: [
+					{ name: "plan_route", args: { destination: "centro" } },
+					{ name: "create_event", args: {} as never },
+					// Another specialist's tool and a UI tool: Gemini holds them all.
+					{ name: "get_news", args: {} },
+					{ name: "show_route", args: { destination: "centro" } },
+				],
+			}),
+		);
 		const response = await answer(request("¿Cómo llego al centro?"), {
 			openJev: null,
 			gemini,
@@ -242,7 +282,82 @@ describe("answer with a (fake) Gemini", () => {
 			newId,
 		});
 		expect(response.source).toBe("gemini");
-		expect(response.toolCalls.map((call) => call.name)).toEqual(["plan_route"]);
+		// The route still sets the focus, the label and the chips.
+		expect(response.agent).toBe("mobility");
+		expect(runGemini.mock.calls[0]?.[0]).toBe("mobility");
+		expect(response.toolCalls.map((call) => call.name)).toEqual([
+			"plan_route",
+			"get_news",
+			"show_route",
+		]);
+	});
+
+	it("lets a UI tool through while routed to the agenda and drives the screen", async () => {
+		const response = await answer(request("planes hoy en modo oscuro"), {
+			openJev: null,
+			gemini,
+			runGemini: async (): Promise<AgentTurn> => ({
+				text: "",
+				toolCalls: [
+					{ name: "set_theme", args: { theme: "dark" } },
+					{ name: "filter_agenda", args: { when: "hoy" } },
+				],
+			}),
+			newId,
+		});
+		expect(response.agent).toBe("agenda");
+		expect(response.toolCalls.map((call) => call.name)).toEqual([
+			"set_theme",
+			"filter_agenda",
+		]);
+		expect(response.uiActions).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({ type: "app.theme", theme: "dark" }),
+				expect.objectContaining({ type: "agenda.filter", fecha: "hoy" }),
+			]),
+		);
+		// Only screen changes and no words: it still says it is done.
+		expect(response.text).toBe(localCopy("es").uiDone);
+		expect(response.text).not.toBe("");
+	});
+
+	it("says it is done in the chosen language after a UI-only turn", async () => {
+		const response = await answer(
+			request("switch to english", { language: "en" }),
+			{
+				openJev: null,
+				gemini,
+				runGemini: async (): Promise<AgentTurn> => ({
+					text: "  ",
+					toolCalls: [{ name: "set_language", args: { language: "en" } }],
+				}),
+				newId,
+			},
+		);
+		expect(response.text).toBe(localCopy("en").uiDone);
+		expect(response.uiActions).toEqual([
+			expect.objectContaining({ type: "app.language", language: "en" }),
+		]);
+	});
+
+	it("leaves the text empty while a data tool still has to answer", async () => {
+		const response = await answer(request("planes hoy"), {
+			openJev: null,
+			gemini,
+			runGemini: async (): Promise<AgentTurn> => ({
+				text: "",
+				toolCalls: [
+					{ name: "search_events", args: { days_ahead: 0 } },
+					{ name: "filter_agenda", args: { when: "hoy" } },
+				],
+			}),
+			newId,
+		});
+		expect(response.text).toBe("");
+		expect(response.toolCalls.map((call) => call.name)).toEqual([
+			"search_events",
+			"filter_agenda",
+		]);
 	});
 
 	it("falls back to the local agent when Gemini fails", async () => {
@@ -371,6 +486,105 @@ describe("agent registry and Gemini helpers", () => {
 		expect(agentInstruction("city_reports")).toMatch(/Línea 123/);
 	});
 
+	it("the orchestrator holds every tool, and every specialist the UI tools", () => {
+		expect(new Set(AGENTS.quillart.tools)).toEqual(
+			new Set(Object.keys(TOOL_SCHEMAS)),
+		);
+		for (const agent of AGENT_IDS) {
+			for (const tool of UI_TOOLS) expect(AGENTS[agent].tools).toContain(tool);
+			expect(new Set(AGENTS[agent].tools).size).toBe(
+				AGENTS[agent].tools.length,
+			);
+		}
+		expect(AGENTS.places.tools).toContain("lookup_slang");
+	});
+
+	it.each(AGENT_IDS)(
+		"%s is instructed as the orchestrator that controls the app",
+		(agent) => {
+			const instruction = agentInstruction(agent);
+			expect(instruction).toMatch(/You are the .* \(quillart\)/);
+			expect(instruction).toMatch(/You CONTROL the Quillart app/);
+			expect(instruction).toMatch(/open_page opens that screen right away/);
+			expect(instruction).toContain("'/ciudad'");
+			expect(instruction).toContain("'/jerga'");
+			expect(instruction).toMatch(/lookup_slang/);
+			// Every specialist's rules, whatever the route.
+			expect(instruction).toMatch(/Línea 123/);
+			expect(instruction).toMatch(/call plan_route/);
+			expect(instruction).not.toMatch(/only suggests a screen/);
+			expect(instruction).not.toMatch(/suggest asking about it/);
+		},
+	);
+
+	it("focuses the instruction on the routed specialist, its rules first", () => {
+		const agenda = agentInstruction("agenda");
+		expect(agenda).toMatch(
+			/This request was routed to the .* \(agenda\) specialist: .*Follow its rules first, but use any tool the request needs\./,
+		);
+		const firstOf = (text: string, id: "agenda" | "mobility") =>
+			text.indexOf(AGENTS[id].rules[0]);
+		expect(firstOf(agenda, "agenda")).toBeLessThan(firstOf(agenda, "mobility"));
+		const mobility = agentInstruction("mobility");
+		expect(firstOf(mobility, "mobility")).toBeLessThan(
+			firstOf(mobility, "agenda"),
+		);
+		expect(agentInstruction("quillart")).not.toMatch(/This request was routed/);
+		expect(agentInstruction("city_data")).toMatch(
+			/call open_page '\/ciudad' to open it and say it needs a city account/,
+		);
+	});
+
+	it("keeps UI tools from the orchestrator and caps a turn at MAX_TOOL_CALLS", () => {
+		expect(MAX_TOOL_CALLS).toBe(6);
+		const drafts = sanitizeFunctionCalls("quillart", [
+			{ name: "set_theme", args: { theme: "dark" } },
+			{ name: "set_theme", args: { theme: "sepia" } },
+			{ name: "go_back", args: {} },
+			{ name: "show_on_map", args: { place_slug: "gran-malecon" } },
+			{ name: "lookup_slang", args: { term: "bacano" } },
+			{ name: "filter_places", args: { kind: "nature" } },
+			{ name: "focus_on", args: { target: "agenda-results" } },
+			{ name: "get_news", args: {} },
+			{ name: "get_fares", args: {} },
+		]);
+		expect(drafts).toHaveLength(MAX_TOOL_CALLS);
+		expect(drafts.slice(0, 4)).toEqual([
+			{ name: "set_theme", args: { theme: "dark" } },
+			{ name: "go_back", args: {} },
+			{ name: "show_on_map", args: { place_slug: "gran-malecon" } },
+			{ name: "lookup_slang", args: { term: "bacano" } },
+		]);
+	});
+
+	it("validates the UI tool arguments", () => {
+		expect(sanitizeToolArgs("set_theme", { theme: "sepia" })).toBeNull();
+		expect(sanitizeToolArgs("set_language", { language: "de" })).toBeNull();
+		expect(sanitizeToolArgs("set_language", { language: "pt" })).toEqual({
+			language: "pt",
+		});
+		expect(sanitizeToolArgs("focus_on", { target: "body" })).toBeNull();
+		expect(sanitizeToolArgs("show_on_map", {})).toBeNull();
+		expect(sanitizeToolArgs("show_route", { destination: "estadio" })).toEqual({
+			destination: "estadio",
+		});
+		expect(sanitizeToolArgs("filter_agenda", { when: "mañana" })).toBeNull();
+		expect(
+			sanitizeToolArgs("filter_agenda", { query: " salsa ", when: "finde" }),
+		).toEqual({ query: "salsa", when: "finde" });
+		expect(sanitizeToolArgs("go_back", { anything: 1 })).toEqual({});
+		expect(sanitizeToolArgs("lookup_slang", {})).toEqual({});
+	});
+
+	it("describes open_page as navigation and UI tools as immediate", () => {
+		expect(TOOL_SCHEMAS.open_page.description).toMatch(/OPENS that screen/);
+		expect(TOOL_SCHEMAS.open_page.description).not.toMatch(/Never navigates/);
+		for (const tool of UI_TOOLS) {
+			expect(TOOL_SCHEMAS[tool].description).toMatch(/UI tool/);
+			expect(TOOL_SCHEMAS[tool].description).toMatch(/right away/);
+		}
+	});
+
 	it("drops function calls outside the allow-list or with bad args", () => {
 		const drafts = sanitizeFunctionCalls("agenda", [
 			{ name: "search_events", args: { days_ahead: 3, extra: "x" } },
@@ -427,6 +641,37 @@ describe("agent registry and Gemini helpers", () => {
 			response: { output: { count: 1 } },
 		});
 		expect(contents[2].parts?.[1].text).toBe("el primero");
+	});
+
+	it("leaves out replayed calls that never got a result", () => {
+		const contents = toGeminiContents([
+			{ role: "user", text: "inscríbeme y abre la agenda" },
+			{
+				role: "assistant",
+				agent: "agenda",
+				text: "Te dejo la inscripción lista.",
+				toolCalls: [
+					{ id: "c1", name: "register_for_event", args: { event_id: "e-1" } },
+					{
+						id: "c2",
+						name: "open_page",
+						args: { path: "/agenda", label: "A" },
+					},
+				],
+			},
+			{
+				role: "tool",
+				results: [
+					{ callId: "c2", name: "open_page", summary: { shown: "/agenda" } },
+				],
+			},
+			{ role: "user", text: "mejor no" },
+		]);
+		const calls = contents[1].parts?.flatMap((part) =>
+			part.functionCall ? [part.functionCall.id] : [],
+		);
+		expect(calls).toEqual(["c2"]);
+		expect(contents[1].parts?.[0].text).toBe("Te dejo la inscripción lista.");
 	});
 
 	it("gives the model the Bogotá time and only the person's own facts", () => {

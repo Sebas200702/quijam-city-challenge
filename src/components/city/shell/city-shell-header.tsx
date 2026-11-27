@@ -49,7 +49,10 @@ export function CityShellHeader({
 			className="q-header cs-head"
 			style={{ position: "static" }}
 		>
-			<div className="q-header__center" style={{ justifyContent: "flex-start" }}>
+			<div
+				className="q-header__center"
+				style={{ justifyContent: "flex-start" }}
+			>
 				{operator && (
 					<nav
 						className="cs-nav"

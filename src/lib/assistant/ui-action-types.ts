@@ -4,6 +4,7 @@
 // through the confirmation card with the exact, editable text.
 
 import type { EventCategory, PlaceKind } from "../community/community-types";
+import type { Language } from "../i18n/languages";
 import type { ScreenFormId } from "./screen-context-types";
 
 /** Agenda date filter, as in `/agenda?fecha=` (shared URL contract). */
@@ -70,6 +71,10 @@ export type UiAction = UiActionBase &
 		  }
 		| { type: "ui.focus"; target: UiFocusTarget }
 		| { type: "ui.open"; path: string }
+		/** Whole-app controls, applied on any screen (see ui-action-bus.ts). */
+		| { type: "app.language"; language: Language }
+		| { type: "app.theme"; theme: "light" | "dark" }
+		| { type: "app.back" }
 	);
 
 export type UiActionType = UiAction["type"];

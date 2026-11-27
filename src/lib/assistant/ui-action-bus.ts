@@ -5,9 +5,15 @@
 // screen that can, by URL, and leaves the action pending so that screen
 // applies it once it is ready. Every change can be undone.
 //
+// Whole-app controls (`app.language`, `app.theme`, `app.back`) need no screen:
+// the bus applies them itself, on any page.
+//
 // No `window` events: a plain module with subscribers, so it is testable and
 // any island (the dock, the map, a list) can join.
 
+import { LANGUAGE_NAMES, type Language } from "../i18n/languages";
+import { getLanguage, setLanguage } from "../i18n/use-language";
+import { applyTheme, readTheme, type Theme } from "../theme";
 import type { UiAction, UiActionOf, UiActionType } from "./ui-action-types";
 import { sanitizeUiActions, uiActionHref } from "./ui-actions";
 
@@ -34,6 +40,8 @@ export interface UiNavigation {
 	href: string;
 	/** Applied by the new screen once it is ready. */
 	pending: UiAction[];
+	/** `app.back`: return to the previous screen instead of opening `href`. */
+	back?: true;
 }
 
 export interface UiDispatchResult {
@@ -50,6 +58,11 @@ export interface UiBusEnv {
 	focus: (id: string) => boolean;
 	storage: Pick<Storage, "getItem" | "setItem" | "removeItem"> | null;
 	now: () => number;
+	/** Whole-app controls; without them `app.language` / `app.theme` do nothing. */
+	setLanguage?: (language: Language) => void;
+	getLanguage?: () => Language;
+	setTheme?: (theme: Theme) => void;
+	getTheme?: () => Theme;
 }
 
 /** Pending actions survive one navigation, for a short while. */
@@ -80,6 +93,19 @@ function pathOf(href: string): string {
 	return href.split("?")[0] || "/";
 }
 
+/** Whole-app controls: applied at once, never left pending for another screen. */
+function isAppAction(action: UiAction): boolean {
+	return action.type.startsWith("app.");
+}
+
+/** Chip words for a theme change, in the interface language. */
+const THEME_LABELS: Record<Language, Record<Theme, string>> = {
+	es: { dark: "Modo oscuro", light: "Modo claro" },
+	en: { dark: "Dark mode", light: "Light mode" },
+	pt: { dark: "Modo escuro", light: "Modo claro" },
+	fr: { dark: "Mode sombre", light: "Mode clair" },
+};
+
 export function createUiBus(env: UiBusEnv): UiBus {
 	const handlers = new Map<UiActionType, AnyHandler>();
 	const listeners = new Set<ChangeListener>();
@@ -95,7 +121,11 @@ export function createUiBus(env: UiBusEnv): UiBus {
 				typeof saved.at === "number" &&
 				env.now() - saved.at <= PENDING_TTL_MS &&
 				saved.path === env.pathname();
-			return fresh ? sanitizeUiActions(saved.actions) : [];
+			if (!fresh) return [];
+			// A theme or language never replays: it already applied before leaving.
+			return sanitizeUiActions(saved.actions).filter(
+				(action) => !isAppAction(action),
+			);
 		} catch {
 			return [];
 		}
@@ -121,11 +151,39 @@ export function createUiBus(env: UiBusEnv): UiBus {
 		for (const listener of listeners) listener(changes);
 	}
 
+	function applyApp(action: UiAction): UiChange | null {
+		if (action.type === "app.language" && env.setLanguage) {
+			const previous = env.getLanguage?.();
+			env.setLanguage(action.language);
+			return {
+				action,
+				labels: [LANGUAGE_NAMES[action.language]],
+				undo: () => {
+					if (previous) env.setLanguage?.(previous);
+				},
+			};
+		}
+		if (action.type === "app.theme" && env.setTheme) {
+			const previous = env.getTheme?.();
+			env.setTheme(action.theme);
+			const language = env.getLanguage?.() ?? "es";
+			return {
+				action,
+				labels: [(THEME_LABELS[language] ?? THEME_LABELS.es)[action.theme]],
+				undo: () => {
+					if (previous) env.setTheme?.(previous);
+				},
+			};
+		}
+		return null;
+	}
+
 	function apply(action: UiAction, afterNavigation: boolean): UiChange | null {
 		if (action.type === "ui.focus") {
 			env.focus(action.target);
 			return null;
 		}
+		if (isAppAction(action)) return applyApp(action);
 		const handler = handlers.get(action.type);
 		if (!handler) return null;
 		const applied = handler(action);
@@ -150,13 +208,37 @@ export function createUiBus(env: UiBusEnv): UiBus {
 				if (handlers.get(type) === handler) handlers.delete(type);
 			};
 		},
-		has: (type) => type === "ui.focus" || handlers.has(type),
+		has: (type) =>
+			type === "ui.focus" || type.startsWith("app.") || handlers.has(type),
 		dispatch(input) {
 			const actions = sanitizeUiActions(input);
 			const changes: UiChange[] = [];
 			let href: string | null = null;
+			let back = false;
 			const leftover: UiAction[] = [];
 			for (const action of actions) {
+				if (action.type === "app.back") {
+					// A screen opened earlier in this turn wins; otherwise go back,
+					// and whatever came after it no longer has a screen to act on.
+					if (href) continue;
+					back = true;
+					continue;
+				}
+				// After going back, only whole-app changes (language, theme) still apply.
+				if (
+					back &&
+					action.type !== "app.language" &&
+					action.type !== "app.theme"
+				) {
+					continue;
+				}
+				// Language and theme hold on every screen: apply them right away,
+				// even when this turn also opens another screen.
+				if (action.type === "app.language" || action.type === "app.theme") {
+					const change = apply(action, false);
+					if (change) changes.push(change);
+					continue;
+				}
 				if (href) {
 					leftover.push(action);
 					continue;
@@ -182,6 +264,13 @@ export function createUiBus(env: UiBusEnv): UiBus {
 				}
 			}
 			emit(changes);
+			if (back) {
+				// Followed by the caller once the conversation is saved, like any screen.
+				return {
+					changes,
+					navigation: { href: env.pathname(), pending: [], back: true },
+				};
+			}
 			if (!href) return { changes, navigation: null };
 			const path = pathOf(href);
 			// Only what the new screen can apply travels with it.
@@ -192,9 +281,14 @@ export function createUiBus(env: UiBusEnv): UiBus {
 			return { changes, navigation: { href, pending } };
 		},
 		follow(navigation) {
-			if (navigation.pending.length > 0) {
-				savePending(pathOf(navigation.href), navigation.pending);
+			if (navigation.back) {
+				env.back();
+				return;
 			}
+			const pending = navigation.pending.filter(
+				(action) => !isAppAction(action),
+			);
+			if (pending.length > 0) savePending(pathOf(navigation.href), pending);
 			env.navigate(navigation.href);
 		},
 		onChange(listener) {
@@ -209,7 +303,23 @@ function browserEnv(): UiBusEnv {
 	return {
 		pathname: () => window.location.pathname.replace(/\/+$/, "") || "/",
 		navigate: (href) => window.location.assign(href),
-		back: () => window.history.back(),
+		back: () => {
+			// Only back inside Quillart: on the first page of a visit history.back()
+			// would leave the app (or do nothing), so open the home screen instead.
+			try {
+				const from = document.referrer ? new URL(document.referrer) : null;
+				if (
+					from?.origin === window.location.origin &&
+					window.history.length > 1
+				) {
+					window.history.back();
+					return;
+				}
+			} catch {
+				// An unreadable referrer: fall through to the home screen.
+			}
+			window.location.assign("/inicio");
+		},
 		focus: (id) => {
 			const element = document.getElementById(id);
 			if (!element) return false;
@@ -229,6 +339,10 @@ function browserEnv(): UiBusEnv {
 			}
 		})(),
 		now: () => Date.now(),
+		setLanguage,
+		getLanguage,
+		setTheme: applyTheme,
+		getTheme: readTheme,
 	};
 }
 

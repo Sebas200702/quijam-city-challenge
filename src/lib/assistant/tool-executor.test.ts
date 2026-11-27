@@ -220,6 +220,13 @@ describe("runTool: read tools", () => {
 			deps,
 		);
 		expect(bad.summary.error).toBeDefined();
+		// Internal but not an openable screen: an error, so the model can recover.
+		const portal = await runTool(
+			call("open_page", { path: "/vendedor?alta=X", label: "x" }),
+			store,
+			deps,
+		);
+		expect(portal.declined).toBe(true);
 		const good = await runTool(
 			call("open_page", { path: "/agenda", label: "Agenda" }),
 			store,
@@ -643,5 +650,137 @@ describe("runTool: city data and fares", () => {
 		});
 		expect(result.declined).toBe(true);
 		expect(result.summary.error).toMatch(/indicadores/);
+	});
+});
+
+describe("runTool: UI tools and the slang glossary", () => {
+	it.each([
+		["filter_agenda", { category: "music", when: "hoy" }],
+		["filter_places", { kind: "park" }],
+		["show_on_map", { place_slug: "gran-malecon" }],
+		["show_route", { destination: "estadio" }],
+		["set_language", { language: "en" }],
+		["set_theme", { theme: "dark" }],
+		["focus_on", { target: "agenda-results" }],
+		["go_back", {}],
+	] as const)("%s is done, with no card", async (name, args) => {
+		const { store } = fakeStore(false);
+		const ui = { id: `ui-${name}`, name, args } as AssistantToolCall;
+		const result = await runTool(ui, store, deps);
+		expect(result.summary.done).toBe(true);
+		expect(result.display).toBeUndefined();
+		expect(result.declined).toBeUndefined();
+	});
+
+	it("echoes what is now on screen", async () => {
+		const { store } = fakeStore(false);
+		const run = async <N extends AssistantToolName>(
+			name: N,
+			args: AssistantToolCall<N>["args"],
+		) => (await runTool(call(name, args), store, deps)).summary;
+		expect(await run("set_language", { language: "pt" })).toEqual({
+			done: true,
+			language: "pt",
+		});
+		expect(await run("set_theme", { theme: "light" })).toEqual({
+			done: true,
+			theme: "light",
+		});
+		expect(await run("filter_agenda", { category: "music" })).toEqual({
+			done: true,
+			screen: "/agenda",
+			category: "music",
+		});
+		expect(await run("show_on_map", { place_slug: "gran-malecon" })).toEqual({
+			done: true,
+			screen: "/mapa",
+			place: "Gran Malecón del Río",
+			slug: "gran-malecon",
+		});
+	});
+
+	it("refuses to show an unknown place on the map", async () => {
+		const { store } = fakeStore(false);
+		const result = await runTool(
+			call("show_on_map", { place_slug: "atlantida" }),
+			store,
+			deps,
+		);
+		expect(result.declined).toBe(true);
+		expect(result.summary.done).toBeUndefined();
+		expect(result.summary.error).toMatch(/No encontramos «atlantida»/);
+		expect(result.display).toMatchObject({ kind: "notice", tone: "error" });
+	});
+
+	it("draws a route only to a destination the map can place", async () => {
+		const { store } = fakeStore(false);
+		const route = await runTool(
+			call("show_route", { destination: "Barrio Abajo" }),
+			store,
+			deps,
+		);
+		expect(route.summary).toEqual({
+			done: true,
+			screen: "/mapa",
+			destination: "barrio_abajo",
+			name: "Barrio Abajo",
+		});
+		// Unknown: declined, so the client runs the recovery round.
+		const unknown = await runTool(
+			call("show_route", { destination: "Atlántida" }),
+			store,
+			deps,
+		);
+		expect(unknown.declined).toBe(true);
+		expect(unknown.summary.done).toBeUndefined();
+		expect(unknown.summary.error).toMatch(/No conozco «Atlántida»/);
+	});
+
+	it("explains a slang word from the glossary", async () => {
+		const { store } = fakeStore(false);
+		const result = await runTool(
+			call("lookup_slang", { term: "bacano" }),
+			store,
+			deps,
+		);
+		expect(result.summary.count).toBeGreaterThanOrEqual(1);
+		expect((result.summary.entries as unknown[])[0]).toEqual({
+			term: "Bacano",
+			meaning_es: "Muy bueno, chévere.",
+			meaning_en: "Great, cool.",
+			example: "El Malecón está bacano.",
+		});
+		expect(result.display).toMatchObject({ kind: "notice", tone: "ok" });
+		expect(
+			result.display?.kind === "notice" ? result.display.text : "",
+		).toMatch(/^Bacano: Muy bueno, chévere\./);
+	});
+
+	it("gives a few entries without a term and at most five with one", async () => {
+		const { store } = fakeStore(false);
+		const sample = await runTool(call("lookup_slang", {}), store, deps);
+		expect(sample.summary.count).toBe(3);
+		expect(sample.summary.entries).toHaveLength(3);
+		const broad = await runTool(
+			call("lookup_slang", { term: "e" }),
+			store,
+			deps,
+		);
+		expect((broad.summary.entries as unknown[]).length).toBeLessThanOrEqual(5);
+	});
+
+	it("links the whole glossary when nothing matches", async () => {
+		const { store } = fakeStore(false);
+		const result = await runTool(
+			call("lookup_slang", { term: "zzzz" }),
+			store,
+			deps,
+		);
+		expect(result.summary).toMatchObject({ count: 0, entries: [] });
+		expect(result.display).toEqual({
+			kind: "link",
+			href: "/jerga",
+			label: "Ver el glosario",
+		});
 	});
 });

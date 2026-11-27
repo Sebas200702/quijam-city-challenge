@@ -1,7 +1,6 @@
 import { Sun } from "lucide-react";
 import "../../styles/life-shell.css";
 
-
 interface WeatherBadgeProps {
 	label: string;
 }

@@ -147,7 +147,10 @@ export function ImpactReportPanel() {
 	const loading = state.kind === "loading";
 
 	return (
-		<section className="q-card lc-shape--arch" aria-labelledby="impact-report-title">
+		<section
+			className="q-card lc-shape--arch"
+			aria-labelledby="impact-report-title"
+		>
 			<div className="q-band q-band--green" aria-hidden="true" />
 			<div className="q-card__body">
 				<div className="grid gap-6 lg:grid-cols-[320px_minmax(0,1fr)]">

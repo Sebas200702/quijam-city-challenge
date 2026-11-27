@@ -126,6 +126,20 @@ export function CityDashboard() {
 		document.documentElement.dataset.theme = theme;
 	}, [theme]);
 
+	// Quillart AI's `app.theme` changes the page attribute: follow it so the
+	// header toggle shows the theme actually on screen.
+	useEffect(() => {
+		const root = document.documentElement;
+		const observer = new MutationObserver(() =>
+			setTheme(root.dataset.theme === "light" ? "light" : "dark"),
+		);
+		observer.observe(root, {
+			attributes: true,
+			attributeFilter: ["data-theme"],
+		});
+		return () => observer.disconnect();
+	}, []);
+
 	const changeTheme = (next: ShellTheme) => {
 		try {
 			localStorage.setItem(THEME_STORAGE_KEY, next);

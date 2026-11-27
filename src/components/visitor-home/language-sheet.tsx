@@ -100,7 +100,10 @@ export function LanguageSheet({
 						{copy.languageOfflineNote}
 					</p>
 				)}
-				<button type="submit" className="q-btn q-btn--primary q-btn--block l-cta">
+				<button
+					type="submit"
+					className="q-btn q-btn--primary q-btn--block l-cta"
+				>
 					<Check size={18} strokeWidth={1.75} aria-hidden="true" />
 					{copy.languageUse}
 				</button>

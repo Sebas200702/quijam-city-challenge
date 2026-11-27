@@ -1,7 +1,6 @@
 import { FeatureTile } from "./feature-tile";
 import "../../styles/life-shell.css";
 
-
 export interface FeatureItem {
 	id: string;
 	title: string;

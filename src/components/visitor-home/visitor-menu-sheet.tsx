@@ -17,10 +17,22 @@ import { MenuIllustration } from "./visitor-illustrations";
 import { VisitorSheet } from "./visitor-sheet";
 
 const ITEMS: { id: VisitorMenuItemId; Icon: LucideIcon; tone: string }[] = [
-	{ id: "passport", Icon: BookOpenCheck, tone: "q-tile--gold lab-ico--octagon" },
+	{
+		id: "passport",
+		Icon: BookOpenCheck,
+		tone: "q-tile--gold lab-ico--octagon",
+	},
 	{ id: "slang", Icon: MessagesSquare, tone: "q-tile--green lab-ico--leaf" },
-	{ id: "data", Icon: ShieldCheck, tone: "visitor-tile--neutral lab-ico--shield" },
-	{ id: "language", Icon: Globe, tone: "visitor-tile--neutral lab-ico--circle" },
+	{
+		id: "data",
+		Icon: ShieldCheck,
+		tone: "visitor-tile--neutral lab-ico--shield",
+	},
+	{
+		id: "language",
+		Icon: Globe,
+		tone: "visitor-tile--neutral lab-ico--circle",
+	},
 	{ id: "theme", Icon: Moon, tone: "visitor-tile--neutral lab-ico--hex" },
 ];
 

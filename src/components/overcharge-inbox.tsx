@@ -150,7 +150,10 @@ export function OverchargeInbox({
 						<span className="q-dot" aria-hidden="true" />
 						{t.eyebrow}
 					</p>
-					<h2 id="overcharge-inbox-title" className="l-h2 mt-2 !text-[clamp(1.5rem,3vw,2.1rem)]">
+					<h2
+						id="overcharge-inbox-title"
+						className="l-h2 mt-2 !text-[clamp(1.5rem,3vw,2.1rem)]"
+					>
 						{t.title}
 					</h2>
 				</div>

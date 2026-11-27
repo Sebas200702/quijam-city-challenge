@@ -20,7 +20,7 @@ import type {
 	AssistantToolName,
 	AssistantToolResult,
 } from "../../lib/assistant/assistant-types";
-import { isActionTool } from "../../lib/assistant/assistant-types";
+import { isActionTool, isUiTool } from "../../lib/assistant/assistant-types";
 import { answerOffline } from "../../lib/assistant/offline-answer";
 import {
 	clearPendingAction,
@@ -300,10 +300,13 @@ export function useAssistant() {
 		[editAction],
 	);
 
-	useEffect(() => {
+	/** Takes the saved conversation (and any waiting action) back into the state. */
+	const restore = useCallback(() => {
 		const saved = loadSaved();
 		restored.current = true;
 		if (!saved) return;
+		batch.current = null;
+		setPending([]);
 		if (saved.batch?.live) {
 			// The Live session that asked is gone: its waiting actions did not happen.
 			const { messages: history, results, remaining } = saved.batch;
@@ -330,6 +333,28 @@ export function useAssistant() {
 			if (remaining.length > 0) setResumed(true);
 		}
 	}, [toPending]);
+
+	useEffect(() => {
+		restore();
+		// Back/forward cache: "vuelve atrás" (go_back), Deshacer after opening a
+		// screen, or the browser's own back button bring this page back with the
+		// React state it had when the person left it. Everything said on the
+		// newer page lives only in storage, and the next save would overwrite
+		// it, so take the saved conversation again.
+		const onPageShow = (event: PageTransitionEvent) => {
+			if (!event.persisted) return;
+			busy.current = false;
+			navigation.current = null;
+			liveResponder.current = null;
+			liveQueue.current = [];
+			setLoading(false);
+			setDraft(null);
+			setError(null);
+			restore();
+		};
+		window.addEventListener("pageshow", onPageShow);
+		return () => window.removeEventListener("pageshow", onPageShow);
+	}, [restore]);
 
 	// biome-ignore lint/correctness/useExhaustiveDependencies: pending changes when the batch ref does.
 	useEffect(() => {
@@ -429,6 +454,8 @@ export function useAssistant() {
 				response = await request(history);
 			} catch {
 				busy.current = false;
+				// A screen asked for earlier in this loop must not open on a later turn.
+				navigation.current = null;
 				setDraft(null);
 				setLoading(false);
 				// "Detener" (U20): the person stopped it; nothing failed.
@@ -503,8 +530,12 @@ export function useAssistant() {
 			if (results.length > 0) {
 				next = [...next, { role: "tool", results }];
 				commit(next);
-				const onlyLinks = reads.every((call) => call.name === "open_page");
-				if (!onlyLinks && rounds < MAX_ROUNDS) {
+				// Pure screen changes (open, filter, map, language, theme) need no new
+				// round, unless one failed (an unknown place): the model then recovers.
+				const onlyUi =
+					reads.every((call) => isUiTool(call.name)) &&
+					results.every((result) => !result.declined);
+				if (!onlyUi && rounds < MAX_ROUNDS) {
 					return converse(next, rounds + 1);
 				}
 			}
