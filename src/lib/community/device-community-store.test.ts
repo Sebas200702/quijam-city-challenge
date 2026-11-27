@@ -48,6 +48,11 @@ async function signUp(store: CommunityStore, name: string) {
 
 let store: CommunityStore;
 
+async function signInAs(name: string) {
+	await store.signOut();
+	await store.signIn(`${name.toLowerCase()}@example.com`, "secreto123");
+}
+
 beforeEach(() => {
 	vi.stubGlobal("localStorage", memoryStorage());
 	// Offline: the store falls back to the hard rules in the browser.
@@ -252,5 +257,53 @@ describe("device store corroboration", () => {
 		}
 		const queue = await store.listModerationQueue();
 		expect(queue.some((item) => item.priority === "emergency")).toBe(false);
+	});
+});
+
+describe("device store waiting list", () => {
+	async function fullEvent() {
+		await signUp(store, "Ana");
+		const result = await store.createEvent(eventInput({ capacity: 1 }));
+		const id = result.record?.id ?? "";
+		await store.moderate("event", id, "approve");
+		await signUp(store, "Beto");
+		await store.register(id);
+		return id;
+	}
+
+	it("only lets people wait when the event is full", async () => {
+		await signUp(store, "Ana");
+		const result = await store.createEvent(eventInput({ capacity: 5 }));
+		const id = result.record?.id ?? "";
+		await store.moderate("event", id, "approve");
+		await expect(store.joinWaitlist(id)).rejects.toThrow(/Todavía hay cupos/);
+	});
+
+	it("gives the freed spot to the first person waiting", async () => {
+		const id = await fullEvent();
+		await signUp(store, "Caro");
+		await expect(store.register(id)).rejects.toThrow(/cupos/);
+		await store.joinWaitlist(id);
+		await signUp(store, "Dani");
+		await store.joinWaitlist(id);
+		expect(await store.myWaitlist()).toEqual([id]);
+
+		await signInAs("Beto");
+		await store.unregister(id);
+
+		await signInAs("Caro");
+		expect(await store.myRegistrations()).toEqual([id]);
+		expect(await store.myWaitlist()).toEqual([]);
+		await signInAs("Dani");
+		expect(await store.myWaitlist()).toEqual([id]);
+		expect((await store.getEvent(id))?.registeredCount).toBe(1);
+	});
+
+	it("lets a person leave the waiting list", async () => {
+		const id = await fullEvent();
+		await signUp(store, "Caro");
+		await store.joinWaitlist(id);
+		await store.leaveWaitlist(id);
+		expect(await store.myWaitlist()).toEqual([]);
 	});
 });

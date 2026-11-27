@@ -284,6 +284,38 @@ export function createCloudCommunityStore(
 			if (error && error.code !== "23505") throw friendly(error);
 		},
 
+		async myWaitlist() {
+			const userId = await currentUserId();
+			if (!userId) return [];
+			const { data, error } = await supabase
+				.from("event_waitlist")
+				.select("event_id")
+				.eq("user_id", userId);
+			// A deployment without the migration simply has no waiting lists yet.
+			if (error) return [];
+			return (data ?? []).map((row) => String(row.event_id));
+		},
+
+		async joinWaitlist(eventId) {
+			const userId = await currentUserId();
+			if (!userId) throw new Error("Inicia sesión para anotarte en la lista de espera.");
+			const { error } = await supabase.rpc("join_waitlist", {
+				p_event_id: eventId,
+			});
+			if (error) throw friendly(error);
+		},
+
+		async leaveWaitlist(eventId) {
+			const userId = await currentUserId();
+			if (!userId) throw new Error("Inicia sesión para continuar.");
+			const { error } = await supabase
+				.from("event_waitlist")
+				.delete()
+				.eq("event_id", eventId)
+				.eq("user_id", userId);
+			if (error) throw friendly(error);
+		},
+
 		async unregister(eventId) {
 			const userId = await currentUserId();
 			if (!userId) throw new Error("Inicia sesión para continuar.");

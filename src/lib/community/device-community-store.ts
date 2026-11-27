@@ -21,8 +21,10 @@ import {
 } from "../moderation/trust-policy";
 import { publishResult, storedStatus } from "./community-mappers";
 import {
+	canJoinWaitlist,
 	filterEvents,
 	filterThreads,
+	isEventFull,
 	registrationBlocker,
 	validateEventInput,
 	validatePostBody,
@@ -94,6 +96,8 @@ interface DeviceData {
 	/** Content whose community reports the moderator already closed. */
 	resolvedReports?: string[];
 	appeals?: DeviceAppeal[];
+	/** People waiting for a spot in a full event, in order of arrival. */
+	waitlist?: { eventId: string; userId: string; createdAt: string }[];
 }
 
 function reportCount(data: DeviceData, id: string): number {
@@ -125,6 +129,19 @@ function corroborateThreads(data: DeviceData, seed: ForumThread) {
 	for (const t of data.threads) {
 		if (ids.has(t.id)) t.triagePriority = "emergency";
 	}
+}
+
+/** A freed spot goes to the first person waiting, in order of arrival. */
+function promoteFromWaitlist(data: DeviceData, event: CommunityEvent) {
+	if (isEventFull(event) || !canJoinWaitlist({ ...event, registeredCount: event.capacity ?? 0 }))
+		return;
+	const next = (data.waitlist ?? [])
+		.filter((item) => item.eventId === event.id)
+		.sort((a, b) => a.createdAt.localeCompare(b.createdAt))[0];
+	if (!next) return;
+	data.waitlist = data.waitlist?.filter((item) => item !== next);
+	data.registrations.push({ eventId: event.id, userId: next.userId });
+	event.registeredCount += 1;
 }
 
 function hasOpenAppeal(data: DeviceData, id: string): boolean {
@@ -452,6 +469,60 @@ export function createDeviceCommunityStore(): CommunityStore {
 			if (blocker) throw new Error(blocker);
 			data.registrations.push({ eventId, userId: account.id });
 			event.registeredCount += 1;
+			data.waitlist = data.waitlist?.filter(
+				(item) => !(item.eventId === eventId && item.userId === account.id),
+			);
+			save(data);
+			notify("events");
+		},
+
+		async myWaitlist() {
+			const data = load();
+			return (data.waitlist ?? [])
+				.filter((item) => item.userId === data.sessionId)
+				.map((item) => item.eventId);
+		},
+
+		async joinWaitlist(eventId) {
+			const data = load();
+			const account = requireAccount(data);
+			const event = data.events.find((item) => item.id === eventId);
+			if (!event || !canJoinWaitlist(event)) {
+				throw new Error(
+					event && !isEventFull(event)
+						? "Todavía hay cupos: inscríbete directamente."
+						: "Este evento no está disponible para inscripciones.",
+				);
+			}
+			if (
+				data.registrations.some(
+					(item) => item.eventId === eventId && item.userId === account.id,
+				)
+			)
+				throw new Error("Ya estás inscrito en este evento.");
+			const waitlist = data.waitlist ?? [];
+			if (
+				!waitlist.some(
+					(item) => item.eventId === eventId && item.userId === account.id,
+				)
+			) {
+				waitlist.push({
+					eventId,
+					userId: account.id,
+					createdAt: new Date().toISOString(),
+				});
+			}
+			data.waitlist = waitlist;
+			save(data);
+			notify("events");
+		},
+
+		async leaveWaitlist(eventId) {
+			const data = load();
+			const account = requireAccount(data);
+			data.waitlist = data.waitlist?.filter(
+				(item) => !(item.eventId === eventId && item.userId === account.id),
+			);
 			save(data);
 			notify("events");
 		},
@@ -464,8 +535,10 @@ export function createDeviceCommunityStore(): CommunityStore {
 				(item) => !(item.eventId === eventId && item.userId === account.id),
 			);
 			const event = data.events.find((item) => item.id === eventId);
-			if (event && data.registrations.length < before)
+			if (event && data.registrations.length < before) {
 				event.registeredCount = Math.max(event.registeredCount - 1, 0);
+				promoteFromWaitlist(data, event);
+			}
 			save(data);
 			notify("events");
 		},

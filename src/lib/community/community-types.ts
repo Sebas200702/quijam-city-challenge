@@ -266,6 +266,11 @@ export interface CommunityStore {
 	/** Ids of the events the signed-in person registered for. */
 	myRegistrations(): Promise<string[]>;
 	register(eventId: string): Promise<void>;
+	/** Ids of the full events the signed-in person is waiting for. */
+	myWaitlist(): Promise<string[]>;
+	/** Joins the waiting list of a full event; the first in line gets the next free spot. */
+	joinWaitlist(eventId: string): Promise<void>;
+	leaveWaitlist(eventId: string): Promise<void>;
 	unregister(eventId: string): Promise<void>;
 
 	listThreads(query?: ThreadQuery): Promise<ForumThread[]>;
