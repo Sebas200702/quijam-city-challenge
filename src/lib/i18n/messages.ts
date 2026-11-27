@@ -4,6 +4,7 @@
 import { agenda } from "./dictionaries/agenda";
 import { forum } from "./dictionaries/forum";
 import { guide } from "./dictionaries/guide";
+import { host } from "./dictionaries/host";
 import { inbox } from "./dictionaries/inbox";
 import { landing } from "./dictionaries/landing";
 import { map } from "./dictionaries/map";
@@ -81,6 +82,7 @@ export type Messages = BaseMessages & {
 	offline: (typeof offline)[Language];
 	notifications: (typeof notifications)[Language];
 	guide: (typeof guide)[Language];
+	host: (typeof host)[Language];
 	profile: (typeof profile)[Language];
 	reports: (typeof reports)[Language];
 	inbox: (typeof inbox)[Language];
@@ -263,6 +265,7 @@ function build(language: Language): Messages {
 		offline: offline[language],
 		notifications: notifications[language],
 		guide: guide[language],
+		host: host[language],
 		profile: profile[language],
 		reports: reports[language],
 		inbox: inbox[language],

@@ -65,7 +65,7 @@ Reglas para leerlo:
 
 | Pantalla o componente | Dato que falta | Para qué lo usa la UI | Fuente propuesta | Issue | Prioridad |
 |---|---|---|---|---|---|
-| Entrada (base-01) | Rol `host` | Guardia de `/anfitrion` y RLS | `user_profiles.role` y `current_user_role()` aceptan `host` (hoy solo `visitor`, `vendor`, `city`) | #50 | alta |
+| Entrada (base-01) | Rol `host` | Guardia de `/anfitrion` y RLS. Mientras no exista, la guardia solo pide sesión iniciada (`host-view.tsx`) | `user_profiles.role` y `current_user_role()` aceptan `host` (hoy solo `visitor`, `vendor`, `city`) | #50 | alta |
 | Inicio (base-02) | Turno: zona, paraderos, hora de inicio y fin | "Mi turno" y estado vacío "Sin asignaciones por ahora" | Tabla `host_shifts` | #50 | media |
 | Inicio y menú (base-02, base-03) | Dupla: nombre, integrantes, chaleco | "Mi dupla" | Tabla `host_pairs` | #50 | media |
 | Inicio | Disponibilidad (disponible, ocupado, fuera de turno) | Recibir o no asignaciones | `host_shifts.availability` | #50 | media |
