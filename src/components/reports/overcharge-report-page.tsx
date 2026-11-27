@@ -37,6 +37,7 @@ import {
 	readPendingReports,
 } from "../../lib/reports/overcharge-routes";
 import { sendPendingReports } from "../../lib/reports/pending-report-sync";
+import { ReportIllustration } from "./report-illustration";
 
 const VEHICLE_LABELS: Record<ReportTransportMode, string> = {
 	taxi: "Taxi",
@@ -386,6 +387,7 @@ export function OverchargeReportPage({
 						<span className="q-badge q-badge--alert">Nuevo</span>
 					</div>
 					<div className="q-card__body space-y-4">
+						<ReportIllustration kind="sent" className="mx-auto w-36" />
 						<p className="q-p">
 							{status.percent !== null && status.percent > 0
 								? `Reportaste un cobro de ${formatCop(status.chargedCop)} (${status.percent} % por encima de la tarifa de referencia de ${formatCop(status.referenceCop)}).`
@@ -443,6 +445,7 @@ export function OverchargeReportPage({
 						</div>
 					</div>
 					<div className="q-card__body space-y-4">
+						<ReportIllustration kind="saved" className="mx-auto w-36" />
 						<p className="q-p q-muted">
 							No pudimos conectarnos con el servidor en este momento. Guardamos
 							tu reporte ({status.queuedCount} en cola) y lo enviamos solo

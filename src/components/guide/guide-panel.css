@@ -124,7 +124,11 @@
 .guide-report--saved,
 .guide-report--offline {
 	flex-direction: row;
+	flex-wrap: wrap;
 	align-items: center;
+}
+.guide-report__close {
+	margin-left: auto;
 }
 .guide-report--saved {
 	background: var(--green-soft);
@@ -138,6 +142,7 @@
 .guide-report--saved .q-p,
 .guide-report--offline .q-p {
 	flex: 1;
+	min-width: 60%;
 	color: var(--ink);
 }
 .guide-report__field {
@@ -149,8 +154,19 @@
 	border: 0;
 }
 .guide-report__error {
+	display: flex;
+	align-items: flex-start;
+	gap: 6px;
 	margin: 0;
 	color: var(--red-text);
+	font-weight: 600;
+}
+.guide-report__error > svg {
+	flex: none;
+	margin-top: 3px;
+}
+.guide-input[aria-invalid="true"] {
+	border: 2px solid var(--red);
 }
 .guide-input {
 	min-height: 44px;
