@@ -1,0 +1,463 @@
+/* "Lo que la ciudad aprende" shell: layout and the schematic corridor map. Tokens only. */
+
+.cs-head {
+	position: sticky;
+	top: 0;
+	z-index: 20;
+	gap: 12px 16px;
+	padding: 12px 24px;
+	border-bottom: 1px solid var(--line);
+}
+.cs-head .q-logo__sub {
+	white-space: nowrap;
+}
+.cs-head .q-header__end {
+	gap: 8px 10px;
+}
+.cs-nav {
+	max-width: 100%;
+	overflow-x: auto;
+	scrollbar-width: none;
+}
+.cs-nav .q-seg__opt {
+	min-height: 44px;
+	text-decoration: none;
+	white-space: nowrap;
+}
+.cs-fresh {
+	font-size: 13px;
+	line-height: 18px;
+	color: var(--ink-muted);
+	white-space: nowrap;
+}
+@media (min-width: 1200px) {
+	.cs-head {
+		flex-wrap: nowrap;
+	}
+	.cs-head .q-header__end {
+		flex-wrap: nowrap;
+	}
+}
+.cs-badge-icon {
+	width: 14px;
+	height: 14px;
+}
+
+.cs-main {
+	max-width: 1440px;
+	margin: 0 auto;
+	padding: 20px 24px 40px;
+	display: flex;
+	flex-direction: column;
+	gap: 24px;
+}
+.cs-grid {
+	display: grid;
+	gap: 16px 20px;
+	grid-template-columns: minmax(0, 1fr);
+}
+.cs-right {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+	min-width: 0;
+}
+.cs-panels {
+	display: grid;
+	gap: 16px;
+	grid-template-columns: minmax(0, 1fr);
+}
+.cs-col {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+	min-width: 0;
+}
+@media (min-width: 1100px) {
+	.cs-grid {
+		grid-template-columns: 440px minmax(0, 1fr);
+		align-items: start;
+	}
+	.cs-mapcol {
+		position: sticky;
+		top: 96px;
+	}
+	.cs-panels {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+
+.cs-panel {
+	padding: 18px 20px;
+	gap: 12px;
+}
+.cs-panel__head {
+	display: flex;
+	justify-content: space-between;
+	align-items: baseline;
+	gap: 8px 12px;
+	flex-wrap: wrap;
+}
+.cs-ih {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin: 0;
+}
+.cs-ih > svg {
+	flex: none;
+	color: var(--gold-text);
+}
+.cs-sub {
+	font-size: 12px;
+	line-height: 16px;
+	color: var(--ink-muted);
+}
+.cs-list {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+.cs-row {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	flex-wrap: wrap;
+	padding: 10px 12px;
+	border-radius: var(--radius-sm);
+	background: var(--bg);
+	font-size: 13px;
+	line-height: 18px;
+}
+.cs-rowl {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	min-width: 0;
+}
+.cs-rowl > div {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	min-width: 0;
+}
+.cs-rowl b {
+	font-size: 14px;
+}
+.cs-ico {
+	display: inline-grid;
+	place-items: center;
+	width: 36px;
+	height: 36px;
+	border-radius: 12px;
+	background: var(--surface-raised);
+	color: var(--gold-text);
+	flex: none;
+}
+
+/* KPI row: one per dimension. */
+.cs-kpis {
+	display: grid;
+	gap: 12px;
+	grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+}
+.cs-kpi {
+	padding: 14px 16px;
+	gap: 4px;
+}
+.cs-kpi__icon {
+	color: var(--gold-text);
+	flex: none;
+}
+.cs-kpi .q-kpi__value {
+	font-size: 28px;
+	line-height: 32px;
+}
+.cs-kpi .q-kpi__value small {
+	font-size: 14px;
+}
+.cs-kpi .q-details {
+	margin-top: 6px;
+	background: transparent;
+}
+.cs-kpi .q-details > summary {
+	padding: 0 4px;
+	min-height: 44px;
+}
+.cs-kpi .q-details__body {
+	padding: 0 4px 8px;
+}
+.cs-kpi__mark {
+	display: inline-block;
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+	margin-right: 6px;
+	vertical-align: middle;
+}
+.cs-kpi__mark--good {
+	background: var(--green);
+}
+.cs-kpi__mark--bad {
+	background: var(--red);
+	border-radius: 2px;
+}
+
+/* Illustrations: flat, token-coloured, decorative. */
+.cs-illus {
+	padding: 10px 14px;
+	border-radius: 18px;
+	flex: none;
+}
+.cs-illus svg {
+	display: block;
+}
+.cs-split {
+	display: flex;
+	gap: 12px;
+	align-items: center;
+	flex-wrap: wrap;
+}
+.il-st {
+	fill: none;
+	stroke: var(--on-gold);
+	stroke-width: 2.5;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+}
+.il-white {
+	fill: var(--star);
+}
+.il-gold {
+	fill: var(--gold);
+}
+.il-red {
+	fill: var(--red);
+}
+.il-water {
+	fill: var(--line-control);
+	opacity: 0.45;
+}
+.il-case {
+	fill: none;
+	stroke: var(--on-gold);
+	stroke-width: 7.5;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+}
+.il-slash {
+	fill: none;
+	stroke: var(--red);
+	stroke-width: 5;
+	stroke-linecap: round;
+}
+
+/* Schematic corridor map: zone halos pair a word, a glyph and a stroke style. */
+.cs-mapcol {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	min-width: 0;
+}
+.cs-map {
+	height: min(72vh, 720px);
+	min-height: 420px;
+}
+.cs-map > svg {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+}
+.cs-maptag {
+	position: absolute;
+	left: 12px;
+	bottom: 12px;
+	z-index: 3;
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	height: 32px;
+	padding: 0 12px;
+	border-radius: var(--radius-pill);
+	background: var(--surface-raised);
+	box-shadow: var(--shadow-card);
+	font-size: 12px;
+	font-weight: 600;
+}
+.cs-legend {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px 14px;
+	margin: 0;
+	padding: 10px 14px;
+	list-style: none;
+	border-radius: var(--radius-md);
+	background: var(--surface-raised);
+	box-shadow: var(--shadow-card);
+	font-size: 12px;
+	line-height: 16px;
+	color: var(--ink-muted);
+}
+.cs-legend li {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+}
+.cs-legend b {
+	color: var(--ink);
+	font-weight: 600;
+}
+.cs-map-label {
+	font-size: 11px;
+	font-weight: 600;
+	fill: var(--ink);
+	stroke: var(--map-land);
+	stroke-width: 3.5px;
+	paint-order: stroke;
+	stroke-linejoin: round;
+}
+.cs-map-area {
+	font-size: 9px;
+	font-weight: 600;
+	letter-spacing: 0.14em;
+	fill: var(--ink-subtle);
+	stroke: var(--map-land);
+	stroke-width: 3px;
+	paint-order: stroke;
+}
+.cs-map-stop {
+	fill: var(--surface-raised);
+	stroke: var(--ink);
+	stroke-width: 2.5;
+}
+.cs-map-flood {
+	fill: none;
+	stroke: var(--line-control);
+	stroke-width: 1.5;
+	stroke-dasharray: 4 4;
+	opacity: 0.7;
+}
+.cs-map-flood--active {
+	fill: var(--red);
+	fill-opacity: 0.22;
+	stroke: var(--red);
+	stroke-width: 2.5;
+	stroke-dasharray: none;
+	opacity: 1;
+}
+.cs-map-flood-dot {
+	fill: var(--red);
+}
+.cs-map-flood-glyph {
+	font-family: var(--font-display);
+	font-size: 13px;
+	font-weight: 700;
+	fill: var(--on-red);
+}
+.cs-map-zone {
+	stroke-width: 2;
+}
+.cs-map-zone--green {
+	fill: var(--green);
+	fill-opacity: 0.14;
+	stroke: var(--green);
+}
+.cs-map-zone--gold {
+	fill: var(--gold);
+	fill-opacity: 0.18;
+	stroke: var(--gold-text);
+	stroke-dasharray: 10 6;
+}
+.cs-map-zone--red {
+	fill: var(--red);
+	fill-opacity: 0.16;
+	stroke: var(--red);
+	stroke-width: 3;
+	stroke-dasharray: 2 6;
+	stroke-linecap: round;
+}
+.cs-map-word {
+	font-size: 10px;
+	font-weight: 700;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	stroke: var(--map-land);
+	stroke-width: 3px;
+	paint-order: stroke;
+}
+.cs-map-word--green {
+	fill: var(--green-text);
+}
+.cs-map-word--gold {
+	fill: var(--gold-text);
+}
+.cs-map-word--red {
+	fill: var(--red-text);
+}
+.cs-map-crowd {
+	fill: var(--ink);
+	fill-opacity: 0.55;
+}
+.cs-map-pulse {
+	transform-box: fill-box;
+	transform-origin: center;
+	animation: cs-map-pulse 2s ease-out infinite;
+}
+@keyframes cs-map-pulse {
+	0% {
+		opacity: 0.6;
+		transform: scale(0.8);
+	}
+	100% {
+		opacity: 0;
+		transform: scale(1.6);
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.cs-map-pulse {
+		animation: none;
+		opacity: 0;
+	}
+}
+
+@media (max-width: 720px) {
+	.cs-head {
+		position: static;
+		padding: 10px 16px;
+	}
+	.cs-head .q-header__center {
+		order: 3;
+		flex-basis: 100%;
+		justify-content: flex-start;
+	}
+	.cs-main {
+		padding: 16px 16px 32px;
+	}
+	.cs-map {
+		height: 520px;
+	}
+}
+
+.cs-conn {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	white-space: nowrap;
+}
+@media (max-width: 1499px) {
+	.cs-signout-label {
+		display: none;
+	}
+}
+
+.cs-map-ref {
+	position: absolute;
+	right: 12px;
+	bottom: 16px;
+	z-index: 3;
+}

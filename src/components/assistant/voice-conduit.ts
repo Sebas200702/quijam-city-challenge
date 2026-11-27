@@ -1,6 +1,7 @@
 // Voice is only a conduit for Quillart AI: the browser's speech-to-text in
-// (es-CO) and text-to-speech out. Text always works; when the browser has no
-// support, the hook says so and the chat hides the voice controls.
+// (es-CO by default, or the visitor's language) and text-to-speech out. Text
+// always works; when the browser has no support, the hook says so and the
+// chat hides the voice controls.
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -71,13 +72,25 @@ function speakable(text: string): string {
 		.trim();
 }
 
-export function speak(text: string): void {
+/** A voice for any other language, matching its first two letters. */
+function voiceFor(lang: string): SpeechSynthesisVoice | null {
+	if (lang.toLowerCase().startsWith("es")) return spanishVoice();
+	const prefix = lang.slice(0, 2).toLowerCase();
+	return (
+		window.speechSynthesis
+			.getVoices()
+			.find((voice) => voice.lang.toLowerCase().startsWith(prefix)) ?? null
+	);
+}
+
+/** Reads text aloud; `lang` is a BCP 47 tag, Spanish (es-CO) by default. */
+export function speak(text: string, lang: string = LANG): void {
 	if (!canSpeak()) return;
 	const clean = speakable(text);
 	if (!clean) return;
 	const utterance = new SpeechSynthesisUtterance(clean);
-	utterance.lang = LANG;
-	const voice = spanishVoice();
+	utterance.lang = lang;
+	const voice = voiceFor(lang);
 	if (voice) utterance.voice = voice;
 	window.speechSynthesis.cancel();
 	window.speechSynthesis.speak(utterance);
@@ -111,6 +124,8 @@ export interface VoiceConduit {
 	interim: string;
 	/** Spanish message when the microphone failed, or null. */
 	error: string | null;
+	/** The browser's error code behind `error` (e.g. "not-allowed"), or null. */
+	errorCode: string | null;
 	start(): void;
 	stop(): void;
 	readAloud: boolean;
@@ -124,12 +139,22 @@ const ERRORS: Record<string, string> = {
 	network: "El dictado por voz necesita internet.",
 };
 
+interface VoiceConduitOptions {
+	/** BCP 47 language to listen for; es-CO by default. */
+	lang?: string;
+}
+
 /** Speech-to-text that calls `onFinal` with what the person said. */
-export function useVoiceConduit(onFinal: (text: string) => void): VoiceConduit {
+export function useVoiceConduit(
+	onFinal: (text: string) => void,
+	{ lang = LANG }: VoiceConduitOptions = {},
+): VoiceConduit {
 	const [support, setSupport] = useState({ listen: false, speak: false });
 	const [listening, setListening] = useState(false);
 	const [interim, setInterim] = useState("");
-	const [error, setError] = useState<string | null>(null);
+	const [error, setError] = useState<{ code: string; message: string } | null>(
+		null,
+	);
 	const [readAloud, setReadAloudState] = useState(false);
 	const recognition = useRef<Recognition | null>(null);
 	const onFinalRef = useRef(onFinal);
@@ -159,7 +184,7 @@ export function useVoiceConduit(onFinal: (text: string) => void): VoiceConduit {
 		stopSpeaking();
 		recognition.current?.abort();
 		const instance = new Constructor();
-		instance.lang = LANG;
+		instance.lang = lang;
 		instance.continuous = false;
 		instance.interimResults = true;
 		instance.maxAlternatives = 1;
@@ -176,9 +201,11 @@ export function useVoiceConduit(onFinal: (text: string) => void): VoiceConduit {
 		};
 		instance.onerror = (event) => {
 			if (event.error !== "no-speech" && event.error !== "aborted")
-				setError(
-					ERRORS[event.error] ?? "No pudimos escucharte. Escribe tu mensaje.",
-				);
+				setError({
+					code: event.error,
+					message:
+						ERRORS[event.error] ?? "No pudimos escucharte. Escribe tu mensaje.",
+				});
 		};
 		instance.onend = () => {
 			setListening(false);
@@ -194,9 +221,9 @@ export function useVoiceConduit(onFinal: (text: string) => void): VoiceConduit {
 			instance.start();
 			setListening(true);
 		} catch {
-			setError("No pudimos activar el micrófono.");
+			setError({ code: "start", message: "No pudimos activar el micrófono." });
 		}
-	}, []);
+	}, [lang]);
 
 	const setReadAloud = useCallback((value: boolean) => {
 		setReadAloudState(value);
@@ -209,7 +236,8 @@ export function useVoiceConduit(onFinal: (text: string) => void): VoiceConduit {
 		canSpeak: support.speak,
 		listening,
 		interim,
-		error,
+		error: error?.message ?? null,
+		errorCode: error?.code ?? null,
 		start,
 		stop,
 		readAloud,
