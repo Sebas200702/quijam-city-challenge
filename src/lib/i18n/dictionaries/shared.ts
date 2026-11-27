@@ -57,6 +57,7 @@ const es = {
 		city_reports: "Agente de Reportes a la ciudad",
 		account: "Agente de tu Cuenta",
 		city_data: "Agente de Datos de la ciudad",
+		quillart: "Quillart AI",
 	},
 	ui: {
 		loading: "Cargando…",
@@ -166,6 +167,7 @@ const en: SharedMessages = {
 		city_reports: "City Reports Agent",
 		account: "Your Account Agent",
 		city_data: "City Data Agent",
+		quillart: "Quillart AI",
 	},
 	ui: {
 		loading: "Loading…",
@@ -274,6 +276,7 @@ const pt: SharedMessages = {
 		city_reports: "Agente de Denúncias à cidade",
 		account: "Agente da sua Conta",
 		city_data: "Agente de Dados da cidade",
+		quillart: "Quillart AI",
 	},
 	ui: {
 		loading: "Carregando…",
@@ -385,6 +388,7 @@ const fr: SharedMessages = {
 		city_reports: "Agent Signalements à la ville",
 		account: "Agent de votre Compte",
 		city_data: "Agent Données de la ville",
+		quillart: "Quillart AI",
 	},
 	ui: {
 		loading: "Chargement…",

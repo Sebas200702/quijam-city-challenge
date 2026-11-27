@@ -28,7 +28,8 @@ export type AssistantAgentId =
 	| "mobility" // routes, fares, arroyo alerts (existing Guide + Decisor)
 	| "city_reports" // problems in public space for the city (triaged)
 	| "account" // profile, my registrations, my publications
-	| "city_data"; // news, open data (reference/synthetic, historical), city indicators
+	| "city_data" // news, open data (reference/synthetic, historical), city indicators
+	| "quillart"; // orchestrator: compound or unclear requests, every specialist's tools
 
 /** Read tools run right away; action tools need the person's confirmation. */
 export interface AssistantToolArgs {

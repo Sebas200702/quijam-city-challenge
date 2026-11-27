@@ -161,27 +161,49 @@ describe("routeMessage", () => {
 		const decision = await routeMessage([user("hola")], context, {
 			openJev: client,
 		});
-		expect(decision).toEqual({ agent: "agenda", routedBy: "keywords" });
+		expect(decision).toEqual({ agent: "quillart", routedBy: "keywords" });
 	});
 
 	it("ignores an unknown OpenJev choice and failures", async () => {
 		const { client } = fakeOpenJev("weather", 0.99);
 		expect(
 			(await routeMessage([user("hola")], context, { openJev: client })).agent,
-		).toBe("agenda");
+		).toBe("quillart");
 		const failing: OpenJevClient = {
 			decide: async () => ({ ok: false, reason: "timeout" }),
 		};
 		expect(
 			(await routeMessage([user("hola")], context, { openJev: failing })).agent,
-		).toBe("agenda");
+		).toBe("quillart");
 	});
 
-	it("breaks keyword ties by priority without OpenJev", async () => {
+	it("sends a keyword tie to the orchestrator agent", async () => {
 		const decision = await routeMessage([user("foro parque")], context, {
 			openJev: null,
 		});
-		expect(decision.agent).toBe("community");
+		expect(decision.agent).toBe("quillart");
+	});
+
+	it("sends requests for several sections to the orchestrator agent", async () => {
+		for (const text of [
+			"hay eventos hoy y cómo llego",
+			"eventos este sábado y cuánto cuesta el pasaje",
+			"conciertos y novedades",
+		]) {
+			const decision = await routeMessage([user(text)], context, {
+				openJev: null,
+			});
+			expect(decision).toEqual({ agent: "quillart", routedBy: "keywords" });
+		}
+	});
+
+	it("keeps one section with a weak extra match and no joiner", async () => {
+		const decision = await routeMessage(
+			[user("¿Qué planes hay este fin de semana cerca del parque?")],
+			context,
+			{ openJev: null },
+		);
+		expect(decision.agent).toBe("agenda");
 	});
 });
 
@@ -213,6 +235,7 @@ describe("multilingual keywords", () => {
 			mobility: 0,
 			city_reports: 0,
 			account: 0,
+			quillart: 0,
 			city_data: 0,
 		});
 	});
