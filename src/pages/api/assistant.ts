@@ -1,3 +1,4 @@
+import { getSecret } from "astro:env/server";
 import type { APIRoute } from "astro";
 import {
 	AssistantRequestError,
@@ -51,13 +52,13 @@ export const POST: APIRoute = async (context) => {
 
 	try {
 		const parsed = parseAssistantRequest(body);
-		const apiKey = import.meta.env.GEMINI_API_KEY;
+		const apiKey = getSecret("GEMINI_API_KEY");
 		const deps = {
 			openJev: getOpenJevClient(),
 			gemini: apiKey
 				? {
 						apiKey,
-						model: import.meta.env.GEMINI_TEXT_MODEL || DEFAULT_TEXT_MODEL,
+						model: getSecret("GEMINI_TEXT_MODEL") || DEFAULT_TEXT_MODEL,
 					}
 				: null,
 			onGeminiError: (error: unknown) =>
