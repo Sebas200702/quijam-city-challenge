@@ -1,0 +1,69 @@
+---
+// Hero: the conversation is the way in. The ask box is a plain GET form, so it
+// works before (or without) JavaScript.
+import { ArrowUp } from "lucide-react";
+import { ASSISTANT_HREF } from "../../lib/assistant/assistant-labels";
+import { HERO_PROMPTS } from "./landing-content";
+---
+
+<section
+	aria-labelledby="hero-title"
+	class="mx-auto grid w-full max-w-6xl items-center gap-8 px-4 pt-6 pb-12 lg:grid-cols-2 lg:gap-14 lg:px-8 lg:pt-14 lg:pb-20"
+>
+	<div class="flex min-w-0 flex-col gap-5">
+		<h1 id="hero-title" class="q-display lg:text-[60px] lg:leading-[64px]">
+			Barranquilla, a una conversación
+		</h1>
+		<p class="q-lead">Pregunta, inscríbete, publica. Quillart lo hace contigo.</p>
+
+		<form action={ASSISTANT_HREF} method="get" role="search" aria-label="Pregúntale a Quillart AI">
+			<label for="hero-ask" class="q-sr">Escribe tu pregunta para Quillart AI</label>
+			<div class="q-prompt shadow-[var(--shadow-card)]">
+				<input
+					id="hero-ask"
+					name="q"
+					type="text"
+					required
+					maxlength="500"
+					autocomplete="off"
+					enterkeyhint="send"
+					placeholder="¿Qué hacemos hoy?"
+				/>
+				<button type="submit" class="q-btn q-btn--primary q-btn--icon" aria-label="Preguntar">
+					<ArrowUp size={20} strokeWidth={1.75} aria-hidden="true" />
+				</button>
+			</div>
+		</form>
+
+		<ul class="m-0 flex list-none flex-wrap gap-2 p-0" aria-label="Ejemplos">
+			{
+				HERO_PROMPTS.map((item) => (
+					<li>
+						<a href={item.href} class="q-chip no-underline">
+							{item.label}
+						</a>
+					</li>
+				))
+			}
+		</ul>
+	</div>
+
+	<div class="relative min-w-0" aria-hidden="true">
+		<div class="q-illus px-6 pt-10 pb-6 lg:px-10 lg:pt-14">
+			<img
+				src="/illustrations/voice-assistant.svg"
+				alt=""
+				class="mx-auto h-56 w-auto lg:h-80"
+				width="320"
+				height="320"
+			/>
+		</div>
+		<div class="absolute top-3 left-3 max-w-[62%] rounded-[18px] rounded-bl-[4px] bg-[var(--surface)] px-4 py-2.5 text-[15px] font-semibold text-[var(--ink)] shadow-[var(--shadow-card)] lg:top-5 lg:left-5">
+			¿Planes gratis este sábado?
+		</div>
+		<div class="absolute right-3 bottom-4 flex max-w-[70%] items-center gap-2 rounded-[18px] rounded-br-[4px] bg-[var(--action)] px-4 py-2.5 text-[15px] font-semibold text-[var(--on-action)] shadow-[var(--shadow-card)] lg:right-5 lg:bottom-6">
+			<span class="q-star" style="width: 16px; height: 16px"></span>
+			¡Hay 3! ¿Te inscribo?
+		</div>
+	</div>
+</section>

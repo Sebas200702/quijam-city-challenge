@@ -1,0 +1,40 @@
+---
+// Top bar of the landing: brand, main sections and the way into Quillart AI.
+import { ThemeToggle } from "../home/theme-toggle";
+
+const links = [
+	{ href: "/agenda", label: "Agenda" },
+	{ href: "/foro", label: "Foros" },
+	{ href: "/lugares", label: "Lugares" },
+	{ href: "/mapa", label: "Mapa" },
+];
+---
+
+<header class="mx-auto flex w-full max-w-6xl items-center gap-3 px-4 py-3 lg:gap-6 lg:px-8">
+	<a href="/" class="q-logo min-w-0 flex-1" aria-label="QUILLART, inicio">
+		<span class="q-logo__tile" aria-hidden="true">
+			<span class="q-star" style="width: 22px; height: 22px"></span>
+		</span>
+		<span class="q-logo__text">
+			<span class="q-logo__word">QUILLART</span>
+			<span class="q-logo__sub">Barranquilla</span>
+		</span>
+	</a>
+	<nav aria-label="Secciones" class="hidden lg:block">
+		<ul class="m-0 flex list-none items-center gap-1 p-0">
+			{
+				links.map((link) => (
+					<li>
+						<a href={link.href} class="q-btn q-btn--ghost q-btn--sm min-h-11">
+							{link.label}
+						</a>
+					</li>
+				))
+			}
+		</ul>
+	</nav>
+	<ThemeToggle client:load />
+	<a href="/inicio" class="q-btn q-btn--primary q-btn--sm min-h-11">
+		Abrir Quillart AI
+	</a>
+</header>

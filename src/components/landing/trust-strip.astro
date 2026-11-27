@@ -1,0 +1,39 @@
+---
+// Safety in three badges: moderation with people, data protection, emergencies.
+import { LockKeyhole, Phone, ShieldCheck } from "lucide-react";
+
+const items = [
+	{
+		icon: ShieldCheck,
+		text: "Moderación con revisión humana",
+		tone: "q-tile--green",
+	},
+	{
+		icon: LockKeyhole,
+		text: "Tus datos protegidos · Ley 1581",
+		tone: "q-tile--gold",
+	},
+	{ icon: Phone, text: "¿Emergencia? Llama al 123", tone: "q-tile--red" },
+];
+---
+
+<section aria-labelledby="trust-title" class="mx-auto grid w-full max-w-6xl items-center gap-8 px-4 py-12 lg:grid-cols-[1fr_1.2fr] lg:gap-14 lg:px-8 lg:py-16">
+	<div class="q-illus p-6" aria-hidden="true">
+		<img src="/illustrations/security-on.svg" alt="" class="h-40 w-auto lg:h-56" loading="lazy" width="260" height="220" />
+	</div>
+	<div>
+		<h2 id="trust-title" class="q-h1 mb-6">Una comunidad cuidada</h2>
+		<ul class="m-0 flex list-none flex-col gap-3 p-0">
+			{
+				items.map((item) => (
+					<li class="q-card flex-row! items-center gap-4 p-4">
+						<span class={`q-tile ${item.tone}`}>
+							<item.icon size={22} strokeWidth={1.75} aria-hidden="true" />
+						</span>
+						<span class="q-p font-semibold">{item.text}</span>
+					</li>
+				))
+			}
+		</ul>
+	</div>
+</section>
