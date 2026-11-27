@@ -91,6 +91,10 @@ export interface GuideText {
 		savedOffline: string;
 		failed: string;
 		privacy: string;
+		amountEmpty: string;
+		amountFormat: string;
+		amountRange: string;
+		driverCodeInvalid: string;
 	};
 }
 
@@ -184,6 +188,12 @@ const ES: GuideText = {
 		failed:
 			"No pudimos enviar el reporte. Revisa los datos e intenta de nuevo.",
 		privacy: "No pedimos tu nombre ni tu ubicación.",
+		amountEmpty: "Escribe cuánto te cobraron. Ejemplo: 35000.",
+		amountFormat:
+			"Escribe cuánto te cobraron, solo con números. Ejemplo: 35000.",
+		amountRange: "Revisa el monto: debe estar entre $1 y $2.000.000.",
+		driverCodeInvalid:
+			"El código solo lleva letras, números y guiones. Ejemplo: TX-0417.",
 	},
 };
 
@@ -281,6 +291,12 @@ const EN: GuideText = {
 		savedOffline: "We could not send it now. It is saved on this phone.",
 		failed: "We could not send the report. Check the details and try again.",
 		privacy: "We never ask for your name or location.",
+		amountEmpty: "Type how much you were charged. Example: 35000.",
+		amountFormat:
+			"Type how much you were charged, numbers only. Example: 35000.",
+		amountRange: "Check the amount: it must be between $1 and $2,000,000.",
+		driverCodeInvalid:
+			"The code only has letters, numbers and dashes. Example: TX-0417.",
 	},
 };
 
