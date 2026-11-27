@@ -280,6 +280,16 @@
 	color: var(--gold-text);
 }
 
+/* Outside the metropolitan area: the mask colour with the edge line. */
+.corridor-legend__swatch--outside {
+	width: 24px;
+	height: 24px;
+	margin: 0 4px;
+	border: 2px solid var(--ink-muted);
+	border-radius: 6px;
+	background: var(--map-outside);
+}
+
 .corridor-status {
 	position: absolute;
 	z-index: 950;

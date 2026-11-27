@@ -31,7 +31,8 @@
     "map-water": { "dark": "#0E2B36", "light": "#CFE4EA", "usage": "Río Magdalena and water." },
     "map-road": { "dark": "#1C2B40", "light": "#FFFFFF", "usage": "Streets." },
     "map-road-major": { "dark": "#2E4463", "light": "#D3DAE3", "usage": "Arterial roads without traffic data." },
-    "map-park": { "dark": "#11291F", "light": "#DDEFD9", "usage": "Parks." }
+    "map-park": { "dark": "#11291F", "light": "#DDEFD9", "usage": "Parks." },
+    "map-outside": { "dark": "#060B12", "light": "#E3E6EA", "usage": "Opaque mask over everything outside the Barranquilla Metropolitan Area." }
   },
   "font": {
     "display": "\"Space Grotesk\", ui-sans-serif, system-ui, sans-serif",

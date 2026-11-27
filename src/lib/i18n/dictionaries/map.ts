@@ -6,7 +6,7 @@
 import type { Language } from "../languages";
 
 const es = {
-	pageTitle: "Mapa del corredor · QUILLART",
+	pageTitle: "Mapa del área metropolitana · QUILLART",
 	/** BCP 47 locale for numbers and times. */
 	locale: "es-CO",
 	searchForm: "Buscar en el corredor",
@@ -134,7 +134,7 @@ const es = {
 		Cerrado: "Cerrado",
 	},
 	// Map: pins, controls, legend and base-map states.
-	mapAria: "Mapa del corredor",
+	mapAria: "Mapa del Área Metropolitana de Barranquilla",
 	skipToPanel: "Saltar al buscador y la ruta",
 	accessibleMode: "Modo accesible",
 	/** The current route, handed to the Mobility agent as a ready-made question. */
@@ -155,6 +155,7 @@ const es = {
 		risk: "Arroyo con riesgo",
 		business: "Negocio abierto",
 		user: "Estás aquí",
+		outside: "Fuera del área metropolitana (no se muestra)",
 	},
 	userHere: "Estás aquí",
 	userHereAt: (name: string) => `Estás aquí: ${name}`,
@@ -257,7 +258,7 @@ const es = {
 export type MapMessages = typeof es;
 
 const en: MapMessages = {
-	pageTitle: "Corridor map · QUILLART",
+	pageTitle: "Metropolitan area map · QUILLART",
 	locale: "en-US",
 	searchForm: "Search the corridor",
 	searchLabel: "Search for a stop, arroyo or business",
@@ -382,7 +383,7 @@ const en: MapMessages = {
 		Abierto: "Open",
 		Cerrado: "Closed",
 	},
-	mapAria: "Corridor map",
+	mapAria: "Map of the Barranquilla Metropolitan Area",
 	skipToPanel: "Skip to search and route",
 	accessibleMode: "Accessible mode",
 	askRoutePrompt: (from, to) => `How do I get from ${from} to ${to}?`,
@@ -401,6 +402,7 @@ const en: MapMessages = {
 		risk: "Arroyo at risk",
 		business: "Open business",
 		user: "You are here",
+		outside: "Outside the metropolitan area (not shown)",
 	},
 	userHere: "You are here",
 	userHereAt: (name: string) => `You are here: ${name}`,
@@ -497,7 +499,7 @@ const en: MapMessages = {
 };
 
 const pt: MapMessages = {
-	pageTitle: "Mapa do corredor · QUILLART",
+	pageTitle: "Mapa da área metropolitana · QUILLART",
 	locale: "pt-BR",
 	searchForm: "Buscar no corredor",
 	searchLabel: "Buscar uma parada, arroio ou comércio",
@@ -623,7 +625,7 @@ const pt: MapMessages = {
 		Abierto: "Aberto",
 		Cerrado: "Fechado",
 	},
-	mapAria: "Mapa do corredor",
+	mapAria: "Mapa da Área Metropolitana de Barranquilla",
 	skipToPanel: "Ir para a busca e a rota",
 	accessibleMode: "Modo acessível",
 	askRoutePrompt: (from, to) => `Como chego de ${from} a ${to}?`,
@@ -642,6 +644,7 @@ const pt: MapMessages = {
 		risk: "Arroio com risco",
 		business: "Comércio aberto",
 		user: "Você está aqui",
+		outside: "Fora da área metropolitana (não aparece)",
 	},
 	userHere: "Você está aqui",
 	userHereAt: (name: string) => `Você está aqui: ${name}`,
@@ -739,7 +742,7 @@ const pt: MapMessages = {
 };
 
 const fr: MapMessages = {
-	pageTitle: "Carte du corridor · QUILLART",
+	pageTitle: "Carte de l’aire métropolitaine · QUILLART",
 	locale: "fr-FR",
 	searchForm: "Rechercher dans le corridor",
 	searchLabel: "Rechercher un arrêt, un ruisseau ou un commerce",
@@ -869,7 +872,7 @@ const fr: MapMessages = {
 		Abierto: "Ouvert",
 		Cerrado: "Fermé",
 	},
-	mapAria: "Carte du corridor",
+	mapAria: "Carte de l’aire métropolitaine de Barranquilla",
 	skipToPanel: "Aller à la recherche et à l’itinéraire",
 	accessibleMode: "Mode accessible",
 	askRoutePrompt: (from, to) => `Comment aller de ${from} à ${to} ?`,
@@ -888,6 +891,7 @@ const fr: MapMessages = {
 		risk: "Ruisseau à risque",
 		business: "Commerce ouvert",
 		user: "Vous êtes ici",
+		outside: "Hors de l’aire métropolitaine (non affiché)",
 	},
 	userHere: "Vous êtes ici",
 	userHereAt: (name: string) => `Vous êtes ici : ${name}`,

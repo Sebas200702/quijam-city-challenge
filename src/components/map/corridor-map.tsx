@@ -56,6 +56,7 @@ import {
 	routeLine,
 } from "./map-layers";
 import { pinIcon, setMarkerSelected, userIcon } from "./map-markers";
+import { createMetroMap, metroTileLayer } from "./metro-frame";
 import { RouteCard } from "./route-card";
 import { StopList } from "./stop-list";
 import { useFloodCountdown } from "./use-flood-countdown";
@@ -63,10 +64,6 @@ import { useFloodNotice } from "./use-flood-notice";
 import { useLiveBusinesses } from "./use-live-businesses";
 import { type RouteQuery, useRoutePlan } from "./use-route-plan";
 
-// Standard OpenStreetMap tiles: no API key. The dark theme darkens them in CSS.
-const TILE_URL = "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
-const TILE_ATTRIBUTION =
-	'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>';
 const FALLBACK_CENTER: L.LatLngTuple = [10.97, -74.79];
 const WIDE_SCREEN_PX = 640;
 /** From this zoom on, every pin shows its name and status word, not only the selected one. */
@@ -225,21 +222,12 @@ export default function CorridorMap({ data, source }: CorridorMapProps) {
 	useEffect(() => {
 		const container = containerRef.current;
 		if (!container) return;
-		const still = prefersReducedMotion();
-		const map = L.map(container, {
-			zoomControl: false,
-			zoomAnimation: !still,
-			fadeAnimation: !still,
-			markerZoomAnimation: !still,
-		});
+		// Only the Metropolitan Area shows: the rest is masked and out of reach (U09).
+		const map = createMetroMap(container, { zoomControl: false });
 		// Tiles that load at least once mean the map works; errors alone mean it did not.
 		let anyTile = false;
-		const tileLayer = L.tileLayer(TILE_URL, {
-			attribution: TILE_ATTRIBUTION,
-			maxZoom: 19,
-			// CORS tiles, so the service worker can keep them for offline use (#47).
-			crossOrigin: true,
-		})
+		// CORS tiles, so the service worker can keep them for offline use (#47).
+		const tileLayer = metroTileLayer({ crossOrigin: true })
 			.on("tileload", () => {
 				anyTile = true;
 			})
@@ -680,6 +668,7 @@ const LEGEND_ITEMS = [
 	{ key: "risk", swatch: "risk", Icon: Droplet },
 	{ key: "business", swatch: "business" },
 	{ key: "user", swatch: "user" },
+	{ key: "outside", swatch: "outside" },
 ] as const;
 
 /** What each line, colour and pin means, always with a word next to it. */
