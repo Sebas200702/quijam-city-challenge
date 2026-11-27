@@ -11,6 +11,7 @@ import { places } from "./dictionaries/places";
 import { profile } from "./dictionaries/profile";
 import { reports } from "./dictionaries/reports";
 import { shared } from "./dictionaries/shared";
+import { timeline } from "./dictionaries/timeline";
 import type { Language } from "./languages";
 
 const es = {
@@ -80,6 +81,7 @@ export type Messages = BaseMessages & {
 	reports: (typeof reports)[Language];
 	inbox: (typeof inbox)[Language];
 	shared: (typeof shared)[Language];
+	timeline: (typeof timeline)[Language];
 };
 
 const en: BaseMessages = {
@@ -259,6 +261,7 @@ function build(language: Language): Messages {
 		reports: reports[language],
 		inbox: inbox[language],
 		shared: shared[language],
+		timeline: timeline[language],
 	};
 }
 
