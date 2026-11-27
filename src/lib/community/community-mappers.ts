@@ -16,9 +16,9 @@ import type {
 export const PLACE_COLUMNS =
 	"id, slug, name, kind, neighborhood, description, address, latitude, longitude, is_accessible, is_free, opening_hours";
 export const EVENT_COLUMNS =
-	"id, title, description, category, starts_at, ends_at, place_id, location_text, capacity, registered_count, is_free, price_cop, organizer_id, organizer_name, status, moderation_status, triage_priority, created_at";
+	"id, title, description, category, starts_at, ends_at, place_id, location_text, capacity, registered_count, is_free, price_cop, organizer_id, organizer_name, organizer_verified, status, moderation_status, triage_priority, created_at";
 export const THREAD_COLUMNS =
-	"id, title, body, category, place_id, event_id, author_id, author_name, reply_count, last_activity_at, moderation_status, triage_priority, created_at";
+	"id, title, body, category, place_id, event_id, author_id, author_name, reply_count, last_activity_at, city_verified_at, moderation_status, triage_priority, created_at";
 export const POST_COLUMNS =
 	"id, thread_id, body, author_id, author_name, moderation_status, triage_priority, created_at";
 
@@ -63,6 +63,7 @@ export function toEvent(row: Row): CommunityEvent {
 		priceCop: numOrNull(row.price_cop),
 		organizerId: strOrNull(row.organizer_id),
 		organizerName: str(row.organizer_name),
+		organizerVerified: Boolean(row.organizer_verified),
 		status: row.status as CommunityEvent["status"],
 		moderationStatus:
 			row.moderation_status as CommunityEvent["moderationStatus"],
@@ -83,6 +84,8 @@ export function toThread(row: Row): ForumThread {
 		authorName: str(row.author_name),
 		replyCount: Number(row.reply_count ?? 0),
 		lastActivityAt: str(row.last_activity_at),
+		cityVerified:
+			row.city_verified_at !== null && row.city_verified_at !== undefined,
 		moderationStatus: row.moderation_status as ForumThread["moderationStatus"],
 		triagePriority: row.triage_priority as ForumThread["triagePriority"],
 		createdAt: str(row.created_at),

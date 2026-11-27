@@ -56,6 +56,7 @@ describe("sortQueue", () => {
 		labels: [],
 		source: "rules",
 		priority,
+		communityReports: 0,
 		threadId: null,
 	});
 

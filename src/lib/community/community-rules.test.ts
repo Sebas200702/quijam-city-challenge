@@ -30,6 +30,7 @@ function event(overrides: Partial<CommunityEvent> = {}): CommunityEvent {
 		priceCop: null,
 		organizerId: "u1",
 		organizerName: "Ana",
+		organizerVerified: false,
 		status: "published",
 		moderationStatus: "published",
 		triagePriority: "none",

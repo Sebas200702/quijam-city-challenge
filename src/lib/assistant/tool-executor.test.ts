@@ -79,6 +79,7 @@ function fakeStore(signedIn: boolean) {
 		neighborhood: null,
 		isVisitor: false,
 		email: null,
+		isVerifiedOrganizer: false,
 	};
 	const createThread = vi.fn(async (input: NewThreadInput) => {
 		const thread = {

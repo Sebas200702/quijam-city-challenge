@@ -4,6 +4,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { ContentKind } from "../moderation/moderation-types";
 import { triageContent } from "../moderation/triage";
+import { applyTrustPolicy } from "../moderation/trust-policy";
 import type { OpenJevClient } from "../openjev/openjev-types";
 import {
 	EVENT_COLUMNS,
@@ -39,6 +40,9 @@ export type PublishRequest =
 export interface Author {
 	id: string;
 	displayName: string;
+	isVerifiedOrganizer: boolean;
+	/** When the profile was created, for the new-account trust policy. */
+	createdAt: string;
 }
 
 export class CommunityError extends Error {
@@ -94,12 +98,17 @@ export async function authenticate(
 		throw new CommunityError("Tu sesión expiró. Inicia sesión de nuevo.", 401);
 	const { data: profile } = await admin
 		.from("profiles")
-		.select("display_name")
+		.select("display_name, is_verified_organizer, created_at")
 		.eq("id", data.user.id)
 		.maybeSingle();
 	if (!profile)
 		throw new CommunityError("Completa tu perfil antes de publicar.", 403);
-	return { id: data.user.id, displayName: String(profile.display_name) };
+	return {
+		id: data.user.id,
+		displayName: String(profile.display_name),
+		isVerifiedOrganizer: Boolean(profile.is_verified_organizer),
+		createdAt: String(profile.created_at),
+	};
 }
 
 export async function isCityUser(
@@ -122,9 +131,24 @@ export async function publishContent(
 ): Promise<PublishResult<CommunityEvent | ForumThread | ForumPost>> {
 	if (request.kind === "event") {
 		const { input } = request;
-		const decision = await triageContent(
-			{ kind: "event", title: input.title, body: input.description },
-			jev,
+		const { count } = await admin
+			.from("events")
+			.select("id", { count: "exact", head: true })
+			.eq("organizer_id", author.id)
+			.eq("moderation_status", "published");
+		const decision = applyTrustPolicy(
+			await triageContent(
+				{ kind: "event", title: input.title, body: input.description },
+				jev,
+			),
+			{
+				kind: "event",
+				accountAgeHours:
+					(Date.now() - new Date(author.createdAt).getTime()) / 3_600_000,
+				publishedEvents: count ?? 0,
+				isVerifiedOrganizer: author.isVerifiedOrganizer,
+				isPaidEvent: !input.isFree,
+			},
 		);
 		if (decision.verdict === "reject")
 			return publishResult<never>(decision, null);
@@ -143,6 +167,7 @@ export async function publishContent(
 				price_cop: input.isFree ? null : input.priceCop,
 				organizer_id: author.id,
 				organizer_name: author.displayName,
+				organizer_verified: author.isVerifiedOrganizer,
 				...moderationColumns(decision),
 			})
 			.select(EVENT_COLUMNS)
@@ -212,14 +237,14 @@ const TABLE: Record<ContentKind, string> = {
 };
 
 const QUEUE_FILTER =
-	"moderation_status.eq.held,and(triage_priority.neq.none,city_resolved_at.is.null,moderation_status.eq.published)";
+	"moderation_status.eq.held,and(triage_priority.neq.none,city_resolved_at.is.null,moderation_status.eq.published),and(community_reports.gt.0,city_resolved_at.is.null,moderation_status.eq.published)";
 
-/** Held content plus published reports the city has not closed yet. */
+/** Held content, published reports the city has not closed and content people reported. */
 export async function loadModerationQueue(
 	admin: SupabaseClient,
 ): Promise<ModerationQueueItem[]> {
 	const common =
-		"id, moderation_status, moderation_labels, moderation_source, triage_priority, created_at";
+		"id, moderation_status, moderation_labels, moderation_source, triage_priority, community_reports, created_at";
 	const [events, threads, posts] = await Promise.all([
 		admin
 			.from("events")
@@ -247,6 +272,7 @@ export async function loadModerationQueue(
 		labels: (row.moderation_labels ?? []) as ModerationQueueItem["labels"],
 		source: row.moderation_source as ModerationQueueItem["source"],
 		priority: row.triage_priority as ModerationQueueItem["priority"],
+		communityReports: Number(row.community_reports ?? 0),
 	});
 	const items: ModerationQueueItem[] = [
 		...(events.data ?? []).map((row) => ({
@@ -289,19 +315,48 @@ export function sortQueue(items: ModerationQueueItem[]): ModerationQueueItem[] {
 
 export async function applyModeration(
 	admin: SupabaseClient,
+	moderatorId: string,
 	kind: ContentKind,
 	id: string,
 	action: ModerationAction,
 ): Promise<void> {
+	if (action === "verify" && kind !== "thread") {
+		throw new CommunityError("Solo se confirman reportes del foro.", 400);
+	}
+	const now = new Date().toISOString();
 	const patch =
 		action === "resolve"
-			? { city_resolved_at: new Date().toISOString() }
-			: {
-					moderation_status: action === "approve" ? "published" : "removed",
-					moderation_source: "moderator",
-				};
+			? { city_resolved_at: now }
+			: action === "verify"
+				? { city_verified_at: now }
+				: {
+						moderation_status: action === "approve" ? "published" : "removed",
+						moderation_source: "moderator",
+					};
 	const { error } = await admin.from(TABLE[kind]).update(patch).eq("id", id);
 	if (error) throw new CommunityError(error.message, 500);
+	// Audit log: who decided what, and when.
+	const { error: logError } = await admin.from("moderation_actions").insert({
+		moderator_id: moderatorId,
+		kind,
+		content_id: id,
+		action,
+	});
+	if (logError)
+		console.error("[moderation] audit log failed", logError.message);
+}
+
+/** Ley 1581 (supresión): removes what the person wrote, then the account. */
+export async function deleteAccount(
+	admin: SupabaseClient,
+	userId: string,
+): Promise<void> {
+	const { error } = await admin.rpc("delete_community_account", {
+		target: userId,
+	});
+	if (error) throw new CommunityError(error.message, 500);
+	const { error: authError } = await admin.auth.admin.deleteUser(userId);
+	if (authError) throw new CommunityError(authError.message, 500);
 }
 
 export function parseModerationRequest(body: unknown): {
@@ -315,7 +370,8 @@ export function parseModerationRequest(body: unknown): {
 		typeof body.id === "string" &&
 		(body.action === "approve" ||
 			body.action === "remove" ||
-			body.action === "resolve")
+			body.action === "resolve" ||
+			body.action === "verify")
 	) {
 		return { kind: body.kind, id: body.id, action: body.action };
 	}
