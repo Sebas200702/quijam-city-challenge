@@ -20,12 +20,20 @@ import type {
 	AssistantToolResult,
 } from "../../lib/assistant/assistant-types";
 import { isActionTool } from "../../lib/assistant/assistant-types";
+import { answerOffline } from "../../lib/assistant/offline-answer";
 import { declinedResult, runTool } from "../../lib/assistant/tool-executor";
+import { withOfflineGuide } from "../../lib/guide/guide-offline";
+import { messages as dictionaries } from "../../lib/i18n/messages";
 import { getLanguage } from "../../lib/i18n/use-language";
 import { useSession, useStore } from "../community/use-community";
 
 /** Follow-up calls with tool results after one message from the person. */
 const MAX_ROUNDS = 3;
+
+/** Read tools: plan_route still answers the three routes without network (#47). */
+const READ_TOOL_DEPS = {
+	fetch: withOfflineGuide((input, init) => fetch(input, init)),
+};
 
 /** Text fields the person may edit on the card before confirming. */
 export const EDITABLE_TEXT_FIELDS: Partial<
@@ -246,14 +254,25 @@ export function useAssistant() {
 					language: getLanguage(),
 				},
 			};
-			const response = await fetch("/api/assistant", {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-					Accept: `${ASSISTANT_STREAM_TYPE}, application/json`,
-				},
-				body: JSON.stringify(body),
-			});
+			let response: Response;
+			try {
+				response = await fetch("/api/assistant", {
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+						Accept: `${ASSISTANT_STREAM_TYPE}, application/json`,
+					},
+					body: JSON.stringify(body),
+				});
+			} catch {
+				// No network: the local agents answer on the phone (#47).
+				const { assistantOffline, assistantNoActions } =
+					dictionaries[getLanguage()].offline;
+				return answerOffline(body, {
+					offline: assistantOffline,
+					noActions: assistantNoActions,
+				});
+			}
 			if (!response.ok) throw new Error(`status ${response.status}`);
 			const type = response.headers.get("Content-Type") ?? "";
 			if (type.includes(ASSISTANT_STREAM_TYPE) && response.body) {
@@ -311,7 +330,9 @@ export function useAssistant() {
 			);
 			const actions = action ? [action] : [];
 			const results = [
-				...(await Promise.all(reads.map((call) => runTool(call, store)))),
+				...(await Promise.all(
+					reads.map((call) => runTool(call, store, READ_TOOL_DEPS)),
+				)),
 				...extraActions.map(droppedResult),
 			];
 

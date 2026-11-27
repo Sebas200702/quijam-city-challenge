@@ -72,10 +72,10 @@ const es = {
 		savedAnswer: "Respuesta guardada",
 		savedAnswers: "Respuestas guardadas",
 		offlineIntro:
-			"Estás sin conexión. Te respondo con lo que tengo guardado: las rutas que ya preguntaste y la jerga.",
+			"Estás sin conexión. Te respondo con lo que tengo guardado: las rutas al estadio, Barrio Abajo y el centro, lo que ya preguntaste y la jerga.",
 		offlineMissTitle: "Aún no tengo esa respuesta",
 		offlineMissText:
-			"Sin conexión solo respondo lo que ya preguntaste y la jerga. Inténtalo cuando vuelva la señal.",
+			"Sin conexión respondo las rutas al estadio, Barrio Abajo y el centro, lo que ya preguntaste y la jerga. Inténtalo cuando vuelva la señal.",
 		errorTitle: "No pude responder ahora",
 		errorText: "Inténtalo otra vez en un momento.",
 		retry: "Reintentar",
@@ -208,10 +208,10 @@ const en: GuideMessages = {
 		savedAnswer: "Saved answer",
 		savedAnswers: "Saved answers",
 		offlineIntro:
-			"You are offline. I reply with what I have saved: the routes you already asked about and slang.",
+			"You are offline. I reply with what I have saved: routes to the stadium, Barrio Abajo and downtown, what you already asked and slang.",
 		offlineMissTitle: "I do not have that answer yet",
 		offlineMissText:
-			"Offline I only answer what you already asked and slang. Try again when you are back online.",
+			"Offline I answer routes to the stadium, Barrio Abajo and downtown, what you already asked and slang. Try again when you are back online.",
 		errorTitle: "I could not answer right now",
 		errorText: "Please try again in a moment.",
 		retry: "Try again",
@@ -344,10 +344,10 @@ const pt: GuideMessages = {
 		savedAnswer: "Resposta salva",
 		savedAnswers: "Respostas salvas",
 		offlineIntro:
-			"Você está sem conexão. Respondo com o que tenho salvo: as rotas que você já perguntou e as gírias.",
+			"Você está sem conexão. Respondo com o que tenho salvo: as rotas ao estádio, Barrio Abajo e o centro, o que você já perguntou e as gírias.",
 		offlineMissTitle: "Ainda não tenho essa resposta",
 		offlineMissText:
-			"Sem conexão, só respondo o que você já perguntou e as gírias. Tente de novo quando o sinal voltar.",
+			"Sem conexão, respondo as rotas ao estádio, Barrio Abajo e o centro, o que você já perguntou e as gírias. Tente de novo quando o sinal voltar.",
 		errorTitle: "Não consegui responder agora",
 		errorText: "Tente de novo em instantes.",
 		retry: "Tentar de novo",
@@ -483,10 +483,10 @@ const fr: GuideMessages = {
 		savedAnswer: "Réponse enregistrée",
 		savedAnswers: "Réponses enregistrées",
 		offlineIntro:
-			"Vous êtes hors connexion. Je réponds avec ce que j'ai enregistré : les itinéraires déjà demandés et l'argot.",
+			"Vous êtes hors connexion. Je réponds avec ce que j'ai enregistré : les itinéraires vers le stade, Barrio Abajo et le centre, les questions déjà posées et l'argot.",
 		offlineMissTitle: "Je n'ai pas encore cette réponse",
 		offlineMissText:
-			"Hors connexion, je ne réponds qu'aux questions déjà posées et à l'argot. Réessayez quand le réseau reviendra.",
+			"Hors connexion, je réponds aux itinéraires vers le stade, Barrio Abajo et le centre, aux questions déjà posées et à l'argot. Réessayez quand le réseau reviendra.",
 		errorTitle: "Je n'ai pas pu répondre",
 		errorText: "Réessayez dans un instant.",
 		retry: "Réessayer",

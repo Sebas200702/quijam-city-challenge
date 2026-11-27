@@ -2,6 +2,7 @@
 import { AssistantHome } from "../components/assistant/assistant-home";
 import { BottomNav } from "../components/home/bottom-nav";
 import { HomeHeader } from "../components/home/home-header";
+import { FloodNotifier } from "../components/notices/flood-notifier";
 import BaseLayout from "../layouts/base-layout.astro";
 import { homeContent } from "../lib/home-content";
 
@@ -27,5 +28,6 @@ const { aiHref } = homeContent;
 			</AssistantHome>
 		</main>
 		<BottomNav client:load current="home" aiHref={aiHref} />
+		<FloodNotifier client:only="react" />
 	</div>
 </BaseLayout>

@@ -236,6 +236,8 @@ export default function CorridorMap({ data, source }: CorridorMapProps) {
 		const tileLayer = L.tileLayer(TILE_URL, {
 			attribution: TILE_ATTRIBUTION,
 			maxZoom: 19,
+			// CORS tiles, so the service worker can keep them for offline use (#47).
+			crossOrigin: true,
 		})
 			.on("tileload", () => {
 				anyTile = true;

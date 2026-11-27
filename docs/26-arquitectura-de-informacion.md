@@ -460,7 +460,7 @@ Cuando el canal sea privado (5.3), el cliente se suscribe con `config: { private
 | #44 Línea de tiempo | Pendiente | `src/components/city/match-timeline.tsx`, `src/lib/timeline/timeline.ts` |
 | #45 Pasaporte | Pendiente | `src/pages/pasaporte.astro`, `src/components/visitor/passport.tsx`, `src/lib/passport/passport.ts` |
 | #46 Rutas frescas | Pendiente | `src/components/map/heat-layer.ts`, cambios en `src/lib/decider/` |
-| #47 Offline | Pendiente | `public/manifest.webmanifest`, `public/sw.js`, `src/lib/offline/offline-cache.ts` |
+| #47 Offline | En curso | `public/manifest.webmanifest`, `public/icons/`, `src/lib/offline/*` (`/sw.js` se genera en el build), `src/pages/offline.astro`, `src/lib/notifications/*` |
 | #48 Idiomas y jerga | En curso (PR #139) | `src/lib/i18n/*`, hoja de idioma y de jerga |
 | #49 Vendedor | Pendiente | `src/pages/vendedor/index.astro`, `src/pages/vendedor/entrar.astro`, `src/components/vendor/*` |
 | #50 Anfitrión | Pendiente | `src/pages/anfitrion/index.astro`, `src/pages/anfitrion/entrar.astro`, `src/components/host/*`, `src/lib/host/host-assignments.ts` |

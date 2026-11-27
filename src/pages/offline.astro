@@ -1,0 +1,45 @@
+---
+// Offline fallback (#47): the service worker serves it for a page that was
+// never saved on the phone, so there is never a blank screen (rule 8).
+import {
+	Calendar,
+	Map as MapIcon,
+	Sparkles,
+	Trees,
+	WifiOff,
+} from "lucide-react";
+import BaseLayout from "../layouts/base-layout.astro";
+
+const SECTIONS = [
+	{ href: "/inicio", key: "nav.home", label: "Quillart", Icon: Sparkles },
+	{ href: "/mapa", key: "nav.map", label: "Mapa", Icon: MapIcon },
+	{ href: "/agenda", key: "nav.agenda", label: "Agenda", Icon: Calendar },
+	{ href: "/lugares", key: "nav.places", label: "Lugares", Icon: Trees },
+];
+---
+
+<BaseLayout title="Sin conexión · QUILLART" titleKey="offline.pageTitle">
+	<main class="mx-auto grid min-h-[calc(100dvh-3px)] w-full max-w-md place-items-center px-4 py-8">
+		<div class="q-state q-state--offline" role="status">
+			<span class="q-state__glyph" aria-hidden="true">
+				<WifiOff size={28} strokeWidth={1.75} />
+			</span>
+			<h1 class="q-state__title" data-i18n="offline.title">Estás sin conexión</h1>
+			<p class="q-state__text" data-i18n="offline.text">
+				Esta página todavía no está guardada en tu teléfono. Estas sí abren sin red:
+			</p>
+			<nav class="mt-2 grid w-full grid-cols-2 gap-2" aria-labelledby="offline-sections">
+				<span id="offline-sections" class="q-sr" data-i18n="nav.sections">Secciones</span>
+				{SECTIONS.map(({ href, key, label, Icon }) => (
+					<a href={href} class="q-btn q-btn--secondary">
+						<Icon size={18} strokeWidth={1.75} aria-hidden="true" />
+						<span data-i18n={key}>{label}</span>
+					</a>
+				))}
+			</nav>
+			<button type="button" class="q-btn q-btn--primary q-state__action" onclick="location.reload()" data-i18n="offline.retry">
+				Reintentar
+			</button>
+		</div>
+	</main>
+</BaseLayout>

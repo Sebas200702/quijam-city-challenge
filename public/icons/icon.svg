@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+	<!-- QUILLART app icon: the .q-logo__tile (green tile, gold inner frame, white 8-point star). -->
+	<rect width="512" height="512" rx="113" fill="#007A33"/>
+	<rect x="41" y="41" width="430" height="430" rx="82" fill="none" stroke="#FCD116" stroke-width="9"/>
+	<polygon fill="#FFFFFF" transform="translate(112.6 112.6) scale(2.867)" points="50,0 60.3,25 85.4,14.6 75,39.7 100,50 75,60.3 85.4,85.4 60.3,75 50,100 39.7,75 14.6,85.4 25,60.3 0,50 25,39.7 14.6,14.6 39.7,25"/>
+</svg>
