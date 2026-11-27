@@ -310,7 +310,7 @@ export function OpenDataPortal({
 				<SecondaryMenu />
 			</header>
 
-			<main className="flex flex-1 flex-col gap-6 px-4 pt-4 pb-24 lg:gap-8 lg:px-8 lg:pt-8 lg:pb-16">
+			<main className="flex flex-1 flex-col gap-6 px-4 pt-4 pb-8 lg:gap-8 lg:px-8 lg:pt-8 lg:pb-16">
 				<section className="q-card">
 					<div className="q-flag" aria-hidden="true">
 						<i />
