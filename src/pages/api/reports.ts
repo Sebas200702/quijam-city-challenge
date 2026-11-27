@@ -3,6 +3,7 @@ import {
 	overchargePercent,
 	parseOverchargeReport,
 } from "../../lib/reports/overcharge-report";
+import { guardRequest } from "../../lib/security/api-guard";
 
 export const prerender = false;
 
@@ -21,7 +22,10 @@ function json(body: unknown, status: number): Response {
  * dashboard sees it in real time. Runs with the public key, so RLS applies:
  * visitors may only insert open reports.
  */
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async (context) => {
+	const limited = guardRequest(context, "reports");
+	if (limited) return limited;
+	const { request } = context;
 	let body: unknown;
 	try {
 		body = await request.json();

@@ -4,6 +4,7 @@ import { createOpenJevChooser } from "../../lib/decider/openjev-chooser";
 import { getOpenJevClient } from "../../lib/openjev/openjev-server";
 import { fromCorridorSegment } from "../../lib/routing/from-corridor-segment";
 import { parsePlanRequest, planRoute } from "../../lib/routing/plan-route";
+import { guardRequest } from "../../lib/security/api-guard";
 
 export const prerender = false;
 
@@ -21,7 +22,10 @@ function json(body: unknown, status: number): Response {
  * Plans a route for a visitor: hard safety rules, then OpenJev (if configured),
  * then the weighted score. Called by the map and by the Guide's function call.
  */
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async (context) => {
+	const limited = guardRequest(context, "decidir");
+	if (limited) return limited;
+	const { request } = context;
 	let body: unknown;
 	try {
 		body = await request.json();
