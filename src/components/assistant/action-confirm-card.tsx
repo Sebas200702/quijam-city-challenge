@@ -19,6 +19,7 @@ import {
 } from "../../lib/community/community-labels";
 import { bogotaLocalToIso } from "../../lib/community/community-rules";
 import type { CommunityStore } from "../../lib/community/community-types";
+import { useLanguage } from "../../lib/i18n/use-language";
 import { inputClass, textareaClass } from "../community/community-ui";
 import { signInHref, useStore } from "../community/use-community";
 import {
@@ -262,6 +263,7 @@ export function ActionConfirmCard({
 	onConfirm: () => void;
 	onCancel: () => void;
 }) {
+	useLanguage();
 	const store = useStore();
 	const [text, setText] = useState<ActionText | null>(null);
 	const [editing, setEditing] = useState(false);

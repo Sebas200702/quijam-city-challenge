@@ -1,5 +1,7 @@
 // Spanish labels and formatters for the community screens.
 
+import { type Language, VOICE_LOCALES } from "../i18n/languages";
+import { getLanguage } from "../i18n/use-language";
 import type {
 	EventCategory,
 	ForumCategory,
@@ -38,37 +40,59 @@ export const PLACE_KIND_LABELS: Record<PlaceKind, string> = {
 
 const TIME_ZONE = "America/Bogota";
 
-const dayFormat = new Intl.DateTimeFormat("es-CO", {
-	timeZone: TIME_ZONE,
-	weekday: "short",
-	day: "numeric",
-	month: "short",
-});
-const longDayFormat = new Intl.DateTimeFormat("es-CO", {
-	timeZone: TIME_ZONE,
-	weekday: "long",
-	day: "numeric",
-	month: "long",
-	year: "numeric",
-});
-const timeFormat = new Intl.DateTimeFormat("es-CO", {
-	timeZone: TIME_ZONE,
-	hour: "numeric",
-	minute: "2-digit",
-	hour12: true,
-});
+/** Dates and times follow the interface language (Bogotá time zone). */
+interface DateFormats {
+	day: Intl.DateTimeFormat;
+	longDay: Intl.DateTimeFormat;
+	time: Intl.DateTimeFormat;
+}
+
+const formatsByLanguage = new Map<Language, DateFormats>();
+
+function formatsFor(language: Language): DateFormats {
+	let formats = formatsByLanguage.get(language);
+	if (!formats) {
+		const locale = VOICE_LOCALES[language];
+		formats = {
+			day: new Intl.DateTimeFormat(locale, {
+				timeZone: TIME_ZONE,
+				weekday: "short",
+				day: "numeric",
+				month: "short",
+			}),
+			longDay: new Intl.DateTimeFormat(locale, {
+				timeZone: TIME_ZONE,
+				weekday: "long",
+				day: "numeric",
+				month: "long",
+				year: "numeric",
+			}),
+			// Spanish and English use a.m./p.m.; Portuguese and French use 24 h.
+			time: new Intl.DateTimeFormat(locale, {
+				timeZone: TIME_ZONE,
+				hour: language === "es" || language === "en" ? "numeric" : "2-digit",
+				minute: "2-digit",
+				...(language === "es" || language === "en" ? { hour12: true } : {}),
+			}),
+		};
+		formatsByLanguage.set(language, formats);
+	}
+	return formats;
+}
 
 export function formatEventDay(iso: string): string {
-	return dayFormat.format(new Date(iso)).replace(/\./g, "");
+	return formatsFor(getLanguage()).day.format(new Date(iso)).replace(/\./g, "");
 }
 
 export function formatEventLongDay(iso: string): string {
-	const text = longDayFormat.format(new Date(iso));
+	const text = formatsFor(getLanguage()).longDay.format(new Date(iso));
 	return text.charAt(0).toUpperCase() + text.slice(1);
 }
 
 export function formatTime(iso: string): string {
-	return timeFormat.format(new Date(iso)).replace(/\s/g, " ");
+	return formatsFor(getLanguage())
+		.time.format(new Date(iso))
+		.replace(/\s/g, " ");
 }
 
 export function formatTimeRange(startsAt: string, endsAt: string | null) {
@@ -87,9 +111,23 @@ export function formatCop(value: number): string {
 	return copFormat.format(value);
 }
 
-/** "hace 5 min", "hace 2 h", "ayer", or a date. */
+/** "hace 5 min", "hace 2 h", "ayer", or a date; other languages use Intl. */
 export function formatRelative(iso: string, now: Date = new Date()): string {
+	const language = getLanguage();
 	const minutes = Math.round((now.getTime() - new Date(iso).getTime()) / 60000);
+	if (language !== "es") {
+		const rtf = new Intl.RelativeTimeFormat(VOICE_LOCALES[language], {
+			numeric: "auto",
+			style: "short",
+		});
+		if (minutes < 1) return rtf.format(0, "second");
+		if (minutes < 60) return rtf.format(-minutes, "minute");
+		const hours = Math.round(minutes / 60);
+		if (hours < 24) return rtf.format(-hours, "hour");
+		const days = Math.round(hours / 24);
+		if (days < 7) return rtf.format(-days, "day");
+		return formatEventDay(iso);
+	}
 	if (minutes < 1) return "ahora";
 	if (minutes < 60) return `hace ${minutes} min`;
 	const hours = Math.round(minutes / 60);

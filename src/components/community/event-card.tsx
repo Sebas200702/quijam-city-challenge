@@ -9,6 +9,7 @@ import {
 } from "../../lib/community/community-labels";
 import { spotsLeft } from "../../lib/community/community-rules";
 import type { CommunityEvent } from "../../lib/community/community-types";
+import { useLanguage } from "../../lib/i18n/use-language";
 import { HeldBadge } from "./community-ui";
 import { VerifiedOrganizerBadge } from "./trust-badges";
 
@@ -23,6 +24,7 @@ const monthShort = new Intl.DateTimeFormat("es-CO", {
 });
 
 function DateBlock({ iso }: { iso: string }) {
+	useLanguage();
 	const date = new Date(iso);
 	return (
 		<div
@@ -62,6 +64,7 @@ export function EventCard({
 	placeName?: string | null;
 	registered?: boolean;
 }) {
+	useLanguage();
 	const spots = spotsText(event);
 	const where = placeName ?? event.locationText ?? "Lugar por confirmar";
 	const cancelled = event.status === "cancelled";

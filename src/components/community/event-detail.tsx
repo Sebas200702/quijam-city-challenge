@@ -31,6 +31,7 @@ import type {
 	Place,
 	Profile,
 } from "../../lib/community/community-types";
+import { useLanguage } from "../../lib/i18n/use-language";
 import { AskQuillartButton } from "../assistant/ask-quillart-button";
 import { CommunityShell } from "./community-shell";
 import {
@@ -125,6 +126,7 @@ function EventView({
 	sessionLoading,
 	onChange,
 }: EventViewProps) {
+	useLanguage();
 	const isOrganizer = !!profile && profile.id === event.organizerId;
 	const cancelled = event.status === "cancelled";
 	const where = place?.name ?? event.locationText ?? "Lugar por confirmar";

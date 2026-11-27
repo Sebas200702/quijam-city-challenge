@@ -14,6 +14,7 @@ import type {
 	Profile,
 	PublishResult,
 } from "../../lib/community/community-types";
+import { useLanguage } from "../../lib/i18n/use-language";
 import { CommunityShell } from "./community-shell";
 import {
 	EmptyState,
@@ -105,6 +106,7 @@ function ThreadView({
 	sessionLoading: boolean;
 	onPublished: () => void;
 }) {
+	useLanguage();
 	const replies =
 		posts.length === 1 ? "1 respuesta" : `${posts.length} respuestas`;
 	return (
@@ -171,6 +173,7 @@ function ThreadView({
 }
 
 function Reply({ post, own }: { post: ForumPost; own: boolean }) {
+	useLanguage();
 	return (
 		<li
 			id={`respuesta-${post.id}`}

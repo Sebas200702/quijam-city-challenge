@@ -7,6 +7,7 @@ import type {
 	ModerationAction,
 	ModerationQueueItem,
 } from "../../lib/community/community-types";
+import { useLanguage } from "../../lib/i18n/use-language";
 import type {
 	ContentKind,
 	ModerationLabel,
@@ -301,6 +302,7 @@ function QueueItem({
 	busy: boolean;
 	onAct: (item: ModerationQueueItem, action: ModerationAction) => void;
 }) {
+	useLanguage();
 	const href = contentHref(item);
 	const held = item.status === "held";
 	const flagged = item.labels.filter((label) => label !== "ok");
