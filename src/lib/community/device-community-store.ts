@@ -9,6 +9,10 @@ import type {
 	ModerationSource,
 } from "../moderation/moderation-types";
 import { checkAppealMessage } from "../moderation/appeal-rules";
+import {
+	CORROBORATION_WINDOW_HOURS,
+	reportsToEscalate,
+} from "../moderation/corroboration";
 import { triageContent } from "../moderation/triage";
 import {
 	applyTrustPolicy,
@@ -98,6 +102,29 @@ function reportCount(data: DeviceData, id: string): number {
 			.filter((report) => report.contentId === id)
 			.map((report) => report.reporterId),
 	).size;
+}
+
+/** Corroboration (#126) on this device: same rule as the server, over local threads. */
+function corroborateThreads(data: DeviceData, seed: ForumThread) {
+	if (!seed.placeId || seed.triagePriority === "none") return;
+	const toRisk = (t: ForumThread) => ({
+		id: t.id,
+		authorId: t.authorId,
+		placeId: t.placeId,
+		priority: t.triagePriority,
+		createdAt: t.createdAt,
+		resolved: Boolean(data.resolvedReports?.includes(t.id)),
+	});
+	const peers = data.threads.filter(
+		(t) =>
+			t.moderationStatus === "published" &&
+			Date.parse(seed.createdAt) - Date.parse(t.createdAt) <=
+				CORROBORATION_WINDOW_HOURS * 3_600_000,
+	);
+	const ids = new Set(reportsToEscalate(toRisk(seed), peers.map(toRisk)));
+	for (const t of data.threads) {
+		if (ids.has(t.id)) t.triagePriority = "emergency";
+	}
 }
 
 function hasOpenAppeal(data: DeviceData, id: string): boolean {
@@ -487,6 +514,7 @@ export function createDeviceCommunityStore(): CommunityStore {
 			};
 			data.threads.push(thread);
 			rememberTriage(data, thread.id, decision);
+			if (status === "published") corroborateThreads(data, thread);
 			save(data);
 			notify("forum");
 			return publishResult(decision, thread);

@@ -208,3 +208,49 @@ describe("device store appeals", () => {
 		).rejects.toThrow(/quien lo publicó/);
 	});
 });
+
+describe("device store corroboration", () => {
+	const hueco = (placeId: string | null) => ({
+		title: "Hueco grande en la calle",
+		body: "Hay un hueco peligroso y los carros frenan de golpe.",
+		category: "mobility" as const,
+		placeId,
+		eventId: null,
+	});
+
+	it("raises risk reports to emergency when three different people report the same place", async () => {
+		const ids: string[] = [];
+		for (const name of ["Ana", "Beto"]) {
+			await signUp(store, name);
+			const { record } = await store.createThread(
+				hueco("place-gran-malecon"),
+			);
+			ids.push(record?.id ?? "");
+		}
+		let queue = await store.listModerationQueue();
+		expect(queue.every((item) => item.priority === "city_attention")).toBe(
+			true,
+		);
+
+		await signUp(store, "Caro");
+		const { record } = await store.createThread(hueco("place-gran-malecon"));
+		ids.push(record?.id ?? "");
+		queue = await store.listModerationQueue();
+		for (const id of ids) {
+			expect(queue.find((item) => item.id === id)?.priority).toBe("emergency");
+		}
+	});
+
+	it("does not corroborate reports at different places", async () => {
+		for (const [name, place] of [
+			["Ana", "place-gran-malecon"],
+			["Beto", "place-bocas-de-ceniza"],
+			["Caro", null],
+		] as const) {
+			await signUp(store, name);
+			await store.createThread(hueco(place));
+		}
+		const queue = await store.listModerationQueue();
+		expect(queue.some((item) => item.priority === "emergency")).toBe(false);
+	});
+});

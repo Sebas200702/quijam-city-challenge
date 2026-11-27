@@ -2,7 +2,15 @@
 // reply goes through the triage here before it is stored. Server only.
 
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { ContentKind } from "../moderation/moderation-types";
+import {
+	CORROBORATION_WINDOW_HOURS,
+	type RiskReport,
+	reportsToEscalate,
+} from "../moderation/corroboration";
+import type {
+	ContentKind,
+	TriagePriority,
+} from "../moderation/moderation-types";
 import { triageContent } from "../moderation/triage";
 import { applyTrustPolicy } from "../moderation/trust-policy";
 import type { OpenJevClient } from "../openjev/openjev-types";
@@ -199,6 +207,7 @@ export async function publishContent(
 			.select(THREAD_COLUMNS)
 			.single();
 		if (error) throw new CommunityError(error.message, 500);
+		if (decision.verdict === "publish") await corroborateRisk(admin, data.id);
 		return publishResult(decision, toThread(data));
 	}
 
@@ -384,6 +393,81 @@ async function loadOpenAppeals(admin: SupabaseClient): Promise<{
 	return { items, byKey };
 }
 
+interface RiskRow {
+	id: string;
+	author_id: string | null;
+	place_id: string | null;
+	triage_priority: TriagePriority;
+	created_at: string;
+	city_resolved_at: string | null;
+}
+
+const RISK_COLUMNS =
+	"id, author_id, place_id, triage_priority, created_at, city_resolved_at";
+
+function toRisk(row: RiskRow): RiskReport {
+	return {
+		id: row.id,
+		authorId: row.author_id,
+		placeId: row.place_id,
+		priority: row.triage_priority,
+		createdAt: row.created_at,
+		resolved: row.city_resolved_at !== null,
+	};
+}
+
+/**
+ * Corroboration (#126): when different people reported a risk at the same place
+ * in a short time, raise those reports to emergency and leave it in the audit log.
+ * Never blocks publishing: a failure here only means the priority stays as it was.
+ */
+export async function corroborateRisk(
+	admin: SupabaseClient,
+	threadId: string,
+): Promise<void> {
+	try {
+		const { data: seedRow } = await admin
+			.from("forum_threads")
+			.select(RISK_COLUMNS)
+			.eq("id", threadId)
+			.eq("moderation_status", "published")
+			.maybeSingle();
+		if (!seedRow?.place_id || seedRow.triage_priority === "none") return;
+		const seed = toRisk(seedRow as RiskRow);
+		const since = new Date(
+			Date.parse(seed.createdAt) - CORROBORATION_WINDOW_HOURS * 3_600_000,
+		).toISOString();
+		const { data: peers } = await admin
+			.from("forum_threads")
+			.select(RISK_COLUMNS)
+			.eq("place_id", seedRow.place_id)
+			.eq("moderation_status", "published")
+			.neq("triage_priority", "none")
+			.is("city_resolved_at", null)
+			.gte("created_at", since)
+			.limit(50);
+		const ids = reportsToEscalate(
+			seed,
+			((peers ?? []) as RiskRow[]).map(toRisk),
+		);
+		if (ids.length === 0) return;
+		await admin
+			.from("forum_threads")
+			.update({ triage_priority: "emergency" })
+			.in("id", ids);
+		await admin.from("moderation_actions").insert(
+			ids.map((id) => ({
+				moderator_id: null,
+				kind: "thread",
+				content_id: id,
+				action: "corroborate",
+			})),
+		);
+	} catch (error) {
+		console.error("[moderation] corroboration failed", error);
+	}
+}
+
 const PRIORITY_ORDER = { emergency: 0, city_attention: 1, none: 2 } as const;
 
 export function sortQueue(items: ModerationQueueItem[]): ModerationQueueItem[] {
@@ -425,6 +509,9 @@ export async function applyModeration(
 	});
 	if (logError)
 		console.error("[moderation] audit log failed", logError.message);
+
+	// A held risk report that the city approves may now corroborate others.
+	if (action === "approve" && kind === "thread") await corroborateRisk(admin, id);
 
 	// Deciding on removed content closes its appeal: approving overturns, removing upholds.
 	if (action === "approve" || action === "remove") {
