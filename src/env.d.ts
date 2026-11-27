@@ -12,6 +12,7 @@ interface ImportMetaEnv {
 	readonly CSP_MODE?: string;
 	readonly DEMO_PRESENTER_KEY?: string;
 	readonly PUBLIC_TURNSTILE_SITE_KEY?: string;
+	readonly PUBLIC_AUTH_GOOGLE?: string;
 }
 
 interface ImportMeta {

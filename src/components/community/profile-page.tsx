@@ -8,6 +8,7 @@ import {
 	useEffect,
 	useState,
 } from "react";
+import { GOOGLE_AUTH_ENABLED } from "../../lib/auth/google-sign-in";
 import { initials } from "../../lib/community/community-labels";
 import { validateSignUp } from "../../lib/community/community-rules";
 import type { Profile } from "../../lib/community/community-types";
@@ -25,6 +26,7 @@ import {
 	PageTitle,
 } from "./community-ui";
 import { EventCard } from "./event-card";
+import { GoogleSignInButton } from "./google-sign-in-button";
 import { MyDataPanel } from "./my-data-panel";
 import { ThreadCard } from "./thread-card";
 import { useLoad, useSession, useStore } from "./use-community";
@@ -315,6 +317,12 @@ function AuthPanel() {
 				{t.profile.authIntro}
 			</PageTitle>
 			<section className="q-card mx-auto w-full max-w-md gap-5 p-5">
+				{GOOGLE_AUTH_ENABLED && (
+					<>
+						<GoogleSignInButton returnPath={returnPath()} />
+						<p className="q-sm q-muted text-center">{t.profile.emailDivider}</p>
+					</>
+				)}
 				<div
 					role="tablist"
 					aria-label={t.profile.accountLabel}

@@ -21,6 +21,12 @@ const es = {
 	captchaRequired: "Completa la verificación de seguridad para continuar.",
 	captchaFailed:
 		"No pudimos cargar la verificación de seguridad. Recarga la página e intenta de nuevo.",
+	google: "Continuar con Google",
+	googleAria:
+		"Continuar con Google: te llevamos a Google para entrar o crear tu cuenta",
+	googleRedirecting: "Abriendo Google…",
+	googleFailed: "No pudimos abrir Google. Intenta de nuevo o usa tu correo.",
+	emailDivider: "o con tu correo",
 	almostDone: "¡Casi listo! Te enviamos un correo a",
 	almostDoneRest:
 		"Abre el enlace para confirmar tu cuenta y después entra con tu correo y contraseña.",
@@ -125,6 +131,12 @@ const en: ProfileMessages = {
 	captchaRequired: "Complete the security check to continue.",
 	captchaFailed:
 		"We couldn't load the security check. Reload the page and try again.",
+	google: "Continue with Google",
+	googleAria:
+		"Continue with Google: we take you to Google to sign in or create your account",
+	googleRedirecting: "Opening Google…",
+	googleFailed: "We couldn't open Google. Try again or use your email.",
+	emailDivider: "or with your email",
 	almostDone: "Almost done! We sent an email to",
 	almostDoneRest:
 		"Open the link to confirm your account, then sign in with your email and password.",
@@ -227,6 +239,13 @@ const pt: ProfileMessages = {
 	captchaRequired: "Conclua a verificação de segurança para continuar.",
 	captchaFailed:
 		"Não conseguimos carregar a verificação de segurança. Recarregue a página e tente novamente.",
+	google: "Continuar com o Google",
+	googleAria:
+		"Continuar com o Google: levamos você ao Google para entrar ou criar sua conta",
+	googleRedirecting: "Abrindo o Google…",
+	googleFailed:
+		"Não conseguimos abrir o Google. Tente novamente ou use seu e-mail.",
+	emailDivider: "ou com seu e-mail",
 	almostDone: "Quase pronto! Enviamos um e-mail para",
 	almostDoneRest:
 		"Abra o link para confirmar sua conta e depois entre com seu e-mail e senha.",
@@ -329,6 +348,13 @@ const fr: ProfileMessages = {
 	captchaRequired: "Terminez la vérification de sécurité pour continuer.",
 	captchaFailed:
 		"Impossible de charger la vérification de sécurité. Rechargez la page et réessayez.",
+	google: "Continuer avec Google",
+	googleAria:
+		"Continuer avec Google : nous vous emmenons sur Google pour vous connecter ou créer votre compte",
+	googleRedirecting: "Ouverture de Google…",
+	googleFailed:
+		"Impossible d'ouvrir Google. Réessayez ou utilisez votre e-mail.",
+	emailDivider: "ou avec votre e-mail",
 	almostDone: "Presque terminé ! Nous avons envoyé un e-mail à",
 	almostDoneRest:
 		"Ouvrez le lien pour confirmer votre compte, puis connectez-vous avec votre e-mail et votre mot de passe.",
