@@ -16,6 +16,7 @@ import {
 import { Fragment, useEffect, useId, useRef, useState } from "react";
 import type { GuideAnswer } from "../../lib/guide/guide-answer";
 import type { GuideLanguage } from "../../lib/guide/guide-local";
+import { offlineGuideAnswer } from "../../lib/guide/guide-offline";
 import type {
 	GuideMessages,
 	GuideSuggestionIcon,
@@ -298,7 +299,9 @@ export function GuidePanel({
 				spoken,
 			);
 		} catch {
-			const saved = readSaved()[savedKey(question)];
+			// An answer from an earlier visit, or the local Guide for the three routes (#47).
+			const saved =
+				readSaved()[savedKey(question)] ?? offlineGuideAnswer(question);
 			if (saved) {
 				addAnswer(
 					userId,
