@@ -116,7 +116,8 @@ const es = {
 	mapAria: "Mapa del corredor",
 	accessibleMode: "Modo accesible",
 	/** The current route, handed to the Mobility agent as a ready-made question. */
-	askRoutePrompt: (from: string, to: string) => `¿Cómo llego de ${from} a ${to}?`,
+	askRoutePrompt: (from: string, to: string) =>
+		`¿Cómo llego de ${from} a ${to}?`,
 	locate: "Ir a donde estás",
 	overview: "Ver todo el corredor",
 	zoomIn: "Acercar",
