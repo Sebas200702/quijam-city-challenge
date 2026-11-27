@@ -1,0 +1,247 @@
+/* Secondary menu: header buttons, menu and language sheets, and the token-painted
+   illustrations they use. Look and feel come from design-system/quillart.css. */
+
+/* ── Secondary menu in the header: language in one tap and the menu button ── */
+.secondary-menu {
+	display: flex;
+	flex: none;
+	align-items: center;
+	gap: 8px;
+}
+.visitor-chip-btn {
+	font: inherit;
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	min-height: 44px;
+	padding: 0 14px;
+	border: 0;
+	border-radius: var(--radius-pill);
+	background: var(--surface-raised);
+	color: var(--ink);
+	box-shadow: var(--shadow-card);
+	font-size: 13px;
+	font-weight: 600;
+	cursor: pointer;
+}
+.visitor-chip-btn:focus-visible {
+	outline: 2px solid var(--focus);
+	outline-offset: 2px;
+}
+
+/* ── Notes and inline states (sheets and the map card) ── */
+.visitor-note {
+	display: flex;
+	align-items: flex-start;
+	gap: 8px;
+	margin: 0;
+}
+.visitor-note > svg {
+	flex: none;
+	margin-top: 2px;
+}
+.visitor-plain {
+	margin: 0;
+}
+.visitor-state--inline {
+	min-height: 0;
+	padding: 8px 12px;
+}
+
+/* ── Sheets (menu and language) ── */
+.visitor-scrim {
+	position: fixed;
+	inset: 0;
+	z-index: 1300;
+	border: 0;
+	padding: 0;
+	cursor: default;
+	background: color-mix(in srgb, var(--ink) 28%, transparent);
+}
+.visitor-sheet.q-sheet--dock {
+	position: fixed;
+	z-index: 1301;
+	max-height: 85dvh;
+	overflow-y: auto;
+}
+@media (min-width: 640px) {
+	.visitor-sheet.q-sheet--dock {
+		left: auto;
+		right: 16px;
+		bottom: 16px;
+		width: 420px;
+		border-radius: var(--radius-xl);
+	}
+}
+.visitor-sheet__head {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+.visitor-sheet__head h2 {
+	margin: 0;
+}
+.visitor-sheet__hero {
+	flex: none;
+	width: 92px;
+	margin-left: auto;
+}
+.visitor-ill {
+	display: block;
+	width: 100%;
+	height: auto;
+}
+
+.visitor-menu {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 10px;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.visitor-menu > li {
+	display: flex;
+}
+.visitor-menu__item {
+	width: 100%;
+	min-height: 112px;
+}
+.visitor-menu__item:focus-visible {
+	outline: 2px solid var(--focus);
+	outline-offset: 2px;
+}
+.visitor-menu__item .q-tile {
+	width: 44px;
+	height: 44px;
+	border-radius: 14px;
+}
+.visitor-menu__item .q-tile--gold {
+	color: var(--gold-text);
+}
+.visitor-menu__item .q-tile--green {
+	color: var(--green-text);
+}
+.visitor-menu__item .visitor-tile--neutral {
+	background: var(--line);
+	color: var(--ink);
+}
+
+.visitor-stack {
+	display: flex;
+	flex-direction: column;
+	gap: 14px;
+}
+.visitor-fieldset {
+	margin: 0;
+	padding: 0;
+	border: 0;
+}
+.visitor-options {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.visitor-radio {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	opacity: 0;
+}
+.visitor-option {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	min-height: 56px;
+	padding: 8px 14px;
+	border-radius: var(--radius-md);
+	background: var(--bg);
+	cursor: pointer;
+}
+.visitor-option__mark {
+	flex: none;
+	width: 22px;
+	height: 22px;
+	border-radius: 50%;
+	box-shadow: inset 0 0 0 2px var(--line-control);
+}
+.visitor-radio:checked + .visitor-option {
+	box-shadow: inset 0 0 0 2px var(--gold-text);
+}
+.visitor-radio:checked + .visitor-option .visitor-option__mark {
+	box-shadow: inset 0 0 0 7px var(--gold-text);
+}
+.visitor-radio:focus-visible + .visitor-option {
+	outline: 2px solid var(--focus);
+	outline-offset: 2px;
+}
+.visitor-option__text {
+	display: flex;
+	flex: 1;
+	min-width: 0;
+	flex-direction: column;
+	gap: 2px;
+}
+.visitor-option__text b {
+	font-size: 15px;
+	line-height: 20px;
+}
+.visitor-option__text small {
+	font-size: 13px;
+	line-height: 18px;
+	color: var(--ink-muted);
+}
+
+/* ── Illustration paints (theme tokens, so they follow light and dark) ── */
+.il-bg {
+	fill: var(--illus);
+}
+.il-gold {
+	fill: var(--gold);
+}
+.il-goldsoft {
+	fill: var(--gold-soft);
+}
+.il-green {
+	fill: var(--green);
+}
+.il-greensoft {
+	fill: var(--green-soft);
+}
+.il-red {
+	fill: var(--red);
+}
+.il-onred {
+	fill: var(--on-red);
+}
+.il-ink {
+	fill: var(--ink);
+}
+.il-surface {
+	fill: var(--surface-raised);
+}
+.il-water {
+	fill: var(--map-water);
+}
+.il-wline {
+	fill: none;
+	stroke: var(--surface-raised);
+	stroke-width: 3;
+	stroke-linecap: round;
+}
+.il-line {
+	fill: none;
+	stroke: var(--ink);
+	stroke-width: 3;
+	stroke-linecap: round;
+}
+.il-dash {
+	fill: none;
+	stroke: var(--ink-subtle);
+	stroke-width: 2.5;
+	stroke-linecap: round;
+	stroke-dasharray: 5 6;
+}
