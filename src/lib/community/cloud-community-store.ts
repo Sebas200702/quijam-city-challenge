@@ -56,6 +56,12 @@ function friendly(error: { message: string } | null | undefined): Error {
 	return new Error(AUTH_ERRORS[message] ?? message);
 }
 
+// Postgres rejects an id that is not a UUID (invalid_text_representation);
+// for a lookup by an id taken from the URL that just means "not found".
+function isMalformedId(error: { code?: string }): boolean {
+	return error.code === "22P02";
+}
+
 export function createCloudCommunityStore(
 	supabase: SupabaseClient,
 ): CommunityStore {
@@ -248,7 +254,7 @@ export function createCloudCommunityStore(
 				.eq("id", id)
 				.neq("moderation_status", "removed")
 				.maybeSingle();
-			if (error) throw friendly(error);
+			if (error && !isMalformedId(error)) throw friendly(error);
 			return data ? toEvent(data) : null;
 		},
 
@@ -356,7 +362,7 @@ export function createCloudCommunityStore(
 				.eq("id", id)
 				.neq("moderation_status", "removed")
 				.maybeSingle();
-			if (error) throw friendly(error);
+			if (error && !isMalformedId(error)) throw friendly(error);
 			return data ? toThread(data) : null;
 		},
 
