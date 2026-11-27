@@ -90,7 +90,7 @@ Hay que hacerla en los paneles de Supabase y Dokploy antes de abrir al público:
 1. **Segundo factor (MFA) para el rol ciudad:** Supabase → Authentication → Multi-Factor. Activar TOTP y pedirlo a las cuentas con rol `city`.
 2. **CAPTCHA en el registro:** Supabase → Authentication → Attack Protection → CAPTCHA (hCaptcha o Turnstile). Requiere pasar el token desde el formulario de registro (pendiente en la interfaz).
 3. **Confirmación de correo:** dejar activa "Confirm email" para que no se creen cuentas con correos ajenos.
-4. **IP real detrás del proxy:** verificar que Traefik/Dokploy reescriba `X-Forwarded-For`; si no, todas las personas compartirían el mismo límite de uso.
+4. **IP real detrás del proxy:** detrás de Traefik, la dirección del socket es la del proxy y es la misma para todas las personas, así que compartirían un solo límite de uso. Con `TRUSTED_CLIENT_IP_HEADER=CF-Connecting-IP` en las variables de Dokploy (se lee en tiempo de ejecución), el límite usa la IP que pone Cloudflare. Sin la variable no se confía en ninguna cabecera, porque cualquiera puede enviarla. Mientras el servidor acepte conexiones que no pasan por Cloudflare, alguien puede inventar esa cabecera para saltarse el límite; para cerrarlo, limitar el origen a los rangos de IP de Cloudflare en Traefik. Código: `src/lib/security/client-key.ts`.
 5. **Verificar organizadores:** `update public.profiles set is_verified_organizer = true where id = '<uuid>';` en el editor SQL, después de validar a la organización.
 
 ## Pendiente
