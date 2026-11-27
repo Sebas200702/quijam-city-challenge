@@ -1,0 +1,11 @@
+---
+import ForumPage from "../components/community/forum-page";
+import BaseLayout from "../layouts/base-layout.astro";
+import { homeContent } from "../lib/home-content";
+
+const { aiHref } = homeContent;
+---
+
+<BaseLayout title="Comunidad">
+	<ForumPage client:only="react" aiHref={aiHref} />
+</BaseLayout>
