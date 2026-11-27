@@ -271,6 +271,10 @@ export interface CommunityStore {
 	listEvents(query?: EventQuery): Promise<CommunityEvent[]>;
 	getEvent(id: string): Promise<CommunityEvent | null>;
 	createEvent(input: NewEventInput): Promise<PublishResult<CommunityEvent>>;
+	updateEvent(
+		id: string,
+		input: NewEventInput,
+	): Promise<PublishResult<CommunityEvent>>;
 	cancelEvent(id: string): Promise<void>;
 	/** Ids of the events the signed-in person registered for. */
 	myRegistrations(): Promise<string[]>;

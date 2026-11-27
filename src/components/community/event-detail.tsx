@@ -6,6 +6,7 @@ import {
 	MapPin,
 	MessageCirclePlus,
 	Navigation,
+	Pencil,
 	Share2,
 	Ticket,
 	UserRound,
@@ -31,6 +32,7 @@ import type {
 	ForumThread,
 	Place,
 	Profile,
+	PublishResult,
 } from "../../lib/community/community-types";
 import { useT } from "../../lib/i18n/use-language";
 import { AskQuillartButton } from "../assistant/ask-quillart-button";
@@ -40,8 +42,10 @@ import {
 	ErrorNote,
 	HeldBadge,
 	Loaded,
+	PublishNotice,
 	SpotIllustration,
 } from "./community-ui";
+import { EditEventForm } from "./edit-event-form";
 import { ReportButton } from "./report-button";
 import { ThreadCard } from "./thread-card";
 import { VerifiedOrganizerBadge } from "./trust-badges";
@@ -466,6 +470,9 @@ function OrganizerPanel({
 }) {
 	const t = useT();
 	const store = useStore();
+	const [editing, setEditing] = useState(false);
+	const [editNotice, setEditNotice] =
+		useState<PublishResult<CommunityEvent> | null>(null);
 	const [busy, setBusy] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const cancelled = event.status === "cancelled";
@@ -477,6 +484,7 @@ function OrganizerPanel({
 		setError(null);
 		try {
 			await store.cancelEvent(event.id);
+			setEditing(false);
 			onChange();
 		} catch (err) {
 			setError(err instanceof Error ? err.message : t.agenda.cancelEventError);
@@ -492,19 +500,45 @@ function OrganizerPanel({
 		>
 			<p className="q-eyebrow">{t.agenda.youOrganize}</p>
 			<p className="q-h3">{people}</p>
+			{editNotice && <PublishNotice result={editNotice} />}
 			{cancelled ? (
 				<p className="q-p q-muted">{t.agenda.youCancelled}</p>
 			) : (
-				!isPastEvent(event) && (
-					<button
-						type="button"
-						className="q-btn q-btn--alert q-btn--block"
-						onClick={() => void cancel()}
-						disabled={busy}
-					>
-						{busy ? t.agenda.cancelling : t.agenda.cancelEvent}
-					</button>
-				)
+				!isPastEvent(event) &&
+				(editing ? (
+					<EditEventForm
+						event={event}
+						onSaved={(result) => {
+							setEditing(false);
+							setEditNotice(result);
+							onChange();
+						}}
+						onCancel={() => setEditing(false)}
+					/>
+				) : (
+					<div className="flex flex-wrap gap-2">
+						<button
+							type="button"
+							className="q-btn q-btn--secondary min-h-11 flex-1"
+							onClick={() => {
+								setEditNotice(null);
+								setEditing(true);
+							}}
+							disabled={busy}
+						>
+							<Pencil size={16} aria-hidden="true" />
+							Editar evento
+						</button>
+						<button
+							type="button"
+							className="q-btn q-btn--alert min-h-11 flex-1"
+							onClick={() => void cancel()}
+							disabled={busy}
+						>
+							{busy ? t.agenda.cancelling : t.agenda.cancelEvent}
+						</button>
+					</div>
+				))
 			)}
 			{error && <ErrorNote message={error} />}
 		</section>

@@ -21,11 +21,14 @@ import {
 } from "../moderation/trust-policy";
 import { publishResult, storedStatus } from "./community-mappers";
 import {
+	buildEventUpdateNoticeBody,
 	canJoinWaitlist,
+	detectEventEditChanges,
 	filterEvents,
 	filterThreads,
 	isEventFull,
 	registrationBlocker,
+	validateEventEditInput,
 	validateEventInput,
 	validatePostBody,
 	validateProfilePatch,
@@ -458,6 +461,109 @@ export function createDeviceCommunityStore(): CommunityStore {
 			save(data);
 			notify("events");
 			return publishResult(decision, event);
+		},
+
+		async updateEvent(id, input) {
+			const before = load();
+			const account = requireAccount(before);
+			const existing = before.events.find((item) => item.id === id);
+			if (!existing || existing.moderationStatus === "removed")
+				throw new Error("No encontramos este evento.");
+			if (existing.organizerId !== account.id)
+				throw new Error("Solo quien organiza puede editar el evento.");
+			if (existing.status === "cancelled")
+				throw new Error("No puedes editar un evento cancelado.");
+			const error = validateEventEditInput(input, existing.registeredCount);
+			if (error) throw new Error(error);
+
+			const changes = detectEventEditChanges(existing, input);
+			const needsTriage = changes.textChanged || changes.paidStatusChanged;
+			let nextStatus: CommunityEvent["moderationStatus"] =
+				existing.moderationStatus;
+			let nextPriority = existing.triagePriority;
+			let outcome: PublishResult<CommunityEvent>["outcome"] =
+				existing.moderationStatus === "held" ? "held" : "published";
+			let message =
+				existing.moderationStatus === "held"
+					? "Cambios guardados. Tu evento sigue en revisión."
+					: "Cambios guardados en tu evento.";
+			let triageDecision: ModerationDecision | null = null;
+
+			if (needsTriage) {
+				const decision = applyTrustPolicy(
+					await triage("event", input.description, input.title),
+					{
+						kind: "event",
+						accountAgeHours: account.createdAt
+							? (Date.now() - new Date(account.createdAt).getTime()) / 3_600_000
+							: NEW_ACCOUNT_HOURS * 10,
+						publishedEvents: before.events.filter(
+							(event) =>
+								event.organizerId === account.id &&
+								event.moderationStatus === "published",
+						).length,
+						isVerifiedOrganizer: Boolean(account.isVerifiedOrganizer),
+						isPaidEvent: !input.isFree,
+					},
+				);
+				const stored = storedStatus(decision);
+				if (!stored) return publishResult<never>(decision, null);
+				triageDecision = decision;
+				nextStatus = stored;
+				nextPriority = decision.priority;
+				outcome = stored === "held" ? "held" : "published";
+				message =
+					outcome === "held"
+						? "Cambios guardados. El texto actualizado quedó en revisión hasta que la ciudad lo apruebe."
+						: "Cambios guardados y publicados en la agenda.";
+			}
+
+			const data = load();
+			const target = data.events.find((item) => item.id === id);
+			if (!target) throw new Error("No encontramos este evento.");
+			target.title = input.title.trim();
+			target.description = input.description.trim();
+			target.category = input.category;
+			target.startsAt = input.startsAt;
+			target.endsAt = input.endsAt;
+			target.placeId = input.placeId;
+			target.locationText = input.placeId
+				? null
+				: input.locationText?.trim() || null;
+			target.capacity = input.capacity;
+			target.isFree = input.isFree;
+			target.priceCop = input.isFree ? null : input.priceCop;
+			target.moderationStatus = nextStatus;
+			target.triagePriority = nextPriority;
+			if (triageDecision) rememberTriage(data, target.id, triageDecision);
+
+			if (
+				(changes.dateChanged || changes.placeChanged) &&
+				target.moderationStatus === "published"
+			) {
+				const body = buildEventUpdateNoticeBody(target.title, changes);
+				for (const reg of data.registrations) {
+					if (reg.eventId !== target.id || reg.userId === account.id) continue;
+					pushNotification(data, {
+						userId: reg.userId,
+						kind: "event_updated",
+						title: `Cambio en evento: ${target.title}`,
+						body,
+						href: `/agenda/${encodeURIComponent(target.id)}`,
+						eventId: target.id,
+					});
+				}
+			}
+
+			save(data);
+			notify("events");
+			notify("notifications");
+			return {
+				outcome,
+				message,
+				priority: nextPriority,
+				record: { ...target },
+			};
 		},
 
 		async cancelEvent(id) {

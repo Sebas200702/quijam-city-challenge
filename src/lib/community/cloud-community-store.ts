@@ -91,7 +91,7 @@ export function createCloudCommunityStore(
 
 	async function callApi<T>(
 		path: string,
-		init: { method: "GET" | "POST" | "DELETE"; body?: unknown },
+		init: { method: "GET" | "POST" | "PATCH" | "DELETE"; body?: unknown },
 	): Promise<T> {
 		const response = await fetch(path, {
 			method: init.method,
@@ -260,6 +260,18 @@ export function createCloudCommunityStore(
 				method: "POST",
 				body: { kind: "event", input },
 			});
+		},
+
+		async updateEvent(id, input) {
+			const error = validateEventInput(input);
+			if (error) throw new Error(error);
+			return callApi<PublishResult<CommunityEvent>>(
+				`/api/community/events/${encodeURIComponent(id)}`,
+				{
+					method: "PATCH",
+					body: { input },
+				},
+			);
 		},
 
 		async cancelEvent(id) {

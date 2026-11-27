@@ -59,6 +59,80 @@ export function validateEventInput(
 	return null;
 }
 
+/** Validates an organizer's edit to an existing event, keeping capacity >= registeredCount (#92). */
+export function validateEventEditInput(
+	input: NewEventInput,
+	registeredCount: number,
+	now: Date = new Date(),
+): string | null {
+	const baseError = validateEventInput(input, now);
+	if (baseError) return baseError;
+	if (input.capacity !== null && input.capacity < registeredCount) {
+		return `No puedes bajar los cupos por debajo de los inscritos (${registeredCount}).`;
+	}
+	return null;
+}
+
+export interface EventEditChanges {
+	textChanged: boolean;
+	dateChanged: boolean;
+	placeChanged: boolean;
+	paidStatusChanged: boolean;
+}
+
+/** Detects which parts of an event changed so the server knows when to re-triage or notify (#92). */
+export function detectEventEditChanges(
+	before: Pick<
+		CommunityEvent,
+		| "title"
+		| "description"
+		| "startsAt"
+		| "endsAt"
+		| "placeId"
+		| "locationText"
+		| "isFree"
+		| "priceCop"
+	>,
+	after: NewEventInput,
+): EventEditChanges {
+	const beforeTitle = before.title.trim();
+	const afterTitle = after.title.trim();
+	const beforeDesc = before.description.trim();
+	const afterDesc = after.description.trim();
+	const beforeLoc = before.locationText?.trim() || null;
+	const afterLoc = after.placeId ? null : after.locationText?.trim() || null;
+	const beforeStart = Date.parse(before.startsAt);
+	const afterStart = Date.parse(after.startsAt);
+	const beforeEnd = before.endsAt ? Date.parse(before.endsAt) : null;
+	const afterEnd = after.endsAt ? Date.parse(after.endsAt) : null;
+
+	return {
+		textChanged: beforeTitle !== afterTitle || beforeDesc !== afterDesc,
+		dateChanged: beforeStart !== afterStart || beforeEnd !== afterEnd,
+		placeChanged:
+			(before.placeId ?? null) !== (after.placeId ?? null) ||
+			beforeLoc !== afterLoc,
+		paidStatusChanged:
+			before.isFree !== after.isFree ||
+			(before.isFree ? null : before.priceCop) !==
+				(after.isFree ? null : after.priceCop),
+	};
+}
+
+export function buildEventUpdateNoticeBody(
+	title: string,
+	changes: Pick<EventEditChanges, "dateChanged" | "placeChanged">,
+): string {
+	const clean = title.trim().slice(0, 110);
+	if (changes.dateChanged && changes.placeChanged) {
+		return `El organizador cambió la fecha y el lugar de "${clean}". Revisa los nuevos detalles.`;
+	}
+	if (changes.dateChanged) {
+		return `El organizador cambió la fecha o la hora de "${clean}". Revisa el nuevo horario.`;
+	}
+	return `El organizador cambió el lugar de "${clean}". Revisa la nueva ubicación.`;
+}
+
 export function validateThreadInput(input: NewThreadInput): string | null {
 	if (input.title.trim().length < 4) return validation().titleMin4;
 	if (input.title.trim().length > 140) return validation().titleMax140;
