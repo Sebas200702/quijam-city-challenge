@@ -20,7 +20,6 @@ import { type ReactNode, useEffect, useState } from "react";
 import type { CorridorStop } from "../../lib/corridor/corridor-types";
 import type { PlanResponse } from "../../lib/routing/plan-route";
 import type { Itinerary, TransportMode } from "../../lib/routing/routing-types";
-import { Illustration } from "../home/illustration";
 import {
 	confidenceLabel,
 	isRecalculated,
@@ -77,6 +76,20 @@ interface RouteCardProps {
 	onOpenGuide: () => void;
 	/** Starts guidance on the chosen route. When set it becomes the primary action. */
 	onStart?: () => void;
+	/**
+	 * Shows the "datos simulados 2034" tag. Off by default: on the map screen the
+	 * header carries the one tag per screen (epic #57, rule 9).
+	 */
+	showSimTag?: boolean;
+}
+
+/** Small decorative illustration for a state block. */
+function StateArt({ src }: { src: string }) {
+	return (
+		<span className="q-illus" style={{ padding: 8 }} aria-hidden="true">
+			<img src={src} alt="" style={{ height: 88, width: "auto" }} />
+		</span>
+	);
 }
 
 /** Minutes since the shown plan arrived, for the offline note. */
@@ -174,6 +187,7 @@ export function RouteCard({
 	alert,
 	onOpenGuide,
 	onStart,
+	showSimTag = false,
 }: RouteCardProps) {
 	const online = useOnline();
 	const age = usePlanAge(plan);
@@ -216,12 +230,7 @@ export function RouteCard({
 				kind="empty"
 				title="Elige a dónde vas"
 				text="Tu punto de partida y tu destino son el mismo. Cambia uno para ver la ruta."
-				glyph={
-					<Illustration
-						src="/illustrations/undraw-location-search.svg"
-						imageClassName="h-20"
-					/>
-				}
+				glyph={<StateArt src="/illustrations/undraw-location-search.svg" />}
 			/>
 		);
 	} else if (loading && !plan) {
@@ -247,12 +256,7 @@ export function RouteCard({
 				kind="error"
 				title="No pudimos calcular la ruta"
 				text="Revisa tu señal e inténtalo otra vez."
-				glyph={
-					<Illustration
-						src="/illustrations/live-map.svg"
-						imageClassName="h-20"
-					/>
-				}
+				glyph={<StateArt src="/illustrations/live-map.svg" />}
 			>
 				<button
 					type="button"
@@ -285,12 +289,7 @@ export function RouteCard({
 						: "No hay ruta segura ahora"
 				}
 				text={routeWhy(plan)}
-				glyph={
-					<Illustration
-						src="/illustrations/walking.svg"
-						imageClassName="h-20"
-					/>
-				}
+				glyph={<StateArt src="/illustrations/walking.svg" />}
 			/>
 		);
 	} else if (plan && route) {
@@ -513,7 +512,9 @@ export function RouteCard({
 
 			<div aria-live="polite">{body}</div>
 
-			<span className="q-sim-tag self-start">Datos simulados 2034</span>
+			{showSimTag ? (
+				<span className="q-sim-tag self-start">Datos simulados 2034</span>
+			) : null}
 
 			{/* Sticky so the action stays in reach while the card scrolls on phones. */}
 			<div className="sticky bottom-0 z-[1] -mx-5 -mb-5 flex flex-col gap-2 bg-[var(--surface-raised)] px-5 pt-2 pb-5 empty:hidden">
