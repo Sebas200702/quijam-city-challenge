@@ -1,0 +1,296 @@
+/* Match-day timeline (#44). Colours and sizes come from design-system tokens. */
+
+.match-timeline {
+	--mt-thumb: 28px;
+	min-width: 0;
+}
+
+/* ── /mapa: floats over the map, below the search panel, left of the map controls ── */
+.match-timeline--map {
+	position: absolute;
+	top: 172px;
+	left: 12px;
+	right: 72px;
+	z-index: 960;
+	display: flex;
+	justify-content: flex-start;
+	pointer-events: none;
+}
+.match-timeline--map > * {
+	pointer-events: auto;
+}
+/* A base-map note (loading, offline, error) sits at the same height: go below it. */
+.visitor-map:has(.corridor-status--note) .match-timeline--map {
+	top: 252px;
+}
+.visitor-map:has(.corridor-status--note .q-state--error) .match-timeline--map {
+	top: 320px;
+}
+@media (min-width: 640px) {
+	.match-timeline--map,
+	.visitor-map:has(.corridor-status--note) .match-timeline--map {
+		top: 16px;
+		left: 412px;
+		right: 88px;
+		justify-content: flex-end;
+	}
+}
+
+.match-timeline__pill {
+	gap: 8px;
+	min-height: 44px;
+	padding: 0 16px;
+	background: var(--surface-raised);
+	color: var(--ink);
+	box-shadow: var(--shadow-card);
+	font-variant-numeric: tabular-nums;
+}
+.match-timeline__pill svg {
+	color: var(--gold-text);
+}
+
+.match-timeline__card {
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-3);
+	padding: var(--space-4);
+	background: var(--surface-raised);
+}
+.match-timeline--city .match-timeline__card {
+	background: var(--surface);
+}
+.match-timeline--map .match-timeline__card {
+	width: 100%;
+	max-width: 400px;
+	max-height: calc(100dvh - 260px);
+	overflow-y: auto;
+}
+
+.match-timeline__head {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: var(--space-2);
+}
+.match-timeline__head .q-btn--icon {
+	margin: -8px -8px 0 0;
+	color: var(--ink-muted);
+}
+.match-timeline__titles {
+	min-width: 0;
+}
+.match-timeline__scenario {
+	margin: 2px 0 0;
+	font-size: 12px;
+	line-height: 16px;
+	color: var(--ink-muted);
+}
+
+.match-timeline__controls {
+	display: flex;
+	align-items: center;
+	gap: var(--space-3);
+}
+.match-timeline__hour {
+	font-family: var(--font-display);
+	font-size: 28px;
+	line-height: 32px;
+	font-weight: 600;
+	font-variant-numeric: tabular-nums;
+	color: var(--ink);
+}
+
+/* ── Slider: a 44px tall target; the marks share its inner width ── */
+.match-timeline__track {
+	position: relative;
+}
+.match-timeline__slider {
+	display: block;
+	width: 100%;
+	height: 44px;
+	margin: 0;
+	background: transparent;
+	cursor: pointer;
+	appearance: none;
+	-webkit-appearance: none;
+}
+.match-timeline__slider:focus-visible {
+	outline: 2px solid var(--focus);
+	outline-offset: 2px;
+	border-radius: var(--radius-sm);
+}
+.match-timeline__slider::-webkit-slider-runnable-track {
+	height: 6px;
+	border-radius: var(--radius-pill);
+	background: linear-gradient(
+		to right,
+		var(--action) var(--progress, 0%),
+		var(--line-control) var(--progress, 0%)
+	);
+}
+.match-timeline__slider::-moz-range-track {
+	height: 6px;
+	border-radius: var(--radius-pill);
+	background: var(--line-control);
+}
+.match-timeline__slider::-moz-range-progress {
+	height: 6px;
+	border-radius: var(--radius-pill);
+	background: var(--action);
+}
+.match-timeline__slider::-webkit-slider-thumb {
+	-webkit-appearance: none;
+	appearance: none;
+	width: var(--mt-thumb);
+	height: var(--mt-thumb);
+	margin-top: calc((6px - var(--mt-thumb)) / 2);
+	border: 3px solid var(--surface-raised);
+	border-radius: 50%;
+	background: var(--action);
+	box-shadow: var(--action-glow);
+	transition: transform 0.2s;
+}
+.match-timeline__slider::-moz-range-thumb {
+	width: var(--mt-thumb);
+	height: var(--mt-thumb);
+	box-sizing: border-box;
+	border: 3px solid var(--surface-raised);
+	border-radius: 50%;
+	background: var(--action);
+	box-shadow: var(--action-glow);
+	transition: transform 0.2s;
+}
+.match-timeline__slider:active::-webkit-slider-thumb {
+	transform: scale(1.1);
+}
+
+/* Event marks: green dots under the track, at each event's start. */
+.match-timeline__marks {
+	position: absolute;
+	top: 30px;
+	left: calc(var(--mt-thumb) / 2);
+	right: calc(var(--mt-thumb) / 2);
+	height: 8px;
+	pointer-events: none;
+}
+.match-timeline__mark {
+	position: absolute;
+	top: 0;
+	width: 8px;
+	height: 8px;
+	margin-left: -4px;
+	border-radius: 50%;
+	background: var(--green);
+	box-shadow: 0 0 0 2px var(--surface-raised);
+}
+.match-timeline__scale {
+	display: flex;
+	justify-content: space-between;
+	margin-top: 2px;
+	font-size: 12px;
+	line-height: 16px;
+	color: var(--ink-subtle);
+	font-variant-numeric: tabular-nums;
+}
+
+/* ── Agenda at the chosen hour ── */
+.match-timeline__agenda {
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-1);
+	padding-top: var(--space-3);
+	border-top: var(--border-hair) solid var(--line);
+}
+.match-timeline__agenda-head {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	margin: 0;
+	font-size: 12px;
+	line-height: 16px;
+	font-weight: 600;
+	color: var(--ink-muted);
+}
+.match-timeline__agenda-head svg {
+	flex: none;
+	color: var(--green-text);
+}
+.match-timeline__note {
+	margin: 0;
+	font-size: 13px;
+	line-height: 18px;
+	color: var(--ink-muted);
+}
+.match-timeline__events {
+	display: flex;
+	flex-direction: column;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.match-timeline__event,
+.match-timeline__more {
+	display: flex;
+	align-items: center;
+	gap: var(--space-2);
+	min-height: 44px;
+	border-radius: var(--radius-sm);
+	font-size: 14px;
+	line-height: 18px;
+	color: var(--ink);
+	text-decoration: none;
+}
+.match-timeline__more {
+	justify-content: flex-start;
+	align-self: flex-start;
+	font-size: 13px;
+	font-weight: 600;
+	color: var(--gold-text);
+	text-decoration: underline;
+	text-underline-offset: 3px;
+}
+.match-timeline__event:focus-visible,
+.match-timeline__more:focus-visible {
+	outline: 2px solid var(--focus);
+	outline-offset: 2px;
+}
+.match-timeline__event-time {
+	flex: none;
+	min-width: 44px;
+	font-weight: 600;
+	font-variant-numeric: tabular-nums;
+	color: var(--green-text);
+}
+.match-timeline__event-title {
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+@media (min-width: 1024px) {
+	.match-timeline__event:hover .match-timeline__event-title {
+		text-decoration: underline;
+	}
+}
+
+/* Reduced motion: the day still steps hour by hour, without any animation. */
+@media (prefers-reduced-motion: reduce) {
+	/* Separate rules: one unknown pseudo-element would drop the whole list. */
+	.match-timeline__slider::-webkit-slider-thumb {
+		transition: none;
+	}
+	.match-timeline__slider::-moz-range-thumb {
+		transition: none;
+	}
+	.match-timeline__slider:active::-webkit-slider-thumb {
+		transform: none;
+	}
+}
+
+/* ── City dashboard: under the map, inside its sticky column ── */
+@media (min-width: 1100px) {
+	/* Leaves room for the timeline and the legend in the sticky map column. */
+	.cs-mapcol:has(.match-timeline) .cs-map {
+		height: min(52vh, 560px);
+	}
+}

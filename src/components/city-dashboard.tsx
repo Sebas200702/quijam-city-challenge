@@ -46,6 +46,7 @@ import { ImpactReportPanel } from "./impact-report-panel";
 import { JuryQrPanel } from "./jury-qr-panel";
 import { LiveIndicatorsPanel } from "./live-indicators-panel";
 import { OverchargeInbox } from "./overcharge-inbox";
+import MatchTimeline from "./timeline/match-timeline";
 
 const EMPTY_PRESENCE: VisitorPresenceSummary = {
 	connectedCount: 0,
@@ -350,6 +351,7 @@ export function CityDashboard() {
 					}}
 					onRetry={() => void loadSnapshot()}
 					clockLabel={CLOCK.format(nowMs)}
+					timelineSlot={<MatchTimeline variant="city" />}
 				/>
 
 				{snapshot && (

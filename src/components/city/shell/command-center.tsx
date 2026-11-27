@@ -27,6 +27,8 @@ interface CommandCenterProps {
 	decisionSlot?: ReactNode;
 	/** Higher-priority notice (an active arroyo); see ShellNotice. */
 	priorityNotice?: ReactNode;
+	/** Match-day timeline (#44), shown under the map. */
+	timelineSlot?: ReactNode;
 }
 
 /** Map on the left, indicators and panels on the right, with complete states. */
@@ -42,6 +44,7 @@ export function CommandCenter({
 	clockLabel,
 	decisionSlot,
 	priorityNotice,
+	timelineSlot,
 }: CommandCenterProps) {
 	const zones = snapshot?.zones ?? [];
 	const floodZones = snapshot?.floodZones ?? [];
@@ -106,6 +109,7 @@ export function CommandCenter({
 				zones={zones}
 				floodZones={floodZones}
 				clockLabel={clockLabel}
+				timeline={timelineSlot}
 			/>
 			<div className="cs-right">{right}</div>
 		</div>
