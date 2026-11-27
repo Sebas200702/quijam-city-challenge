@@ -20,7 +20,7 @@ Entregable: programa estructurado y prototipo inicial.
 
 | # | Comentario | Quién (rol) | Acción tomada | Estado |
 |---|---|---|---|---|
-| | | | | |
+| 1 | Nos catalogaron como un "gemelo digital". | Jurado | Diagnóstico: el lema "sistema nervioso urbano", la arquitectura "sentidos, cerebro, músculos", el "Centro de Mando" y el simulador se leían como una ciudad que se monitorea. Nueva identidad: **el intérprete de la ciudad** ([20-identidad.md](20-identidad.md)). Se cambió el vocabulario en docs y app, "Centro de Mando" pasó a "Lo que la ciudad aprende" y la demo abre siempre desde el celular del visitante. | Ajustado |
 
 ## Sprint 3 · Validar y consolidar (mañana del día 2, Demo Day)
 
