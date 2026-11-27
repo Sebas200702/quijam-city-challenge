@@ -29,7 +29,7 @@ export const TRIAGE_QUESTIONS = {
 	verdict: {
 		type: "choice" as const,
 		instructions:
-			"Moderate this message for a public community platform where Barranquilla residents and visitors share events, places and conversations. Colombian Caribbean slang is normal and friendly.",
+			"Moderate this message for a public community platform where Barranquilla residents and visitors share events, places and conversations. Colombian Caribbean slang is normal and friendly. The text may be written in Spanish, English, Portuguese or French: apply the same criteria in any language.",
 		criteria: {
 			publish:
 				"Respectful and on topic: can be shown to everyone, even if it complains or criticizes",

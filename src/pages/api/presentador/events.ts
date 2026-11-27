@@ -4,8 +4,9 @@ import {
 	CITY_EVENTS_CHANNEL,
 } from "../../../lib/city-events/city-events-types";
 import { parseCityEvent } from "../../../lib/city-events/parse-city-event";
-import { presenterAccess } from "../../../lib/presenter/presenter-auth";
+import { resolvePresenterAccess } from "../../../lib/presenter/presenter-auth";
 import { guardRequest } from "../../../lib/security/api-guard";
+import { mfaRequiredResponse } from "../../../lib/security/city-mfa";
 import { getSupabaseAdmin } from "../../../lib/supabase-admin";
 
 export const prerender = false;
@@ -28,7 +29,11 @@ function json(body: unknown, status: number): Response {
 export const POST: APIRoute = async (context) => {
 	const limited = await guardRequest(context, "presenter-events");
 	if (limited) return limited;
-	const access = await presenterAccess(context.request, context.cookies);
+	const { access, mfaRequired } = await resolvePresenterAccess(
+		context.request,
+		context.cookies,
+	);
+	if (mfaRequired) return mfaRequiredResponse();
 	if (!access)
 		return json(
 			{

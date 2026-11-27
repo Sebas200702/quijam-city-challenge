@@ -58,6 +58,15 @@ La respuesta trae `routedBy` (`continuation`, `keywords`, `openjev` o `gemini`) 
 
 La llave de Gemini nunca sale del servidor.
 
+## Idiomas (#93)
+
+El navegador envía `context.language` (`es`, `en`, `pt` o `fr`, el idioma elegido en la interfaz).
+
+- **Gemini:** el contexto le dice que responda en ese idioma, salvo que la persona escriba en otro; las reglas comunes nombran los cuatro idiomas.
+- **Agente local:** sus frases y etiquetas de botones salen de `local-copy.ts`, una tabla por idioma. Sin idioma, responde en español, igual que antes.
+- **Orquestador:** además de las palabras clave en español e inglés, reconoce palabras en portugués y francés (lista aparte, sin palabras del español, para que el enrutamiento en español no cambie). A OpenJev se le avisa que el mensaje puede venir en cualquiera de los cuatro idiomas.
+- **Moderación:** las reglas duras y el triaje con OpenJev también cubren los cuatro idiomas (ver [20-comunidad-y-moderacion.md](20-comunidad-y-moderacion.md)).
+
 ## Ejecución de herramientas en el navegador
 
 `tool-executor.ts` corre cada herramienta **en el navegador con la sesión de la persona**, contra la misma capa de comunidad que usan las pantallas (`src/lib/community/`). Consecuencias:
@@ -73,7 +82,7 @@ Toda herramienta de acción (`ACTION_TOOLS`: inscribirse, cancelar inscripción,
 ## Voz como conducto
 
 - **Por defecto:** Web Speech API del navegador. Micrófono → texto (reconocimiento de voz) → el mismo flujo de texto. La respuesta se puede leer en voz alta (síntesis de voz). Si el navegador no soporta reconocimiento, el botón de micrófono no aparece y queda el texto.
-- **Beta:** Gemini Live sigue en `/prueba-guia` (ver [29-gemini-live.md](29-gemini-live.md)). Todavía no usa los agentes ni sus herramientas.
+- **Beta:** Gemini Live en la conversación, con el botón "Voz en vivo (beta)" (#94). El servidor elige el agente con el mismo orquestador y el token efímero bloquea su instrucción y sus herramientas. Las herramientas corren en el navegador con la sesión de la persona y toda acción usa la misma tarjeta de confirmación, con aviso por voz. Si Live falla, sigue la Web Speech API y el texto. Ver [29-gemini-live.md](29-gemini-live.md). `/prueba-guia` queda como prueba del Guía sin herramientas.
 
 ## Entradas a la conversación
 
@@ -107,7 +116,5 @@ bun run dev
 
 ## Por construir
 
-- Gemini Live con herramientas: voz en tiempo real usando los mismos agentes y la misma regla de confirmación.
-- Multilenguaje de Quillart AI y de la comunidad (ver #48).
 - Recordatorios de eventos y notificaciones.
 - Medir el enrutamiento: qué agente eligió el orquestador frente al que la persona necesitaba.

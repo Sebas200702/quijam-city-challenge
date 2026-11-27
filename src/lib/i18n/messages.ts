@@ -2,6 +2,7 @@
 // dictionaries must have the same keys (the compiler checks it).
 
 import { agenda } from "./dictionaries/agenda";
+import { cityMfa } from "./dictionaries/city-mfa";
 import { forum } from "./dictionaries/forum";
 import { guide } from "./dictionaries/guide";
 import { inbox } from "./dictionaries/inbox";
@@ -37,7 +38,6 @@ const es = {
 		thinking: "Pensando",
 		retry: "Reintentar",
 		readAloud: "Leer respuestas en voz alta",
-		liveVoice: "Voz en vivo (beta)",
 		viewPost: "Ver publicación",
 		viewRoute: "Ver la ruta en el mapa",
 		micPermission: "Necesitamos permiso para usar el micrófono.",
@@ -86,6 +86,7 @@ export type Messages = BaseMessages & {
 	inbox: (typeof inbox)[Language];
 	shared: (typeof shared)[Language];
 	timeline: (typeof timeline)[Language];
+	cityMfa: (typeof cityMfa)[Language];
 };
 
 const en: BaseMessages = {
@@ -109,7 +110,6 @@ const en: BaseMessages = {
 		thinking: "Thinking",
 		retry: "Try again",
 		readAloud: "Read answers aloud",
-		liveVoice: "Live voice (beta)",
 		viewPost: "View post",
 		viewRoute: "See the route on the map",
 		micPermission: "We need permission to use the microphone.",
@@ -162,7 +162,6 @@ const pt: BaseMessages = {
 		thinking: "Pensando",
 		retry: "Tentar de novo",
 		readAloud: "Ler respostas em voz alta",
-		liveVoice: "Voz ao vivo (beta)",
 		viewPost: "Ver publicação",
 		viewRoute: "Ver a rota no mapa",
 		micPermission: "Precisamos de permissão para usar o microfone.",
@@ -216,7 +215,6 @@ const fr: BaseMessages = {
 		thinking: "Réflexion",
 		retry: "Réessayer",
 		readAloud: "Lire les réponses à voix haute",
-		liveVoice: "Voix en direct (bêta)",
 		viewPost: "Voir la publication",
 		viewRoute: "Voir l’itinéraire sur la carte",
 		micPermission:
@@ -268,6 +266,7 @@ function build(language: Language): Messages {
 		inbox: inbox[language],
 		shared: shared[language],
 		timeline: timeline[language],
+		cityMfa: cityMfa[language],
 	};
 }
 

@@ -1,5 +1,6 @@
 // Hard moderation rules. They run first, on the server and in the browser,
 // and always win: personal data and slurs never reach OpenJev or the forum.
+// Terms are Spanish first, plus basic English, Portuguese and French terms.
 
 import type {
 	ModerationInput,
@@ -10,12 +11,18 @@ import type {
 } from "./moderation-types";
 
 export function normalizeText(text: string): string {
-	return text
-		.normalize("NFD")
-		.replace(/\p{Diacritic}/gu, "")
-		.toLowerCase()
-		.replace(/[0@]/g, (char) => (char === "0" ? "o" : "a"))
-		.replace(/(.)\1{2,}/g, "$1$1");
+	return (
+		text
+			.normalize("NFD")
+			.replace(/\p{Diacritic}/gu, "")
+			.toLowerCase()
+			.replace(/[0@]/g, (char) => (char === "0" ? "o" : "a"))
+			// Phone keyboards type "’" (I’m, won’t): match it like "'".
+			.replace(/[’‘ʼ]/g, "'")
+			// "vou-te matar" matches "vou te matar"; only a hyphen between letters.
+			.replace(/(\p{L})-(?=\p{L})/gu, "$1 ")
+			.replace(/(.)\1{2,}/g, "$1$1")
+	);
 }
 
 // Personal data (Ley 1581 de 2012): phone numbers, e-mails and ID numbers.
@@ -138,6 +145,128 @@ const IMPERSONATION_TERMS = [
 	"soporte de quillart",
 ];
 
+/**
+ * Basic terms in English, Portuguese and French for visitors (#93). They are
+ * whole words or phrases that are not Spanish words, so Spanish text gets the
+ * same findings as before. Same normalization: lower case, no accents.
+ */
+const OTHER_LANGUAGE_TERMS = {
+	// Aimed at people by origin; generic "kill all the" or "mort aux" also say
+	// "kill all the mosquitoes" or "mort aux rats", so they are not here.
+	hate: [
+		"go back to your country",
+		"kill all immigrants",
+		"kill all the immigrants",
+		"morte aos estrangeiros",
+		"morte aos imigrantes",
+		"mort aux etrangers",
+		"mort aux immigres",
+	],
+	insult: [
+		"asshole",
+		"bitch",
+		"motherfucker",
+		"fuck you",
+		"idiot",
+		"stupid",
+		"imbecile",
+		"filho da puta",
+		"caralho",
+		"babaca",
+		"connard",
+		"connasse",
+		"salope",
+		"encule",
+		"ta gueule",
+		"vai se foder",
+		"va te faire foutre",
+	],
+	threat: [
+		"i will kill you",
+		"i'll kill you",
+		"i'm going to kill you",
+		"im going to kill you",
+		"kill yourself",
+		"we will find you",
+		"vou te matar",
+		"je vais te tuer",
+		"on va te trouver",
+	],
+	spam: [
+		"make money fast",
+		"earn money",
+		"guaranteed investment",
+		"click here",
+		"cryptocurrency",
+		"ganhe dinheiro",
+		"renda extra",
+		"investimento garantido",
+		"clique aqui",
+		"criptomoeda",
+		"gagnez de l'argent",
+		"argent facile",
+		"investissement garanti",
+		"cliquez ici",
+		"cryptomonnaie",
+	],
+	city: [
+		"pothole",
+		"flooded street",
+		"fallen tree",
+		"power outage",
+		"overcharged",
+		// Not "buraco" alone: in Spanish it is also a card game.
+		"buraco na rua",
+		"buracos na rua",
+		"buraco na estrada",
+		"buraco enorme",
+		"alagamento",
+		"rua alagada",
+		"arvore caida",
+		"sem luz",
+		"nid de poule",
+		"inondation",
+		"rue inondee",
+		"arbre tombe",
+		"sans electricite",
+	],
+	emergency: [
+		"injured",
+		"trapped",
+		"ambulance",
+		"missing child",
+		"ferido",
+		"feridos",
+		"crianca perdida",
+		"blesse",
+		"blesses",
+		"incendie",
+		"enfant perdu",
+	],
+	misinformation: [
+		"share before they delete",
+		"forward to everyone",
+		"the media won't tell you",
+		"repassem",
+		"divulguem",
+		"compartilhem antes que apaguem",
+		"faites tourner",
+		"partagez avant",
+	],
+	impersonation: [
+		"official statement",
+		"official notice",
+		"quillart team",
+		"quillart support",
+		"somos a prefeitura",
+		"equipe do quillart",
+		"communique officiel",
+		"avis officiel",
+		"equipe de quillart",
+		"la police informe",
+	],
+};
+
 /** Domains whose links publish without review (government, universities, the city). */
 export const TRUSTED_LINK_DOMAINS = [
 	"barranquilla.gov.co",
@@ -221,20 +350,28 @@ export function applyModerationRules(input: ModerationInput): RuleFindings {
 			"Por tu seguridad no publicamos teléfonos, correos ni números de documento. Quítalos y vuelve a intentarlo.";
 	}
 
-	if (containsAny(text, HATE_TERMS).length > 0) {
+	if (
+		containsAny(text, [...HATE_TERMS, ...OTHER_LANGUAGE_TERMS.hate]).length > 0
+	) {
 		labels.add("hate");
 		verdict = "reject";
 		reason ??=
 			"El mensaje tiene expresiones de odio o discriminación y no se puede publicar.";
 	}
 
-	if (containsAny(text, THREAT_TERMS).length > 0) {
+	if (
+		containsAny(text, [...THREAT_TERMS, ...OTHER_LANGUAGE_TERMS.threat])
+			.length > 0
+	) {
 		labels.add("threat");
 		verdict = "reject";
 		reason ??= "El mensaje contiene amenazas y no se puede publicar.";
 	}
 
-	const insults = containsAny(text, INSULT_TERMS);
+	const insults = containsAny(text, [
+		...INSULT_TERMS,
+		...OTHER_LANGUAGE_TERMS.insult,
+	]);
 	if (insults.length > 0) {
 		labels.add("harassment");
 		signals.push(`contains ${insults.length} insult word(s)`);
@@ -245,7 +382,10 @@ export function applyModerationRules(input: ModerationInput): RuleFindings {
 
 	const links = raw.match(URL_PATTERN) ?? [];
 	const untrustedLinks = links.filter((link) => !isTrustedLink(link));
-	const spamTerms = containsAny(text, SPAM_TERMS);
+	const spamTerms = containsAny(text, [
+		...SPAM_TERMS,
+		...OTHER_LANGUAGE_TERMS.spam,
+	]);
 	if (links.length > 2 || spamTerms.length > 0) {
 		labels.add("spam");
 		signals.push(`${links.length} link(s), ${spamTerms.length} spam phrase(s)`);
@@ -260,7 +400,12 @@ export function applyModerationRules(input: ModerationInput): RuleFindings {
 			"Tu mensaje quedó en revisión porque tiene un enlace externo. Un moderador lo revisará pronto.";
 	}
 
-	if (containsAny(text, IMPERSONATION_TERMS).length > 0) {
+	if (
+		containsAny(text, [
+			...IMPERSONATION_TERMS,
+			...OTHER_LANGUAGE_TERMS.impersonation,
+		]).length > 0
+	) {
 		labels.add("impersonation");
 		signals.push("speaks as an official authority");
 		verdict = stricterVerdict(verdict, "review");
@@ -268,7 +413,12 @@ export function applyModerationRules(input: ModerationInput): RuleFindings {
 			"Tu mensaje quedó en revisión porque habla en nombre de una entidad oficial. Solo la ciudad publica avisos oficiales.";
 	}
 
-	if (containsAny(text, MISINFORMATION_TERMS).length > 0) {
+	if (
+		containsAny(text, [
+			...MISINFORMATION_TERMS,
+			...OTHER_LANGUAGE_TERMS.misinformation,
+		]).length > 0
+	) {
 		labels.add("misinformation");
 		signals.push("chain-message style alarm");
 		verdict = stricterVerdict(verdict, "review");
@@ -282,12 +432,18 @@ export function applyModerationRules(input: ModerationInput): RuleFindings {
 	}
 
 	let priority: TriagePriority = "none";
-	const cityTerms = containsAny(text, CITY_TERMS);
+	const cityTerms = containsAny(text, [
+		...CITY_TERMS,
+		...OTHER_LANGUAGE_TERMS.city,
+	]);
 	if (cityTerms.length > 0) {
 		priority = "city_attention";
 		signals.push("mentions a public-space problem");
 	}
-	if (containsAny(text, EMERGENCY_TERMS).length > 0) {
+	if (
+		containsAny(text, [...EMERGENCY_TERMS, ...OTHER_LANGUAGE_TERMS.emergency])
+			.length > 0
+	) {
 		priority = "emergency";
 		signals.push("mentions a possible emergency");
 	}
