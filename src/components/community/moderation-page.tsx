@@ -1,7 +1,11 @@
 // City moderation queue: urgent reports, reports for the city and held content.
 
-import { ShieldCheck } from "lucide-react";
-import { useState } from "react";
+import { Gauge, LogOut, ShieldCheck } from "lucide-react";
+import { type ReactNode, useState } from "react";
+import {
+	signInCityOperator,
+	signOutCityOperator,
+} from "../../lib/city-dashboard-service";
 import { formatRelative } from "../../lib/community/community-labels";
 import type {
 	ModerationAction,
@@ -12,7 +16,7 @@ import type {
 	ModerationLabel,
 	ModerationStatus,
 } from "../../lib/moderation/moderation-types";
-import { CommunityShell } from "./community-shell";
+import { CityAuthGate } from "../city-auth-gate";
 import {
 	EmptyState,
 	ErrorNote,
@@ -37,11 +41,76 @@ function contentHref(item: ModerationQueueItem): string | null {
 	return null;
 }
 
-export default function ModerationPage({ aiHref }: { aiHref?: string }) {
+/**
+ * Frame of the city surface, as in /ciudad: logo back to the dashboard,
+ * Dashboard / Moderation and sign out. Not the visitor's tab bar (rule 1).
+ */
+function CityFrame({
+	signedIn,
+	children,
+}: {
+	signedIn: boolean;
+	children: ReactNode;
+}) {
+	const t = useT().forum.moderation;
+	const store = useStore();
+	return (
+		<div className="mx-auto flex min-h-[calc(100dvh-3px)] w-full max-w-6xl flex-col">
+			<header className="q-header">
+				<a
+					href="/ciudad"
+					className="q-logo"
+					aria-label={`QUILLART · ${t.dashboard}`}
+				>
+					<span className="q-logo__tile" aria-hidden="true">
+						<span className="q-star h-5 w-5" />
+					</span>
+					<span className="q-logo__text">
+						<span className="q-logo__word">QUILLART</span>
+					</span>
+				</a>
+				<nav className="q-header__center" aria-label={t.cityNav}>
+					<div className="q-seg">
+						<a className="q-seg__opt" href="/ciudad">
+							<Gauge size={18} strokeWidth={1.75} aria-hidden="true" />
+							{t.dashboard}
+						</a>
+						<a
+							className="q-seg__opt is-on"
+							href="/moderacion"
+							aria-current="page"
+						>
+							<ShieldCheck size={18} strokeWidth={1.75} aria-hidden="true" />
+							{t.title}
+						</a>
+					</div>
+				</nav>
+				{signedIn && (
+					<button
+						type="button"
+						className="q-btn q-btn--ghost"
+						onClick={() =>
+							void store.signOut().then(() => window.location.reload())
+						}
+					>
+						<LogOut size={18} strokeWidth={1.75} aria-hidden="true" />
+						{t.signOut}
+					</button>
+				)}
+			</header>
+			<main className="flex flex-1 flex-col gap-5 px-4 pt-4 pb-16 lg:gap-8 lg:px-8 lg:pt-8">
+				{children}
+			</main>
+		</div>
+	);
+}
+
+export default function ModerationPage() {
 	const t = useT();
+	const store = useStore();
 	const session = useSession();
 	return (
-		<CommunityShell current="forum" aiHref={aiHref}>
+		<CityFrame signedIn={!!session.profile}>
 			<PageTitle
 				eyebrow={t.forum.moderation.eyebrow}
 				title={t.forum.moderation.title}
@@ -53,6 +122,21 @@ export default function ModerationPage({ aiHref }: { aiHref?: string }) {
 				<Loading />
 			) : session.profile ? (
 				<ModerationGate profileId={session.profile.id} />
+			) : store.mode === "cloud" ? (
+				// Same sign-in as /ciudad (Spanish-only for now).
+				<div lang="es">
+					<CityAuthGate
+						session={null}
+						onSignIn={async (email, password) => {
+							await signInCityOperator(email, password);
+							window.location.reload();
+						}}
+						onSignOut={async () => {
+							await signOutCityOperator();
+							window.location.reload();
+						}}
+					/>
+				</div>
 			) : (
 				<EmptyState
 					title={t.forum.moderation.signInTitle}
@@ -66,7 +150,7 @@ export default function ModerationPage({ aiHref }: { aiHref?: string }) {
 					{t.forum.moderation.signInHint}
 				</EmptyState>
 			)}
-		</CommunityShell>
+		</CityFrame>
 	);
 }
 
