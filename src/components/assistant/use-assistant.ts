@@ -1,13 +1,18 @@
 // Conversation state for Quillart AI: sends turns to /api/assistant, runs read
-// tools right away and keeps action tools waiting for the person's OK.
+// tools right away and keeps action tools waiting for the person's OK. Action
+// tools never run on their own: only the confirmation card runs them, one per
+// turn, with the text the person saw (and may have edited).
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { isActionGrounded } from "../../lib/assistant/action-provenance";
+import { sanitizeToolArgs } from "../../lib/assistant/assistant-agents";
 import type {
 	AssistantAgentId,
 	AssistantMessage,
 	AssistantRequest,
 	AssistantResponse,
 	AssistantToolCall,
+	AssistantToolName,
 	AssistantToolResult,
 } from "../../lib/assistant/assistant-types";
 import { isActionTool } from "../../lib/assistant/assistant-types";
@@ -17,10 +22,31 @@ import { useSession, useStore } from "../community/use-community";
 /** Follow-up calls with tool results after one message from the person. */
 const MAX_ROUNDS = 3;
 
+/** Text fields the person may edit on the card before confirming. */
+export const EDITABLE_TEXT_FIELDS: Partial<
+	Record<AssistantToolName, readonly ("title" | "body" | "description")[]>
+> = {
+	create_event: ["title", "description"],
+	create_thread: ["title", "body"],
+	reply_to_thread: ["body"],
+	report_issue: ["description"],
+};
+
+export type EditableText = Partial<
+	Record<"title" | "body" | "description", string>
+>;
+
 export interface PendingAction {
 	call: AssistantToolCall;
 	agent: AssistantAgentId;
 	running: boolean;
+	/**
+	 * False when the target (event or thread) did not come from a tool result
+	 * or the person's own words: the card shows a warning.
+	 */
+	grounded: boolean;
+	/** Replaces editable text fields; false when the new text is not valid. */
+	edit: (text: EditableText) => boolean;
 }
 
 export interface AssistantError {
@@ -89,6 +115,19 @@ function forWire(messages: AssistantMessage[]): AssistantMessage[] {
 	);
 }
 
+/** Result for an extra action in the same turn: only one runs per turn. */
+function droppedResult(call: AssistantToolCall): AssistantToolResult {
+	return {
+		callId: call.id,
+		name: call.name,
+		summary: {
+			declined: true,
+			message: "Solo se propone una acción por turno; esta no se hizo.",
+		},
+		declined: true,
+	};
+}
+
 function isResponse(value: unknown): value is AssistantResponse {
 	const body = value as Partial<AssistantResponse> | null;
 	return (
@@ -113,6 +152,55 @@ export function useAssistant() {
 	profileRef.current = profile;
 	const restored = useRef(false);
 
+	/** Applies an edit to a waiting action (its args and the replayed turn). */
+	const editAction = useCallback(
+		(callId: string, text: EditableText): boolean => {
+			const open = batch.current;
+			const call = open?.remaining.find((item) => item.id === callId);
+			const fields = call ? EDITABLE_TEXT_FIELDS[call.name] : undefined;
+			if (!open || !call || !fields) return false;
+			const changes = Object.fromEntries(
+				fields
+					.filter((field) => typeof text[field] === "string")
+					.map((field) => [field, text[field]]),
+			);
+			const args = sanitizeToolArgs(call.name, { ...call.args, ...changes });
+			if (!args) return false;
+			const updated = { ...call, args } as AssistantToolCall;
+			const swap = (item: AssistantToolCall) =>
+				item.id === callId ? updated : item;
+			open.remaining = open.remaining.map(swap);
+			// The model sees what was really executed, not what it proposed.
+			open.messages = open.messages.map((message) =>
+				message.role === "assistant"
+					? { ...message, toolCalls: message.toolCalls.map(swap) }
+					: message,
+			);
+			setPending((items) =>
+				items.map((item) =>
+					item.call.id === callId ? { ...item, call: updated } : item,
+				),
+			);
+			return true;
+		},
+		[],
+	);
+
+	const toPending = useCallback(
+		(
+			call: AssistantToolCall,
+			agent: AssistantAgentId,
+			history: AssistantMessage[],
+		): PendingAction => ({
+			call,
+			agent,
+			running: false,
+			grounded: isActionGrounded(call, history, [referrerPath()]),
+			edit: (text) => editAction(call.id, text),
+		}),
+		[editAction],
+	);
+
 	useEffect(() => {
 		const saved = loadSaved();
 		restored.current = true;
@@ -120,10 +208,12 @@ export function useAssistant() {
 		setMessages(saved.messages);
 		batch.current = saved.batch;
 		if (saved.batch) {
-			const { agent, remaining } = saved.batch;
-			setPending(remaining.map((call) => ({ call, agent, running: false })));
+			const { agent, remaining, messages: history, results } = saved.batch;
+			const known: AssistantMessage[] =
+				results.length > 0 ? [...history, { role: "tool", results }] : history;
+			setPending(remaining.map((call) => toPending(call, agent, known)));
 		}
-	}, []);
+	}, [toPending]);
 
 	// biome-ignore lint/correctness/useExhaustiveDependencies: pending changes when the batch ref does.
 	useEffect(() => {
@@ -187,12 +277,15 @@ export function useAssistant() {
 			const reads = response.toolCalls.filter(
 				(call) => !isActionTool(call.name),
 			);
-			const actions = response.toolCalls.filter((call) =>
+			// The server already keeps one action per turn; never trust that alone.
+			const [action, ...extraActions] = response.toolCalls.filter((call) =>
 				isActionTool(call.name),
 			);
-			const results = await Promise.all(
-				reads.map((call) => runTool(call, store)),
-			);
+			const actions = action ? [action] : [];
+			const results = [
+				...(await Promise.all(reads.map((call) => runTool(call, store)))),
+				...extraActions.map(droppedResult),
+			];
 
 			if (actions.length > 0) {
 				batch.current = {
@@ -206,12 +299,10 @@ export function useAssistant() {
 					// Show the read results now; they are sent with the actions' outcome.
 					setMessages([...next, { role: "tool", results }]);
 				}
+				const known: AssistantMessage[] =
+					results.length > 0 ? [...next, { role: "tool", results }] : next;
 				setPending(
-					actions.map((call) => ({
-						call,
-						agent: response.agent,
-						running: false,
-					})),
+					actions.map((call) => toPending(call, response.agent, known)),
 				);
 				busy.current = false;
 				setLoading(false);
@@ -230,7 +321,7 @@ export function useAssistant() {
 			busy.current = false;
 			setLoading(false);
 		},
-		[request, store],
+		[request, store, toPending],
 	);
 
 	/** Answers one pending action; when none is left, the loop continues. */

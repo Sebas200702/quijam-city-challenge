@@ -7,6 +7,7 @@ import {
 	AGENT_IDS,
 	AGENTS,
 	type AgentTurn,
+	limitActionCalls,
 	PROFILE_PATH,
 	TOOL_SCHEMAS,
 	type ToolCallDraft,
@@ -288,9 +289,11 @@ export async function answer(
 
 	const newId = deps.newId ?? (() => crypto.randomUUID());
 	const allowed = AGENTS[agent].tools;
-	const toolCalls = turn.toolCalls
-		.filter((call) => allowed.includes(call.name))
-		.map((call) => ({ id: newId(), ...call }) as AssistantToolCall);
+	// One action per turn, for Gemini and the local agents alike: a single
+	// confirmation card, never a chain of writes.
+	const toolCalls = limitActionCalls(
+		turn.toolCalls.filter((call) => allowed.includes(call.name)),
+	).map((call) => ({ id: newId(), ...call }) as AssistantToolCall);
 
 	return {
 		agent,
