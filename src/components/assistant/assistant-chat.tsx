@@ -372,12 +372,12 @@ export function AssistantChat({
 					</div>
 					{composer}
 					{voice.error && <ErrorNote message={voice.error} />}
-					<div className="flex flex-wrap gap-2">
+					<div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] lg:mx-0 lg:flex-wrap lg:overflow-visible lg:px-0 [&::-webkit-scrollbar]:hidden">
 						{chips.map((chip) => (
 							<button
 								key={chip}
 								type="button"
-								className="q-chip"
+								className="q-chip shrink-0 whitespace-nowrap"
 								onClick={() => void send(chip)}
 							>
 								{chip}
