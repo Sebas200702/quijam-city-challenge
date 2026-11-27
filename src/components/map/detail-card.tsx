@@ -19,6 +19,7 @@ import {
 	WifiOff,
 	X,
 } from "lucide-react";
+import type { ReactNode } from "react";
 import type { SelectionDetail } from "../../lib/corridor/corridor-selection";
 import type {
 	CorridorDataSource,
@@ -154,6 +155,8 @@ interface DetailCardProps {
 	source: CorridorDataSource;
 	onClose: () => void;
 	onOpenGuide: () => void;
+	/** Extra content at the end of the body (business menu and "Estoy aquí"). */
+	children?: ReactNode;
 }
 
 /**
@@ -166,6 +169,7 @@ export function DetailCard({
 	source,
 	onClose,
 	onOpenGuide,
+	children,
 }: DetailCardProps) {
 	const copy = useT().map;
 	const offline = source === "seed" && (
@@ -364,6 +368,7 @@ export function DetailCard({
 						{copy.offlineNote}
 					</p>
 				)}
+				{children}
 			</div>
 
 			<div className="q-card__foot">

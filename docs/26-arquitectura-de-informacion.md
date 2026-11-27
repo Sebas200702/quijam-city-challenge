@@ -142,7 +142,9 @@ flowchart TD
     MAP -.->|Malecón 85 % o más y está en el Malecón| DIVCARD["Aviso discreto: sugerencia Barrio Abajo"]
 ```
 
-### 2.2 Vendedor (pendiente, #49)
+### 2.2 Vendedor (#49)
+
+**Hecho:** `/vendedor/entrar` (alta con el QR de la ciudad), `/vendedor` (abierto o cerrado, productos y precios, visitas del día por hora) y, en `/mapa`, el pin y la tarjeta que cambian en vivo, el menú con precios y "Estoy aquí". Datos y RLS en [11-modelo-datos.md](11-modelo-datos.md) (Portal del vendedor). **Falta:** dar sellos (#45), los avisos de desvío (evento `desvio`) y la ayuda.
 
 **Pantalla de inicio:** tarjeta "tu siguiente paso" con el estado del negocio en palabra ("Cerrado") y la acción principal "Marcarme abierta". Abierta, la acción pasa a "Marcarme cerrada" (con confirmación).
 

@@ -22,6 +22,7 @@ export const RATE_LIMIT_POLICIES = {
 	"csp-report": { limit: 30, windowMs: MINUTE, scope: "ip" },
 	"presenter-session": { limit: 10, windowMs: 10 * MINUTE, scope: "ip" },
 	"presenter-events": { limit: 60, windowMs: MINUTE, scope: "ip" },
+	"vendor-visit": { limit: 1, windowMs: 30 * MINUTE, scope: "ip" },
 } as const satisfies Record<string, RateLimitPolicy>;
 
 export type RateLimitPolicyName = keyof typeof RATE_LIMIT_POLICIES;
