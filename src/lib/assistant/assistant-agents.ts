@@ -14,6 +14,7 @@ import type {
 	PlaceKind,
 } from "../community/community-types";
 import { PLACES } from "../community/places-catalog";
+import { OPEN_DATA_CATALOG } from "../open-data/open-data-catalog";
 import { AGENT_LABELS } from "./assistant-labels";
 import {
 	type AssistantAgentId,
@@ -54,6 +55,7 @@ export const AGENT_IDS: readonly AssistantAgentId[] = [
 	"mobility",
 	"city_reports",
 	"account",
+	"city_data",
 ];
 
 export const EVENT_CATEGORIES = Object.keys(
@@ -144,9 +146,16 @@ export const AGENTS: Record<AssistantAgentId, AgentDefinition> = {
 		label: AGENT_LABELS.mobility,
 		description:
 			"Getting around Barranquilla: routes, Transmetro and buses, fares, fair taxis, arroyo (flash flood) alerts, how to get to the stadium, Barrio Abajo or downtown",
-		tools: ["plan_route", "get_directions", "list_places", "open_page"],
+		tools: [
+			"plan_route",
+			"get_directions",
+			"get_fares",
+			"list_places",
+			"open_page",
+		],
 		rules: [
 			"For the stadium, Barrio Abajo or downtown (centro) call plan_route; it starts at the Gran Malecón.",
+			"For any question about fares, prices or costs of the Transmetro, buses or taxis call get_fares, even if fares were mentioned earlier, and repeat the amounts in pesos exactly as the result gives them.",
 			"For any other catalog place call get_directions with its slug.",
 			"Never invent routes, times or fares; only use tool results. Prefer the green route.",
 			"If it is raining, remind the person never to cross a flooded arroyo.",
@@ -191,6 +200,25 @@ export const AGENTS: Record<AssistantAgentId, AgentDefinition> = {
 			"¿Qué planes hay este fin de semana?",
 		],
 	},
+	city_data: {
+		id: "city_data",
+		label: AGENT_LABELS.city_data,
+		description:
+			"City data and news of Barranquilla: novedades and notices (active arroyo alerts, newest community events), the open-data portal (reference/synthetic corridor data and real community records, including historical ones), statistics and program indicators, the crowd simulation and zone occupancy",
+		tools: ["get_news", "get_open_data", "get_city_indicators", "open_page"],
+		rules: [
+			"For news, novedades or notices call get_news; for datasets, statistics, historical or synthetic data call get_open_data (without dataset to list the catalog, with dataset to read its records); for program indicators call get_city_indicators.",
+			"Say where each figure comes from: origin 'reference' is synthetic reference data of the corridor pilot, origin 'community' is real records published on the platform.",
+			"Repeat numbers, prices and dates exactly as the tool result gives them; never estimate or round them.",
+			`Known datasets: ${OPEN_DATA_CATALOG.map((dataset) => `${dataset.slug} (${dataset.title})`).join("; ")}.`,
+			"The crowd simulation and live zone occupancy are only on the city panel for the city team: never give occupancy numbers; offer open_page '/ciudad' and say it needs a city account. The open data portal is '/datos'.",
+		],
+		suggestions: [
+			"¿Qué novedades hay hoy?",
+			"¿Qué datos abiertos tienen?",
+			"Indicadores de la ciudad",
+		],
+	},
 };
 
 /** Rules every agent follows. */
@@ -201,7 +229,7 @@ const SHARED_RULES = [
 	"For any action (register, publish, reply, report) ALWAYS call the action tool; the app asks the person to confirm. Never say an action is done until a tool result says so.",
 	`If the person is not signed in and the action needs an account, say so and call open_page with path '${PROFILE_PATH}'.`,
 	"Resolve relative dates ('hoy', 'este sábado', 'el finde') from the current time in America/Bogota given below.",
-	"open_page only suggests a screen as a button; use internal paths like '/agenda', '/foro', '/lugares', '/mapa', '/perfil'.",
+	"open_page only suggests a screen as a button; use internal paths like '/agenda', '/foro', '/lugares', '/mapa', '/datos', '/perfil'.",
 	"If the question belongs to another section, answer briefly and suggest asking about it.",
 ];
 
@@ -455,6 +483,36 @@ export const TOOL_SCHEMAS: { [N in AssistantToolName]: ToolSchema } = {
 			place_slug: placeSlug,
 		},
 		required: ["description"],
+	},
+	get_fares: {
+		description:
+			"Current reference fares in Colombian pesos for Transmetro, bus and taxi (fair range), per corridor leg. Read-only.",
+		properties: {},
+		required: [],
+	},
+	get_news: {
+		description:
+			"City news (novedades): active arroyo (flash flood) alerts and the newest community events. Read-only.",
+		properties: {},
+		required: [],
+	},
+	get_open_data: {
+		description:
+			"Open data portal: without dataset, the catalog (origin reference = synthetic corridor data, community = real records); with dataset, its first records. Read-only.",
+		properties: {
+			dataset: {
+				type: "string",
+				description: "Dataset slug from the catalog",
+				enum: OPEN_DATA_CATALOG.map((dataset) => dataset.slug),
+			},
+		},
+		required: [],
+	},
+	get_city_indicators: {
+		description:
+			"The five program indicators of the city (territory, sustainability, smart city, citizenship, economy) with current value and target, from public sources only. Read-only.",
+		properties: {},
+		required: [],
 	},
 	open_page: {
 		description:

@@ -14,19 +14,47 @@ import {
 // while a blob: worklet is only allowed on /prueba-guia.
 export const CAPTURE_WORKLET_URL = "/live-capture-worklet.js";
 
+/** Any of these counts as the gesture a browser needs to start audio. */
+const GESTURES = [
+	"pointerdown",
+	"pointerup",
+	"touchend",
+	"click",
+	"keydown",
+] as const;
+
 /**
- * After a page load (Live resumed on the next page) the browser starts audio
- * suspended until the person touches the page: resume on the first gesture.
+ * Keeps an AudioContext running. After a page load (Live resumed on the next
+ * page) some browsers start audio suspended until the person touches the page,
+ * and a hidden tab or an OS interruption can suspend it later. Tries at once,
+ * again on every gesture, when the tab is visible again and whenever the
+ * context leaves "running". Returns the cleanup.
  */
-function resumeOnGesture(context: AudioContext): void {
-	if (context.state !== "suspended") return;
+function keepRunning(context: AudioContext): () => void {
 	const resume = () => {
-		void context.resume();
-		window.removeEventListener("pointerdown", resume);
-		window.removeEventListener("keydown", resume);
+		if (context.state === "running" || context.state === "closed") return;
+		context.resume().catch(() => {
+			// Needs a gesture first; the listeners below try again.
+		});
 	};
-	window.addEventListener("pointerdown", resume);
-	window.addEventListener("keydown", resume);
+	const onVisible = () => {
+		if (document.visibilityState === "visible") resume();
+	};
+	for (const gesture of GESTURES) {
+		window.addEventListener(gesture, resume, { passive: true });
+	}
+	document.addEventListener("visibilitychange", onVisible);
+	context.onstatechange = () => {
+		if (context.state !== "running") resume();
+	};
+	resume();
+	return () => {
+		for (const gesture of GESTURES) {
+			window.removeEventListener(gesture, resume);
+		}
+		document.removeEventListener("visibilitychange", onVisible);
+		context.onstatechange = null;
+	};
 }
 
 export interface Microphone {
@@ -39,7 +67,7 @@ export async function startMicrophone(
 ): Promise<Microphone> {
 	const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 	const context = new AudioContext({ sampleRate: INPUT_SAMPLE_RATE });
-	resumeOnGesture(context);
+	const release = keepRunning(context);
 	try {
 		await context.audioWorklet.addModule(CAPTURE_WORKLET_URL);
 		const node = new AudioWorkletNode(context, "capture");
@@ -52,12 +80,14 @@ export async function startMicrophone(
 		context.createMediaStreamSource(stream).connect(node);
 	} catch (error) {
 		for (const track of stream.getTracks()) track.stop();
+		release();
 		void context.close();
 		throw error;
 	}
 	return {
 		stop: () => {
 			for (const track of stream.getTracks()) track.stop();
+			release();
 			void context.close();
 		},
 	};
@@ -68,11 +98,13 @@ export class LivePlayback {
 	private context: AudioContext | null = null;
 	private nextStart = 0;
 	private sources: AudioBufferSourceNode[] = [];
+	private release: (() => void) | null = null;
+	private waiting: (() => void)[] = [];
 
 	play(base64: string): void {
 		if (!this.context) {
 			this.context = new AudioContext({ sampleRate: OUTPUT_SAMPLE_RATE });
-			resumeOnGesture(this.context);
+			this.release = keepRunning(this.context);
 		}
 		const context = this.context;
 		const samples = base64Pcm16ToFloat(base64);
@@ -87,7 +119,28 @@ export class LivePlayback {
 		this.sources.push(source);
 		source.onended = () => {
 			this.sources = this.sources.filter((item) => item !== source);
+			if (this.sources.length === 0) this.wake();
 		};
+	}
+
+	/** True while audio is queued or playing. */
+	busy(): boolean {
+		return this.sources.length > 0;
+	}
+
+	/**
+	 * Resolves once everything queued has played. It never resolves while the
+	 * context is suspended (time does not move), so callers add a timeout.
+	 */
+	drained(): Promise<void> {
+		if (this.sources.length === 0) return Promise.resolve();
+		return new Promise((resolve) => this.waiting.push(resolve));
+	}
+
+	private wake(): void {
+		const waiting = this.waiting;
+		this.waiting = [];
+		for (const resolve of waiting) resolve();
 	}
 
 	interrupt(): void {
@@ -100,10 +153,13 @@ export class LivePlayback {
 		}
 		this.sources = [];
 		this.nextStart = 0;
+		this.wake();
 	}
 
 	close(): void {
 		this.interrupt();
+		this.release?.();
+		this.release = null;
 		void this.context?.close();
 		this.context = null;
 	}

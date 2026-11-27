@@ -48,6 +48,12 @@ describe("routeByKeywords", () => {
 		["QUÉ HACER en Barranquilla", "places"],
 		["llévame al Malecón", "mobility"],
 		["Ruta al Gran Malecón", "mobility"],
+		["¿Qué novedades hay hoy?", "city_data"],
+		["Muéstrame los datos abiertos", "city_data"],
+		["Datos históricos y sintéticos de la ciudad", "city_data"],
+		["Indicadores de la simulación", "city_data"],
+		["¿Cuánto vale el pasaje del Transmetro?", "mobility"],
+		["¿Cuál es la tarifa del taxi?", "mobility"],
 	])("%s → %s", (text, agent) => {
 		expect(routeByKeywords(text)).toBe(agent);
 	});
@@ -207,6 +213,7 @@ describe("multilingual keywords", () => {
 			mobility: 0,
 			city_reports: 0,
 			account: 0,
+			city_data: 0,
 		});
 	});
 

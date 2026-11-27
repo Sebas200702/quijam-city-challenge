@@ -72,6 +72,40 @@ describe("liveConduitSetup", () => {
 		expect(LIVE_CONDUIT_INSTRUCTION).toMatch(/confirm/i);
 		expect(LIVE_CONDUIT_INSTRUCTION).toMatch(/language/i);
 	});
+
+	it("lists every capability, not only the map", () => {
+		for (const topic of [
+			/events/i,
+			/agenda/i,
+			/mobility/i,
+			/fares/i,
+			/places/i,
+			/forum/i,
+			/reports/i,
+			/account/i,
+			/news/i,
+			/novedades/i,
+			/open data/i,
+			/historical/i,
+			/synthetic/i,
+			/indicators/i,
+			/crowd simulation/i,
+		]) {
+			expect(LIVE_CONDUIT_INSTRUCTION).toMatch(topic);
+		}
+	});
+
+	it("never lets Live state prices from memory", () => {
+		expect(LIVE_CONDUIT_INSTRUCTION).toMatch(
+			/never state prices, fares, costs or amounts from memory/i,
+		);
+		expect(LIVE_CONDUIT_INSTRUCTION).toMatch(/even if a similar question/i);
+		expect(LIVE_CONDUIT_INSTRUCTION).toMatch(
+			/numbers from the tool result exactly/i,
+		);
+		// Live may still say the current date and time from the context.
+		expect(LIVE_CONDUIT_INSTRUCTION).not.toMatch(/never say .*(date|time)/i);
+	});
 });
 
 describe("liveConduitAgent", () => {

@@ -21,13 +21,17 @@ import {
 	type LatLngTuple,
 } from "../lib/corridor/corridor-geometry";
 import { CORRIDOR_SEED } from "../lib/corridor/corridor-seed";
-import { CrowdSim, SIM_ZONES } from "../lib/crowd-sim/crowd-sim";
+import { CrowdSim, SIM_ZONES, type ZoneSeed } from "../lib/crowd-sim/crowd-sim";
 import { writeSimulatedCounts } from "../lib/crowd-sim/crowd-sim-store";
 import { createMetroMap, metroTileLayer } from "./map/metro-frame";
 
 const AGENTS = 2000;
 /** How often simulated counts are written to the database while running. */
 const WRITE_EVERY_MS = 5000;
+/** Writes stop this long after another writer (e.g. simulate-city.ts) changes the counts. */
+const EXTERNAL_WRITER_PAUSE_MS = 30_000;
+/** Recent values the panel wrote per zone, to tell its own Realtime echo from other writers. */
+const OWN_WRITES_KEPT = 3;
 /** With reduced motion the dots move in steps, twice per second. */
 const REDUCED_MOTION_STEP_MS = 500;
 /** How far dots spread across the street, in screen pixels. */
@@ -87,6 +91,24 @@ interface ZoneReading {
 	state: string;
 }
 
+function toSeeds(zones: ZoneVisitorCount[]): ZoneSeed[] {
+	return zones.map((zone) => ({
+		zone: zone.zone,
+		visitors: zone.active_visitors,
+		capacity: zone.capacity_threshold,
+	}));
+}
+
+/** True when a count differs from every value the panel itself wrote recently. */
+function hasExternalChange(
+	zones: ZoneVisitorCount[],
+	ownWrites: Map<string, number[]>,
+): boolean {
+	return zones.some(
+		(zone) => !ownWrites.get(zone.zone)?.includes(zone.active_visitors),
+	);
+}
+
 function readZones(sim: CrowdSim, zones: ZoneVisitorCount[]): ZoneReading[] {
 	const counts = sim.counts();
 	return SIM_ZONES.flatMap((key) => {
@@ -110,7 +132,7 @@ function readZones(sim: CrowdSim, zones: ZoneVisitorCount[]): ZoneReading[] {
 }
 
 interface CrowdSimPanelProps {
-	/** Zone counts when the panel opens: the simulation starts from them. */
+	/** Live zone counts: the simulation starts from them and follows later changes. */
 	zones: ZoneVisitorCount[];
 	/** Write simulated counts to zone_visitor_counts (city role only). */
 	canWrite: boolean;
@@ -129,24 +151,25 @@ export function CrowdSimPanel({ zones, canWrite }: CrowdSimPanelProps) {
 	const [fps, setFps] = useState(0);
 	const [writeError, setWriteError] = useState<string | null>(null);
 	const [readings, setReadings] = useState<ZoneReading[]>([]);
-	const [initialZones] = useState(zones);
+	const [externalWriter, setExternalWriter] = useState(false);
+	const zonesRef = useRef(zones);
+	zonesRef.current = zones;
+	const ownWritesRef = useRef(new Map<string, number[]>());
+	const pauseTimerRef = useRef(0);
+	const appliedKeyRef = useRef(zones.map((z) => z.active_visitors).join());
 	const runningRef = useRef(running);
 	runningRef.current = running;
 	const reducedMotion = useReducedMotion();
 	const online = useOnline();
 
-	// One simulation per panel, built from the counts the panel opened with.
-	if (!simRef.current && initialZones.length > 0) {
+	// One simulation per panel, built from the first counts; later counts re-target it.
+	if (!simRef.current && zones.length > 0) {
 		const path = corridorLine(CORRIDOR_SEED.stops);
 		simRef.current = new CrowdSim({
 			path,
 			stops: CORRIDOR_SEED.stops,
 			floodZones: CORRIDOR_SEED.floodZones,
-			zones: initialZones.map((zone) => ({
-				zone: zone.zone,
-				visitors: zone.active_visitors,
-				capacity: zone.capacity_threshold,
-			})),
+			zones: toSeeds(zones),
 			agents: AGENTS,
 		});
 	}
@@ -161,6 +184,29 @@ export function CrowdSimPanel({ zones, canWrite }: CrowdSimPanelProps) {
 		simRef.current?.setBlockedFloodZones(city.activeFloodZoneIds);
 	}, [city.activeFloodZoneIds]);
 
+	// Live counts (simulate-city.ts --run, another dashboard): follow them, and
+	// stop writing for a while so the two writers do not overwrite each other.
+	// Values the panel wrote itself come back through Realtime and are skipped.
+	useEffect(() => {
+		const sim = simRef.current;
+		const key = zones.map((z) => z.active_visitors).join();
+		if (!sim || key === appliedKeyRef.current) return;
+		appliedKeyRef.current = key;
+		if (!hasExternalChange(zones, ownWritesRef.current)) return;
+		sim.setZoneTargets(toSeeds(zones));
+		setExternalWriter(true);
+		// Each new external change restarts the pause. Kept in a ref: a later
+		// re-render with the same counts must not cancel it.
+		window.clearTimeout(pauseTimerRef.current);
+		pauseTimerRef.current = window.setTimeout(
+			() => setExternalWriter(false),
+			EXTERNAL_WRITER_PAUSE_MS,
+		);
+	}, [zones]);
+	useEffect(() => () => window.clearTimeout(pauseTimerRef.current), []);
+
+	const simReady = simRef.current !== null;
+	// biome-ignore lint/correctness/useExhaustiveDependencies: simReady re-runs the map setup once the sim exists (it lives in a ref).
 	useEffect(() => {
 		const container = mapRef.current;
 		const canvas = canvasRef.current;
@@ -208,7 +254,7 @@ export function CrowdSimPanel({ zones, canWrite }: CrowdSimPanelProps) {
 			context.setTransform(ratio, 0, 0, ratio, 0, 0);
 			context.clearRect(0, 0, width, height);
 			// Dot color = state of the zone it is in (dashboard density scale).
-			const tones = readZones(sim, initialZones).map((zone) => zone.tone);
+			const tones = readZones(sim, zonesRef.current).map((zone) => zone.tone);
 			const degreesPerPixel =
 				(map.getBounds().getNorth() - map.getBounds().getSouth()) / height;
 			const spread = SPREAD_PX * degreesPerPixel;
@@ -242,7 +288,7 @@ export function CrowdSimPanel({ zones, canWrite }: CrowdSimPanelProps) {
 			frames++;
 			if (now - fpsWindowStart >= 1000) {
 				setFps(Math.round((frames * 1000) / (now - fpsWindowStart)));
-				setReadings(readZones(sim, initialZones));
+				setReadings(readZones(sim, zonesRef.current));
 				frames = 0;
 				fpsWindowStart = now;
 			}
@@ -260,7 +306,7 @@ export function CrowdSimPanel({ zones, canWrite }: CrowdSimPanelProps) {
 			};
 			frame = requestAnimationFrame(loop);
 		}
-		setReadings(readZones(sim, initialZones));
+		setReadings(readZones(sim, zonesRef.current));
 		map.on("move zoom resize", draw);
 
 		return () => {
@@ -268,15 +314,23 @@ export function CrowdSimPanel({ zones, canWrite }: CrowdSimPanelProps) {
 			window.clearInterval(timer);
 			map.remove();
 		};
-	}, [initialZones, reducedMotion]);
+	}, [simReady, reducedMotion]);
 
 	useEffect(() => {
 		// Offline writes would only fail; they resume when the connection is back.
-		if (!canWrite || !running || !online) return;
+		if (!canWrite || !running || !online || externalWriter) return;
 		const timer = window.setInterval(() => {
 			const sim = simRef.current;
 			if (!sim) return;
-			writeSimulatedCounts(sim.counts())
+			const counts = sim.counts();
+			for (const [zone, visitors] of Object.entries(counts)) {
+				const recent = ownWritesRef.current.get(zone) ?? [];
+				ownWritesRef.current.set(
+					zone,
+					[visitors, ...recent].slice(0, OWN_WRITES_KEPT),
+				);
+			}
+			writeSimulatedCounts(counts)
 				.then(() => setWriteError(null))
 				.catch((error: unknown) =>
 					setWriteError(
@@ -285,12 +339,15 @@ export function CrowdSimPanel({ zones, canWrite }: CrowdSimPanelProps) {
 				);
 		}, WRITE_EVERY_MS);
 		return () => window.clearInterval(timer);
-	}, [canWrite, running, online]);
+	}, [canWrite, running, online, externalWriter]);
 
 	const sim = simRef.current;
 	if (!sim) {
 		return (
-			<section className="q-card lc-shape--leaf" aria-labelledby="crowd-sim-title">
+			<section
+				className="q-card lc-shape--leaf"
+				aria-labelledby="crowd-sim-title"
+			>
 				<div className="q-card__body">
 					<h2 id="crowd-sim-title" className="q-h2">
 						Ensayo de escenarios
@@ -313,7 +370,10 @@ export function CrowdSimPanel({ zones, canWrite }: CrowdSimPanelProps) {
 	const blockedFloods = city.activeFloodZoneIds.length;
 
 	return (
-		<section className="q-card lc-shape--leaf" aria-labelledby="crowd-sim-title">
+		<section
+			className="q-card lc-shape--leaf"
+			aria-labelledby="crowd-sim-title"
+		>
 			<div className="q-band q-band--gold" aria-hidden="true" />
 			<div className="q-card__head flex-wrap">
 				<div className="min-w-0 flex-1">
@@ -447,9 +507,11 @@ export function CrowdSimPanel({ zones, canWrite }: CrowdSimPanelProps) {
 						{online ? <Save {...ICON} /> : <CloudOff {...ICON} />}
 						{!online
 							? "Sin conexión: los conteos se guardan cuando vuelva."
-							: running
-								? "Los conteos se guardan cada 5 s."
-								: "En pausa: los conteos no se guardan."}
+							: !running
+								? "En pausa: los conteos no se guardan."
+								: externalWriter
+									? "Otro proceso está actualizando los conteos (por ejemplo, el script de simulación): el ensayo los sigue y deja de guardar durante 30 s."
+									: "Los conteos se guardan cada 5 s."}
 					</p>
 				)}
 				{writeError && (

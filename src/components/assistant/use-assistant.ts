@@ -206,6 +206,12 @@ export function useAssistant() {
 		() => new Set(),
 	);
 	const navigation = useRef<UiNavigation | null>(null);
+	/**
+	 * Set while a Live request (ask) runs: the screen it opens waits until Live
+	 * has spoken the answer, instead of reloading the page right away.
+	 */
+	const holdNavigation = useRef(false);
+	const heldNavigation = useRef<UiNavigation | null>(null);
 	const abort = useRef<AbortController | null>(null);
 	/** True right after the person stopped an answer. */
 	const [stopped, setStopped] = useState(false);
@@ -404,7 +410,8 @@ export function useAssistant() {
 		navigation.current = null;
 		if (!next) return;
 		save({ messages: history, batch: batch.current });
-		uiBus().follow(next);
+		if (holdNavigation.current) heldNavigation.current = next;
+		else uiBus().follow(next);
 	}, []);
 
 	/** Runs the loop; resolves with the final conversation, or null if it failed. */
@@ -713,15 +720,34 @@ export function useAssistant() {
 	/**
 	 * The Gemini Live conduit: sends the request exactly like a typed message
 	 * (orchestrator, uiActions, confirmation cards) and waits for the answer.
-	 * Null when nothing was sent or the answer failed.
+	 * Null when nothing was sent or the answer failed. A screen the answer
+	 * opens is returned, not opened: the caller opens it once Live has spoken.
 	 */
 	const ask = useCallback(
-		async (text: string): Promise<ConduitResult | null> => {
+		async (
+			text: string,
+		): Promise<{
+			result: ConduitResult;
+			navigation: UiNavigation | null;
+		} | null> => {
 			const next = begin(text);
 			if (!next) return null;
-			const final = await converse(next, 0);
-			if (!final) return null;
-			return conduitResultOf(final.slice(next.length), batch.current);
+			holdNavigation.current = true;
+			heldNavigation.current = null;
+			let final: AssistantMessage[] | null;
+			try {
+				final = await converse(next, 0);
+			} finally {
+				holdNavigation.current = false;
+			}
+			const navigation = heldNavigation.current;
+			heldNavigation.current = null;
+			if (!final) {
+				if (navigation) uiBus().follow(navigation);
+				return null;
+			}
+			const result = conduitResultOf(final.slice(next.length), batch.current);
+			return { result, navigation };
 		},
 		[begin, converse],
 	);

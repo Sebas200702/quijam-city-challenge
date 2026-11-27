@@ -43,6 +43,13 @@ export interface LocalCopy {
 	profile: string;
 	profileLabel: string;
 	myRegistrations: string;
+	/** The mobility agent looks up the current fares. */
+	fares: string;
+	/** The city data agent looks up news, open data or indicators. */
+	news: string;
+	openData: string;
+	indicators: string;
+	openDataLabel: string;
 	wrapUp: {
 		failed: string;
 		held: string;
@@ -72,6 +79,13 @@ export interface LocalCopy {
 		threadPublished: string;
 		replyPublished: string;
 		reportSent: string;
+		/** `list` is already formatted ("Transmetro: $3.500; ..."). */
+		fares: (list: string) => string;
+		news: (alerts: number, events: number) => string;
+		openDataCatalog: (count: number) => string;
+		openDataRecords: (count: number) => string;
+		/** `list` is already formatted ("Territorio: 80 % (Meta: 90 %); ..."). */
+		indicators: (list: string) => string;
 		fallback: string;
 	};
 }

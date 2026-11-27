@@ -20,7 +20,9 @@ import type {
 	PublishResult,
 } from "../community/community-types";
 import { ambAnchor } from "../geo/amb-boundary";
+import type { DimensionIndicator } from "../indicators/live-indicators-types";
 import { mapHref } from "../map/map-url";
+import type { OpenDataRecord } from "../open-data/open-data-types";
 import type {
 	AssistantDisplay,
 	AssistantToolArgs,
@@ -28,6 +30,12 @@ import type {
 	AssistantToolName,
 	AssistantToolResult,
 } from "./assistant-types";
+import {
+	faresByMode,
+	formatFares,
+	formatIndicators,
+	MODE_LABELS,
+} from "./city-data-format";
 import {
 	UNTRUSTED_BODY_MAX,
 	UNTRUSTED_TITLE_MAX,
@@ -39,6 +47,8 @@ export interface ToolDeps {
 	fetch?: typeof fetch;
 	/** Clock, for "days_ahead". Defaults to the current time. */
 	now?: () => Date;
+	/** Program indicators for get_city_indicators. Defaults to the live service. */
+	loadIndicators?: () => Promise<DimensionIndicator[]>;
 }
 
 interface ToolOutcome {
@@ -51,6 +61,7 @@ interface ToolContext {
 	store: CommunityStore;
 	fetch: typeof fetch;
 	now: Date;
+	loadIndicators: () => Promise<DimensionIndicator[]>;
 }
 
 type Handler<N extends AssistantToolName> = (
@@ -61,6 +72,9 @@ type Handler<N extends AssistantToolName> = (
 const MAX_EVENTS = 6;
 const MAX_PLACES = 6;
 const MAX_THREADS = 6;
+const MAX_LEGS = 12;
+const MAX_RECORDS = 10;
+const MAX_NEWS_EVENTS = 4;
 const DAY_MS = 24 * 60 * 60 * 1000;
 const BOGOTA_OFFSET_MS = 5 * 60 * 60 * 1000;
 
@@ -146,6 +160,7 @@ function eventSummary(
 	names: Record<string, string>,
 ): Record<string, unknown> {
 	const catalogPlace = event.placeId ? names[event.placeId] : undefined;
+	const free = event.isFree || !event.priceCop;
 	return {
 		id: event.id,
 		title: untrusted(event.title, UNTRUSTED_TITLE_MAX),
@@ -154,7 +169,8 @@ function eventSummary(
 		category: event.category,
 		place: catalogPlace || untrusted(event.locationText, UNTRUSTED_TITLE_MAX),
 		spots_left: spotsLeft(event),
-		free: event.isFree || !event.priceCop,
+		free,
+		...(free ? {} : { price_cop: event.priceCop }),
 		...(event.status === "cancelled" ? { cancelled: true } : {}),
 	};
 }
@@ -186,6 +202,74 @@ async function requireSession(store: CommunityStore): Promise<void> {
 }
 
 class ToolError extends Error {}
+
+/** GET a JSON endpoint of this app; a failed response becomes `failure`. */
+async function getJson<T>(
+	fetchImpl: typeof fetch,
+	path: string,
+	failure: string,
+): Promise<T> {
+	const response = await fetchImpl(path, {
+		headers: { Accept: "application/json" },
+	});
+	if (!response.ok) throw new ToolError(failure);
+	return (await response.json()) as T;
+}
+
+interface DatasetResponse {
+	slug?: string;
+	title?: string;
+	description?: string;
+	origin?: string;
+	source?: string;
+	generatedAt?: string;
+	recordCount?: number;
+	columns?: string[];
+	records?: OpenDataRecord[];
+}
+
+interface CatalogResponse {
+	totalDatasets?: number;
+	generatedAt?: string;
+	datasets?: {
+		slug: string;
+		title: string;
+		description: string;
+		origin: string;
+		dimension: string;
+		recordCount: number;
+		source: string;
+	}[];
+}
+
+/** Community records carry text written by people: wrap every string cell. */
+function recordForModel(
+	record: OpenDataRecord,
+	community: boolean,
+): Record<string, unknown> {
+	if (!community) return record;
+	return Object.fromEntries(
+		Object.entries(record).map(([key, value]) => [
+			key,
+			typeof value === "string" ? untrusted(value, UNTRUSTED_TITLE_MAX) : value,
+		]),
+	);
+}
+
+/**
+ * The live program indicators, from what the person's own session can read.
+ * Overcharge reports are city-only (RLS), so they never count here: every role
+ * gets the same public figures.
+ */
+async function liveIndicators(): Promise<DimensionIndicator[]> {
+	const [{ fetchLiveIndicatorsRaw }, { computeProgramIndicators }] =
+		await Promise.all([
+			import("../indicators/live-indicators-service"),
+			import("../indicators/live-indicators-calc"),
+		]);
+	const raw = await fetchLiveIndicatorsRaw();
+	return computeProgramIndicators({ ...raw, reports: [] });
+}
 
 function publishOutcome<T extends { id: string }>(
 	result: PublishResult<T>,
@@ -527,6 +611,159 @@ const HANDLERS: { [N in AssistantToolName]: Handler<N> } = {
 		return publishOutcome(result, (thread) => `/foro/${thread.id}`);
 	},
 
+	async get_fares(_args, { fetch: fetchImpl }) {
+		const dataset = await getJson<DatasetResponse>(
+			fetchImpl,
+			"/api/datos/tarifas-y-tramos",
+			"No pudimos cargar las tarifas. Intenta de nuevo.",
+		);
+		const records = dataset.records ?? [];
+		const fares = faresByMode(records);
+		if (fares.length === 0)
+			throw new ToolError("Todavía no hay tarifas publicadas.");
+		return {
+			summary: {
+				currency: "COP",
+				source: dataset.source ?? null,
+				updated_at: dataset.generatedAt ?? null,
+				fares,
+				legs: records.slice(0, MAX_LEGS).map((leg) => ({
+					from: leg.origin_stop_code,
+					to: leg.destination_stop_code,
+					mode: MODE_LABELS[String(leg.transport_mode)] ?? leg.transport_mode,
+					reference_fare_cop: leg.reference_fare_cop,
+					fare_min_cop: leg.fare_min_cop,
+					fare_max_cop: leg.fare_max_cop,
+					minutes: leg.estimated_minutes,
+				})),
+			},
+			display: { kind: "notice", tone: "ok", text: formatFares(fares) },
+		};
+	},
+
+	async get_news(_args, { store, fetch: fetchImpl, now }) {
+		const [arroyos, events] = await Promise.all([
+			getJson<DatasetResponse>(
+				fetchImpl,
+				"/api/datos/arroyos",
+				"No pudimos cargar las novedades. Intenta de nuevo.",
+			),
+			store.listEvents(),
+		]);
+		const alerts = (arroyos.records ?? [])
+			.filter((zone) => zone.alert_active === true)
+			.map((zone) => ({
+				code: zone.code,
+				name: zone.name,
+				zone: zone.zone,
+				risk_level: zone.risk_level,
+				advisory: zone.advisory_es,
+			}));
+		const fresh = events
+			.filter((event) => event.status !== "cancelled")
+			.filter((event) => new Date(event.startsAt).getTime() >= now.getTime())
+			.sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+			.slice(0, MAX_NEWS_EVENTS);
+		const names = await placeNames(store, fresh);
+		return {
+			summary: {
+				arroyo_alerts: alerts,
+				new_events: fresh.map((event) => eventSummary(event, names)),
+			},
+			display:
+				fresh.length > 0
+					? { kind: "events", events: fresh, placeNames: names }
+					: {
+							kind: "notice",
+							tone: alerts.length > 0 ? "warn" : "ok",
+							text:
+								alerts.length > 0
+									? "Hay alertas de arroyo activas."
+									: "Sin alertas de arroyo activas.",
+						},
+		};
+	},
+
+	async get_open_data(args, { fetch: fetchImpl }) {
+		if (!args.dataset) {
+			const catalog = await getJson<CatalogResponse>(
+				fetchImpl,
+				"/api/datos",
+				"No pudimos cargar los datos abiertos. Intenta de nuevo.",
+			);
+			const datasets = catalog.datasets ?? [];
+			return {
+				summary: {
+					count: datasets.length,
+					generated_at: catalog.generatedAt ?? null,
+					datasets: datasets.map((dataset) => ({
+						slug: dataset.slug,
+						title: dataset.title,
+						description: dataset.description,
+						origin: dataset.origin,
+						dimension: dataset.dimension,
+						records: dataset.recordCount,
+						source: dataset.source,
+					})),
+				},
+				display: { kind: "link", href: "/datos", label: "Datos abiertos" },
+			};
+		}
+		const dataset = await getJson<DatasetResponse>(
+			fetchImpl,
+			`/api/datos/${encodeURIComponent(args.dataset)}`,
+			"No pudimos cargar ese conjunto de datos. Intenta de nuevo.",
+		);
+		const records = dataset.records ?? [];
+		const community = dataset.origin !== "reference";
+		return {
+			summary: {
+				slug: dataset.slug ?? args.dataset,
+				title: dataset.title ?? null,
+				description: dataset.description ?? null,
+				origin: dataset.origin ?? null,
+				source: dataset.source ?? null,
+				generated_at: dataset.generatedAt ?? null,
+				count: dataset.recordCount ?? records.length,
+				columns: dataset.columns ?? [],
+				records: records
+					.slice(0, MAX_RECORDS)
+					.map((record) => recordForModel(record, community)),
+			},
+			display: {
+				kind: "link",
+				href: "/datos",
+				label: dataset.title ?? "Datos abiertos",
+			},
+		};
+	},
+
+	async get_city_indicators(_args, { loadIndicators }) {
+		let indicators: DimensionIndicator[];
+		try {
+			indicators = await loadIndicators();
+		} catch {
+			throw new ToolError(
+				"No pudimos cargar los indicadores. Intenta de nuevo.",
+			);
+		}
+		const items = indicators.map((indicator) => ({
+			dimension: indicator.dimensionLabel,
+			title: indicator.title,
+			current: indicator.currentDisplay,
+			target: indicator.targetDisplay,
+			progress_percent: indicator.progressPercent,
+			state: indicator.stateLabel,
+			origin: indicator.origin,
+			community_facts: indicator.communityFacts,
+			reference_facts: indicator.referenceFacts,
+		}));
+		return {
+			summary: { count: items.length, indicators: items },
+			display: { kind: "notice", tone: "ok", text: formatIndicators(items) },
+		};
+	},
+
 	async open_page(args) {
 		if (!isSafePath(args.path))
 			throw new ToolError("Ese enlace no es de Quillart.");
@@ -550,6 +787,7 @@ export async function runTool(
 			store,
 			fetch: deps.fetch ?? ((...params) => fetch(...params)),
 			now: deps.now?.() ?? new Date(),
+			loadIndicators: deps.loadIndicators ?? liveIndicators,
 		};
 		const outcome = await handler(
 			(call.args ?? {}) as AssistantToolArgs[AssistantToolName],

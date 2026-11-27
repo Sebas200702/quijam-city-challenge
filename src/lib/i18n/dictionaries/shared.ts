@@ -56,6 +56,7 @@ const es = {
 		mobility: "Agente de Movilidad",
 		city_reports: "Agente de Reportes a la ciudad",
 		account: "Agente de tu Cuenta",
+		city_data: "Agente de Datos de la ciudad",
 	},
 	ui: {
 		loading: "Cargando…",
@@ -164,6 +165,7 @@ const en: SharedMessages = {
 		mobility: "Mobility Agent",
 		city_reports: "City Reports Agent",
 		account: "Your Account Agent",
+		city_data: "City Data Agent",
 	},
 	ui: {
 		loading: "Loading…",
@@ -271,6 +273,7 @@ const pt: SharedMessages = {
 		mobility: "Agente de Mobilidade",
 		city_reports: "Agente de Denúncias à cidade",
 		account: "Agente da sua Conta",
+		city_data: "Agente de Dados da cidade",
 	},
 	ui: {
 		loading: "Carregando…",
@@ -381,6 +384,7 @@ const fr: SharedMessages = {
 		mobility: "Agent Mobilité",
 		city_reports: "Agent Signalements à la ville",
 		account: "Agent de votre Compte",
+		city_data: "Agent Données de la ville",
 	},
 	ui: {
 		loading: "Chargement…",

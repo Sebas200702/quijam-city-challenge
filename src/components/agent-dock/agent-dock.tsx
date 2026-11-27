@@ -37,7 +37,6 @@ import type {
 } from "../../lib/assistant/screen-context-types";
 import { type UiChange, uiBus } from "../../lib/assistant/ui-action-bus";
 import { confirmedActionNote } from "../../lib/guide/live-conduit";
-import { markLiveResume, takeLiveResume } from "../../lib/guide/live-resume";
 import type { Messages } from "../../lib/i18n/messages";
 import { useLanguage, useT } from "../../lib/i18n/use-language";
 import { scrollBehavior } from "../../lib/reduced-motion";
@@ -46,6 +45,7 @@ import { AiAvatar, MessageView } from "../assistant/assistant-chat";
 import { LIVE_VOICE_TEXT } from "../assistant/live-voice-text";
 import { useAnswerAnnouncement } from "../assistant/use-answer-announcement";
 import { useAssistant } from "../assistant/use-assistant";
+import { useLiveResume } from "../assistant/use-live-resume";
 import { useLiveVoice } from "../assistant/use-live-voice";
 import { useVoiceConduit } from "../assistant/voice-conduit";
 import { ErrorNote } from "../community/community-ui";
@@ -94,14 +94,6 @@ interface AgentDockProps {
 	role: ScreenRole;
 }
 
-function sessionStore(): Storage | null {
-	try {
-		return window.sessionStorage;
-	} catch {
-		return null;
-	}
-}
-
 export default function AgentDock({ role }: AgentDockProps) {
 	const t = useT();
 	const assistant = useAssistant();
@@ -114,7 +106,7 @@ export default function AgentDock({ role }: AgentDockProps) {
 	const liveText = LIVE_VOICE_TEXT[useLanguage()];
 	const [open, setOpen] = useState(false);
 	/** Live came back on this page after a result opened it (S4). */
-	const [liveResumed, setLiveResumed] = useState(false);
+	const liveResumed = useLiveResume(live, () => setOpen(true));
 	/** A card action confirmed or cancelled while Live is on; Live hears its outcome. */
 	const [settledCall, setSettledCall] = useState<string | null>(null);
 	const [shared, setShared] = useState(isScreenShared);
@@ -164,28 +156,6 @@ export default function AgentDock({ role }: AgentDockProps) {
 			}),
 		[assistant.send],
 	);
-
-	// A result that opens another page reloads it and ends Live: mark it on
-	// the way out and reopen it on the next page (no client router here).
-	useEffect(() => {
-		if (!live.active) return;
-		const leave = () => markLiveResume(sessionStore(), Date.now());
-		window.addEventListener("pagehide", leave);
-		return () => window.removeEventListener("pagehide", leave);
-	}, [live.active]);
-
-	useEffect(() => {
-		if (takeLiveResume(sessionStore(), Date.now())) setLiveResumed(true);
-	}, []);
-
-	// Runs one render after the mark is taken, so the restored conversation
-	// goes to Live as its history.
-	// biome-ignore lint/correctness/useExhaustiveDependencies: start once per resume.
-	useEffect(() => {
-		if (!liveResumed) return;
-		setOpen(true);
-		void live.start();
-	}, [liveResumed]);
 
 	// Runs after the confirmed action and its follow-up answer are in `messages`.
 	// biome-ignore lint/correctness/useExhaustiveDependencies: once per settled call.

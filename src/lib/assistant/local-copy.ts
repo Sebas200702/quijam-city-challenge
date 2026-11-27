@@ -56,6 +56,11 @@ const es: LocalCopy = {
 	profile: "Ahí puedes ver y editar tu perfil.",
 	profileLabel: "Ir a mi perfil",
 	myRegistrations: "Te muestro los planes en los que estás inscrito.",
+	fares: "Te busco las tarifas vigentes del Transmetro, el bus y el taxi.",
+	news: "Te cuento las novedades de la ciudad.",
+	openData: "Te muestro los datos abiertos de la ciudad.",
+	indicators: "Te traigo los indicadores de la ciudad.",
+	openDataLabel: "Ver datos abiertos",
 	wrapUp: {
 		failed: "Uy, no se pudo completar. ¿Probamos de otra forma?",
 		held: "Quedó en revisión: un moderador lo mira pronto y te avisamos.",
@@ -95,6 +100,14 @@ const es: LocalCopy = {
 		replyPublished: "¡Listo, tu respuesta quedó publicada!",
 		reportSent:
 			"Listo, tu reporte llegó a la ciudad y quedó en el foro. ¡Gracias por avisar!",
+		fares: (list) => `Tarifas vigentes en pesos: ${list}.`,
+		news: (alerts, events) =>
+			`${alerts === 0 ? "No hay alertas de arroyo activas" : `Hay ${plural(alerts, "alerta de arroyo activa", "alertas de arroyo activas")}`} y ${plural(events, "evento nuevo", "eventos nuevos")} en la agenda.`,
+		openDataCatalog: (count) =>
+			`El portal tiene ${plural(count, "conjunto de datos", "conjuntos de datos")}.`,
+		openDataRecords: (count) =>
+			`Este conjunto tiene ${plural(count, "registro", "registros")}.`,
+		indicators: (list) => `Indicadores de la ciudad: ${list}.`,
 		fallback: "Listo. ¿Te ayudo con algo más?",
 	},
 };
@@ -146,6 +159,11 @@ const en: LocalCopy = {
 	profile: "There you can see and edit your profile.",
 	profileLabel: "Go to my profile",
 	myRegistrations: "Here are the plans you're registered for.",
+	fares: "Let me look up the current Transmetro, bus and taxi fares.",
+	news: "Here is what's new in the city.",
+	openData: "Here is the city's open data.",
+	indicators: "Here are the city indicators.",
+	openDataLabel: "View open data",
 	wrapUp: {
 		failed: "Oops, that couldn't be completed. Shall we try another way?",
 		held: "It's under review: a moderator will look at it soon and we'll let you know.",
@@ -189,6 +207,14 @@ const en: LocalCopy = {
 		replyPublished: "Done, your reply is published!",
 		reportSent:
 			"Done, your report reached the city and is on the forum. Thanks for letting us know!",
+		fares: (list) => `Current fares in pesos: ${list}.`,
+		news: (alerts, events) =>
+			`${alerts === 0 ? "No active arroyo alerts" : plural(alerts, "active arroyo alert", "active arroyo alerts")} and ${plural(events, "new event", "new events")} on the agenda.`,
+		openDataCatalog: (count) =>
+			`The portal has ${plural(count, "dataset", "datasets")}.`,
+		openDataRecords: (count) =>
+			`This dataset has ${plural(count, "record", "records")}.`,
+		indicators: (list) => `City indicators: ${list}.`,
 		fallback: "Done. Can I help with anything else?",
 	},
 };
@@ -240,6 +266,11 @@ const pt: LocalCopy = {
 	profile: "Aí você pode ver e editar seu perfil.",
 	profileLabel: "Ir para meu perfil",
 	myRegistrations: "Eu te mostro os planos em que você está inscrito.",
+	fares: "Vou buscar as tarifas atuais do Transmetro, do ônibus e do táxi.",
+	news: "Eu te conto as novidades da cidade.",
+	openData: "Eu te mostro os dados abertos da cidade.",
+	indicators: "Aqui estão os indicadores da cidade.",
+	openDataLabel: "Ver dados abertos",
 	wrapUp: {
 		failed: "Opa, não deu para concluir. Tentamos de outro jeito?",
 		held: "Ficou em revisão: um moderador vai olhar em breve e te avisamos.",
@@ -280,6 +311,14 @@ const pt: LocalCopy = {
 		replyPublished: "Pronto, sua resposta foi publicada!",
 		reportSent:
 			"Pronto, seu relato chegou à cidade e ficou no fórum. Obrigado por avisar!",
+		fares: (list) => `Tarifas atuais em pesos: ${list}.`,
+		news: (alerts, events) =>
+			`${alerts === 0 ? "Não há alertas de arroyo ativos" : plural(alerts, "alerta de arroyo ativo", "alertas de arroyo ativos")} e ${plural(events, "evento novo", "eventos novos")} na agenda.`,
+		openDataCatalog: (count) =>
+			`O portal tem ${plural(count, "conjunto de dados", "conjuntos de dados")}.`,
+		openDataRecords: (count) =>
+			`Este conjunto tem ${plural(count, "registro", "registros")}.`,
+		indicators: (list) => `Indicadores da cidade: ${list}.`,
 		fallback: "Pronto. Posso te ajudar com mais alguma coisa?",
 	},
 };
@@ -332,6 +371,11 @@ const fr: LocalCopy = {
 	profile: "Là, tu peux voir et modifier ton profil.",
 	profileLabel: "Aller à mon profil",
 	myRegistrations: "Je te montre les sorties auxquelles tu es inscrit.",
+	fares: "Je cherche les tarifs actuels du Transmetro, du bus et du taxi.",
+	news: "Voici les nouveautés de la ville.",
+	openData: "Voici les données ouvertes de la ville.",
+	indicators: "Voici les indicateurs de la ville.",
+	openDataLabel: "Voir les données ouvertes",
 	wrapUp: {
 		failed: "Oups, ça n'a pas pu aboutir. On essaie autrement ?",
 		held: "C'est en cours de vérification : un modérateur va regarder bientôt et on te prévient.",
@@ -374,6 +418,14 @@ const fr: LocalCopy = {
 		replyPublished: "C'est fait, ta réponse est publiée !",
 		reportSent:
 			"C'est fait, ton signalement est arrivé à la ville et figure sur le forum. Merci de nous avoir prévenus !",
+		fares: (list) => `Tarifs actuels en pesos : ${list}.`,
+		news: (alerts, events) =>
+			`${alerts === 0 ? "Aucune alerte d'arroyo active" : plural(alerts, "alerte d'arroyo active", "alertes d'arroyo actives")} et ${plural(events, "nouvel événement", "nouveaux événements")} à l'agenda.`,
+		openDataCatalog: (count) =>
+			`Le portail compte ${plural(count, "jeu de données", "jeux de données")}.`,
+		openDataRecords: (count) =>
+			`Ce jeu de données compte ${plural(count, "enregistrement", "enregistrements")}.`,
+		indicators: (list) => `Indicateurs de la ville : ${list}.`,
 		fallback: "C'est fait. Je peux t'aider avec autre chose ?",
 	},
 };

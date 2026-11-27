@@ -188,6 +188,8 @@ const ROUTE_AGENTS: [prefix: string, agent: AssistantAgentId][] = [
 	["/mapa", "mobility"],
 	["/reportar", "city_reports"],
 	["/perfil", "account"],
+	["/ciudad", "city_data"],
+	["/datos", "city_data"],
 ];
 
 /** The specialized agent of the screen, or null when the screen has none. */
