@@ -10,6 +10,7 @@ import {
 import { spotsLeft } from "../../lib/community/community-rules";
 import type { CommunityEvent } from "../../lib/community/community-types";
 import { HeldBadge } from "./community-ui";
+import { VerifiedOrganizerBadge } from "./trust-badges";
 
 const TIME_ZONE = "America/Bogota";
 const dayNumber = new Intl.DateTimeFormat("es-CO", {
@@ -77,6 +78,7 @@ export function EventCard({
 						{EVENT_CATEGORY_LABELS[event.category]}
 					</span>
 					{event.moderationStatus === "held" && <HeldBadge />}
+					<VerifiedOrganizerBadge verified={event.organizerVerified} />
 					{registered && !cancelled && (
 						<span className="q-badge q-badge--optimal">Inscrito</span>
 					)}

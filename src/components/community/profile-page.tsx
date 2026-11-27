@@ -23,6 +23,7 @@ import {
 	PageTitle,
 } from "./community-ui";
 import { EventCard } from "./event-card";
+import { MyDataPanel } from "./my-data-panel";
 import { ThreadCard } from "./thread-card";
 import { useLoad, useSession, useStore } from "./use-community";
 
@@ -660,6 +661,8 @@ function SignedInView({ profile }: { profile: Profile }) {
 					}
 				</Loaded>
 			</Section>
+
+			<MyDataPanel />
 
 			<div>
 				<button

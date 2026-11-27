@@ -8,6 +8,7 @@ import {
 } from "../../lib/community/community-labels";
 import type { ForumThread } from "../../lib/community/community-types";
 import { HeldBadge } from "./community-ui";
+import { CitizenReportBadge } from "./trust-badges";
 
 export function ThreadCard({ thread }: { thread: ForumThread }) {
 	const replies =
@@ -22,6 +23,7 @@ export function ThreadCard({ thread }: { thread: ForumThread }) {
 					{FORUM_CATEGORY_LABELS[thread.category]}
 				</span>
 				{thread.moderationStatus === "held" && <HeldBadge />}
+				<CitizenReportBadge thread={thread} />
 			</div>
 			<h3 className="q-h3 mt-2 break-words">{thread.title}</h3>
 			<p className="q-p q-muted mt-1 line-clamp-2 break-words">{thread.body}</p>
