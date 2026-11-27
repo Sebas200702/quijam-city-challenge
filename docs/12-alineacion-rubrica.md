@@ -13,7 +13,7 @@ Qué pide el deck: un programa con varias iniciativas articuladas; cada pieza co
 | Elemento | Estado | Dónde |
 |---|---|---|
 | Programa de tres componentes | Cubierto | [03-diseno-actual.md](03-diseno-actual.md) |
-| Función de cada pieza (sentidos, cerebro, músculos) | Cubierto | [03-diseno-actual.md](03-diseno-actual.md) |
+| Función de cada pieza (escuchar, interpretar, acompañar) | Cubierto | [03-diseno-actual.md](03-diseno-actual.md) |
 | Respuesta a las cinco lecciones de ciudades sede | Cubierto | Sección 2 de este documento |
 | Referentes internacionales (qué copiamos, qué evitamos) | Cubierto | Sección 3 de este documento |
 | Objetivo general escrito en una frase | Vacío | Por escribir |

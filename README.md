@@ -1,7 +1,7 @@
 # QUIJAM · City Challenge Barranquilla 2034
 
 > Repositorio de trabajo del equipo para el QUIJAM City Challenge.
-> Nombre del producto: **por definir** (ningún nombre está confirmado).
+> **QUILLART, el intérprete de la ciudad.** Hace que Barranquilla se entienda, para el que llega y para el que vive aquí, y hace que la ciudad, por fin, escuche a su gente.
 >
 > *English summary at the end.*
 
@@ -91,6 +91,8 @@ Detalle en [`docs/`](docs/).
 | [`docs/19-caso-1.md`](docs/19-caso-1.md) | Caso 1 de punta a punta: requisitos, guion de ensayo de 2 minutos, plan B y registro de ensayos |
 | [`docs/20-comunidad-y-moderacion.md`](docs/20-comunidad-y-moderacion.md) | Comunidad (eventos, inscripciones, foro, lugares) y moderación por triaje con reglas duras y OpenJev; cola de la ciudad y puesta en marcha |
 | [`docs/21-quillart-ai.md`](docs/21-quillart-ai.md) | Quillart AI como puerta de entrada: orquestador, agentes especializados, confirmación de acciones y voz como conducto |
+| [`docs/20-identidad.md`](docs/20-identidad.md) | Identidad: el intérprete de la ciudad, qué no somos (gemelo digital), vocabulario y orden de la demo |
+| [`docs/21-respuestas.md`](docs/21-respuestas.md) | Qué responder cuando pregunten por el proyecto: versiones de 10 s, 30 s y 1 min, y preguntas difíciles |
 | [`docs/feedback.md`](docs/feedback.md) | Registro de retroalimentación por sprint y validación con personas ajenas |
 
 ## Equipo
@@ -156,10 +158,12 @@ for a **strategic program** (not an isolated app) that connects five dimensions
 (territory, sustainability, smart city, citizenship, economy), with a working
 prototype and a legacy beyond 2034.
 
-Our draft direction is an open-data city platform inside a three-component
-program: open city data, a network of verified hosts and local businesses, and a
-visitor web app plus a city dashboard. The pilot corridor runs from Estadio
-Metropolitano to the Gran Malecón. The product name is still to be decided.
+**QUILLART is the city interpreter**, not a digital twin. The knowledge that makes
+Barranquilla work (fair prices, which streams flood, where the good food is) lives
+in its people. QUILLART interprets that local knowledge for residents and visitors, through a
+multilingual Guide, a safety-first route Decider and street hosts that pair an
+older resident with a bilingual youth, and tells the city what it learns from
+its visitors. The pilot corridor runs from Estadio Metropolitano to the Gran Malecón.
 Stack: Astro, React 19, Tailwind CSS v4, TypeScript, Leaflet, Supabase, Gemini
 Live API, Bun, Biome, Vitest; deployed on Dokploy.
 

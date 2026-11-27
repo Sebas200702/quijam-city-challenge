@@ -20,7 +20,7 @@ Issue #19. Visitante extranjero en el Gran Malecón: pregunta en su idioma, reci
    - **Taxi verificado**, tarifa justa: **$20.000 a $28.000 COP**.
 5. Tocar **Report an overcharge**. Elegir Taxi, escribir **55000** y enviar.
    - Con Supabase: "Report sent. You were charged 129% above the reference fare".
-6. Cambiar a `/ciudad`: el reporte aparece en vivo en el Centro de Mando.
+6. Cambiar a `/ciudad`: el reporte aparece en vivo en "Lo que la ciudad aprende".
 7. Volver y tocar **Show on map**: el mapa vuela al Estadio Metropolitano.
 
 Los datos son simulados para 2034 y la interfaz lo dice.
@@ -37,7 +37,7 @@ Los datos son simulados para 2034 y la interfaz lo dice.
 | 1 | 26 nov 2026 | Sin Gemini ni Supabase | How do I get to the stadium? | Respuesta en inglés, tarjeta Transmetro 38 min $3,500, reporte guardado en el teléfono, mapa en el Estadio |
 | 2 | 26 nov 2026 | Sin Gemini ni Supabase | Comment aller au stade ? | Igual, en francés |
 | 3 | 26 nov 2026 | Sin Gemini ni Supabase | Como chego ao estádio? | Igual, en portugués |
-| 4–6 | Pendiente | Con Gemini y Supabase | — | Falta ensayar con llaves reales y el Centro de Mando abierto |
+| 4–6 | Pendiente | Con Gemini y Supabase | — | Falta ensayar con llaves reales y "Lo que la ciudad aprende" abierto |
 
 ## Pendiente
 
