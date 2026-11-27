@@ -11,8 +11,8 @@ import { guardRequest } from "../../../lib/security/api-guard";
 export const prerender = false;
 
 const MAX_QUESTION_LENGTH = 500;
-/** Alias that follows Google's current Flash model. Override with GEMINI_TEXT_MODEL. */
-const DEFAULT_TEXT_MODEL = "gemini-flash-latest";
+/** Pinned Flash model (the `gemini-flash-latest` alias timed out). Override with GEMINI_TEXT_MODEL. */
+const DEFAULT_TEXT_MODEL = "gemini-3.5-flash";
 
 function json(body: unknown, status: number): Response {
 	return new Response(JSON.stringify(body), {

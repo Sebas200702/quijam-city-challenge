@@ -18,7 +18,7 @@ Issue #54. Botón "Generar informe" en el tablero de ciudad (`/ciudad`).
 ## Variables de entorno
 
 - `GEMINI_API_KEY`: la misma del Guía.
-- `GEMINI_REPORT_MODEL` (opcional): modelo de texto. Si no se define se usa `gemini-flash-latest`. **No se probó con una key real:** si la API no lo reconoce, se verá el informe de plantilla con el motivo.
+- `GEMINI_REPORT_MODEL` (opcional): modelo de texto. Si no se define se usa `gemini-3.5-flash`. **No se probó con una key real:** si la API no lo reconoce, se verá el informe de plantilla con el motivo.
 
 ## Archivos
 

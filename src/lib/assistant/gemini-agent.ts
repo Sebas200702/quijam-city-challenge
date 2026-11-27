@@ -20,8 +20,8 @@ import type {
 } from "./assistant-types";
 import { screenFacts } from "./screen-context";
 
-/** Alias that follows Google's current Flash model. Override with GEMINI_TEXT_MODEL. */
-export const DEFAULT_TEXT_MODEL = "gemini-flash-latest";
+/** Pinned Flash model (the `gemini-flash-latest` alias timed out). Override with GEMINI_TEXT_MODEL. */
+export const DEFAULT_TEXT_MODEL = "gemini-3.5-flash";
 export const GEMINI_TIMEOUT_MS = 10_000;
 /** At most this many tool calls per turn reach the browser. */
 export const MAX_TOOL_CALLS = 4;
