@@ -5,10 +5,6 @@
 
 import { ArrowLeft, LogIn } from "lucide-react";
 import { type SyntheticEvent, useEffect, useState } from "react";
-import { readPrefill } from "../../lib/community/form-prefill";
-import { AgentMark } from "../agent-dock/agent-mark";
-import { usePublishScreen } from "../agent-dock/use-screen-context";
-import { useUiAction } from "../agent-dock/use-ui-action";
 import { askHref } from "../../lib/assistant/assistant-labels";
 import { EVENT_CATEGORY_LABELS } from "../../lib/community/community-labels";
 import {
@@ -24,7 +20,11 @@ import type {
 	NewEventInput,
 	PublishResult,
 } from "../../lib/community/community-types";
+import { readPrefill } from "../../lib/community/form-prefill";
 import { useT } from "../../lib/i18n/use-language";
+import { AgentMark } from "../agent-dock/agent-mark";
+import { usePublishScreen } from "../agent-dock/use-screen-context";
+import { useUiAction } from "../agent-dock/use-ui-action";
 import { CommunityShell } from "./community-shell";
 import {
 	ErrorNote,

@@ -32,8 +32,8 @@ import {
 	isScreenShared,
 	screenContext,
 } from "../../lib/assistant/screen-context-store";
-import { type UiNavigation, uiBus } from "../../lib/assistant/ui-action-bus";
 import { declinedResult, runTool } from "../../lib/assistant/tool-executor";
+import { type UiNavigation, uiBus } from "../../lib/assistant/ui-action-bus";
 import { withOfflineGuide } from "../../lib/guide/guide-offline";
 import { messages as dictionaries } from "../../lib/i18n/messages";
 import { getLanguage } from "../../lib/i18n/use-language";

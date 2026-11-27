@@ -8,11 +8,11 @@ import type {
 	ForumCategory,
 	PlaceKind,
 } from "../community/community-types";
+import { PLACES } from "../community/places-catalog";
 import { detectDestination } from "../guide/guide-local";
 import type { Language } from "../i18n/languages";
 import { messages as dictionaries } from "../i18n/messages";
 import { type AgentTurn, PROFILE_PATH } from "./assistant-agents";
-import { PLACES } from "../community/places-catalog";
 import { hasAnyKeyword, matchPlace, normalizeText } from "./assistant-text";
 import {
 	type AssistantAgentId,

@@ -67,8 +67,8 @@ import { StopList } from "./stop-list";
 import { useFloodCountdown } from "./use-flood-countdown";
 import { useFloodNotice } from "./use-flood-notice";
 import { useLiveBusinesses } from "./use-live-businesses";
-import { usePointLayers } from "./use-point-layers";
 import { useMapUiActions } from "./use-map-ui-actions";
+import { usePointLayers } from "./use-point-layers";
 import { type RouteQuery, useRoutePlan } from "./use-route-plan";
 
 const FALLBACK_CENTER: L.LatLngTuple = [10.97, -74.79];
@@ -696,7 +696,18 @@ export default function CorridorMap({ data, source }: CorridorMapProps) {
 						<p className="corridor-note">
 							<MapPinOff size={18} strokeWidth={1.75} aria-hidden="true" />
 							<span className="corridor-note__text">{mapNote}</span>
-							<div className="corridor-panel__stops">
+							<button
+								type="button"
+								className="corridor-note__close"
+								aria-label={t.metro.dismissNote}
+								onClick={() => setMapNote(null)}
+							>
+								<X size={18} strokeWidth={1.75} aria-hidden="true" />
+							</button>
+						</p>
+					)}
+				</div>
+				<div className="corridor-panel__stops">
 					<StopList
 						stops={stops}
 						selectedCode={selected?.kind === "stop" ? selected.code : null}

@@ -438,9 +438,10 @@ describe("agent registry and Gemini helpers", () => {
 });
 
 describe("enforceAccount language", () => {
+	// A personal read: actions stay pending for sign-in instead (U02).
 	const actionTurn: AgentTurn = {
-		text: "Te inscribo.",
-		toolCalls: [{ name: "register_for_event", args: { event_id: "e1" } }],
+		text: "Tus inscripciones.",
+		toolCalls: [{ name: "my_registrations", args: {} }],
 	};
 	const anonymous = { ...context, signedIn: false, displayName: null };
 

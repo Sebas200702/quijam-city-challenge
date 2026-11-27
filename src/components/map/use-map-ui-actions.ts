@@ -99,7 +99,9 @@ export function useMapUiActions({
 		const center = map.getCenter();
 		const zoom = map.getZoom();
 		// Same path as any other focus request: refused outside the AMB (U09).
-		if (!focusMap({ lat: action.lat, lng: action.lng, zoom: action.zoom ?? 16 }))
+		if (
+			!focusMap({ lat: action.lat, lng: action.lng, zoom: action.zoom ?? 16 })
+		)
 			return null;
 		return {
 			labels: action.label ? [action.label] : [],
