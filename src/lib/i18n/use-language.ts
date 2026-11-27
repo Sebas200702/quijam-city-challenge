@@ -14,7 +14,7 @@ import {
 	readSavedLanguage,
 	saveLanguage,
 } from "../home-content-language";
-import type { Language } from "./languages";
+import { isLanguage, type Language } from "./languages";
 import { type Messages, messages } from "./messages";
 
 const listeners = new Set<() => void>();
@@ -41,8 +41,11 @@ export function setLanguage(next: Language): void {
 
 function subscribe(listener: () => void): () => void {
 	listeners.add(listener);
-	const refresh = () => {
-		current = resolve();
+	const refresh = (event?: Event) => {
+		// The change event carries the choice, so it applies even when storage is blocked.
+		const announced = (event as CustomEvent<{ language?: unknown }> | undefined)
+			?.detail?.language;
+		current = isLanguage(announced) ? announced : resolve();
 		document.documentElement.lang = current;
 		listener();
 	};
