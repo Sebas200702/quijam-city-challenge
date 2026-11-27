@@ -210,6 +210,68 @@ describe("createAnswerStream", () => {
 		]);
 	});
 
+	it("keeps the answer running quietly when the client disconnects", async () => {
+		const onError = vi.fn();
+		let resume: () => void = () => {};
+		const paused = new Promise<void>((resolve) => {
+			resume = resolve;
+		});
+		let finished = false;
+		const stream = createAnswerStream(
+			async (hooks) => {
+				hooks.onText?.("Primera ");
+				await paused;
+				// The client is gone: these pieces must not throw into the model loop.
+				hooks.onText?.("segunda ");
+				hooks.onText?.("tercera.");
+				finished = true;
+				return { ...response, text: "Primera segunda tercera." };
+			},
+			{ chunkDelayMs: 0, onError },
+		);
+		const reader = stream.getReader();
+		const first = await reader.read();
+		expect(new TextDecoder().decode(first.value)).toContain("Primera");
+		await reader.cancel();
+		resume();
+		await vi.waitFor(() => expect(finished).toBe(true));
+		await new Promise((resolve) => setTimeout(resolve, 0));
+		expect(onError).not.toHaveBeenCalled();
+	});
+
+	it("ends with the local answer when Gemini fails after writing", async () => {
+		const runGemini = vi.fn(
+			async (
+				_agent: unknown,
+				_messages: unknown,
+				_context: unknown,
+				_options: unknown,
+				onText?: (text: string) => void,
+			) => {
+				onText?.("Te busco ");
+				throw new Error("timeout");
+			},
+		);
+		const events = await eventsOf(
+			createAnswerStream(
+				(hooks) =>
+					answer(
+						request("¿Qué planes hay este fin de semana?"),
+						{ openJev: null, gemini, runGemini, onGeminiError: () => {} },
+						hooks,
+					),
+				{ chunkDelayMs: 0 },
+			),
+		);
+		// The partial text stays a draft; the final line replaces it with the local answer.
+		expect(textOf(events)).toBe("Te busco ");
+		const done = events.at(-1);
+		expect(done?.type).toBe("done");
+		if (done?.type !== "done") return;
+		expect(done.response.source).toBe("local");
+		expect(done.response.text).not.toBe("");
+	});
+
 	it("uses the NDJSON media type", () => {
 		expect(ASSISTANT_STREAM_TYPE).toBe("application/x-ndjson");
 	});
