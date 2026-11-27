@@ -67,9 +67,13 @@ export function LanguageSheet({
 			>
 				<fieldset className="visitor-fieldset">
 					<legend className="q-sr">{copy.languageLegend}</legend>
-					<ul className="visitor-options">
-						{VISITOR_LANGUAGES.map(({ code, name: label }) => (
-							<li key={code}>
+					<ul className="visitor-options lab-options">
+						{VISITOR_LANGUAGES.map(({ code, name: label }, index) => (
+							<li
+								key={code}
+								className="l-rise"
+								style={{ ["--i" as string]: index + 2 }}
+							>
 								<input
 									className="visitor-radio"
 									type="radio"
@@ -96,7 +100,7 @@ export function LanguageSheet({
 						{copy.languageOfflineNote}
 					</p>
 				)}
-				<button type="submit" className="q-btn q-btn--primary q-btn--block">
+				<button type="submit" className="q-btn q-btn--primary q-btn--block l-cta">
 					<Check size={18} strokeWidth={1.75} aria-hidden="true" />
 					{copy.languageUse}
 				</button>

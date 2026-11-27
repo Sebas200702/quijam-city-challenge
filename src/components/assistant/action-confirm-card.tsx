@@ -168,7 +168,7 @@ function QuotedText({ quote }: { quote: PublishedText }) {
 		<div className="flex flex-col gap-1">
 			<p className="q-sm q-muted">{t.shared.confirm.quoteIntro}</p>
 			<blockquote
-				className="whitespace-pre-wrap break-words rounded-[var(--radius-md)] border-l-4 border-[var(--line-control)] bg-[var(--bg)] px-4 py-3"
+				className="whitespace-pre-wrap break-words rounded-[6px_22px_22px_22px] border-l-4 border-[var(--gold)] bg-[var(--gold-soft)] px-4 py-3 text-[var(--ink)]"
 				data-testid="action-quote"
 			>
 				{quote.title && <p className="font-semibold">{quote.title}</p>}
@@ -299,10 +299,11 @@ export function ActionConfirmCard({
 
 	return (
 		<section
-			className="q-card q-card--raised gap-3 p-4"
+			className="q-card q-card--raised la-confirm gap-3 p-5"
 			aria-label={c.ariaLabel}
 		>
-			<p className="q-eyebrow">
+			<p className="l-eyebrow l-eyebrow--sunk">
+				<span className="q-star" aria-hidden="true" />
 				{AGENT_LABELS[action.agent]} · {c.eyebrowSuffix}
 			</p>
 			{!action.grounded && (

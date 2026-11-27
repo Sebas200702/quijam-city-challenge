@@ -58,3 +58,42 @@
 		width: 160px;
 	}
 }
+
+/* ── Landing look: notices are speech bubbles; the meaning colours stay. ── */
+.q-notice:not(.q-alert--modal) {
+	border-radius: 24px 24px 24px 6px;
+	box-shadow: var(--shadow-card);
+}
+
+.q-notice .q-alert__title {
+	font-family: var(--font-display);
+}
+
+.q-notice.q-alert--safe .q-alert__icon {
+	border-radius: 14% 14% 50% 50% / 10% 10% 60% 60%;
+}
+
+.q-notice.q-alert--info .q-alert__icon {
+	border-radius: 4px 14px 4px 14px;
+}
+
+.q-alert--modal.q-notice {
+	border-radius: 36px 36px 36px 10px;
+}
+
+.q-alert--modal.q-notice .q-alert__title {
+	font-size: 24px;
+	line-height: 28px;
+	font-weight: 700;
+	letter-spacing: -0.01em;
+}
+
+.q-notice-modal__illus {
+	padding: 6px;
+	border-radius: 999px 999px 20px 20px;
+	background: var(--illus);
+}
+
+html.l-motion .q-notice {
+	animation: l-rise 0.7s var(--l-ease) backwards;
+}

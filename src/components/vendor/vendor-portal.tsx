@@ -23,10 +23,11 @@ import type {
 	VendorBusiness,
 	VendorProduct,
 } from "../../lib/vendor/vendor-types";
+import "../../styles/life-roles.css";
 
 const ICON = { size: 20, strokeWidth: 1.75, "aria-hidden": true } as const;
 const INPUT =
-	"h-11 w-full rounded-[var(--radius-md)] border border-[var(--line-control)] bg-[var(--bg)] px-3 text-[15px] text-[var(--ink)]";
+	"h-11 w-full rounded-full border border-[var(--line-control)] bg-[var(--bg)] px-5 text-[15px] text-[var(--ink)]";
 
 type Load =
 	| { kind: "loading" }
@@ -132,11 +133,27 @@ export default function VendorPortal() {
 	if (load.kind === "no-business")
 		return (
 			<main className="mx-auto max-w-md space-y-4 px-4 py-10">
-				<h1 className="q-h1">Aún no tienes un negocio</h1>
-				<p className="q-sm q-subtle">
-					Pide a la ciudad tu código de alta y escanéalo con la cámara. Tu
-					negocio quedará a tu nombre con el sello de negocio verificado.
-				</p>
+				<div className="r-canvas r-canvas--leaf l-rise">
+					<span
+						className="l-geo l-geo--ring l-geo--gold r-g1"
+						aria-hidden="true"
+					/>
+					<span
+						className="l-geo l-geo--tri l-geo--green r-g3"
+						aria-hidden="true"
+					/>
+					<span
+						className="q-tile q-tile--gold l-ico l-ico--burst"
+						aria-hidden="true"
+					>
+						<Store size={26} strokeWidth={1.75} />
+					</span>
+					<h1 className="l-h2 r-title">Aún no tienes un negocio</h1>
+					<p className="q-sm text-[var(--ink-muted)]">
+						Pide a la ciudad tu código de alta y escanéalo con la cámara. Tu
+						negocio quedará a tu nombre con el sello de negocio verificado.
+					</p>
+				</div>
 			</main>
 		);
 
@@ -175,24 +192,34 @@ export default function VendorPortal() {
 
 	return (
 		<main className="mx-auto max-w-3xl space-y-6 px-4 py-6">
-			<header className="flex flex-wrap items-start justify-between gap-3">
-				<div>
-					<p className="q-eyebrow">Portal del vendedor</p>
-					<h1 className="q-h1 mt-1">{shop.name}</h1>
+			<header className="flex flex-col-reverse gap-3">
+				<div className="r-canvas l-rise">
+					<span
+						className="l-geo l-geo--ring l-geo--green r-g1"
+						aria-hidden="true"
+					/>
+					<span className="l-geo l-geo--half r-g2" aria-hidden="true" />
+					<span
+						className="l-geo l-geo--diamond l-geo--gold r-g3"
+						aria-hidden="true"
+					/>
+					<p className="l-eyebrow">
+						<span className="q-star" aria-hidden="true" />
+						Portal del vendedor
+					</p>
+					<h1 className="l-h2 r-title">{shop.name}</h1>
 					{shop.is_verified && shop.verification_status === "verified" ? (
-						<p className="q-badge q-badge--optimal mt-2">
+						<p className="q-badge q-badge--optimal">
 							<BadgeCheck size={16} strokeWidth={1.75} aria-hidden="true" />{" "}
 							Negocio verificado
 						</p>
 					) : (
-						<p className="q-badge q-badge--neutral mt-2">
-							Verificación pendiente
-						</p>
+						<p className="q-badge q-badge--neutral">Verificación pendiente</p>
 					)}
 				</div>
 				<button
 					type="button"
-					className="q-btn q-btn--ghost q-btn--sm"
+					className="q-btn q-btn--ghost q-btn--sm min-h-11 self-end"
 					onClick={() =>
 						void supabase.auth
 							.signOut()
@@ -207,19 +234,24 @@ export default function VendorPortal() {
 			{error && (
 				<p
 					role="alert"
-					className="rounded-[var(--radius-md)] bg-[var(--red-soft)] px-4 py-3 text-sm text-[var(--red-text)]"
+					className="rounded-[22px_22px_22px_6px] bg-[var(--red-soft)] px-4 py-3 text-sm text-[var(--red-text)]"
 				>
 					{error}
 				</p>
 			)}
 
-			<section className="q-card" aria-labelledby="vendor-next">
+			<section
+				className="q-card r-shape-bubble r-lift l-rise"
+				style={{ ["--i" as string]: 1 }}
+				aria-labelledby="vendor-next"
+			>
 				<div
 					className={`q-band ${shop.is_open ? "q-band--green" : "q-band--gold"}`}
 					aria-hidden="true"
 				/>
 				<div className="q-card__body space-y-3">
-					<p className="q-eyebrow" id="vendor-next">
+					<p className="l-eyebrow l-eyebrow--sunk" id="vendor-next">
+						<span className="q-star" aria-hidden="true" />
 						Tu siguiente paso
 					</p>
 					<p className="q-h2" aria-live="polite">
@@ -239,7 +271,7 @@ export default function VendorPortal() {
 					{!shop.is_open ? (
 						<button
 							type="button"
-							className="q-btn q-btn--primary q-btn--lg w-full sm:w-auto"
+							className="q-btn q-btn--primary q-btn--lg l-cta w-full sm:w-auto"
 							disabled={busy}
 							onClick={() => void toggleOpen(true)}
 						>
@@ -277,12 +309,25 @@ export default function VendorPortal() {
 				</div>
 			</section>
 
-			<section className="q-card" aria-labelledby="vendor-visits">
-				<div className="q-card__head">
-					<h2 id="vendor-visits" className="q-h2">
+			<section
+				className="q-card r-shape-leaf r-lift l-rise"
+				style={{ ["--i" as string]: 2 }}
+				aria-labelledby="vendor-visits"
+			>
+				<div className="q-card__head items-center!">
+					<h2 id="vendor-visits" className="q-h2 flex items-center gap-3">
+						<span
+							className="q-tile q-tile--gold l-ico--burst"
+							aria-hidden="true"
+						>
+							<Eye size={22} strokeWidth={1.75} />
+						</span>
 						Visitas de hoy
 					</h2>
-					<span className="q-num text-2xl font-bold" aria-live="polite">
+					<span
+						className="q-num pr-3 font-[family-name:var(--font-display)] text-4xl font-bold"
+						aria-live="polite"
+					>
 						{visits.length}
 					</span>
 				</div>
@@ -304,7 +349,7 @@ export default function VendorPortal() {
 									aria-label={`${hour}:00, ${count} visitas`}
 								>
 									<span
-										className="block w-full rounded-t bg-[var(--gold)]"
+										className={`block w-full rounded-t-full ${hour % 2 === 0 ? "bg-[var(--gold)]" : "bg-[var(--green)]"}`}
 										style={{ height: `${(count / peak) * 72}px` }}
 									/>
 									<span className="h-4 text-[10px] leading-4 text-[var(--ink-subtle)]">
@@ -320,9 +365,19 @@ export default function VendorPortal() {
 				</div>
 			</section>
 
-			<section className="q-card" aria-labelledby="vendor-products">
+			<section
+				className="q-card r-shape-corner l-rise"
+				style={{ ["--i" as string]: 3 }}
+				aria-labelledby="vendor-products"
+			>
 				<div className="q-card__head">
-					<h2 id="vendor-products" className="q-h2">
+					<h2 id="vendor-products" className="q-h2 flex items-center gap-3">
+						<span
+							className="q-tile q-tile--green l-ico--octagon"
+							aria-hidden="true"
+						>
+							<Store size={22} strokeWidth={1.75} />
+						</span>
 						Productos y precios
 					</h2>
 				</div>
@@ -421,7 +476,8 @@ export default function VendorPortal() {
 
 			<a
 				href={`/mapa?negocio=${encodeURIComponent(shop.code)}`}
-				className="q-btn q-btn--ghost"
+				className="q-btn q-btn--ghost l-rise"
+				style={{ ["--i" as string]: 4 }}
 			>
 				<Eye {...ICON} />
 				Cómo te ven en el mapa

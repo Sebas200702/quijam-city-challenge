@@ -16,6 +16,9 @@ const es = {
 	},
 	hero: {
 		title: "Barranquilla, a una conversación",
+		titleLead: "Barranquilla,",
+		titleAccent: "a una conversación",
+		eyebrow: "Tu ciudad, con IA",
 		lead: "Pregunta, inscríbete, publica. Quillart lo hace contigo.",
 		formLabel: "Pregúntale a Quillart AI",
 		inputLabel: "Escribe tu pregunta para Quillart AI",
@@ -30,6 +33,7 @@ const es = {
 	},
 	agents: {
 		title: "¿Qué quieres hacer?",
+		eyebrow: "6 agentes, una conversación",
 		agenda: {
 			title: "Encuentra planes",
 			example: "“¿Qué hay para hacer hoy?”",
@@ -54,6 +58,7 @@ const es = {
 	},
 	how: {
 		title: "Así de fácil",
+		eyebrow: "Cómo funciona",
 		step1Sr: "Paso 1: ",
 		step1: "Habla o escribe",
 		step2Sr: "Paso 2: ",
@@ -63,6 +68,7 @@ const es = {
 	},
 	upcoming: {
 		title: "Próximos planes",
+		eyebrow: "En agenda",
 		viewAgenda: "Ver la agenda",
 		noscriptLink: "Abre la agenda",
 		noscriptText: "para ver los próximos planes.",
@@ -73,6 +79,7 @@ const es = {
 	},
 	trust: {
 		title: "Una comunidad cuidada",
+		eyebrow: "Confianza",
 		moderation: "Moderación con revisión humana",
 		data: "Tus datos protegidos · Ley 1581",
 		emergency: "¿Emergencia? Llama al 123",
@@ -120,6 +127,9 @@ const en: LandingMessages = {
 	},
 	hero: {
 		title: "Barranquilla, one conversation away",
+		titleLead: "Barranquilla,",
+		titleAccent: "one conversation away",
+		eyebrow: "Your city, with AI",
 		lead: "Ask, sign up, post. Quillart does it with you.",
 		formLabel: "Ask Quillart AI",
 		inputLabel: "Type your question for Quillart AI",
@@ -134,6 +144,7 @@ const en: LandingMessages = {
 	},
 	agents: {
 		title: "What do you want to do?",
+		eyebrow: "6 agents, one conversation",
 		agenda: { title: "Find things to do", example: "“What's on today?”" },
 		community: {
 			title: "Connect with your neighbors",
@@ -155,6 +166,7 @@ const en: LandingMessages = {
 	},
 	how: {
 		title: "It's that easy",
+		eyebrow: "How it works",
 		step1Sr: "Step 1: ",
 		step1: "Talk or type",
 		step2Sr: "Step 2: ",
@@ -164,6 +176,7 @@ const en: LandingMessages = {
 	},
 	upcoming: {
 		title: "Upcoming events",
+		eyebrow: "Coming up",
 		viewAgenda: "View the agenda",
 		noscriptLink: "Open the agenda",
 		noscriptText: "to see the upcoming events.",
@@ -174,6 +187,7 @@ const en: LandingMessages = {
 	},
 	trust: {
 		title: "A well-cared-for community",
+		eyebrow: "Trust",
 		moderation: "Moderation with human review",
 		data: "Your data protected · Law 1581",
 		emergency: "Emergency? Call 123",
@@ -218,6 +232,9 @@ const pt: LandingMessages = {
 	},
 	hero: {
 		title: "Barranquilla, a uma conversa de distância",
+		titleLead: "Barranquilla,",
+		titleAccent: "a uma conversa de distância",
+		eyebrow: "Sua cidade, com IA",
 		lead: "Pergunte, inscreva-se, publique. A Quillart faz com você.",
 		formLabel: "Pergunte à Quillart AI",
 		inputLabel: "Escreva sua pergunta para a Quillart AI",
@@ -232,6 +249,7 @@ const pt: LandingMessages = {
 	},
 	agents: {
 		title: "O que você quer fazer?",
+		eyebrow: "6 agentes, uma conversa",
 		agenda: {
 			title: "Encontre programas",
 			example: "“O que tem para fazer hoje?”",
@@ -256,6 +274,7 @@ const pt: LandingMessages = {
 	},
 	how: {
 		title: "Simples assim",
+		eyebrow: "Como funciona",
 		step1Sr: "Passo 1: ",
 		step1: "Fale ou escreva",
 		step2Sr: "Passo 2: ",
@@ -265,6 +284,7 @@ const pt: LandingMessages = {
 	},
 	upcoming: {
 		title: "Próximos programas",
+		eyebrow: "Na agenda",
 		viewAgenda: "Ver a agenda",
 		noscriptLink: "Abra a agenda",
 		noscriptText: "para ver os próximos programas.",
@@ -275,6 +295,7 @@ const pt: LandingMessages = {
 	},
 	trust: {
 		title: "Uma comunidade cuidada",
+		eyebrow: "Confiança",
 		moderation: "Moderação com revisão humana",
 		data: "Seus dados protegidos · Lei 1581",
 		emergency: "Emergência? Ligue 123",
@@ -320,6 +341,9 @@ const fr: LandingMessages = {
 	},
 	hero: {
 		title: "Barranquilla, à une conversation",
+		titleLead: "Barranquilla,",
+		titleAccent: "à une conversation",
+		eyebrow: "Votre ville, avec l'IA",
 		lead: "Demandez, inscrivez-vous, publiez. Quillart le fait avec vous.",
 		formLabel: "Interroger Quillart AI",
 		inputLabel: "Écrivez votre question pour Quillart AI",
@@ -334,6 +358,7 @@ const fr: LandingMessages = {
 	},
 	agents: {
 		title: "Que souhaitez-vous faire ?",
+		eyebrow: "6 agents, une conversation",
 		agenda: {
 			title: "Trouvez des sorties",
 			example: "« Que faire aujourd'hui ? »",
@@ -361,6 +386,7 @@ const fr: LandingMessages = {
 	},
 	how: {
 		title: "Aussi simple que ça",
+		eyebrow: "Comment ça marche",
 		step1Sr: "Étape 1 : ",
 		step1: "Parlez ou écrivez",
 		step2Sr: "Étape 2 : ",
@@ -370,6 +396,7 @@ const fr: LandingMessages = {
 	},
 	upcoming: {
 		title: "Prochaines sorties",
+		eyebrow: "À l'agenda",
 		viewAgenda: "Voir l'agenda",
 		noscriptLink: "Ouvrez l'agenda",
 		noscriptText: "pour voir les prochaines sorties.",
@@ -380,6 +407,7 @@ const fr: LandingMessages = {
 	},
 	trust: {
 		title: "Une communauté bien entretenue",
+		eyebrow: "Confiance",
 		moderation: "Modération avec relecture humaine",
 		data: "Vos données protégées · Loi 1581",
 		emergency: "Urgence ? Appelez le 123",

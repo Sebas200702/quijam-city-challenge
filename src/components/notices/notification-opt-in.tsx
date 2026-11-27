@@ -25,7 +25,7 @@ export function NotificationOptIn() {
 	return (
 		<button
 			type="button"
-			className="q-btn q-btn--secondary q-btn--sm self-start"
+			className="q-btn q-btn--secondary q-btn--sm lsb-optin self-start"
 			onClick={() => void askNotificationPermission().then(setPermission)}
 		>
 			<Bell size={18} strokeWidth={1.75} aria-hidden="true" />

@@ -27,7 +27,7 @@ export function SecondaryMenu() {
 		<div className="secondary-menu" lang={language}>
 			<button
 				type="button"
-				className="visitor-chip-btn"
+				className="visitor-chip-btn lab-chip"
 				aria-label={copy.changeLanguage(name)}
 				aria-haspopup="dialog"
 				onClick={() => setSheet("language")}

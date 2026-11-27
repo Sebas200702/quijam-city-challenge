@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import type { Notice } from "../../lib/notices/notice-types";
 import { NoticeIllustration } from "./notice-illustration";
+import "../../styles/life-shell-b.css";
 
 const TONE_ICON: Record<Notice["tone"], LucideIcon> = {
 	alert: CloudRain,
@@ -26,7 +27,7 @@ export function NoticeCard({ notice, onAction, onDismiss }: NoticeCardProps) {
 	const Icon = TONE_ICON[notice.tone];
 	return (
 		// Notice copy is Spanish only for now (WCAG 3.1.2, language of parts).
-		<div className={`q-alert q-alert--${notice.tone} q-notice`} lang="es">
+		<div className={`q-alert q-alert--${notice.tone} q-notice lsb-notice l-rise`} lang="es">
 			<span className="q-alert__icon" aria-hidden="true">
 				<Icon size={18} strokeWidth={1.75} />
 			</span>

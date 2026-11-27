@@ -1,0 +1,329 @@
+/* Map screen: the landing's shape variety and motion applied to the chrome that
+   floats over the map (search, chips, cards, legend, notes). Visual only: no
+   sizing or positioning of the map, the panel or the sheet changes here.
+   Everything hangs from `.corridor-app` so it wins over corridor-map.css and
+   map-chrome.css whatever the bundle order. Colours are tokens only. */
+
+.corridor-app {
+	--lm-ease: var(--l-ease, cubic-bezier(0.22, 1, 0.36, 1));
+	--lm-octagon: polygon(
+		30% 0,
+		70% 0,
+		100% 30%,
+		100% 70%,
+		70% 100%,
+		30% 100%,
+		0 70%,
+		0 30%
+	);
+	--lm-hex: polygon(25% 4%, 75% 4%, 100% 50%, 75% 96%, 25% 96%, 0 50%);
+}
+
+/* ── Search bar ── */
+.corridor-app .mc-search {
+	transition: box-shadow 0.3s var(--lm-ease);
+}
+.corridor-app .mc-search:focus-within {
+	box-shadow:
+		var(--shadow-card),
+		0 0 0 3px color-mix(in srgb, var(--gold) 45%, transparent);
+}
+.corridor-app .mc-miss {
+	border-radius: 20px 20px 20px 4px;
+}
+
+/* ── Layer chips: one silhouette each, tinted while their layer is on ── */
+.corridor-app .corridor-chip {
+	transition:
+		transform 0.3s var(--lm-ease),
+		background-color 0.2s,
+		box-shadow 0.2s;
+}
+.corridor-app .corridor-chip:nth-of-type(5n + 2) {
+	border-radius: 6px 20px 6px 20px;
+}
+.corridor-app .corridor-chip:nth-of-type(5n + 3) {
+	border-radius: 20px 20px 20px 4px;
+}
+.corridor-app .corridor-chip:nth-of-type(5n + 4) {
+	border-radius: 8px 22px 22px 8px;
+}
+.corridor-app .corridor-chip:nth-of-type(5n + 5) {
+	border-radius: 14px;
+}
+.corridor-app .corridor-chip--green[aria-pressed="true"] {
+	background: color-mix(in srgb, var(--green-soft) 80%, var(--surface-raised));
+}
+.corridor-app .corridor-chip--red[aria-pressed="true"] {
+	background: color-mix(in srgb, var(--red-soft) 80%, var(--surface-raised));
+}
+.corridor-app .corridor-chip--gold[aria-pressed="true"] {
+	background: color-mix(in srgb, var(--gold-soft) 80%, var(--surface-raised));
+}
+.corridor-app .corridor-chip[aria-pressed="true"] .corridor-chip__count {
+	background: var(--ink);
+	color: var(--bg);
+}
+@media (min-width: 1024px) {
+	.corridor-app .corridor-chip:hover {
+		transform: translateY(-3px);
+		box-shadow: var(--shadow-modal);
+	}
+}
+
+/* ── Notes over the map ── */
+.corridor-app .corridor-note {
+	padding-left: 16px;
+	border-radius: 28px;
+}
+.corridor-app .corridor-heat-note {
+	border-radius: 6px 18px 6px 18px;
+}
+.corridor-app .corridor-status--note .q-state {
+	border-radius: 26px 26px 26px 6px;
+}
+.corridor-app .corridor-status--note .q-state__glyph {
+	border-radius: 50%;
+}
+
+/* ── Map buttons: circle, squircle, pill and leaf ── */
+.corridor-app .corridor-controls .q-fab {
+	transition:
+		transform 0.3s var(--lm-ease),
+		box-shadow 0.2s;
+}
+.corridor-app .corridor-controls .corridor-controls__overview {
+	border-radius: 16px;
+}
+.corridor-app .corridor-controls .q-fab[aria-controls] {
+	border-radius: 6px 20px 6px 20px;
+}
+@media (min-width: 1024px) {
+	.corridor-app .corridor-controls .q-fab:hover {
+		transform: translateY(-3px);
+		box-shadow: var(--shadow-modal);
+	}
+}
+
+/* ── Legend: a speech bubble that points at its button ── */
+.corridor-app .corridor-legend {
+	border-radius: 26px 6px 26px 26px;
+}
+.corridor-app .corridor-legend__title {
+	font-size: 18px;
+	letter-spacing: -0.01em;
+}
+.corridor-app .corridor-legend__item {
+	transition: transform 0.3s var(--lm-ease);
+}
+@media (min-width: 1024px) {
+	.corridor-app .corridor-legend__item:hover {
+		transform: translateX(4px);
+	}
+}
+@media (max-width: 639px) {
+	.corridor-app .corridor-legend {
+		border-radius: 26px 26px 6px 26px;
+	}
+}
+
+/* ── Stop list card: one big corner (rows and header live in life-map-b.css) ── */
+.corridor-app .corridor-stops {
+	border-radius: 28px 28px 40px 28px;
+}
+
+/* ── Sheet: each kind of card has its own silhouette. The wrapper and the card
+   share the radius so the scroll clip follows the shape. ── */
+.corridor-app .corridor-app__detail {
+	--lm-r: 28px;
+	border-radius: var(--lm-r);
+}
+.corridor-app .corridor-app__detail:has(> .mc-detail) {
+	--lm-r: 30px 30px 30px 8px;
+}
+.corridor-app .corridor-app__detail:has(> .lmb-point) {
+	--lm-r: 28px 44px 28px 28px;
+}
+.corridor-app .corridor-app__detail:has(> .route-card) {
+	--lm-r: 12px 40px 30px 30px;
+}
+.corridor-app .corridor-app__detail:has(> .corridor-detail--empty) {
+	--lm-r: 28px 48px 28px 48px;
+}
+.corridor-app .corridor-app__detail > .corridor-detail {
+	border-radius: var(--lm-r);
+}
+
+/* Hero chip of the selected point: circle, leaf, octagon or shield by status. */
+.corridor-app .mc-detail .mc-hero {
+	width: 48px;
+	height: 48px;
+}
+.corridor-app .mc-detail .mc-hero:not([class*="lmb-"]).mc-hero--green {
+	border-radius: 50%;
+}
+.corridor-app .mc-detail .mc-hero:not([class*="lmb-"]).mc-hero--gold {
+	border-radius: 6px 20px 6px 20px;
+}
+.corridor-app .mc-detail .mc-hero:not([class*="lmb-"]).mc-hero--red {
+	border-radius: 0;
+	clip-path: var(--lm-octagon);
+}
+.corridor-app .mc-detail .mc-hero:not([class*="lmb-"]).mc-hero--neutral {
+	border-radius: 14% 14% 50% 50% / 10% 10% 60% 60%;
+}
+.corridor-app .corridor-detail .q-h2 {
+	font-family: var(--font-display);
+	letter-spacing: -0.01em;
+	text-wrap: balance;
+}
+
+/* Facts: flag-tinted blocks, no two alike. */
+.corridor-app .mc-facts > div:nth-child(4n + 1) {
+	border-radius: 18px 18px 18px 4px;
+	background: var(--gold-soft);
+}
+.corridor-app .mc-facts > div:nth-child(4n + 2) {
+	border-radius: 4px 20px 4px 20px;
+	background: var(--green-soft);
+}
+.corridor-app .mc-facts > div:nth-child(4n + 3) {
+	border-radius: 20px 4px 20px 4px;
+}
+.corridor-app .mc-facts > div:nth-child(4n + 4) {
+	border-radius: 18px 18px 4px 18px;
+	background: var(--red-soft);
+}
+
+.corridor-app .mc-why--alert {
+	border-radius: 18px 18px 18px 4px;
+}
+.corridor-app .mc-hosts {
+	border-radius: 8px 30px 8px 30px;
+}
+.corridor-app .mc-offline-note {
+	border-radius: 24px 8px 24px 8px;
+}
+
+/* Hint icons: the shape follows the tone. */
+.corridor-app .mc-hint-icon {
+	width: 32px;
+	height: 32px;
+}
+.corridor-app .mc-hint-icon.mc-tone--green {
+	border-radius: 50%;
+	background: var(--green-soft);
+}
+.corridor-app .mc-hint-icon.mc-tone--red {
+	border-radius: 0;
+	background: var(--red-soft);
+	clip-path: var(--lm-octagon);
+}
+.corridor-app .mc-hint-icon.mc-tone--gold {
+	border-radius: 0;
+	background: var(--gold-soft);
+	clip-path: var(--lm-hex);
+}
+.corridor-app .mc-hint-icon.mc-tone--neutral {
+	border-radius: 14% 14% 50% 50% / 10% 10% 60% 60%;
+}
+
+/* ── Route card ── */
+.corridor-app .route-card .q-next-step__title {
+	text-wrap: balance;
+}
+.corridor-app .route-card .q-next-step__facts {
+	gap: 8px;
+}
+.corridor-app .route-card .q-next-step__facts > div {
+	padding: 8px 14px;
+	background: var(--bg);
+}
+.corridor-app .route-card .q-next-step__facts > div:nth-child(1) {
+	border-radius: 18px 18px 18px 4px;
+	background: var(--gold-soft);
+}
+.corridor-app .route-card .q-next-step__facts > div:nth-child(2) {
+	padding-inline: 18px;
+	border-radius: 28px;
+	background: var(--green-soft);
+}
+.corridor-app .route-card .q-next-step__facts > div:nth-child(3) {
+	border-radius: 4px 18px 4px 18px;
+}
+/* Origin and destination read as one joined pair. */
+.corridor-app .route-card__fields label:first-child select {
+	border-radius: 16px 4px 4px 16px;
+}
+.corridor-app .route-card__fields label:last-child select {
+	border-radius: 4px 16px 16px 4px;
+}
+.corridor-app .route-card__toggle {
+	padding: 0 14px;
+	border-radius: 28px;
+	background: var(--bg);
+}
+
+/* Leg icons, one shape per transport mode. */
+.lm-leg {
+	width: 40px;
+	height: 40px;
+	border-radius: 12px;
+}
+.lm-leg--circle {
+	border-radius: 50%;
+}
+.lm-leg--leaf {
+	border-radius: 4px 16px 4px 16px;
+}
+.lm-leg--shield {
+	border-radius: 14% 14% 50% 50% / 10% 10% 60% 60%;
+}
+.lm-leg--octagon {
+	border-radius: 0;
+	clip-path: polygon(
+		30% 0,
+		70% 0,
+		100% 30%,
+		100% 70%,
+		70% 100%,
+		30% 100%,
+		0 70%,
+		0 30%
+	);
+}
+.lm-leg--hex {
+	border-radius: 0;
+	clip-path: polygon(25% 4%, 75% 4%, 100% 50%, 75% 96%, 25% 96%, 0 50%);
+}
+
+/* ── Motion: only with `html.l-motion` (JS on, no reduced-motion request).
+   These entrances never translate down or right, so the scrolling sheet and
+   list do not flash a scrollbar while they play. ── */
+html.l-motion .corridor-app .corridor-app__detail > .corridor-detail {
+	transform-origin: 50% 100%;
+	animation: lm-pop 0.55s var(--lm-ease) both;
+}
+html.l-motion .corridor-app .corridor-legend:not([hidden]) {
+	transform-origin: 100% 0;
+	animation: lm-pop 0.4s var(--lm-ease) both;
+}
+html.l-motion .corridor-app .corridor-note,
+html.l-motion .corridor-app .mc-miss,
+html.l-motion .corridor-app .corridor-heat-note {
+	animation: lm-slide 0.5s var(--lm-ease) both;
+}
+
+@keyframes lm-pop {
+	from {
+		opacity: 0;
+		transform: scale(0.96);
+	}
+}
+
+@keyframes lm-slide {
+	from {
+		opacity: 0;
+		transform: translateX(-12px);
+	}
+}

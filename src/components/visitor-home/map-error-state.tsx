@@ -17,7 +17,9 @@ export function MapErrorState({ copy, lang, askHref }: MapErrorStateProps) {
 			role="alert"
 			lang={lang}
 		>
-			<span className="visitor-state__illus" aria-hidden="true">
+			<span className="visitor-state__illus relative" aria-hidden="true">
+				<span className="l-geo l-geo--ring l-geo--gold top-1 -left-5" />
+				<span className="l-geo l-geo--plus l-geo--green -right-4 bottom-2" />
 				<MapErrorIllustration />
 			</span>
 			<p className="q-state__title">{copy.mapErrorTitle}</p>

@@ -19,6 +19,15 @@ const DIMENSION_ICONS: Record<DimensionKey, LucideIcon> = {
 	economia: Store,
 };
 
+/** One chip silhouette per tile, so neighbours never match. */
+const CHIP_SHAPES = [
+	"l-ico--hex",
+	"l-ico--circle",
+	"l-ico--burst",
+	"l-ico--shield",
+	"l-ico--octagon",
+] as const;
+
 interface DimensionKpisProps {
 	kpis: readonly DimensionKpi[];
 }
@@ -31,19 +40,21 @@ export function DimensionKpis({ kpis }: DimensionKpisProps) {
 			className="cs-kpis"
 			aria-label="Indicadores: uno por dimensión"
 		>
-			{kpis.map((kpi) => {
+			{kpis.map((kpi, index) => {
 				const Icon = DIMENSION_ICONS[kpi.key];
 				return (
-					<article key={kpi.key} className="q-kpi cs-kpi">
-						<h2 className="q-kpi__label m-0">
-							<Icon
-								className="cs-kpi__icon"
-								size={16}
-								strokeWidth={1.75}
-								aria-hidden="true"
-							/>
-							{kpi.label}
-						</h2>
+					<article
+						key={kpi.key}
+						className={`q-kpi cs-kpi cs-kpi--${kpi.tone} l-rise`}
+						style={{ ["--i" as string]: index }}
+					>
+						<span
+							className={`cs-kpi__chip ${CHIP_SHAPES[index % CHIP_SHAPES.length]}`}
+							aria-hidden="true"
+						>
+							<Icon size={20} strokeWidth={1.75} />
+						</span>
+						<h2 className="q-kpi__label m-0">{kpi.label}</h2>
 						<div className="q-kpi__row">
 							<span className="q-kpi__value">
 								{kpi.value}

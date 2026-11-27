@@ -148,7 +148,7 @@ export function PlacesPage({ aiHref }: { aiHref?: string }) {
 										q: filters.q,
 									})
 								}
-								className={`q-chip ${on ? "bg-[var(--action)]! text-[var(--on-action)]!" : ""}`}
+								className={`q-chip transition-transform lg:hover:-translate-y-0.5 ${on ? "bg-[var(--action)]! text-[var(--on-action)]! shadow-[var(--shadow-card)]" : ""}`}
 							>
 								{t.places.filters[option]}
 							</button>
@@ -181,10 +181,10 @@ export function PlacesPage({ aiHref }: { aiHref?: string }) {
 					return (
 						<ul
 							id="places-results"
-							className="grid grid-cols-1 gap-3 lg:grid-cols-2 lg:gap-4"
+							className="lq-stagger grid grid-cols-1 gap-3 lg:grid-cols-2 lg:gap-5"
 						>
 							{visible.map((place) => (
-								<li key={place.id} className="grid">
+								<li key={place.id} className="l-rise grid">
 									<PlaceCard
 										place={place}
 										upcomingCount={upcoming.get(place.id) ?? 0}

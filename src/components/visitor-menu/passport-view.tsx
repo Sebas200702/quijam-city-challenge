@@ -265,8 +265,11 @@ export function PassportView() {
 		<MenuShell online={online}>
 			<header className="vm-titlerow">
 				<div>
-					<p className="q-eyebrow">Pasaporte</p>
-					<h1 className="q-h1">Tu pasaporte</h1>
+					<p className="l-eyebrow">
+						<span className="q-star" aria-hidden="true" />
+						Pasaporte
+					</p>
+					<h1 className="l-h2">Tu pasaporte</h1>
 					{count !== null && count > 0 && (
 						<p className="q-p q-muted">
 							<span className="vm-count q-num">{count}</span>{" "}
@@ -281,6 +284,18 @@ export function PassportView() {
 						<StampBookIllustration />
 					</span>
 				)}
+				<span
+					className="l-geo l-geo--ring l-geo--gold -top-3 -right-3"
+					aria-hidden="true"
+				/>
+				<span
+					className="l-geo l-geo--half l-geo--green right-8 -bottom-1"
+					aria-hidden="true"
+				/>
+				<span
+					className="l-geo l-geo--plus top-3 right-[42%] max-sm:hidden"
+					aria-hidden="true"
+				/>
 			</header>
 			{!online && (
 				<OfflineNote>

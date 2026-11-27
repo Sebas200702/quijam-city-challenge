@@ -106,14 +106,14 @@ export function DiversionProposalCard({
 
 	return (
 		<article
-			className="q-card"
+			className="q-card lc-shape--bubble"
 			aria-labelledby="diversion-proposal-title"
 			aria-busy={busy}
 		>
 			<div className="q-band q-band--gold" aria-hidden="true" />
 			<div className="q-card__head">
 				<div className="min-w-0">
-					<p className="q-eyebrow flex items-center gap-1.5">
+					<p className="l-eyebrow l-eyebrow--sunk lc-eb">
 						<Sparkles size={14} strokeWidth={1.75} aria-hidden="true" />
 						Decisión pendiente · Decisor
 					</p>

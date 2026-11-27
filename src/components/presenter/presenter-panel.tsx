@@ -14,6 +14,7 @@ import type {
 import { useCityState } from "../../lib/city-events/use-city-state";
 import { CORRIDOR_SEED } from "../../lib/corridor/corridor-seed";
 import { cityAuthHeader, fetchPresenterAccess } from "./presenter-access";
+import "../../styles/life-roles.css";
 
 const ICON = { size: 20, strokeWidth: 1.75, "aria-hidden": true } as const;
 
@@ -245,12 +246,24 @@ export default function PresenterPanel() {
 
 	return (
 		<main className="mx-auto max-w-5xl space-y-6 px-4 py-6 sm:px-6">
-			<header className="flex flex-wrap items-end justify-between gap-3">
-				<div>
-					<p className="q-eyebrow">Demo Day · datos de referencia</p>
-					<h1 className="q-h1 mt-1">Panel de presentador</h1>
+			<header className="r-canvas r-canvas--leaf l-rise">
+				<span
+					className="l-geo l-geo--ring l-geo--gold r-g1"
+					aria-hidden="true"
+				/>
+				<span className="l-geo l-geo--half r-g2" aria-hidden="true" />
+				<span
+					className="l-geo l-geo--plus l-geo--green r-g3 max-sm:hidden"
+					aria-hidden="true"
+				/>
+				<div className="flex flex-col items-start gap-3">
+					<p className="l-eyebrow">
+						<span className="q-star" aria-hidden="true" />
+						Demo Day · datos de referencia
+					</p>
+					<h1 className="l-h2 r-title">Panel de presentador</h1>
 				</div>
-				<div className="flex items-center gap-2">
+				<div className="flex flex-wrap items-center gap-2">
 					<span
 						className={`q-badge ${status === "live" ? "q-badge--live" : "q-badge--neutral"}`}
 						aria-live="polite"
@@ -276,14 +289,24 @@ export default function PresenterPanel() {
 			{error && (
 				<p
 					role="alert"
-					className="rounded-[var(--radius-md)] bg-[var(--red-soft)] px-4 py-3 text-sm text-[var(--red-text)]"
+					className="rounded-[22px_22px_22px_6px] bg-[var(--red-soft)] px-5 py-3 text-sm text-[var(--red-text)]"
 				>
 					{error}
 				</p>
 			)}
 
-			<section className="q-card" aria-labelledby="presenter-case">
-				<div className="q-card__head">
+			<section
+				className="q-card r-shape-corner l-rise"
+				style={{ ["--i" as string]: 1 }}
+				aria-labelledby="presenter-case"
+			>
+				<div className="q-card__head items-center gap-3 pr-14">
+					<span
+						className="q-tile q-tile--gold l-ico--burst size-11 flex-none"
+						aria-hidden="true"
+					>
+						<Receipt {...ICON} />
+					</span>
 					<h2 id="presenter-case" className="q-h2">
 						Disparador del caso
 					</h2>
@@ -316,7 +339,7 @@ export default function PresenterPanel() {
 							</p>
 							<button
 								type="button"
-								className="q-btn q-btn--primary q-btn--lg w-full sm:w-auto"
+								className="q-btn q-btn--primary q-btn--lg l-cta w-full sm:w-auto"
 								disabled={busy}
 								onClick={() => void sendOvercharge()}
 							>
@@ -334,7 +357,7 @@ export default function PresenterPanel() {
 								{CORRIDOR_SEED.floodZones.map((zone) => (
 									<label
 										key={zone.code}
-										className="flex min-h-11 items-center gap-3"
+										className="flex min-h-11 items-center gap-3 rounded-full bg-[var(--bg)] px-4"
 									>
 										<input
 											type="checkbox"
@@ -357,7 +380,7 @@ export default function PresenterPanel() {
 								<select
 									value={minutes}
 									onChange={(event) => setMinutes(Number(event.target.value))}
-									className="min-h-11 rounded-[var(--radius-md)] border border-[var(--line-control)] bg-[var(--bg)] px-3"
+									className="min-h-11 rounded-full border border-[var(--line-control)] bg-[var(--bg)] px-4 text-[var(--ink)]"
 								>
 									{[0, 5, 12, 20].map((value) => (
 										<option key={value} value={value}>
@@ -394,7 +417,7 @@ export default function PresenterPanel() {
 								<select
 									value={capacity}
 									onChange={(event) => setCapacity(Number(event.target.value))}
-									className="min-h-11 rounded-[var(--radius-md)] border border-[var(--line-control)] bg-[var(--bg)] px-3"
+									className="min-h-11 rounded-full border border-[var(--line-control)] bg-[var(--bg)] px-4 text-[var(--ink)]"
 								>
 									{[90, 110, 140].map((value) => (
 										<option key={value} value={value}>
@@ -421,8 +444,18 @@ export default function PresenterPanel() {
 			</section>
 
 			<div className="grid gap-6 lg:grid-cols-2">
-				<section className="q-card" aria-labelledby="presenter-secondary">
-					<div className="q-card__head">
+				<section
+					className="q-card r-shape-bubble l-rise"
+					style={{ ["--i" as string]: 2 }}
+					aria-labelledby="presenter-secondary"
+				>
+					<div className="q-card__head items-center gap-3">
+						<span
+							className="q-tile q-tile--green l-ico--hex size-11 flex-none"
+							aria-hidden="true"
+						>
+							<Users {...ICON} />
+						</span>
 						<h2 id="presenter-secondary" className="q-h2">
 							Ciudad
 						</h2>
@@ -501,8 +534,18 @@ export default function PresenterPanel() {
 					</div>
 				</section>
 
-				<section className="q-card" aria-labelledby="presenter-log">
-					<div className="q-card__head">
+				<section
+					className="q-card r-shape-leaf l-rise"
+					style={{ ["--i" as string]: 3 }}
+					aria-labelledby="presenter-log"
+				>
+					<div className="q-card__head items-center gap-3">
+						<span
+							className="q-tile q-tile--red l-ico--octagon size-11 flex-none"
+							aria-hidden="true"
+						>
+							<RotateCcw {...ICON} />
+						</span>
 						<h2 id="presenter-log" className="q-h2">
 							Registro
 						</h2>
@@ -515,7 +558,10 @@ export default function PresenterPanel() {
 						) : (
 							<ol className="space-y-2" aria-live="polite">
 								{log.map((entry) => (
-									<li key={entry.id} className="q-sm">
+									<li
+										key={entry.id}
+										className="q-sm rounded-[18px_18px_18px_5px] bg-[var(--bg)] px-4 py-2.5"
+									>
 										<b>{time(entry.sentAt)}</b> ·{" "}
 										{EVENT_LABEL[entry.event.type]} ({describe(entry.event)}) ·{" "}
 										{entry.via === "supabase"

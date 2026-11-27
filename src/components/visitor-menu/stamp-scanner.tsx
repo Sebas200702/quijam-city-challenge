@@ -1,5 +1,6 @@
-import { X } from "lucide-react";
+import { QrCode, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import "../../styles/life-shell-b.css";
 
 interface BarcodeDetectorLike {
 	detect(source: HTMLVideoElement): Promise<{ rawValue: string }[]>;
@@ -69,9 +70,25 @@ export function StampScanner({
 	};
 
 	return (
-		<section className="vm-scanner" aria-label="Escanear QR">
+		<section className="vm-scanner lsb-scanner l-rise" aria-label="Escanear QR">
+			<span
+				className="l-geo l-geo--ring l-geo--gold right-16 -top-3"
+				aria-hidden="true"
+			/>
+			<span
+				className="l-geo l-geo--tri l-geo--green right-4 bottom-3"
+				aria-hidden="true"
+			/>
 			<div className="vm-scanner__head">
-				<b>Escanear QR</b>
+				<span className="lsb-scanner__title">
+					<span
+						className="q-tile q-tile--gold l-ico--octagon"
+						aria-hidden="true"
+					>
+						<QrCode size={20} strokeWidth={1.75} />
+					</span>
+					<b>Escanear QR</b>
+				</span>
 				<button
 					type="button"
 					className="q-btn q-btn--secondary q-btn--sm"
@@ -108,7 +125,7 @@ export function StampScanner({
 					autoCapitalize="off"
 					spellCheck={false}
 				/>
-				<button type="submit" className="q-btn q-btn--primary">
+				<button type="submit" className="q-btn q-btn--primary l-cta">
 					Sumar sello
 				</button>
 			</form>

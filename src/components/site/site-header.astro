@@ -1,0 +1,101 @@
+---
+// The one header of the app: the landing's floating glass pill with the brand,
+// the main sections, the secondary menu (language, theme, account) and the way
+// into Quillart AI. Page-specific controls go in the "actions" slot.
+import { SecondaryMenu } from "../visitor-home/secondary-menu";
+import "../../styles/site-chrome.css";
+
+interface Props {
+	/** Pathname ("/agenda/12") or section key ("agenda", "forum", "places", "map", "home"). */
+	current?: string;
+	/**
+	 * overlay: floats over full-screen content (the map) without taking layout space.
+	 * compact: slimmer, full-width bar for dense tool screens.
+	 */
+	variant?: "default" | "overlay" | "compact";
+	/** Where the logo goes. The landing by default. */
+	homeHref?: string;
+	/** Short page name shown next to the logo below `lg`, where the links are hidden. */
+	title?: string;
+	/** i18n key of `title`. */
+	titleKey?: string;
+	/** False hides the section links (role and tool screens). */
+	links?: boolean;
+	/** False hides the "Abrir Quillart AI" action. */
+	cta?: boolean;
+}
+
+const {
+	current = "",
+	variant = "default",
+	homeHref = "/",
+	title,
+	titleKey,
+	links: showLinks = true,
+	cta = true,
+} = Astro.props;
+
+const links = [
+	{ href: "/agenda", label: "Agenda", key: "agenda", match: ["agenda"] },
+	{ href: "/foro", label: "Foros", key: "forums", match: ["foro", "forum", "forums"] },
+	{ href: "/lugares", label: "Lugares", key: "places", match: ["lugares", "places"] },
+	{ href: "/mapa", label: "Mapa", key: "map", match: ["mapa", "map"] },
+];
+
+// "/agenda/nuevo" and "agenda" both resolve to "agenda".
+const section = current.replace(/^\/+/, "").split(/[/?#]/)[0].toLowerCase();
+const onAi = ["inicio", "home", "ai"].includes(section);
+const hasActions = Astro.slots.has("actions");
+---
+
+<header
+	class:list={["l-header site-header", variant !== "default" && `site-header--${variant}`]}
+	data-landing-header
+>
+	<div class="l-header__bar">
+		<a href={homeHref} class="q-logo min-w-0 flex-1" aria-label="QUILLART, inicio" data-i18n-attr="aria-label:landing.header.homeLabel">
+			<span class="q-logo__tile" aria-hidden="true">
+				<span class="q-star" style="width: 22px; height: 22px"></span>
+			</span>
+			<span class="q-logo__text">
+				<span class="q-logo__word">QUILLART</span>
+				<span class="q-logo__sub">Barranquilla</span>
+			</span>
+		</a>
+		{title && <p class="site-header__title lg:hidden" data-i18n={titleKey}>{title}</p>}
+		{
+			showLinks && (
+				<nav aria-label="Secciones" data-i18n-attr="aria-label:landing.header.navLabel" class="l-nav hidden lg:block">
+					<ul class="m-0 flex list-none items-center gap-1 p-0">
+						{links.map((link) => (
+							<li>
+								<a
+									href={link.href}
+									class="q-btn q-btn--ghost q-btn--sm min-h-11"
+									aria-current={link.match.includes(section) ? "page" : undefined}
+								>
+									<span data-i18n={`landing.header.${link.key}`}>{link.label}</span>
+								</a>
+							</li>
+						))}
+					</ul>
+				</nav>
+			)
+		}
+		{hasActions && <div class="site-header__actions"><slot name="actions" /></div>}
+		<SecondaryMenu client:load />
+		{/* Secondary and hidden on phones: there the tab bar or the hero is the way in. */}
+		{
+			cta && (
+				<a
+					href="/inicio"
+					class="site-header__cta q-btn q-btn--secondary q-btn--sm min-h-11 max-sm:hidden!"
+					aria-current={onAi ? "page" : undefined}
+				>
+					<span class="q-star" aria-hidden="true" />
+					<span data-i18n="landing.header.openAi">Abrir Quillart AI</span>
+				</a>
+			)
+		}
+	</div>
+</header>

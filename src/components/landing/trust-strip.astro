@@ -8,36 +8,47 @@ const items = [
 		key: "moderation",
 		text: "Moderación con revisión humana",
 		tone: "q-tile--green",
+		shape: "l-ico--shield",
 	},
 	{
 		icon: LockKeyhole,
 		key: "data",
 		text: "Tus datos protegidos · Ley 1581",
 		tone: "q-tile--gold",
+		shape: "l-ico--circle",
 	},
 	{
 		icon: Phone,
 		key: "emergency",
 		text: "¿Emergencia? Llama al 123",
 		tone: "q-tile--red",
+		shape: "l-ico--octagon",
 	},
 ];
 ---
 
-<section aria-labelledby="trust-title" class="mx-auto grid w-full max-w-6xl items-center gap-8 px-4 py-12 lg:grid-cols-[1fr_1.2fr] lg:gap-14 lg:px-8 lg:py-16">
-	<div class="q-illus p-6" aria-hidden="true">
-		<img src="/illustrations/security-on.svg" alt="" class="h-40 w-auto lg:h-56" loading="lazy" width="260" height="220" />
+<section aria-labelledby="trust-title" class="mx-auto grid w-full max-w-[1240px] items-center gap-10 px-3 pt-4 pb-14 lg:grid-cols-[1fr_1.2fr] lg:gap-16 lg:px-8 lg:pb-24">
+	<div class="l-round-art l-round-art--shield mt-0! lg:mx-auto!" aria-hidden="true" data-reveal="scale">
+		<span class="l-geo l-geo--plus l-geo--green" style="--i: 1"></span>
+		<span class="l-geo l-geo--ring l-geo--gold" style="--i: 2"></span>
+		<img src="/illustrations/security-on.svg" alt="" loading="lazy" width="260" height="220" />
 	</div>
-	<div>
-		<h2 id="trust-title" class="q-h1 mb-6" data-i18n="landing.trust.title">Una comunidad cuidada</h2>
-		<ul class="m-0 flex list-none flex-col gap-3 p-0">
+	<div class="flex flex-col gap-4">
+		<p class="l-eyebrow" data-reveal>
+			<span class="q-star" aria-hidden="true"></span>
+			<span data-i18n="landing.trust.eyebrow">Confianza</span>
+		</p>
+		<h2 id="trust-title" class="l-h2 mb-3" data-reveal style="--i: 1" data-i18n="landing.trust.title">Una comunidad cuidada</h2>
+		<ul class="l-trust m-0 flex list-none flex-col gap-3 p-0">
 			{
-				items.map((item) => (
-					<li class="q-card flex-row! items-center gap-4 p-4">
-						<span class={`q-tile ${item.tone}`}>
-							<item.icon size={22} strokeWidth={1.75} aria-hidden="true" />
-						</span>
-						<span class="q-p font-semibold" data-i18n={`landing.trust.${item.key}`}>{item.text}</span>
+				items.map((item, index) => (
+					<li data-reveal="left" style={`--i: ${index + 1}`}>
+						<div class="q-card flex-row! items-center gap-4 p-4 lg:p-5">
+							<span class={`q-tile ${item.tone} ${item.shape}`}>
+								<item.icon size={22} strokeWidth={1.75} aria-hidden="true" />
+							</span>
+							<span class="q-p font-semibold lg:text-[17px]" data-i18n={`landing.trust.${item.key}`}>{item.text}</span>
+						</div>
 					</li>
 				))
 			}

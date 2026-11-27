@@ -12,6 +12,7 @@ import type { AgendaDay, AgendaMark } from "../../lib/timeline/timeline-types";
 import { type AgendaStatus, useAgendaDay } from "./use-agenda-day";
 import { useMatchTimeline } from "./use-match-timeline";
 import "./match-timeline.css";
+import "../../styles/life-shell-b.css";
 
 const ICON = { size: 20, strokeWidth: 1.75, "aria-hidden": true } as const;
 /** Open at start only where the card fits above the next-step card. */
@@ -76,7 +77,7 @@ export default function MatchTimeline({ variant }: MatchTimelineProps) {
 			className={`match-timeline match-timeline--${variant}`}
 			aria-labelledby={`${ids}-title`}
 		>
-			<div className="q-card match-timeline__card">
+			<div className="q-card match-timeline__card lsb-timeline-card l-rise">
 				<div className="match-timeline__head">
 					<div className="match-timeline__titles">
 						<h2 id={`${ids}-title`} className="q-h3">
@@ -108,7 +109,7 @@ export default function MatchTimeline({ variant }: MatchTimelineProps) {
 					</button>
 					{/* Announces a hour picked by hand; silent while the day plays. */}
 					<output
-						className="match-timeline__hour"
+						className="match-timeline__hour lsb-timeline-hour"
 						htmlFor={`${ids}-slider`}
 						aria-live={playing ? "off" : "polite"}
 					>
@@ -197,7 +198,7 @@ function AgendaAtHour({ status, day, now, limit }: AgendaAtHourProps) {
 
 	return (
 		<div className="match-timeline__agenda">
-			<p className="match-timeline__agenda-head">
+			<p className="match-timeline__agenda-head lsb-timeline-agenda-head">
 				<CalendarDays size={16} strokeWidth={1.75} aria-hidden="true" />
 				<span>
 					{day.isToday ? t.agendaToday : t.agendaOn(date)} ·{" "}
@@ -207,7 +208,7 @@ function AgendaAtHour({ status, day, now, limit }: AgendaAtHourProps) {
 			{shown.length === 0 ? (
 				<p className="match-timeline__note">{t.emptyHour}</p>
 			) : (
-				<ul className="match-timeline__events">
+				<ul className="match-timeline__events lsb-timeline-events">
 					{shown.map((mark) => (
 						<li key={mark.id}>
 							<a

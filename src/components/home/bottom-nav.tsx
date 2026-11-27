@@ -3,6 +3,8 @@ import type { ReactNode } from "react";
 import { useT } from "../../lib/i18n/use-language";
 import { APP_HOME_HREF, type NavSection } from "./nav-sections";
 
+import "../../styles/life-shell.css";
+
 export type { NavSection } from "./nav-sections";
 
 interface BottomNavProps {

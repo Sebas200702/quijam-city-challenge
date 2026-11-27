@@ -13,11 +13,12 @@ import {
 import { CaptchaField } from "../community/captcha-field";
 import { ConsentNote } from "../community/consent-note";
 import { useCaptcha } from "../community/use-captcha";
+import "../../styles/life-roles.css";
 
 const ICON = { size: 20, strokeWidth: 1.75, "aria-hidden": true } as const;
 const CODE_KEY = "quillart-vendor-claim";
 const INPUT =
-	"h-12 w-full rounded-[var(--radius-md)] border border-[var(--line-control)] bg-[var(--bg)] px-4 text-[15px] text-[var(--ink)]";
+	"h-12 w-full rounded-full border border-[var(--line-control)] bg-[var(--bg)] px-5 text-[15px] text-[var(--ink)]";
 
 function savedCode(): string | null {
 	try {
@@ -121,12 +122,24 @@ export default function VendorEntry() {
 
 	return (
 		<main className="mx-auto flex min-h-[80dvh] max-w-md flex-col justify-center gap-6 px-4 py-10">
-			<div>
-				<p className="q-eyebrow">Portal del vendedor</p>
-				<h1 className="q-h1 mt-1">
+			<div className="r-canvas l-rise">
+				<span
+					className="l-geo l-geo--ring l-geo--green r-g1"
+					aria-hidden="true"
+				/>
+				<span className="l-geo l-geo--half r-g2" aria-hidden="true" />
+				<span
+					className="l-geo l-geo--plus l-geo--ink r-g3"
+					aria-hidden="true"
+				/>
+				<p className="l-eyebrow">
+					<span className="q-star" aria-hidden="true" />
+					Portal del vendedor
+				</p>
+				<h1 className="l-h2 r-title">
 					{code ? "Da de alta tu negocio" : "Entra a tu negocio"}
 				</h1>
-				<p className="q-sm q-subtle mt-2">
+				<p className="q-sm text-[var(--ink-muted)]">
 					{code
 						? "Escaneaste el código que te dio la ciudad. Entra o crea tu cuenta y tu negocio quedará a tu nombre, con el sello de negocio verificado."
 						: "Marca tu negocio abierto, pon tus precios y mira cuántas visitas recibes. Sin comisión."}
@@ -134,24 +147,28 @@ export default function VendorEntry() {
 			</div>
 
 			{code && (
-				<p className="q-badge q-badge--optimal self-start">
+				<p className="q-badge q-badge--optimal l-rise self-start">
 					<BadgeCheck size={16} strokeWidth={1.75} aria-hidden="true" /> Código
 					de alta listo
 				</p>
 			)}
 
 			{client === null ? (
-				<p role="alert" className="q-card q-card__body text-[var(--red-text)]">
+				<p
+					role="alert"
+					className="q-card q-card__body r-shape-bubble text-[var(--red-text)]"
+				>
 					El portal necesita la conexión con la base de datos de la ciudad, que
 					no está configurada aquí.
 				</p>
 			) : (
 				<form
-					className="q-card"
+					className="q-card r-shape-corner l-rise"
+					style={{ ["--i" as string]: 1 }}
 					onSubmit={(event) => void submit(event)}
 					aria-busy={busy}
 				>
-					<div className="q-card__body space-y-3">
+					<div className="q-card__body space-y-3 pt-6 lg:pt-7">
 						<div className="q-seg" role="tablist" aria-label="Cuenta">
 							<button
 								type="button"
@@ -224,7 +241,7 @@ export default function VendorEntry() {
 						{mode === "signup" && <ConsentNote id="vendor-signup-consent" />}
 						<button
 							type="submit"
-							className="q-btn q-btn--primary q-btn--block"
+							className="q-btn q-btn--primary q-btn--block l-cta"
 							disabled={busy || client === undefined}
 							aria-describedby={
 								mode === "signup" ? "vendor-signup-consent" : undefined

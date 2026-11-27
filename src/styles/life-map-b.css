@@ -1,0 +1,116 @@
+/* Map chrome, second pass: landing-like shapes for the stop list, point card and service tags.
+   Visual only. Never sizes or positions the map or its sheets. */
+
+/* Icon chips with landing silhouettes */
+.lmb-chip--hex {
+	border-radius: 0;
+	clip-path: polygon(25% 4%, 75% 4%, 100% 50%, 75% 96%, 25% 96%, 0 50%);
+}
+
+.lmb-chip--shield {
+	border-radius: 14px 14px 50% 50%;
+}
+
+/* Card heads: soft tone wash under the title */
+.lmb-head {
+	position: relative;
+	background: linear-gradient(
+		180deg,
+		color-mix(in srgb, var(--gold-soft) 55%, transparent),
+		transparent
+	);
+	border-radius: inherit;
+}
+
+.lmb-count {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+}
+
+/* Stop rows: numbered badges alternate tricolour, selected row pops */
+.lmb-stops .corridor-stop {
+	border-radius: 20px 28px 20px 28px;
+	transition:
+		transform 0.25s ease,
+		background-color 0.25s ease,
+		box-shadow 0.25s ease;
+}
+
+.lmb-stops li:nth-child(even) .corridor-stop {
+	border-radius: 28px 20px 28px 20px;
+}
+
+@media (hover: hover) {
+	.lmb-stops .corridor-stop:hover {
+		transform: translateX(4px);
+		background: color-mix(in srgb, var(--gold-soft) 60%, transparent);
+	}
+}
+
+.lmb-stops .corridor-stop[aria-pressed="true"] {
+	background: var(--gold-soft);
+	box-shadow: inset 0 0 0 2px var(--gold);
+}
+
+.lmb-stops .corridor-stop__n {
+	border-radius: 50%;
+	font-weight: 800;
+	transition: transform 0.25s ease;
+}
+
+.lmb-stops li:nth-child(3n + 1) .corridor-stop__n {
+	border-radius: 50%;
+}
+
+.lmb-stops li:nth-child(3n + 2) .corridor-stop__n {
+	border-radius: 12px 50% 50% 50%;
+}
+
+.lmb-stops li:nth-child(3n) .corridor-stop__n {
+	border-radius: 50% 50% 12px 50%;
+}
+
+.lmb-stops .corridor-stop[aria-pressed="true"] .corridor-stop__n {
+	transform: scale(1.12) rotate(-6deg);
+}
+
+/* Point card */
+.lmb-point {
+	border-radius: 28px 44px 28px 28px;
+	overflow: hidden;
+}
+
+.lmb-point__desc {
+	padding-inline-start: 12px;
+	border-inline-start: 3px solid var(--gold);
+}
+
+.lmb-point .lmb-go svg {
+	transition: transform 0.25s ease;
+}
+
+@media (hover: hover) {
+	.lmb-point .lmb-go:hover svg {
+		transform: translateX(4px);
+	}
+}
+
+/* Service tags: pills with a slight asymmetric corner */
+.lmb-tag {
+	border-radius: 999px 999px 999px 8px;
+	font-weight: 600;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.lmb-stops .corridor-stop,
+	.lmb-stops .corridor-stop__n,
+	.lmb-point .lmb-go svg {
+		transition: none;
+	}
+
+	.lmb-stops .corridor-stop:hover,
+	.lmb-stops .corridor-stop[aria-pressed="true"] .corridor-stop__n {
+		transform: none;
+	}
+}

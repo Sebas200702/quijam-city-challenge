@@ -2,6 +2,7 @@ import type { Session } from "@google/genai";
 import { useRef, useState } from "react";
 import type { GuideMode } from "../lib/guide/guide-types";
 import { openLiveSession } from "../lib/guide/live-session";
+import "../styles/life-assistant.css";
 import {
 	base64Pcm16ToFloat,
 	floatToBase64Pcm16,
@@ -158,10 +159,29 @@ export default function GuideLiveTest() {
 
 	return (
 		<section className="mx-auto flex max-w-xl flex-col gap-4 p-4">
-			<h1 className="text-xl font-semibold">Guía por voz · beta</h1>
-			<div className="flex gap-2">
+			<div className="la-hero l-rise">
+				<span
+					className="l-geo l-geo--ring l-geo--gold -top-3 -right-3"
+					aria-hidden="true"
+				/>
+				<span
+					className="l-geo l-geo--half l-geo--green bottom-0 left-8"
+					aria-hidden="true"
+				/>
+				<span
+					className="l-geo l-geo--plus right-16 bottom-4"
+					aria-hidden="true"
+				/>
+				<div className="la-hero__copy">
+					<h1 className="l-h2">Guía por voz · beta</h1>
+				</div>
+			</div>
+			<div
+				className="l-rise flex flex-wrap gap-2"
+				style={{ ["--i" as string]: 1 }}
+			>
 				<select
-					className="rounded border px-2 py-1"
+					className="la-field"
 					value={mode}
 					disabled={connected}
 					onChange={(event) => setMode(event.target.value as GuideMode)}
@@ -171,17 +191,20 @@ export default function GuideLiveTest() {
 				</select>
 				<button
 					type="button"
-					className="rounded border px-3 py-1"
+					className={`q-btn ${connected ? "q-btn--alert" : "q-btn--primary"}`}
 					onClick={connected ? stop : start}
 				>
 					{connected ? "Detener" : "Iniciar"}
 				</button>
-				<span className="self-center text-sm">{status}</span>
+				<span className="l-eyebrow l-eyebrow--sunk self-center">
+					<span className="q-star" aria-hidden="true" />
+					{status}
+				</span>
 			</div>
 			{mode === "text" && (
 				<div className="flex gap-2">
 					<input
-						className="flex-1 rounded border px-2 py-1"
+						className="la-field min-w-0 flex-1"
 						value={draft}
 						onChange={(event) => setDraft(event.target.value)}
 						onKeyDown={(event) => event.key === "Enter" && sendText()}
@@ -189,14 +212,14 @@ export default function GuideLiveTest() {
 					/>
 					<button
 						type="button"
-						className="rounded border px-3 py-1"
+						className="q-btn q-btn--secondary"
 						onClick={sendText}
 					>
 						Enviar
 					</button>
 				</div>
 			)}
-			<ul className="flex flex-col gap-1 text-sm">
+			<ul className="la-log m-0 flex list-none flex-col gap-2 p-0 text-sm">
 				{log.map((line, index) => (
 					// biome-ignore lint/suspicious/noArrayIndexKey: append-only log
 					<li key={index}>{line}</li>

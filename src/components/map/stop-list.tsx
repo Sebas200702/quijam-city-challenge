@@ -3,6 +3,7 @@ import { stopServices } from "../../lib/corridor/corridor-geometry";
 import type { CorridorStop } from "../../lib/corridor/corridor-types";
 import { useT } from "../../lib/i18n/use-language";
 import "./map-chrome.css";
+import "../../styles/life-map-b.css";
 import { CorridorArt } from "./map-illustrations";
 import { ServiceIcon, STOP_TYPE_ICONS } from "./service-icon";
 
@@ -23,8 +24,11 @@ export function StopList({ stops, selectedCode, onPick }: StopListProps) {
 			className="q-card corridor-stops"
 			aria-labelledby="corridor-stops-title"
 		>
-			<div className="q-card__head mc-stops-head">
-				<span className="q-tile q-tile--gold mc-tile-sm" aria-hidden="true">
+			<div className="q-card__head mc-stops-head lmb-head">
+				<span
+					className="q-tile q-tile--gold mc-tile-sm lmb-chip--hex"
+					aria-hidden="true"
+				>
 					<Route size={20} strokeWidth={1.75} />
 				</span>
 				<div className="mc-stops-head__text">
@@ -44,11 +48,15 @@ export function StopList({ stops, selectedCode, onPick }: StopListProps) {
 					<p className="q-state__text">{copy.stopsEmptyText}</p>
 				</div>
 			) : (
-				<ol className="corridor-stops__list">
+				<ol className="corridor-stops__list lmb-stops">
 					{stops.map((stop, index) => {
 						const TypeIcon = STOP_TYPE_ICONS[stop.stop_type];
 						return (
-							<li key={stop.code}>
+							<li
+								key={stop.code}
+								className="l-rise"
+								style={{ ["--i" as string]: Math.min(index, 8) }}
+							>
 								<button
 									type="button"
 									className="corridor-stop"

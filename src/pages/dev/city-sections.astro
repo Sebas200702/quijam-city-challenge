@@ -5,6 +5,7 @@ import {
 	CitySectionsPreview,
 	type PreviewState,
 } from "../../components/city/sections/city-sections-preview";
+import SiteHeader from "../../components/site/site-header.astro";
 import BaseLayout from "../../layouts/base-layout.astro";
 
 export const prerender = false;
@@ -27,5 +28,6 @@ const state: PreviewState =
 ---
 
 <BaseLayout translated={false} title="Secciones del Centro de Mando · QUILLART" theme="dark" dock={false}>
+	<SiteHeader variant="compact" homeHref="/ciudad" links={false} cta={false} title="Secciones" />
 	<CitySectionsPreview client:load state={state} />
 </BaseLayout>

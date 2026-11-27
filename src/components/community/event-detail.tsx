@@ -48,6 +48,7 @@ import { LazyMiniMap } from "./lazy-maps";
 import { ReportButton } from "./report-button";
 import { ThreadCard } from "./thread-card";
 import { VerifiedOrganizerBadge } from "./trust-badges";
+import "../../styles/life-events.css";
 import {
 	errorText,
 	signInHref,
@@ -177,8 +178,27 @@ function EventView({
 
 	return (
 		<>
-			<article className="q-card space-y-4 p-5 lg:p-8">
-				<div className="q-illus py-3 sm:py-5">
+			<article className="q-card ev-detail l-rise space-y-4 p-5 lg:space-y-5 lg:p-8">
+				<div className="q-illus ev-detail__art py-3 sm:py-5">
+					<span
+						className="l-geo l-geo--quarter l-geo--gold bottom-0 left-0 rotate-0"
+						aria-hidden="true"
+					/>
+					<span
+						className="l-geo l-geo--ring l-geo--green top-4 right-[8%]"
+						style={{ ["--i" as string]: 1 }}
+						aria-hidden="true"
+					/>
+					<span
+						className="l-geo l-geo--plus top-5 left-[10%]"
+						style={{ ["--i" as string]: 2 }}
+						aria-hidden="true"
+					/>
+					<span
+						className="l-geo l-geo--half l-geo--ink right-[14%] bottom-4 rotate-[24deg] max-sm:hidden"
+						style={{ ["--i" as string]: 3 }}
+						aria-hidden="true"
+					/>
 					<SpotIllustration
 						src={EVENT_ILLUSTRATIONS[event.category]}
 						className="h-20! sm:h-36! lg:h-56!"
@@ -198,22 +218,32 @@ function EventView({
 						</span>
 					)}
 				</div>
-				<h1 className={`q-h1 break-words ${cancelled ? "line-through" : ""}`}>
+				<h1
+					className={`q-h1 ev-detail__title break-words ${cancelled ? "line-through" : ""}`}
+				>
 					{event.title}
 				</h1>
 				{event.moderationStatus === "held" && (
-					<p className="q-sm rounded-[var(--radius-md)] bg-[var(--gold-soft)] px-4 py-2 text-[var(--gold-text)]">
+					<p className="q-sm rounded-[20px_20px_20px_4px] bg-[var(--gold-soft)] px-4 py-3 text-[var(--gold-text)]">
 						{t.agenda.heldNote}
 					</p>
 				)}
 
-				<dl className="space-y-3">
-					<InfoRow icon={<CalendarClock size={18} />} label={t.agenda.when}>
+				<dl className="ev-info m-0">
+					<InfoRow
+						icon={<CalendarClock size={20} />}
+						label={t.agenda.when}
+						chip="q-tile--gold l-ico--burst"
+					>
 						{formatEventLongDay(event.startsAt)}
 						<br />
 						{formatTimeRange(event.startsAt, event.endsAt)}
 					</InfoRow>
-					<InfoRow icon={<MapPin size={18} />} label={t.agenda.where}>
+					<InfoRow
+						icon={<MapPin size={20} />}
+						label={t.agenda.where}
+						chip="q-tile--green l-ico--circle"
+					>
 						{place ? (
 							<a
 								href={`/lugares/${encodeURIComponent(place.slug)}`}
@@ -226,13 +256,21 @@ function EventView({
 						)}
 						{place && <span className="q-muted"> · {place.neighborhood}</span>}
 					</InfoRow>
-					<InfoRow icon={<UserRound size={18} />} label={t.agenda.organizer}>
+					<InfoRow
+						icon={<UserRound size={20} />}
+						label={t.agenda.organizer}
+						chip="q-tile--red l-ico--shield"
+					>
 						<span className="inline-flex flex-wrap items-center gap-2">
 							{event.organizerName}
 							<VerifiedOrganizerBadge verified={event.organizerVerified} />
 						</span>
 					</InfoRow>
-					<InfoRow icon={<Ticket size={18} />} label={t.agenda.entry}>
+					<InfoRow
+						icon={<Ticket size={20} />}
+						label={t.agenda.entry}
+						chip="q-tile--gold l-ico--octagon"
+					>
 						{event.isFree || !event.priceCop
 							? t.agenda.free
 							: formatCop(event.priceCop)}
@@ -284,8 +322,12 @@ function EventView({
 			)}
 
 			<section className="space-y-3" aria-labelledby="event-threads">
-				<div className="flex flex-wrap items-center justify-between gap-3">
-					<h2 id="event-threads" className="q-h2">
+				<div className="relative flex flex-wrap items-center justify-between gap-3">
+					<span
+						className="l-geo l-geo--diamond l-geo--gold -top-2 left-[46%] max-lg:hidden"
+						aria-hidden="true"
+					/>
+					<h2 id="event-threads" className="q-h2 ev-group__title">
 						{t.agenda.conversations}
 					</h2>
 					<a
@@ -316,17 +358,17 @@ function InfoRow({
 	icon,
 	label,
 	children,
+	chip,
 }: {
 	icon: ReactNode;
 	label: string;
 	children: ReactNode;
+	/** Colour and shape classes of the icon chip. */
+	chip: string;
 }) {
 	return (
-		<div className="flex gap-3">
-			<span
-				aria-hidden="true"
-				className="mt-0.5 shrink-0 text-[var(--gold-text)]"
-			>
+		<div className="ev-info__row">
+			<span aria-hidden="true" className={`q-tile ${chip}`}>
 				{icon}
 			</span>
 			<div className="min-w-0">
@@ -496,7 +538,7 @@ function RegistrationPanel({
 
 	return (
 		<section
-			className={`q-card space-y-3 p-5 ${
+			className={`q-card ev-panel ev-panel--gold space-y-3 p-5 ${
 				primary
 					? "max-lg:sticky! max-lg:bottom-[4.5rem] max-lg:z-20 max-lg:shadow-[var(--shadow-modal)]!"
 					: ""
@@ -539,13 +581,18 @@ function OrganizerPanel({
 
 	return (
 		<section
-			className="q-card space-y-3 p-5"
+			className="q-card ev-panel space-y-3 bg-[var(--ink)]! p-5 text-[var(--bg)]!"
 			aria-label={t.agenda.yourEventLabel}
 		>
-			<p className="q-eyebrow">{t.agenda.youOrganize}</p>
-			<p className="q-h3">{people}</p>
+			<p className="l-eyebrow">
+				<span className="q-star" aria-hidden="true" />
+				{t.agenda.youOrganize}
+			</p>
+			<p className="font-[family-name:var(--font-display)] text-2xl leading-tight font-bold">
+				{people}
+			</p>
 			{cancelled ? (
-				<p className="q-p q-muted">{t.agenda.youCancelled}</p>
+				<p className="q-p opacity-80">{t.agenda.youCancelled}</p>
 			) : (
 				!isPastEvent(event) && (
 					<button

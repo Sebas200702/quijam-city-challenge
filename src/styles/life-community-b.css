@@ -1,0 +1,83 @@
+/* Community (forum / places) restyle helpers. Tokens only, so both themes work. */
+
+/* Thread card as a speech bubble: one tight corner where the tail sits. */
+.lc-bubble {
+	position: relative;
+	border-radius: 30px 30px 30px 8px;
+	transition:
+		transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1),
+		box-shadow 0.35s ease;
+}
+
+.lc-bubble::after {
+	content: "";
+	position: absolute;
+	left: 22px;
+	bottom: -9px;
+	width: 18px;
+	height: 18px;
+	background: inherit;
+	border-right: 1px solid var(--line);
+	border-bottom: 1px solid var(--line);
+	border-bottom-right-radius: 5px;
+	transform: rotate(45deg);
+	pointer-events: none;
+}
+
+/* Alternate the tail side and the tint so neighbours never match. */
+:is(li, div):nth-child(even) > .lc-bubble {
+	border-radius: 30px 30px 8px 30px;
+}
+
+:is(li, div):nth-child(even) > .lc-bubble::after {
+	left: auto;
+	right: 22px;
+}
+
+:is(li, div):nth-child(3n + 2) > .lc-bubble {
+	background: var(--gold-soft);
+}
+
+@media (hover: hover) {
+	.lc-bubble:hover {
+		transform: translateY(-4px);
+		box-shadow: var(--shadow-card);
+	}
+}
+
+/* Place card: leaf silhouette with a lift on hover. */
+.lc-leaf {
+	border-radius: 28px 64px 28px 64px;
+	overflow: hidden;
+	transition:
+		transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1),
+		box-shadow 0.35s ease;
+}
+
+:is(li, div):nth-child(even) > .lc-leaf {
+	border-radius: 64px 28px 64px 28px;
+}
+
+@media (hover: hover) {
+	.lc-leaf:hover {
+		transform: translateY(-4px);
+		box-shadow: var(--shadow-card);
+	}
+}
+
+/* Small canvas header: tinted gradient, big corners, room for confetti. */
+.lc-canvas {
+	position: relative;
+	overflow: hidden;
+	border-radius: 36px 36px 36px 12px;
+	border: 1px solid var(--line);
+	background: linear-gradient(135deg, var(--gold-soft), var(--surface) 70%);
+	padding: 1.25rem 1.25rem 1.5rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.lc-bubble,
+	.lc-leaf {
+		transition: none;
+	}
+}

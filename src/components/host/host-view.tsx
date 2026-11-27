@@ -18,27 +18,20 @@ import { languageName } from "../../lib/home-content-language";
 import { useT } from "../../lib/i18n/use-language";
 import { Loading } from "../community/community-ui";
 import { signInHref, useSession, useStore } from "../community/use-community";
-import { QuillartLogo } from "../home/quillart-logo";
 import { LanguageSheet } from "../visitor-home/language-sheet";
 import { useOnlineStatus } from "../visitor-home/use-online-status";
 import { useVisitorLanguage } from "../visitor-home/use-visitor-language";
 import "../visitor-home/visitor-sheets.css";
+import "../../styles/life-roles.css";
 
-/** Header of the host app: logo, language in one tap and sign out. */
+/** Actions row of the host app (the logo lives in SiteHeader): visitor language in one tap and sign out. */
 function HostHeader({ onSignOut }: { onSignOut: (() => void) | null }) {
 	const t = useT().host;
 	const { language, detected, copy, choose } = useVisitorLanguage();
 	const online = useOnlineStatus();
 	const [picking, setPicking] = useState(false);
 	return (
-		<header className="flex items-center gap-3 px-4 pt-4">
-			<a
-				href="/"
-				className="flex min-w-0 flex-1 text-inherit no-underline"
-				aria-label={t.homeLabel}
-			>
-				<QuillartLogo />
-			</a>
+		<div className="flex items-center justify-end gap-3 px-4 pt-4">
 			<button
 				type="button"
 				className="visitor-chip-btn"
@@ -72,7 +65,7 @@ function HostHeader({ onSignOut }: { onSignOut: (() => void) | null }) {
 					onClose={() => setPicking(false)}
 				/>
 			)}
-		</header>
+		</div>
 	);
 }
 
@@ -92,21 +85,42 @@ export function HostView() {
 		<div className="mx-auto flex min-h-dvh w-full max-w-md flex-col">
 			<HostHeader onSignOut={session.profile ? signOut : null} />
 			<main className="flex flex-1 flex-col gap-4 px-4 py-6">
-				<div>
-					<p className="q-eyebrow">{t.eyebrow}</p>
-					<h1 className="q-h1">{t.title}</h1>
+				<div className="r-canvas r-canvas--green r-canvas--leaf l-rise">
+					<span
+						className="l-geo l-geo--ring l-geo--gold r-g1"
+						aria-hidden="true"
+					/>
+					<span className="l-geo l-geo--tri r-g3" aria-hidden="true" />
+					<span
+						className="l-geo l-geo--half l-geo--green r-g2"
+						aria-hidden="true"
+					/>
+					<p className="l-eyebrow">
+						<span className="q-star" aria-hidden="true" />
+						{t.eyebrow}
+					</p>
+					<h1 className="l-h2 r-title">{t.title}</h1>
 				</div>
 				{session.loading ? (
 					<Loading />
 				) : session.profile ? (
 					<HostShift />
 				) : (
-					<section className="q-state">
+					<section
+						className="q-state r-panel r-shape-corner l-rise"
+						style={{ ["--i" as string]: 1 }}
+					>
+						<span
+							className="q-tile q-tile--gold l-ico l-ico--shield"
+							aria-hidden="true"
+						>
+							<LogIn size={26} strokeWidth={1.75} />
+						</span>
 						<p className="q-state__title">{t.signInTitle}</p>
 						<p className="q-state__text">{t.signInText}</p>
 						<a
 							href={signInHref()}
-							className="q-btn q-btn--primary q-btn--block q-state__action"
+							className="q-btn q-btn--primary q-btn--block q-state__action l-cta"
 						>
 							<LogIn size={20} strokeWidth={1.75} aria-hidden="true" />
 							{t.signIn}
@@ -147,12 +161,21 @@ function HostShift() {
 			)}
 
 			{!assignment && !available && (
-				<section className="q-state">
+				<section
+					className="q-state r-panel r-shape-bubble l-rise"
+					style={{ ["--i" as string]: 1 }}
+				>
+					<span
+						className="q-tile q-tile--green l-ico l-ico--burst"
+						aria-hidden="true"
+					>
+						<UserCheck size={26} strokeWidth={1.75} />
+					</span>
 					<p className="q-state__title">{t.idleTitle}</p>
 					<p className="q-state__text">{t.idleText}</p>
 					<button
 						type="button"
-						className="q-btn q-btn--primary q-btn--lg q-btn--block"
+						className="q-btn q-btn--primary q-btn--lg q-btn--block l-cta"
 						onClick={() => setAvailable(true)}
 					>
 						<UserCheck size={20} strokeWidth={1.75} aria-hidden="true" />
@@ -162,7 +185,16 @@ function HostShift() {
 			)}
 
 			{!assignment && available && (
-				<section className="q-state" role="status">
+				<section
+					className="q-state r-panel r-shape-leaf l-rise"
+					role="status"
+				>
+					<span
+						className="q-tile q-tile--gold l-ico l-ico--circle"
+						aria-hidden="true"
+					>
+						<span className="q-star q-star--pulse" />
+					</span>
 					<p className="q-state__title">{t.waitingTitle}</p>
 					<p className="q-state__text">{t.waitingText}</p>
 					<button
@@ -177,7 +209,7 @@ function HostShift() {
 
 			{assignment && (
 				<section
-					className="q-alert q-alert--safe"
+					className="q-alert q-alert--safe r-shape-dee py-4! pr-8! pl-5!"
 					aria-live="assertive"
 					aria-label={t.assignment}
 				>
@@ -201,7 +233,7 @@ function HostShift() {
 			{assignment && action && (
 				<button
 					type="button"
-					className="q-btn q-btn--primary q-btn--lg q-btn--block"
+					className="q-btn q-btn--primary q-btn--lg q-btn--block l-cta"
 					disabled={sending}
 					onClick={() => run(hostActionEvent(action, assignment.id))}
 				>

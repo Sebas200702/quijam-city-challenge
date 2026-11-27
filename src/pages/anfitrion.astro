@@ -1,8 +1,12 @@
 ---
 import { HostView } from "../components/host/host-view";
+import SiteFooter from "../components/site/site-footer.astro";
+import SiteHeader from "../components/site/site-header.astro";
 import BaseLayout from "../layouts/base-layout.astro";
 ---
 
 <BaseLayout title="Anfitrión · QUILLART" titleKey="host.pageTitle" theme="light" dock="host">
+	<SiteHeader variant="compact" links={false} cta={false} title="Anfitrión" />
 	<HostView client:only="react" />
+	<SiteFooter variant="slim" />
 </BaseLayout>

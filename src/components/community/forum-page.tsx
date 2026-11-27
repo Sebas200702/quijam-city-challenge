@@ -187,7 +187,7 @@ export default function ForumPage({ aiHref }: { aiHref?: string }) {
 
 					<section
 						aria-label={t.forum.conversations}
-						className="flex flex-col gap-3"
+						className="lq-stagger flex flex-col gap-3"
 					>
 						<Loaded state={state} loadingLabel={t.forum.loadingThreads}>
 							{(threads) =>
@@ -217,7 +217,9 @@ export default function ForumPage({ aiHref }: { aiHref?: string }) {
 									</EmptyState>
 								) : (
 									threads.map((thread) => (
-										<ThreadCard key={thread.id} thread={thread} />
+										<div key={thread.id} className="l-rise">
+											<ThreadCard thread={thread} />
+										</div>
 									))
 								)
 							}
@@ -227,7 +229,10 @@ export default function ForumPage({ aiHref }: { aiHref?: string }) {
 
 				<aside className="flex flex-col gap-4">
 					<CommunityRules />
-					<div className="q-card space-y-3 px-5 py-4">
+					<div
+						className="q-card l-rise space-y-3 rounded-[28px_28px_28px_6px]! bg-[var(--green-soft)]! px-5 py-5"
+						style={{ ["--i" as string]: 2 }}
+					>
 						<p className="q-p">{t.forum.reportPrompt}</p>
 						<AskQuillartButton
 							prompt={t.forum.reportWithQuillartPrompt}
@@ -254,7 +259,7 @@ function CategoryChip({
 			type="button"
 			aria-pressed={selected}
 			onClick={onSelect}
-			className="q-chip shrink-0"
+			className="q-chip shrink-0 transition-transform! duration-300 lg:hover:-translate-y-0.5"
 			style={
 				selected
 					? { background: "var(--gold)", color: "var(--on-gold)" }
@@ -269,17 +274,25 @@ function CategoryChip({
 function CommunityRules() {
 	const t = useT();
 	return (
-		<section className="q-card space-y-2 px-5 py-4" aria-labelledby="rules">
-			<h2 id="rules" className="q-h3">
+		<section
+			className="q-card l-rise space-y-3 rounded-[10px_44px_10px_44px]! bg-[var(--ink)]! px-6 py-6 text-[var(--bg)]!"
+			style={{ ["--i" as string]: 1 }}
+			aria-labelledby="rules"
+		>
+			<span
+				className="q-star absolute -right-8 -bottom-10 size-32! text-[color-mix(in_srgb,var(--bg)_9%,transparent)]"
+				aria-hidden="true"
+			/>
+			<h2 id="rules" className="q-h3 lq-h2 relative pr-6">
 				{t.forum.rules.title}
 			</h2>
-			<ul className="q-sm q-muted list-disc space-y-1 pl-5">
+			<ul className="q-sm relative list-disc space-y-1.5 pl-5 text-[color-mix(in_srgb,var(--bg)_82%,transparent)]">
 				<li>{t.forum.rules.respect}</li>
 				<li>{t.forum.rules.noPersonalData}</li>
 				<li>{t.forum.rules.riskReports}</li>
 				<li>
 					{t.forum.rules.emergencyBefore}{" "}
-					<strong className="text-[var(--ink)]">123</strong>
+					<strong className="text-[var(--bg)]">123</strong>
 					{t.forum.rules.emergencyAfter}
 				</li>
 				<li>{t.forum.rules.moderation}</li>
@@ -392,8 +405,8 @@ function NewThreadForm({
 	if (session.loading) return <Loading />;
 	if (!session.profile)
 		return (
-			<div className="q-card space-y-3 px-5 py-5">
-				<h2 className="q-h3">{t.forum.form.signInTitle}</h2>
+			<div className="q-card l-rise space-y-3 rounded-[28px_64px_28px_28px]! bg-[var(--gold-soft)]! px-5 py-5 pr-8">
+				<h2 className="q-h3 lq-h2">{t.forum.form.signInTitle}</h2>
 				<p className="q-p q-muted">{t.forum.form.signInBody}</p>
 				<div className="flex flex-wrap gap-2">
 					<a href={signInHref()} className="q-btn q-btn--primary">
@@ -450,11 +463,11 @@ function NewThreadForm({
 		<form
 			id="thread-form"
 			onSubmit={submit}
-			className="q-card space-y-4 px-5 py-5"
+			className="q-card l-rise space-y-4 rounded-[32px_32px_32px_8px]! px-5 py-6 lg:px-7"
 			aria-labelledby={`${formId}-heading`}
 			noValidate
 		>
-			<h2 id={`${formId}-heading`} className="q-h3">
+			<h2 id={`${formId}-heading`} className="q-h3 lq-h2">
 				{t.forum.newThread}
 			</h2>
 			{prefill.byAgent && <AgentMark text={t.dock.filledByAgent} />}
