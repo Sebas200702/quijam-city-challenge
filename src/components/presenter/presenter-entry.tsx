@@ -106,8 +106,14 @@ export default function PresenterEntry() {
 				Entrar con una cuenta de la ciudad
 			</a>
 			<p className="q-sm q-subtle">
-				Después de iniciar sesión en el tablero, vuelve a{" "}
-				<code>/presentador</code>.
+				Después de entrar en el tablero,{" "}
+				<a
+					href="/presentador"
+					className="inline-flex min-h-11 items-center font-semibold text-[var(--ink)] underline underline-offset-2"
+				>
+					vuelve a este panel
+				</a>
+				.
 			</p>
 		</main>
 	);
