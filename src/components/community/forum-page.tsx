@@ -8,6 +8,7 @@ import {
 	useId,
 	useState,
 } from "react";
+import { type GeoPoint, pointOf } from "../../lib/community/community-geo";
 import { FORUM_CATEGORY_LABELS } from "../../lib/community/community-labels";
 import { validateThreadInput } from "../../lib/community/community-rules";
 import type {
@@ -29,6 +30,7 @@ import {
 	PublishNotice,
 	textareaClass,
 } from "./community-ui";
+import { LazyPointPicker } from "./lazy-maps";
 import { ThreadCard } from "./thread-card";
 import { signInHref, useLoad, useSession, useStore } from "./use-community";
 
@@ -271,6 +273,9 @@ function NewThreadForm({
 	const [event, setEvent] = useState<Attachment | null>(
 		initialEventId ? { id: initialEventId, name: null } : null,
 	);
+	// Optional point of what the conversation is about; the place or event lends theirs.
+	const [point, setPoint] = useState<GeoPoint | null>(null);
+	const [pointNote, setPointNote] = useState<string | null>(null);
 	const [busy, setBusy] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [rejected, setRejected] = useState<PublishResult<ForumThread> | null>(
@@ -284,6 +289,11 @@ function NewThreadForm({
 			.listPlaces()
 			.then((places) => {
 				const found = places.find((item) => item.id === initialPlaceId);
+				const lent = found ? pointOf({}, found) : null;
+				if (active && found && lent) {
+					setPoint((current) => current ?? lent);
+					setPointNote(t.geo.picker.fromPlace(found.name));
+				}
 				if (active)
 					setPlace((current) =>
 						current
@@ -297,7 +307,7 @@ function NewThreadForm({
 		return () => {
 			active = false;
 		};
-	}, [store, initialPlaceId]);
+	}, [store, initialPlaceId, t]);
 
 	useEffect(() => {
 		if (!initialEventId) return;
@@ -305,6 +315,11 @@ function NewThreadForm({
 		store
 			.getEvent(initialEventId)
 			.then((found) => {
+				const lent = found ? pointOf(found) : null;
+				if (active && found && lent) {
+					setPoint((current) => current ?? lent);
+					setPointNote(t.geo.picker.fromPlace(found.title));
+				}
 				if (active)
 					setEvent((current) =>
 						current
@@ -318,7 +333,7 @@ function NewThreadForm({
 		return () => {
 			active = false;
 		};
-	}, [store, initialEventId]);
+	}, [store, initialEventId, t]);
 
 	if (session.loading) return <Loading />;
 	if (!session.profile)
@@ -349,6 +364,8 @@ function NewThreadForm({
 			category,
 			placeId: place?.id ?? null,
 			eventId: event?.id ?? null,
+			latitude: point?.latitude ?? null,
+			longitude: point?.longitude ?? null,
 		};
 		const invalid = validateThreadInput(input);
 		setRejected(null);
@@ -444,6 +461,16 @@ function NewThreadForm({
 					onChange={(change) => setBody(change.target.value)}
 				/>
 			</Field>
+			<LazyPointPicker
+				title={t.geo.picker.threadTitle}
+				hint={t.geo.picker.threadHint}
+				value={point}
+				note={pointNote}
+				onChange={(next) => {
+					setPoint(next);
+					setPointNote(null);
+				}}
+			/>
 			{error && <ErrorNote message={error} />}
 			{rejected && <PublishNotice result={rejected} />}
 			<div className="flex flex-wrap gap-2">

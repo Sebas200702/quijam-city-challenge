@@ -3,6 +3,7 @@
 import { ArrowLeft, LogIn } from "lucide-react";
 import { type SyntheticEvent, useEffect, useState } from "react";
 import { askHref } from "../../lib/assistant/assistant-labels";
+import { type GeoPoint, pointOf } from "../../lib/community/community-geo";
 import { EVENT_CATEGORY_LABELS } from "../../lib/community/community-labels";
 import {
 	bogotaLocalToIso,
@@ -13,6 +14,7 @@ import type {
 	CommunityEvent,
 	EventCategory,
 	NewEventInput,
+	Place,
 	PublishResult,
 } from "../../lib/community/community-types";
 import { useT } from "../../lib/i18n/use-language";
@@ -27,6 +29,7 @@ import {
 	PublishNotice,
 	textareaClass,
 } from "./community-ui";
+import { LazyPointPicker } from "./lazy-maps";
 import { signInHref, useLoad, useSession, useStore } from "./use-community";
 
 const CATEGORIES = Object.keys(EVENT_CATEGORY_LABELS) as EventCategory[];
@@ -44,6 +47,15 @@ interface FormValues {
 	capacity: string;
 	isFree: boolean;
 	price: string;
+	/** Point of the meeting place on the AMB map (U15). */
+	point: GeoPoint | null;
+	/** True while the point is the catalog place's own, untouched. */
+	pointFromPlace: boolean;
+}
+
+/** The catalog place's point, when it is inside the AMB. */
+function placePoint(place: Place | undefined): GeoPoint | null {
+	return place ? pointOf({}, place) : null;
 }
 
 function initialValues(): FormValues {
@@ -60,6 +72,8 @@ function initialValues(): FormValues {
 		capacity: "",
 		isFree: true,
 		price: "",
+		point: null,
+		pointFromPlace: false,
 	};
 }
 
@@ -83,6 +97,8 @@ function toInput(values: FormValues): NewEventInput {
 		capacity,
 		isFree: values.isFree,
 		priceCop: values.isFree ? null : price,
+		latitude: values.point?.latitude ?? null,
+		longitude: values.point?.longitude ?? null,
 	};
 }
 
@@ -135,16 +151,40 @@ function EventFormBody() {
 		null,
 	);
 
-	// A `?lugar=` id that is not in the catalog falls back to a free-text address.
+	// A `?lugar=` id that is not in the catalog falls back to a free-text address;
+	// one that is lends its point to the picker.
 	useEffect(() => {
 		if (placesState.status !== "ready") return;
-		setValues((current) =>
-			current.placeId &&
-			!placesState.data.some((place) => place.id === current.placeId)
-				? { ...current, placeId: OTHER_PLACE }
-				: current,
-		);
+		setValues((current) => {
+			if (!current.placeId) return current;
+			const place = placesState.data.find(
+				(item) => item.id === current.placeId,
+			);
+			if (!place) return { ...current, placeId: OTHER_PLACE };
+			if (current.point) return current;
+			const point = placePoint(place);
+			return { ...current, point, pointFromPlace: point !== null };
+		});
 	}, [placesState]);
+
+	const places = placesState.status === "ready" ? placesState.data : [];
+	const chosenPlace = places.find((place) => place.id === values.placeId);
+
+	function choosePlace(placeId: string) {
+		const place = places.find((item) => item.id === placeId);
+		setValues((current) => {
+			// A point the person moved by hand stays; a borrowed one follows the place.
+			const keep = current.point && !current.pointFromPlace;
+			const point = keep ? current.point : placePoint(place);
+			return {
+				...current,
+				placeId,
+				point,
+				pointFromPlace: !keep && point !== null,
+			};
+		});
+		setError(null);
+	}
 
 	const today = isoToBogotaLocal(new Date().toISOString()).slice(0, 10);
 
@@ -158,7 +198,9 @@ function EventFormBody() {
 		setError(null);
 		setResult(null);
 		const input = toInput(values);
-		const invalid = validateEventInput(input);
+		const invalid =
+			validateEventInput(input) ??
+			(!values.placeId && !values.point ? t.geo.picker.pointRequired : null);
 		if (invalid) {
 			setError(invalid);
 			return;
@@ -272,7 +314,7 @@ function EventFormBody() {
 							id="event-place"
 							className={inputClass}
 							value={values.placeId}
-							onChange={(e) => set("placeId", e.target.value)}
+							onChange={(e) => choosePlace(e.target.value)}
 						>
 							<option value={OTHER_PLACE}>{t.agenda.otherPlace}</option>
 							{places.map((place) => (
@@ -300,6 +342,25 @@ function EventFormBody() {
 					/>
 				</Field>
 			)}
+
+			<LazyPointPicker
+				title={t.geo.picker.eventTitle}
+				value={values.point}
+				initialCenter={placePoint(chosenPlace)}
+				note={
+					values.pointFromPlace && chosenPlace
+						? t.geo.picker.fromPlace(chosenPlace.name)
+						: null
+				}
+				onChange={(point) => {
+					setValues((current) => ({
+						...current,
+						point,
+						pointFromPlace: false,
+					}));
+					setError(null);
+				}}
+			/>
 
 			<Field
 				id="event-capacity"
