@@ -25,7 +25,7 @@ async function requireCity(request: Request) {
 	if (!(await isCityUser(admin, user.id))) {
 		throw new CommunityError("Solo el equipo de la ciudad puede moderar.", 403);
 	}
-	return admin;
+	return { admin, moderatorId: user.id };
 }
 
 /** Moderation queue for the city role: held content and reports to follow up. */
@@ -34,26 +34,26 @@ export const GET: APIRoute = async (context) => {
 	if (limited) return limited;
 	const { request } = context;
 	try {
-		const admin = await requireCity(request);
-		if (!admin) return notConfigured();
-		return json({ items: await loadModerationQueue(admin) });
+		const city = await requireCity(request);
+		if (!city) return notConfigured();
+		return json({ items: await loadModerationQueue(city.admin) });
 	} catch (error) {
 		return errorResponse(error);
 	}
 };
 
-/** Approve or remove held content, or close a city follow-up. */
+/** Approve or remove held content, close a follow-up or confirm a citizen report. */
 export const POST: APIRoute = async (context) => {
 	const limited = guardRequest(context, "moderation");
 	if (limited) return limited;
 	const { request } = context;
 	try {
-		const admin = await requireCity(request);
-		if (!admin) return notConfigured();
+		const city = await requireCity(request);
+		if (!city) return notConfigured();
 		const { kind, id, action } = parseModerationRequest(
 			await readJson(request),
 		);
-		await applyModeration(admin, kind, id, action);
+		await applyModeration(city.admin, city.moderatorId, kind, id, action);
 		return json({ ok: true });
 	} catch (error) {
 		return errorResponse(error);

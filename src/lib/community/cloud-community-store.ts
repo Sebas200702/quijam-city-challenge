@@ -19,6 +19,7 @@ import {
 	filterEvents,
 	validateEventInput,
 	validatePostBody,
+	validateProfilePatch,
 	validateSignUp,
 	validateThreadInput,
 } from "./community-rules";
@@ -31,9 +32,11 @@ import type {
 	ForumThread,
 	ModerationAction,
 	ModerationQueueItem,
+	MyDataExport,
 	Profile,
 	ProfilePatch,
 	PublishResult,
+	ReportReason,
 	SignUpInput,
 	ThreadQuery,
 } from "./community-types";
@@ -59,7 +62,9 @@ export function createCloudCommunityStore(
 	): Promise<Profile | null> {
 		const { data } = await supabase
 			.from("profiles")
-			.select("id, display_name, neighborhood, is_visitor")
+			.select(
+				"id, display_name, neighborhood, is_visitor, is_verified_organizer",
+			)
 			.eq("id", userId)
 			.maybeSingle();
 		if (!data) return null;
@@ -69,6 +74,7 @@ export function createCloudCommunityStore(
 			neighborhood: (data.neighborhood as string | null) ?? null,
 			isVisitor: Boolean(data.is_visitor),
 			email,
+			isVerifiedOrganizer: Boolean(data.is_verified_organizer),
 		};
 	}
 
@@ -81,7 +87,7 @@ export function createCloudCommunityStore(
 
 	async function callApi<T>(
 		path: string,
-		init: { method: "GET" | "POST"; body?: unknown },
+		init: { method: "GET" | "POST" | "DELETE"; body?: unknown },
 	): Promise<T> {
 		const response = await fetch(path, {
 			method: init.method,
@@ -169,8 +175,8 @@ export function createCloudCommunityStore(
 		async updateProfile(patch: ProfilePatch) {
 			const userId = await currentUserId();
 			if (!userId) throw new Error("Inicia sesión para continuar.");
-			if (patch.displayName.trim().length < 2)
-				throw new Error("Tu nombre debe tener al menos 2 caracteres.");
+			const patchError = validateProfilePatch(patch);
+			if (patchError) throw new Error(patchError);
 			const { error } = await supabase
 				.from("profiles")
 				.update({
@@ -366,6 +372,81 @@ export function createCloudCommunityStore(
 				method: "POST",
 				body: { kind, id, action },
 			});
+		},
+
+		async reportContent(kind, id, reason) {
+			const userId = await currentUserId();
+			if (!userId) throw new Error("Inicia sesión para reportar.");
+			const { error } = await supabase.from("content_reports").insert({
+				kind,
+				content_id: id,
+				reporter_id: userId,
+				reason,
+			});
+			// 23505: this person already reported it; nothing else to do.
+			if (error && error.code !== "23505") throw friendly(error);
+		},
+
+		async exportMyData(): Promise<MyDataExport> {
+			const { data: session } = await supabase.auth.getSession();
+			const user = session.session?.user;
+			if (!user) throw new Error("Inicia sesión para descargar tus datos.");
+			const profile = await loadProfile(user.id, user.email ?? null);
+			if (!profile) throw new Error("No encontramos tu perfil.");
+			const [registrations, organized, threads, posts, reports] =
+				await Promise.all([
+					supabase
+						.from("event_registrations")
+						.select(`event:events(${EVENT_COLUMNS})`)
+						.eq("user_id", user.id),
+					supabase
+						.from("events")
+						.select(EVENT_COLUMNS)
+						.eq("organizer_id", user.id),
+					supabase
+						.from("forum_threads")
+						.select(THREAD_COLUMNS)
+						.eq("author_id", user.id),
+					supabase
+						.from("forum_posts")
+						.select(POST_COLUMNS)
+						.eq("author_id", user.id),
+					supabase
+						.from("content_reports")
+						.select("kind, content_id, reason, created_at")
+						.eq("reporter_id", user.id),
+				]);
+			const error =
+				registrations.error ??
+				organized.error ??
+				threads.error ??
+				posts.error ??
+				reports.error;
+			if (error) throw friendly(error);
+			return {
+				exportedAt: new Date().toISOString(),
+				profile,
+				registrations: (registrations.data ?? []).flatMap((row) => {
+					const event = (row as { event: unknown }).event;
+					return event && typeof event === "object"
+						? [toEvent(event as Record<string, unknown>)]
+						: [];
+				}),
+				organizedEvents: (organized.data ?? []).map(toEvent),
+				threads: (threads.data ?? []).map(toThread),
+				posts: (posts.data ?? []).map(toPost),
+				reports: (reports.data ?? []).map((row) => ({
+					kind: row.kind as ContentKind,
+					contentId: String(row.content_id),
+					reason: row.reason as ReportReason,
+					createdAt: String(row.created_at),
+				})),
+			};
+		},
+
+		async deleteAccount() {
+			await callApi("/api/community/account", { method: "DELETE" });
+			await supabase.auth.signOut();
 		},
 
 		subscribe(topic: CommunityTopic, listener) {
