@@ -112,7 +112,7 @@ Si las reglas no rechazaron y hay `TYPESAFE_API_KEY`, se llama a `client.decide(
 | `label` | `ok`, `harassment`, `hate`, `threat`, `sexual`, `spam`, `scam`, `off_topic` |
 | `priority` | `none`, `city_attention` (problema en el espacio público), `emergency` (alguien puede estar en peligro ahora) |
 
-La instrucción le dice a OpenJev que la jerga caribeña es normal y amistosa.
+La instrucción le dice a OpenJev que la jerga caribeña es normal y amistosa. La referencia de qué expresiones son amistosas y cuáles piden cuidado está en [`23-jergas-costenas.md`](23-jergas-costenas.md).
 
 ### 3. Combinación
 

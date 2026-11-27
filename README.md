@@ -94,6 +94,7 @@ Detalle en [`docs/`](docs/).
 | [`docs/20-identidad.md`](docs/20-identidad.md) | Identidad: el intérprete de la ciudad, qué no somos (gemelo digital), vocabulario y orden de la demo |
 | [`docs/21-respuestas.md`](docs/21-respuestas.md) | Qué responder cuando pregunten por el proyecto: versiones de 10 s, 30 s y 1 min, y preguntas difíciles |
 | [`docs/22-seguridad-y-confianza.md`](docs/22-seguridad-y-confianza.md) | Seguridad y confianza: desinformación, suplantación, estafas, reportes, límites de uso, IA blindada y derechos sobre los datos |
+| [`docs/23-jergas-costenas.md`](docs/23-jergas-costenas.md) | Diccionario de jergas costeñas y barranquilleras: significado, registro, uso en Quillart y reglas para hablar local con medida |
 | [`docs/feedback.md`](docs/feedback.md) | Registro de retroalimentación por sprint y validación con personas ajenas |
 
 ## Equipo
