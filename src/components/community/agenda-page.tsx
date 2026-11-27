@@ -124,7 +124,7 @@ export default function AgendaPage({ aiHref }: AgendaPageProps) {
 					/>
 				</div>
 				<fieldset
-					className="-mx-4 flex min-w-0 gap-2 overflow-x-auto px-4 pb-1 lg:mx-0 lg:flex-wrap lg:px-0"
+					className="q-scroll-fade q-scroll-fade--wrap-lg -mx-4 flex min-w-0 gap-2 overflow-x-auto px-4 pb-1 lg:mx-0 lg:flex-wrap lg:px-0"
 					aria-label={t.agenda.filterByCategory}
 				>
 					<legend className="q-sr">{t.agenda.category}</legend>

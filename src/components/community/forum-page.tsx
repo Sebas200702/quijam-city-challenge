@@ -120,7 +120,7 @@ export default function ForumPage({ aiHref }: { aiHref?: string }) {
 
 					<fieldset className="min-w-0">
 						<legend className="q-eyebrow mb-2">{t.forum.filterByTopic}</legend>
-						<div className="flex gap-2 overflow-x-auto pb-1">
+						<div className="q-scroll-fade flex gap-2 overflow-x-auto pb-1">
 							<CategoryChip
 								label={t.forum.allTopics}
 								selected={category === null}
