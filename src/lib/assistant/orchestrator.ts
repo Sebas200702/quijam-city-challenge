@@ -5,8 +5,9 @@
 //    segundo", "dale", "inscríbeme") after an assistant turn, stays with the
 //    agent that answered last, so the conversation does not jump sections,
 //    unless its keywords clearly name another section.
-// 2. Keywords. A pure, accent-insensitive Spanish + English keyword score.
-//    The agent with the highest score wins when it is the only one on top.
+// 2. Keywords. A pure, accent-insensitive keyword score in Spanish, English,
+//    Portuguese and French. The agent with the highest score wins when it is
+//    the only one on top.
 // 3. OpenJev. When keywords are null or tied and a client exists, a choice
 //    question over the six agent descriptions; accepted at confidence >= 0.35.
 //    Only the person's message text is sent (no names, no context).
@@ -217,12 +218,118 @@ const AGENT_KEYWORDS: Record<AssistantAgentId, string[]> = {
 	],
 };
 
+/**
+ * Portuguese and French keywords, kept apart so the Spanish and English lists
+ * stay as they were. None of them is a Spanish word or shares a prefix with
+ * one, so Spanish messages score exactly as before.
+ */
+const OTHER_LANGUAGE_KEYWORDS: Record<AssistantAgentId, string[]> = {
+	agenda: [
+		"evenement*",
+		"fim de semana",
+		"week end",
+		"ce soir",
+		"esta noite",
+		"festa*",
+		"fete*",
+		"concert",
+		"concerts",
+		"atelier*",
+		"sortie*",
+		"inscrev*",
+		"inscrire*",
+		"o que tem",
+	],
+	community: [
+		"comunidade",
+		"communaute",
+		"vizinho*",
+		"voisin*",
+		"discussion*",
+		"o que se fala",
+		"qu on dit",
+	],
+	places: [
+		"lieu",
+		"lieux",
+		"endroit*",
+		"praia*",
+		"plage*",
+		"museu*",
+		"musee*",
+		"natureza",
+		"parc",
+		"parcs",
+		"passaro*",
+		"oiseau*",
+		"visiter",
+		"conhecer",
+		"tourisme",
+		"o que fazer",
+		"que faire",
+		"quoi faire",
+		"ar livre",
+		"plein air",
+	],
+	mobility: [
+		"como chego",
+		"como chegar",
+		"comment aller",
+		"comment y aller",
+		"comment me rendre",
+		"comment arriver",
+		"onibus",
+		"trajet*",
+		"itineraire*",
+		"passagem",
+		"embouteillage*",
+	],
+	city_reports: [
+		"signaler",
+		"signalement*",
+		"buraco*",
+		"nid de poule",
+		"nids de poule",
+		"lixo",
+		"ordures",
+		"dechets",
+		"inond*",
+		"enchente*",
+		"urgence*",
+		"acidente*",
+		"accident",
+		"accidents",
+		"perigo*",
+		"danger*",
+		"plainte",
+	],
+	account: [
+		"meu perfil",
+		"minha conta",
+		"mon profil",
+		"mon compte",
+		"profil",
+		"compte",
+		"senha",
+		"mot de passe",
+		"se connecter",
+		"connexion",
+		"minhas inscricoes",
+		"mes inscriptions",
+		"meus eventos",
+		"mes evenements",
+	],
+};
+
 /** Score per agent; phrases (with a space) weigh 2, single words 1. */
 export function keywordScores(text: string): Record<AssistantAgentId, number> {
 	const normalized = normalizeText(text);
 	const scores = {} as Record<AssistantAgentId, number>;
 	for (const agent of AGENT_IDS) {
-		const keywords = AGENT_KEYWORDS[agent];
+		const keywords = [
+			...AGENT_KEYWORDS[agent],
+			...OTHER_LANGUAGE_KEYWORDS[agent],
+		];
 		const phrases = keywords.filter((keyword) => keyword.includes(" "));
 		const singles = keywords.filter((keyword) => !keyword.includes(" "));
 		scores[agent] =
@@ -306,6 +413,18 @@ const FOLLOW_UP_KEYWORDS = [
 	"the third",
 	"that one",
 	"more",
+	"sim",
+	"isso",
+	"o primeiro",
+	"o segundo",
+	"obrigado",
+	"obrigada",
+	"oui",
+	"d accord",
+	"le premier",
+	"le deuxieme",
+	"celui la",
+	"merci",
 ];
 
 const MAX_FOLLOW_UP_WORDS = 5;
@@ -353,7 +472,7 @@ export async function routeWithOpenJev(
 				agent: {
 					type: "choice",
 					instructions:
-						"Which section of a Barranquilla citizen platform should answer this message?",
+						"Which section of a Barranquilla citizen platform should answer this message? The message may be written in Spanish, English, Portuguese or French.",
 					criteria: Object.fromEntries(
 						AGENT_IDS.map((agent) => [agent, AGENTS[agent].description]),
 					),

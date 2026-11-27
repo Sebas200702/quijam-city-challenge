@@ -2,6 +2,12 @@ import { getSecret } from "astro:env/server";
 import { GoogleGenAI } from "@google/genai";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import type { FloodZone, ZoneVisitorCount } from "../city-dashboard-types";
+import {
+	assertCityMfa,
+	CityMfaRequiredError,
+	hasAal2,
+	readTokenClaims,
+} from "../security/city-mfa";
 import { computeImpactMetrics } from "./impact-metrics";
 import {
 	buildReportPrompt,
@@ -33,14 +39,41 @@ function clientForToken(accessToken: string): SupabaseClient {
 	);
 }
 
-/** Reads the day's data with the operator's own permissions. Only city users pass. */
+/**
+ * Whether the caller's own account is city, read from its own user_profiles row
+ * (RLS lets everyone read their own row) and the token's app_metadata. Used
+ * when current_user_role() already demotes a city session at aal1.
+ */
+async function ownAccountIsCity(
+	supabase: SupabaseClient,
+	accessToken: string,
+): Promise<boolean> {
+	const claims = readTokenClaims(accessToken);
+	if (!claims?.sub) return false;
+	const { data } = await supabase
+		.from("user_profiles")
+		.select("role")
+		.eq("user_id", claims.sub)
+		.maybeSingle();
+	return (data?.role ?? claims.appRole) === "city";
+}
+
+/** Reads the day's data with the operator's own permissions. Only city users at aal2 pass. */
 export async function loadMetrics(accessToken: string): Promise<ImpactMetrics> {
 	const supabase = clientForToken(accessToken);
 	const { data: role, error: roleError } =
 		await supabase.rpc("current_user_role");
 	if (roleError || role !== "city") {
+		if (
+			!roleError &&
+			!hasAal2(accessToken) &&
+			(await ownAccountIsCity(supabase, accessToken))
+		) {
+			throw new CityMfaRequiredError();
+		}
 		throw new ReportAccessError("Solo el rol ciudad puede generar el informe.");
 	}
+	assertCityMfa(accessToken);
 
 	const [zones, reports, floods, businesses] = await Promise.all([
 		supabase.from("zone_visitor_counts").select("*"),

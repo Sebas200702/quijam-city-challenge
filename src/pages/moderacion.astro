@@ -1,5 +1,5 @@
 ---
-import ModerationPage from "../components/community/moderation-page";
+import { ModerationWithMfa } from "../components/city/moderation-with-mfa";
 import BaseLayout from "../layouts/base-layout.astro";
 ---
 
@@ -8,5 +8,5 @@ import BaseLayout from "../layouts/base-layout.astro";
 	titleKey="forum.moderationPageTitle"
 	theme="dark"
 >
-	<ModerationPage client:only="react" />
+	<ModerationWithMfa client:only="react" />
 </BaseLayout>

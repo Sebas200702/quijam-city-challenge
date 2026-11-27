@@ -88,7 +88,7 @@ flowchart TD
 
 ### 1. Reglas duras (`moderation-rules.ts`)
 
-Corren primero, en el servidor y en el navegador, y **siempre ganan**. El texto se normaliza (sin tildes, minúsculas, `0`→`o`, `@`→`a`, letras repetidas comprimidas) para que "imbeciiiil" coincida con "imbecil".
+Corren primero, en el servidor y en el navegador, y **siempre ganan**. El texto se normaliza (sin tildes, minúsculas, `0`→`o`, `@`→`a`, apóstrofo tipográfico `’` → `'`, guion entre letras → espacio, letras repetidas comprimidas) para que "imbeciiiil" coincida con "imbecil", "I’m going to kill you" (teclado del celular) con "i'm going to kill you" y "vou-te matar" con "vou te matar".
 
 | Regla | Detecta | Resultado | Etiqueta |
 |---|---|---|---|
@@ -99,6 +99,8 @@ Corren primero, en el servidor y en el navegador, y **siempre ganan**. El texto 
 | Publicidad | Más de 2 enlaces o frases de estafa ("inversión garantizada", "bitcoin"…) | Revisión | `spam` |
 | Problema en el espacio público | Arroyo, inundación, hueco, cable caído, cobro abusivo, robo… | Prioridad `city_attention` | — |
 | Posible emergencia | Herido, incendio, arrastrado, atrapado, persona perdida… | Prioridad `emergency` | — |
+
+Además del español, cada regla de términos tiene una lista básica en inglés, portugués y francés (#93): por ejemplo "I will kill you", "vou te matar" y "je vais te tuer" son amenazas; "asshole", "filho da puta" y "connard" son insultos; "pothole", "buraco na rua" y "nid de poule" piden atención de la ciudad. Son palabras o frases completas que no existen en español (se descartaron "assalto", que comprimido coincide con "asalto", y "moron"). Se evitan frases genéricas que rechazarían texto inocente: el odio exige un grupo de personas ("mort aux étrangers", no "mort aux", que también dice "mort aux rats"), y "buraco" solo cuenta en frases como "buraco na rua", porque en español también es un juego de cartas. Así que el texto en español da el mismo resultado que antes.
 
 Las reglas también producen **señales** cortas en inglés (por ejemplo "contains 1 insult word(s)") que viajan a OpenJev; nunca el dato personal.
 
@@ -112,7 +114,7 @@ Si las reglas no rechazaron y hay `TYPESAFE_API_KEY`, se llama a `client.decide(
 | `label` | `ok`, `harassment`, `hate`, `threat`, `sexual`, `spam`, `scam`, `off_topic` |
 | `priority` | `none`, `city_attention` (problema en el espacio público), `emergency` (alguien puede estar en peligro ahora) |
 
-La instrucción le dice a OpenJev que la jerga caribeña es normal y amistosa. La referencia de qué expresiones son amistosas y cuáles piden cuidado está en [`23-jergas-costenas.md`](23-jergas-costenas.md).
+La instrucción le dice a OpenJev que la jerga caribeña es normal y amistosa, y que el texto puede venir en español, inglés, portugués o francés con los mismos criterios. La referencia de qué expresiones son amistosas y cuáles piden cuidado está en [`23-jergas-costenas.md`](23-jergas-costenas.md).
 
 ### 3. Combinación
 
@@ -171,7 +173,7 @@ Acciones (`POST /api/community/moderation`):
 
 ## Límites conocidos
 
-- Las listas de términos son cortas y en español; no cubren otros idiomas ni todas las variantes.
+- Las listas de términos son cortas: español con lo básico de inglés, portugués y francés; no cubren otros idiomas ni todas las variantes.
 - OpenJev es un experimento gratuito que puede cambiar o cerrar (ver [13-openjev.md](13-openjev.md)); el respaldo por reglas es obligatorio.
 - Un organizador no puede editar su evento después de publicarlo; solo cancelarlo.
 - Las personas no pueden reportar contenido ya publicado; solo la ciudad retira.

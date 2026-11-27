@@ -1,8 +1,8 @@
 ---
-import { CityDashboard } from "../components/city-dashboard";
+import { CityDashboardWithMfa } from "../components/city/city-dashboard-with-mfa";
 import BaseLayout from "../layouts/base-layout.astro";
 ---
 
 <BaseLayout translated={false} title="Lo que la ciudad aprende · QUILLART" theme="dark">
-	<CityDashboard client:only="react" />
+	<CityDashboardWithMfa client:only="react" />
 </BaseLayout>

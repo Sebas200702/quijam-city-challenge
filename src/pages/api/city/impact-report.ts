@@ -5,6 +5,10 @@ import {
 	writeReport,
 } from "../../../lib/impact-report/impact-report-server";
 import { guardRequest } from "../../../lib/security/api-guard";
+import {
+	CityMfaRequiredError,
+	mfaRequiredResponse,
+} from "../../../lib/security/city-mfa";
 
 export const prerender = false;
 
@@ -37,6 +41,7 @@ export const POST: APIRoute = async (context) => {
 		const metrics = await loadMetrics(accessToken);
 		return json(await writeReport(metrics), 200);
 	} catch (error) {
+		if (error instanceof CityMfaRequiredError) return mfaRequiredResponse();
 		if (error instanceof ReportAccessError) {
 			return json({ error: error.message }, 403);
 		}

@@ -204,3 +204,21 @@ describe("trust and safety rules", () => {
 		expect(isTrustedLink("https://barranquilla.gov.co.evil.com")).toBe(false);
 	});
 });
+
+describe("triage languages", () => {
+	it("tells OpenJev the text may arrive in Spanish, English, Portuguese or French", async () => {
+		const client = jev("publish", 0.9);
+		await triageContent(
+			{ kind: "post", body: "See you at the park tomorrow" },
+			client,
+		);
+		const [, questions] = (client.decide as ReturnType<typeof vi.fn>).mock
+			.calls[0] as [unknown, { verdict: { instructions: string } }];
+		expect(questions.verdict.instructions).toMatch(
+			/may be written in Spanish, English, Portuguese or French/,
+		);
+		expect(questions.verdict.instructions).toMatch(
+			/^Moderate this message for a public community platform/,
+		);
+	});
+});

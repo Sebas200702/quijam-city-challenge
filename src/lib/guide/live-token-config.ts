@@ -1,4 +1,4 @@
-import { type CreateAuthTokenConfig, Modality } from "@google/genai";
+import { type CreateAuthTokenConfig, Modality, type Tool } from "@google/genai";
 
 /** Fallback model. Checked on 2026-11-26 against the models list for bidiGenerateContent. */
 export const DEFAULT_LIVE_MODEL = "gemini-3.8-live";
@@ -12,15 +12,24 @@ export const GUIDE_SYSTEM_INSTRUCTION =
 	"You are the Guide for visitors in Barranquilla. Answer in the visitor's language, briefly. " +
 	"Data about routes, fares and businesses is reference data, not live measurements.";
 
+/** One Quillart AI agent, as the Live session sees it. */
+export interface LiveAgentSetup {
+	systemInstruction: string;
+	/** Function declarations of the agent's own tools, and no others. */
+	tools: Tool[];
+}
+
 /**
- * Builds a single-use ephemeral token config. Model, modality and system
- * instruction are locked inside the token, so the browser cannot change them.
- * Live models only answer with audio, so the token always asks for audio plus
- * its transcript; text mode shows the transcript instead of playing the audio.
+ * Builds a single-use ephemeral token config. Model, modality, system
+ * instruction and (for an agent) its tools are locked inside the token, so the
+ * browser cannot change them. Live models only answer with audio, so the token
+ * always asks for audio plus its transcript; text mode shows the transcript
+ * instead of playing the audio. Without an agent, the beta Guide is used.
  */
 export function buildLiveTokenConfig(
 	model: string,
 	now: Date = new Date(),
+	agent?: LiveAgentSetup,
 ): CreateAuthTokenConfig {
 	return {
 		uses: 1,
@@ -35,7 +44,9 @@ export function buildLiveTokenConfig(
 			config: {
 				responseModalities: [Modality.AUDIO],
 				outputAudioTranscription: {},
-				systemInstruction: GUIDE_SYSTEM_INSTRUCTION,
+				systemInstruction: agent?.systemInstruction ?? GUIDE_SYSTEM_INSTRUCTION,
+				// The agent's turns are written to the chat, so the person's words are too.
+				...(agent ? { tools: agent.tools, inputAudioTranscription: {} } : {}),
 			},
 		},
 		lockAdditionalFields: [],

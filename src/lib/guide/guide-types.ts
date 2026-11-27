@@ -1,3 +1,5 @@
+import type { AssistantAgentId } from "../assistant/assistant-types";
+
 /** How the Guide talks: voice (main) or text (plan B). */
 export type GuideMode = "audio" | "text";
 
@@ -9,4 +11,6 @@ export interface LiveTokenResponse {
 	mode: GuideMode;
 	/** ISO time after which no new session can be opened with this token. */
 	newSessionExpiresAt: string;
+	/** Quillart AI agent whose instruction and tools the token locks, if any. */
+	agent?: AssistantAgentId;
 }
