@@ -7,6 +7,6 @@ const id = Astro.params.id ?? "";
 const { aiHref } = homeContent;
 ---
 
-<BaseLayout title="Evento · Agenda">
+<BaseLayout title="Evento · Agenda" titleKey="agenda.detailPageTitle">
 	<EventDetail client:only="react" id={id} aiHref={aiHref} />
 </BaseLayout>

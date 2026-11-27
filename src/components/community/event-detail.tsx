@@ -31,7 +31,7 @@ import type {
 	Place,
 	Profile,
 } from "../../lib/community/community-types";
-import { useLanguage } from "../../lib/i18n/use-language";
+import { useT } from "../../lib/i18n/use-language";
 import { AskQuillartButton } from "../assistant/ask-quillart-button";
 import { CommunityShell } from "./community-shell";
 import {
@@ -52,6 +52,7 @@ export interface EventDetailProps {
 }
 
 export default function EventDetail({ id, aiHref }: EventDetailProps) {
+	const t = useT();
 	const { profile, loading: sessionLoading } = useSession();
 	const { state, reload } = useLoad(
 		async (store) => {
@@ -77,9 +78,9 @@ export default function EventDetail({ id, aiHref }: EventDetailProps) {
 		<CommunityShell current="agenda" aiHref={aiHref}>
 			<a href="/agenda" className="q-btn q-btn--ghost self-start">
 				<ArrowLeft size={18} aria-hidden="true" />
-				Volver a la agenda
+				{t.agenda.backToAgenda}
 			</a>
-			<Loaded state={state} loadingLabel="Cargando el evento…">
+			<Loaded state={state} loadingLabel={t.agenda.loadingEvent}>
 				{(data) =>
 					data ? (
 						<EventView
@@ -90,15 +91,15 @@ export default function EventDetail({ id, aiHref }: EventDetailProps) {
 						/>
 					) : (
 						<EmptyState
-							title="No encontramos este evento"
+							title={t.agenda.notFoundTitle}
 							illustration="/illustrations/page-not-found.svg"
 							action={
 								<a href="/agenda" className="q-btn q-btn--primary">
-									Ver la agenda
+									{t.agenda.seeAgenda}
 								</a>
 							}
 						>
-							Puede que lo hayan retirado o que el enlace esté incompleto.
+							{t.agenda.notFoundText}
 						</EmptyState>
 					)
 				}
@@ -126,10 +127,10 @@ function EventView({
 	sessionLoading,
 	onChange,
 }: EventViewProps) {
-	useLanguage();
+	const t = useT();
 	const isOrganizer = !!profile && profile.id === event.organizerId;
 	const cancelled = event.status === "cancelled";
-	const where = place?.name ?? event.locationText ?? "Lugar por confirmar";
+	const where = place?.name ?? event.locationText ?? t.agenda.placeTbd;
 
 	return (
 		<>
@@ -146,10 +147,12 @@ function EventView({
 					</span>
 					{event.moderationStatus === "held" && <HeldBadge />}
 					{cancelled && (
-						<span className="q-badge q-badge--alert">Cancelado</span>
+						<span className="q-badge q-badge--alert">{t.agenda.cancelled}</span>
 					)}
 					{registered && !cancelled && (
-						<span className="q-badge q-badge--optimal">Inscrito</span>
+						<span className="q-badge q-badge--optimal">
+							{t.agenda.registered}
+						</span>
 					)}
 				</div>
 				<h1 className={`q-h1 break-words ${cancelled ? "line-through" : ""}`}>
@@ -157,18 +160,17 @@ function EventView({
 				</h1>
 				{event.moderationStatus === "held" && (
 					<p className="q-sm rounded-[var(--radius-md)] bg-[var(--gold-soft)] px-4 py-2 text-[var(--gold-text)]">
-						Tu evento está en revisión. Solo tú lo ves hasta que la moderación
-						lo apruebe.
+						{t.agenda.heldNote}
 					</p>
 				)}
 
 				<dl className="space-y-3">
-					<InfoRow icon={<CalendarClock size={18} />} label="Cuándo">
+					<InfoRow icon={<CalendarClock size={18} />} label={t.agenda.when}>
 						{formatEventLongDay(event.startsAt)}
 						<br />
 						{formatTimeRange(event.startsAt, event.endsAt)}
 					</InfoRow>
-					<InfoRow icon={<MapPin size={18} />} label="Dónde">
+					<InfoRow icon={<MapPin size={18} />} label={t.agenda.where}>
 						{place ? (
 							<a
 								href={`/lugares/${encodeURIComponent(place.slug)}`}
@@ -181,15 +183,15 @@ function EventView({
 						)}
 						{place && <span className="q-muted"> · {place.neighborhood}</span>}
 					</InfoRow>
-					<InfoRow icon={<UserRound size={18} />} label="Organiza">
+					<InfoRow icon={<UserRound size={18} />} label={t.agenda.organizer}>
 						<span className="inline-flex flex-wrap items-center gap-2">
 							{event.organizerName}
 							<VerifiedOrganizerBadge verified={event.organizerVerified} />
 						</span>
 					</InfoRow>
-					<InfoRow icon={<Ticket size={18} />} label="Entrada">
+					<InfoRow icon={<Ticket size={18} />} label={t.agenda.entry}>
 						{event.isFree || !event.priceCop
-							? "Gratis"
+							? t.agenda.free
 							: formatCop(event.priceCop)}
 					</InfoRow>
 				</dl>
@@ -209,11 +211,13 @@ function EventView({
 							className="q-btn q-btn--secondary"
 						>
 							<Navigation size={18} aria-hidden="true" />
-							Cómo llegar
+							{t.agenda.directions}
 						</a>
 					)}
 					<ShareButton title={event.title} />
-					<AskQuillartButton prompt={`¿Cómo llego a «${event.title}»?`} />
+					<AskQuillartButton
+						prompt={t.agenda.askDirectionsPrompt(event.title)}
+					/>
 				</div>
 				<ReportButton kind="event" id={event.id} ownerId={event.organizerId} />
 			</article>
@@ -233,21 +237,18 @@ function EventView({
 			<section className="space-y-3" aria-labelledby="event-threads">
 				<div className="flex flex-wrap items-center justify-between gap-3">
 					<h2 id="event-threads" className="q-h2">
-						Conversaciones
+						{t.agenda.conversations}
 					</h2>
 					<a
 						href={`/foro?nuevo=1&evento=${encodeURIComponent(event.id)}`}
 						className="q-btn q-btn--secondary"
 					>
 						<MessageCirclePlus size={18} aria-hidden="true" />
-						Conversar sobre este evento
+						{t.agenda.talkAboutEvent}
 					</a>
 				</div>
 				{threads.length === 0 ? (
-					<p className="q-p q-muted">
-						Nadie ha abierto una conversación todavía. ¿Tienes una pregunta para
-						quien organiza? Empieza tú.
-					</p>
+					<p className="q-p q-muted">{t.agenda.noConversations}</p>
 				) : (
 					<ul className="space-y-3">
 						{threads.map((thread) => (
@@ -288,39 +289,32 @@ function InfoRow({
 }
 
 function Capacity({ event }: { event: CommunityEvent }) {
+	const t = useT();
 	const left = spotsLeft(event);
-	const people =
-		event.registeredCount === 1
-			? "1 persona inscrita"
-			: `${event.registeredCount} personas inscritas`;
+	const people = t.agenda.peopleRegistered(event.registeredCount);
 	if (event.capacity === null || left === null) {
 		return (
 			<p className="q-sm q-muted flex items-center gap-2">
 				<Users size={16} aria-hidden="true" />
-				{people} · cupos sin límite
+				{people} · {t.agenda.unlimitedSuffix}
 			</p>
 		);
 	}
 	const ratio = Math.min(event.registeredCount / event.capacity, 1);
 	const tone = left === 0 ? "red" : left <= 5 ? "gold" : "green";
-	const state =
-		left === 0
-			? "Cupos agotados"
-			: left === 1
-				? "Queda 1 cupo"
-				: `Quedan ${left} cupos`;
+	const state = left === 0 ? t.agenda.spotsSoldOut : t.agenda.spotsLeft(left);
 	return (
 		<div className={`q-meter q-meter--${tone}`}>
 			<div className="q-meter__head">
 				<span>
-					<b>{event.registeredCount}</b> de {event.capacity} cupos
+					<b>{event.registeredCount}</b> {t.agenda.spotsOutOf(event.capacity)}
 				</span>
 				<span className="q-meter__state font-semibold">{state}</span>
 			</div>
 			<div
 				className="q-meter__track"
 				role="progressbar"
-				aria-label="Cupos ocupados"
+				aria-label={t.agenda.spotsTaken}
 				aria-valuemin={0}
 				aria-valuemax={event.capacity}
 				aria-valuenow={event.registeredCount}
@@ -347,13 +341,14 @@ function RegistrationPanel({
 	sessionLoading: boolean;
 	onChange: () => void;
 }) {
+	const t = useT();
 	const store = useStore();
 	const [busy, setBusy] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const blocker =
 		registrationBlocker(event) ??
 		(event.moderationStatus === "held"
-			? "Las inscripciones abren cuando la moderación apruebe el evento."
+			? t.agenda.registrationOpensAfterApproval
 			: null);
 
 	async function toggle() {
@@ -364,9 +359,7 @@ function RegistrationPanel({
 			else await store.register(event.id);
 			onChange();
 		} catch (err) {
-			setError(
-				err instanceof Error ? err.message : "No pudimos guardar el cambio.",
-			);
+			setError(err instanceof Error ? err.message : t.agenda.saveError);
 		} finally {
 			setBusy(false);
 		}
@@ -380,14 +373,14 @@ function RegistrationPanel({
 			<p className="q-p q-muted">{blocker}</p>
 		) : (
 			<a href={signInHref()} className="q-btn q-btn--primary q-btn--block">
-				Inicia sesión para inscribirte
+				{t.agenda.signInToRegister}
 			</a>
 		);
 	} else if (registered) {
 		const canLeave = !isPastEvent(event) && event.status !== "cancelled";
 		content = (
 			<>
-				<p className="q-p">¡Listo! Ya estás en la lista. Te esperamos.</p>
+				<p className="q-p">{t.agenda.registeredText}</p>
 				{canLeave && (
 					<button
 						type="button"
@@ -395,7 +388,7 @@ function RegistrationPanel({
 						onClick={() => void toggle()}
 						disabled={busy}
 					>
-						{busy ? "Cancelando…" : "Cancelar inscripción"}
+						{busy ? t.agenda.cancelling : t.agenda.cancelRegistration}
 					</button>
 				)}
 			</>
@@ -410,13 +403,16 @@ function RegistrationPanel({
 				onClick={() => void toggle()}
 				disabled={busy}
 			>
-				{busy ? "Inscribiendo…" : "Inscribirme"}
+				{busy ? t.agenda.registering : t.agenda.register}
 			</button>
 		);
 	}
 
 	return (
-		<section className="q-card space-y-3 p-5" aria-label="Inscripción">
+		<section
+			className="q-card space-y-3 p-5"
+			aria-label={t.agenda.registrationLabel}
+		>
 			{content}
 			{error && <ErrorNote message={error} />}
 		</section>
@@ -430,42 +426,36 @@ function OrganizerPanel({
 	event: CommunityEvent;
 	onChange: () => void;
 }) {
+	const t = useT();
 	const store = useStore();
 	const [busy, setBusy] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const cancelled = event.status === "cancelled";
-	const people =
-		event.registeredCount === 1
-			? "1 persona inscrita"
-			: `${event.registeredCount} personas inscritas`;
+	const people = t.agenda.peopleRegistered(event.registeredCount);
 
 	async function cancel() {
-		if (
-			!window.confirm(
-				"¿Seguro que quieres cancelar este evento? Las personas inscritas lo verán como cancelado.",
-			)
-		)
-			return;
+		if (!window.confirm(t.agenda.cancelConfirm)) return;
 		setBusy(true);
 		setError(null);
 		try {
 			await store.cancelEvent(event.id);
 			onChange();
 		} catch (err) {
-			setError(
-				err instanceof Error ? err.message : "No pudimos cancelar el evento.",
-			);
+			setError(err instanceof Error ? err.message : t.agenda.cancelEventError);
 		} finally {
 			setBusy(false);
 		}
 	}
 
 	return (
-		<section className="q-card space-y-3 p-5" aria-label="Tu evento">
-			<p className="q-eyebrow">Tú organizas este evento</p>
+		<section
+			className="q-card space-y-3 p-5"
+			aria-label={t.agenda.yourEventLabel}
+		>
+			<p className="q-eyebrow">{t.agenda.youOrganize}</p>
 			<p className="q-h3">{people}</p>
 			{cancelled ? (
-				<p className="q-p q-muted">Cancelaste este evento.</p>
+				<p className="q-p q-muted">{t.agenda.youCancelled}</p>
 			) : (
 				!isPastEvent(event) && (
 					<button
@@ -474,7 +464,7 @@ function OrganizerPanel({
 						onClick={() => void cancel()}
 						disabled={busy}
 					>
-						{busy ? "Cancelando…" : "Cancelar evento"}
+						{busy ? t.agenda.cancelling : t.agenda.cancelEvent}
 					</button>
 				)
 			)}
@@ -484,6 +474,7 @@ function OrganizerPanel({
 }
 
 function ShareButton({ title }: { title: string }) {
+	const t = useT();
 	const [copied, setCopied] = useState(false);
 
 	async function share() {
@@ -501,7 +492,7 @@ function ShareButton({ title }: { title: string }) {
 			setCopied(true);
 			window.setTimeout(() => setCopied(false), 2500);
 		} catch {
-			window.prompt("Copia el enlace del evento:", url);
+			window.prompt(t.agenda.copyLinkPrompt, url);
 		}
 	}
 
@@ -512,7 +503,9 @@ function ShareButton({ title }: { title: string }) {
 			onClick={() => void share()}
 		>
 			<Share2 size={18} aria-hidden="true" />
-			<span aria-live="polite">{copied ? "Enlace copiado" : "Compartir"}</span>
+			<span aria-live="polite">
+				{copied ? t.agenda.linkCopied : t.agenda.share}
+			</span>
 		</button>
 	);
 }

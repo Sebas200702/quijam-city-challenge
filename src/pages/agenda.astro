@@ -6,6 +6,9 @@ import { homeContent } from "../lib/home-content";
 const { aiHref } = homeContent;
 ---
 
-<BaseLayout title="Agenda · Planes en Barranquilla">
+<BaseLayout
+	title="Agenda · Planes en Barranquilla"
+	titleKey="agenda.pageTitle"
+>
 	<AgendaPage client:only="react" aiHref={aiHref} />
 </BaseLayout>

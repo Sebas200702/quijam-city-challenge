@@ -9,23 +9,31 @@ import {
 } from "../../lib/community/community-labels";
 import { spotsLeft } from "../../lib/community/community-rules";
 import type { CommunityEvent } from "../../lib/community/community-types";
-import { useLanguage } from "../../lib/i18n/use-language";
+import type { Language } from "../../lib/i18n/languages";
+import type { Messages } from "../../lib/i18n/messages";
+import { useLanguage, useT } from "../../lib/i18n/use-language";
 import { HeldBadge } from "./community-ui";
 import { VerifiedOrganizerBadge } from "./trust-badges";
 
 const TIME_ZONE = "America/Bogota";
-const dayNumber = new Intl.DateTimeFormat("es-CO", {
-	timeZone: TIME_ZONE,
-	day: "numeric",
-});
-const monthShort = new Intl.DateTimeFormat("es-CO", {
-	timeZone: TIME_ZONE,
-	month: "short",
-});
+const LOCALES: Record<Language, string> = {
+	es: "es-CO",
+	en: "en-US",
+	pt: "pt-BR",
+	fr: "fr-FR",
+};
 
 function DateBlock({ iso }: { iso: string }) {
-	useLanguage();
+	const locale = LOCALES[useLanguage()];
 	const date = new Date(iso);
+	const dayNumber = new Intl.DateTimeFormat(locale, {
+		timeZone: TIME_ZONE,
+		day: "numeric",
+	});
+	const monthShort = new Intl.DateTimeFormat(locale, {
+		timeZone: TIME_ZONE,
+		month: "short",
+	});
 	return (
 		<div
 			aria-hidden="true"
@@ -41,16 +49,20 @@ function DateBlock({ iso }: { iso: string }) {
 	);
 }
 
-function spotsText(event: CommunityEvent): {
+function spotsText(
+	event: CommunityEvent,
+	t: Messages,
+): {
 	text: string;
 	tone: "neutral" | "alert" | "live";
 } {
-	if (event.status === "cancelled") return { text: "Cancelado", tone: "alert" };
+	if (event.status === "cancelled")
+		return { text: t.agenda.cancelled, tone: "alert" };
 	const left = spotsLeft(event);
-	if (left === null) return { text: "Cupos sin límite", tone: "neutral" };
-	if (left === 0) return { text: "Cupos agotados", tone: "alert" };
+	if (left === null) return { text: t.agenda.spotsUnlimited, tone: "neutral" };
+	if (left === 0) return { text: t.agenda.spotsSoldOut, tone: "alert" };
 	return {
-		text: left === 1 ? "Queda 1 cupo" : `Quedan ${left} cupos`,
+		text: t.agenda.spotsLeft(left),
 		tone: left <= 5 ? "live" : "neutral",
 	};
 }
@@ -64,9 +76,9 @@ export function EventCard({
 	placeName?: string | null;
 	registered?: boolean;
 }) {
-	useLanguage();
-	const spots = spotsText(event);
-	const where = placeName ?? event.locationText ?? "Lugar por confirmar";
+	const t = useT();
+	const spots = spotsText(event, t);
+	const where = placeName ?? event.locationText ?? t.agenda.placeTbd;
 	const cancelled = event.status === "cancelled";
 	return (
 		<a
@@ -83,7 +95,9 @@ export function EventCard({
 					{event.moderationStatus === "held" && <HeldBadge />}
 					<VerifiedOrganizerBadge verified={event.organizerVerified} />
 					{registered && !cancelled && (
-						<span className="q-badge q-badge--optimal">Inscrito</span>
+						<span className="q-badge q-badge--optimal">
+							{t.agenda.registered}
+						</span>
 					)}
 				</div>
 				<h3 className={`q-h3 break-words ${cancelled ? "line-through" : ""}`}>
@@ -107,7 +121,7 @@ export function EventCard({
 					</span>
 					<span className="q-badge q-badge--neutral">
 						{event.isFree || !event.priceCop
-							? "Gratis"
+							? t.agenda.free
 							: formatCop(event.priceCop)}
 					</span>
 				</div>

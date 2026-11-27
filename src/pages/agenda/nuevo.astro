@@ -6,6 +6,6 @@ import { homeContent } from "../../lib/home-content";
 const { aiHref } = homeContent;
 ---
 
-<BaseLayout title="Publicar un evento">
+<BaseLayout title="Publicar un evento" titleKey="agenda.newPageTitle">
 	<EventForm client:only="react" aiHref={aiHref} />
 </BaseLayout>
