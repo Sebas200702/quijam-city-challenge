@@ -194,3 +194,9 @@ Ver [26-arquitectura-de-informacion.md](26-arquitectura-de-informacion.md). Issu
 - **Datos de referencia:** `.q-sim-tag` se documenta con el texto "Datos de referencia", solo sobre la semilla del corredor y una vez por pantalla. El texto lo ponen los componentes (no vive en el CSS); en `main` ya dice "Datos de referencia" en todos. El simulador se llama "Ensayo de escenarios" y el tablero "Lo que la ciudad aprende".
 - **`city-events`:** sin tipos nuevos. `cobro_abusivo` lo publica hoy el navegador después de que `POST /api/reports` devuelve el `reportId` (#142); cuando el canal sea privado lo publicará el servidor. `desvio` sigue como propuesta.
 - **Glosario:** los estados del reporte de cobro son los del código: Nuevo, En revisión, Resuelto, Descartado (reemplaza la línea de #137 que pedía "Abierto"). Se suman Quillart AI, agente, Confirmar, cuenta, organizador verificado, sin confirmar, moderación, datos de referencia y Ensayo de escenarios.
+
+## Portal de datos abiertos (27 nov 2026)
+
+- **Seis conjuntos con separación de origen (regla 9):** `/datos` y `/api/datos/` publican bajo licencia **CC BY 4.0** dos conjuntos de la plataforma ciudadana (`lugares` y `eventos` publicados) y cuatro conjuntos del corredor piloto (`paraderos`, `tarifas-y-tramos`, `arroyos` y `negocios-verificados`), marcados explícitamente como **datos de referencia** (no como datos oficiales).
+- **Privacidad por lista blanca (Ley 1581 de 2012):** cada conjunto declara su lista blanca de columnas públicas; `projectPublicRecords` descarta cualquier campo fuera de la lista y `eventos` solo consulta registros con `moderation_status = 'published'` y `status = 'published'`, sin perfiles, organizadores ni inscripciones.
+- **CSV seguro y API protegida:** `serializeToCsv` aplica formato RFC 4180 y neutraliza inyección de fórmulas en hojas de cálculo (conservando coordenadas negativas), y `/api/datos/` aplica el límite `open-data` en `guardRequest`.
