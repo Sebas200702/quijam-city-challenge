@@ -175,3 +175,9 @@ Cambios de producto frente a la épica #57:
 - Se pasó de "sin red social" a una comunidad moderada por triaje (reglas + OpenJev + revisión humana), que responde al riesgo original: "una red social nueva arranca vacía y exige moderación". No arranca vacía: la semilla trae lugares reales de la ciudad y una agenda inicial publicada por el equipo ("Agenda QUILLART").
 - OpenJev pasó de decidir solo rutas y desvíos a moderar contenido y enrutar la conversación entre agentes.
 - El Guía pasó de un chat con un solo agente a un orquestador con seis agentes especializados.
+
+## Portal de datos abiertos (27 nov 2026)
+
+- **Seis conjuntos con separación de origen (regla 9):** `/datos` y `/api/datos/` publican bajo licencia **CC BY 4.0** dos conjuntos de la plataforma ciudadana (`lugares` y `eventos` publicados) y cuatro conjuntos del corredor piloto (`paraderos`, `tarifas-y-tramos`, `arroyos` y `negocios-verificados`), marcados explícitamente como **datos de referencia** (no como datos oficiales).
+- **Privacidad por lista blanca (Ley 1581 de 2012):** cada conjunto declara su lista blanca de columnas públicas; `projectPublicRecords` descarta cualquier campo fuera de la lista y `eventos` solo consulta registros con `moderation_status = 'published'` y `status = 'published'`, sin perfiles, organizadores ni inscripciones.
+- **CSV seguro y API protegida:** `serializeToCsv` aplica formato RFC 4180 y neutraliza inyección de fórmulas en hojas de cálculo (conservando coordenadas negativas), y `/api/datos/` aplica el límite `open-data` en `guardRequest`.
