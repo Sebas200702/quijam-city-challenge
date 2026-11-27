@@ -8,7 +8,7 @@ Cómo evitamos la información falsa, las estafas, la suplantación y el abuso e
 2. **Lo dudoso lo decide una persona.** Las máquinas retienen; no castigan solas lo que no es claro.
 3. **Cada quien ve cuánto confiar.** Insignias de reporte ciudadano sin confirmar, confirmado por la ciudad y organizador verificado.
 4. **La IA nunca actúa sola.** Toda acción de Quillart AI se confirma, con el texto exacto, y corre con los permisos de la persona.
-5. **Los datos son de la persona.** Ley 1581 de 2012: mínimo necesario, descarga y eliminación desde el perfil.
+5. **Los datos son de la persona.** Ley 1581 de 2012: mínimo necesario, descarga y eliminación desde el perfil. La política de privacidad pública está en `/privacidad` (`src/pages/privacidad.astro`).
 
 ## Riesgos y mitigaciones
 

@@ -29,6 +29,8 @@ export interface VisitorShellCopy {
 	/** Hint of the theme item: the current theme and what the tap does. */
 	themeHint: (dark: boolean) => string;
 	menuOfflineNote: string;
+	/** Quiet link under the menu tiles to the privacy policy (/privacidad). */
+	privacyLink: string;
 	nextStepEyebrow: string;
 	nextStepTitle: (destination: string) => string;
 	nextStepRouteLabel: string;
