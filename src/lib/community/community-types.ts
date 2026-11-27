@@ -65,6 +65,8 @@ export interface CommunityEvent extends Moderated {
 	priceCop: number | null;
 	organizerId: string | null;
 	organizerName: string;
+	/** The city verified this organizer (badge; paid events skip the extra review). */
+	organizerVerified: boolean;
 	status: EventStatus;
 	createdAt: string;
 }
@@ -112,6 +114,8 @@ export interface ForumThread extends Moderated {
 	authorName: string;
 	replyCount: number;
 	lastActivityAt: string;
+	/** The city confirmed this citizen report; until then it shows "sin confirmar". */
+	cityVerified: boolean;
 	createdAt: string;
 }
 
@@ -146,6 +150,8 @@ export interface Profile {
 	neighborhood: string | null;
 	isVisitor: boolean;
 	email: string | null;
+	/** Set by the city only; shown as a badge on the person's events. */
+	isVerifiedOrganizer: boolean;
 }
 
 export interface SignUpInput {
@@ -177,7 +183,33 @@ export interface PublishResult<T> {
 	record: T | null;
 }
 
-export type ModerationAction = "approve" | "remove" | "resolve";
+/** approve/remove held content, resolve a city follow-up, verify a citizen report. */
+export type ModerationAction = "approve" | "remove" | "resolve" | "verify";
+
+/** Why a person reports someone else's content. */
+export type ReportReason =
+	| "spam"
+	| "scam"
+	| "offensive"
+	| "misinformation"
+	| "impersonation"
+	| "other";
+
+/** Everything the platform keeps about the signed-in person (Ley 1581: acceso). */
+export interface MyDataExport {
+	exportedAt: string;
+	profile: Profile;
+	registrations: CommunityEvent[];
+	organizedEvents: CommunityEvent[];
+	threads: ForumThread[];
+	posts: ForumPost[];
+	reports: {
+		kind: ContentKind;
+		contentId: string;
+		reason: ReportReason;
+		createdAt: string;
+	}[];
+}
 
 /** One item in the city moderation queue: held content or a report to follow up. */
 export interface ModerationQueueItem {
@@ -191,6 +223,8 @@ export interface ModerationQueueItem {
 	labels: ModerationLabel[];
 	source: ModerationSource | "moderator";
 	priority: TriagePriority;
+	/** Distinct people who reported it. */
+	communityReports: number;
 	/** Thread of a reply, to link to it. */
 	threadId: string | null;
 }
@@ -235,6 +269,16 @@ export interface CommunityStore {
 		id: string,
 		action: ModerationAction,
 	): Promise<void>;
+
+	/** Flags someone else's content; enough distinct reports hold it for review. */
+	reportContent(
+		kind: ContentKind,
+		id: string,
+		reason: ReportReason,
+	): Promise<void>;
+	/** Ley 1581: the person can download and delete their data. */
+	exportMyData(): Promise<MyDataExport>;
+	deleteAccount(): Promise<void>;
 
 	/** Calls the listener whenever someone else changes the topic. */
 	subscribe(topic: CommunityTopic, listener: () => void): () => void;

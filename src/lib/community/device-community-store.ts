@@ -3,11 +3,17 @@
 // (rules + OpenJev) when reachable, the hard rules in the browser otherwise.
 
 import type {
+	ContentKind,
 	ModerationDecision,
 	ModerationLabel,
 	ModerationSource,
 } from "../moderation/moderation-types";
 import { triageContent } from "../moderation/triage";
+import {
+	applyTrustPolicy,
+	COMMUNITY_REPORT_HOLD_THRESHOLD,
+	NEW_ACCOUNT_HOURS,
+} from "../moderation/trust-policy";
 import { publishResult, storedStatus } from "./community-mappers";
 import {
 	filterEvents,
@@ -15,6 +21,7 @@ import {
 	registrationBlocker,
 	validateEventInput,
 	validatePostBody,
+	validateProfilePatch,
 	validateSignUp,
 	validateThreadInput,
 } from "./community-rules";
@@ -27,11 +34,13 @@ import type {
 	ForumThread,
 	ModerationAction,
 	ModerationQueueItem,
+	MyDataExport,
 	NewEventInput,
 	NewThreadInput,
 	Profile,
 	ProfilePatch,
 	PublishResult,
+	ReportReason,
 	SignUpInput,
 	ThreadQuery,
 } from "./community-types";
@@ -42,6 +51,16 @@ const STORAGE_KEY = "quillart-community-v1";
 
 interface DeviceAccount extends Profile {
 	passwordHash: string;
+	/** Missing on accounts created before the trust policy: treated as old. */
+	createdAt?: string;
+}
+
+interface DeviceReport {
+	kind: ContentKind;
+	contentId: string;
+	reporterId: string;
+	reason: ReportReason;
+	createdAt: string;
 }
 
 interface DeviceData {
@@ -56,6 +75,18 @@ interface DeviceData {
 		string,
 		{ labels: ModerationLabel[]; source: ModerationSource | "moderator" }
 	>;
+	/** Reports people made about someone else's content. */
+	reports?: DeviceReport[];
+	/** Content whose community reports the moderator already closed. */
+	resolvedReports?: string[];
+}
+
+function reportCount(data: DeviceData, id: string): number {
+	return new Set(
+		(data.reports ?? [])
+			.filter((report) => report.contentId === id)
+			.map((report) => report.reporterId),
+	).size;
 }
 
 function triageOf(data: DeviceData, id: string) {
@@ -95,8 +126,11 @@ async function hashPassword(email: string, password: string) {
 }
 
 function publicProfile(account: DeviceAccount): Profile {
-	const { passwordHash: _hash, ...profile } = account;
-	return profile;
+	const { passwordHash: _hash, createdAt: _created, ...profile } = account;
+	return {
+		...profile,
+		isVerifiedOrganizer: Boolean(profile.isVerifiedOrganizer),
+	};
 }
 
 async function triage(
@@ -213,7 +247,9 @@ export function createDeviceCommunityStore(): CommunityStore {
 				neighborhood: input.neighborhood?.trim() || null,
 				isVisitor: input.isVisitor,
 				email,
+				isVerifiedOrganizer: false,
 				passwordHash: await hashPassword(email, input.password),
+				createdAt: new Date().toISOString(),
 			};
 			data.accounts.push(account);
 			data.sessionId = account.id;
@@ -247,8 +283,8 @@ export function createDeviceCommunityStore(): CommunityStore {
 		async updateProfile(patch: ProfilePatch) {
 			const data = load();
 			const account = requireAccount(data);
-			if (patch.displayName.trim().length < 2)
-				throw new Error("Tu nombre debe tener al menos 2 caracteres.");
+			const patchError = validateProfilePatch(patch);
+			if (patchError) throw new Error(patchError);
 			account.displayName = patch.displayName.trim();
 			account.neighborhood = patch.neighborhood?.trim() || null;
 			account.isVisitor = patch.isVisitor;
@@ -288,8 +324,24 @@ export function createDeviceCommunityStore(): CommunityStore {
 		): Promise<PublishResult<CommunityEvent>> {
 			const error = validateEventInput(input);
 			if (error) throw new Error(error);
-			const account = requireAccount(load());
-			const decision = await triage("event", input.description, input.title);
+			const before = load();
+			const account = requireAccount(before);
+			const decision = applyTrustPolicy(
+				await triage("event", input.description, input.title),
+				{
+					kind: "event",
+					accountAgeHours: account.createdAt
+						? (Date.now() - new Date(account.createdAt).getTime()) / 3_600_000
+						: NEW_ACCOUNT_HOURS * 10,
+					publishedEvents: before.events.filter(
+						(event) =>
+							event.organizerId === account.id &&
+							event.moderationStatus === "published",
+					).length,
+					isVerifiedOrganizer: Boolean(account.isVerifiedOrganizer),
+					isPaidEvent: !input.isFree,
+				},
+			);
 			const status = storedStatus(decision);
 			if (!status) return publishResult<never>(decision, null);
 			const data = load();
@@ -302,6 +354,7 @@ export function createDeviceCommunityStore(): CommunityStore {
 				registeredCount: 0,
 				organizerId: account.id,
 				organizerName: account.displayName,
+				organizerVerified: Boolean(account.isVerifiedOrganizer),
 				status: "published",
 				moderationStatus: status,
 				triagePriority: decision.priority,
@@ -403,6 +456,7 @@ export function createDeviceCommunityStore(): CommunityStore {
 				authorName: account.displayName,
 				replyCount: 0,
 				lastActivityAt: now,
+				cityVerified: false,
 				moderationStatus: status,
 				triagePriority: decision.priority,
 				createdAt: now,
@@ -463,13 +517,18 @@ export function createDeviceCommunityStore(): CommunityStore {
 
 		async listModerationQueue() {
 			const data = load();
+			const reportsOf = (id: string) => reportCount(data, id);
 			const needsAction = (item: {
+				id: string;
 				moderationStatus: string;
 				triagePriority: string;
 			}) =>
 				item.moderationStatus === "held" ||
 				(item.moderationStatus === "published" &&
-					item.triagePriority !== "none");
+					item.triagePriority !== "none") ||
+				(item.moderationStatus === "published" &&
+					reportsOf(item.id) > 0 &&
+					!data.resolvedReports?.includes(item.id));
 			const items: ModerationQueueItem[] = [
 				...data.events.filter(needsAction).map((event) => ({
 					kind: "event" as const,
@@ -481,6 +540,7 @@ export function createDeviceCommunityStore(): CommunityStore {
 					status: event.moderationStatus,
 					...triageOf(data, event.id),
 					priority: event.triagePriority,
+					communityReports: reportsOf(event.id),
 					threadId: null,
 				})),
 				...data.threads.filter(needsAction).map((thread) => ({
@@ -493,6 +553,7 @@ export function createDeviceCommunityStore(): CommunityStore {
 					status: thread.moderationStatus,
 					...triageOf(data, thread.id),
 					priority: thread.triagePriority,
+					communityReports: reportsOf(thread.id),
 					threadId: thread.id,
 				})),
 				...data.posts.filter(needsAction).map((post) => ({
@@ -505,6 +566,7 @@ export function createDeviceCommunityStore(): CommunityStore {
 					status: post.moderationStatus,
 					...triageOf(data, post.id),
 					priority: post.triagePriority,
+					communityReports: reportsOf(post.id),
 					threadId: post.threadId,
 				})),
 			];
@@ -524,6 +586,11 @@ export function createDeviceCommunityStore(): CommunityStore {
 			if (!item) return;
 			if (action === "resolve") {
 				item.triagePriority = "none";
+				data.resolvedReports = [...(data.resolvedReports ?? []), id];
+			} else if (action === "verify") {
+				if (kind !== "thread")
+					throw new Error("Solo se confirman reportes del foro.");
+				(item as ForumThread).cityVerified = true;
 			} else {
 				const wasPublished = item.moderationStatus === "published";
 				item.moderationStatus = action === "approve" ? "published" : "removed";
@@ -546,6 +613,124 @@ export function createDeviceCommunityStore(): CommunityStore {
 			}
 			save(data);
 			notify(kind === "event" ? "events" : "forum");
+		},
+
+		async reportContent(kind, id, reason) {
+			const data = load();
+			const account = requireAccount(data);
+			const list: (CommunityEvent | ForumThread | ForumPost)[] =
+				kind === "event"
+					? data.events
+					: kind === "thread"
+						? data.threads
+						: data.posts;
+			const item = list.find((entry) => entry.id === id);
+			if (!item) throw new Error("Esta publicación ya no está disponible.");
+			const owner =
+				kind === "event"
+					? (item as CommunityEvent).organizerId
+					: (item as ForumThread | ForumPost).authorId;
+			if (owner === account.id)
+				throw new Error("No puedes reportar tu propia publicación.");
+			const reports = data.reports ?? [];
+			if (
+				reports.some(
+					(report) =>
+						report.contentId === id && report.reporterId === account.id,
+				)
+			)
+				return;
+			reports.push({
+				kind,
+				contentId: id,
+				reporterId: account.id,
+				reason,
+				createdAt: new Date().toISOString(),
+			});
+			data.reports = reports;
+			if (
+				reportCount(data, id) >= COMMUNITY_REPORT_HOLD_THRESHOLD &&
+				item.moderationStatus === "published"
+			) {
+				item.moderationStatus = "held";
+			}
+			save(data);
+			notify(kind === "event" ? "events" : "forum");
+		},
+
+		async exportMyData(): Promise<MyDataExport> {
+			const data = load();
+			const account = requireAccount(data);
+			const registered = new Set(
+				data.registrations
+					.filter((item) => item.userId === account.id)
+					.map((item) => item.eventId),
+			);
+			return {
+				exportedAt: new Date().toISOString(),
+				profile: publicProfile(account),
+				registrations: data.events.filter((event) => registered.has(event.id)),
+				organizedEvents: data.events.filter(
+					(event) => event.organizerId === account.id,
+				),
+				threads: data.threads.filter(
+					(thread) => thread.authorId === account.id,
+				),
+				posts: data.posts.filter((post) => post.authorId === account.id),
+				reports: (data.reports ?? [])
+					.filter((report) => report.reporterId === account.id)
+					.map(({ kind, contentId, reason, createdAt }) => ({
+						kind,
+						contentId,
+						reason,
+						createdAt,
+					})),
+			};
+		},
+
+		async deleteAccount() {
+			const data = load();
+			const account = requireAccount(data);
+			const now = Date.now();
+			const removedThreads = new Set(
+				data.threads
+					.filter((thread) => thread.authorId === account.id)
+					.map((thread) => thread.id),
+			);
+			data.threads = data.threads.filter(
+				(thread) => !removedThreads.has(thread.id),
+			);
+			data.posts = data.posts.filter(
+				(post) =>
+					post.authorId !== account.id && !removedThreads.has(post.threadId),
+			);
+			for (const event of data.events) {
+				if (event.organizerId !== account.id) continue;
+				if (new Date(event.startsAt).getTime() > now)
+					event.status = "cancelled";
+				event.organizerId = null;
+				event.organizerName = "Cuenta eliminada";
+			}
+			for (const registration of data.registrations) {
+				if (registration.userId !== account.id) continue;
+				const event = data.events.find(
+					(item) => item.id === registration.eventId,
+				);
+				if (event)
+					event.registeredCount = Math.max(event.registeredCount - 1, 0);
+			}
+			data.registrations = data.registrations.filter(
+				(item) => item.userId !== account.id,
+			);
+			data.reports = (data.reports ?? []).filter(
+				(report) => report.reporterId !== account.id,
+			);
+			data.accounts = data.accounts.filter((item) => item.id !== account.id);
+			data.sessionId = null;
+			save(data);
+			emitSession(data);
+			notify("events");
+			notify("forum");
 		},
 
 		subscribe(topic, listener) {
