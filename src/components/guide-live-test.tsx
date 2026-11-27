@@ -158,7 +158,7 @@ export default function GuideLiveTest() {
 
 	return (
 		<section className="mx-auto flex max-w-xl flex-col gap-4 p-4">
-			<h1 className="text-xl font-semibold">Prueba de Gemini Live</h1>
+			<h1 className="text-xl font-semibold">Guía por voz · beta</h1>
 			<div className="flex gap-2">
 				<select
 					className="rounded border px-2 py-1"

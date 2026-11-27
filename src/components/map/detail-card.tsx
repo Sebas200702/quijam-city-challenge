@@ -60,8 +60,8 @@ export function DetailCard({
 							Verás sus servicios, alertas y cómo moverte sin trancón.
 						</p>
 						<p className="q-sm q-subtle">
-							Datos simulados 2034
-							{source === "seed" ? " · sin conexión a Supabase" : ""}
+							Datos de referencia
+							{source === "seed" ? " · sin conexión" : ""}
 						</p>
 					</div>
 				</div>
@@ -108,7 +108,7 @@ export function DetailCard({
 						{detail.status.label}
 					</span>
 					{detail.simulated && (
-						<span className="q-badge q-badge--neutral">Simulado</span>
+						<span className="q-badge q-badge--neutral">Dato de referencia</span>
 					)}
 				</div>
 				{detail.description && (

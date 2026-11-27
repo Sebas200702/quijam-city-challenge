@@ -240,7 +240,7 @@ export default function CorridorMap({ data, source }: CorridorMapProps) {
 			<section
 				ref={containerRef}
 				className="corridor-app__map"
-				aria-label="Mapa del corredor piloto"
+				aria-label="Mapa del corredor"
 			/>
 
 			<aside className="corridor-panel">

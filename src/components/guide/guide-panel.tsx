@@ -146,7 +146,7 @@ export function GuidePanel({ onShowOnMap, onClose }: GuidePanelProps) {
 										{message.answer.source === "gemini"
 											? "Gemini"
 											: "Guía sin conexión"}{" "}
-										· datos simulados 2034
+										· datos de referencia
 									</span>
 								)}
 							</div>

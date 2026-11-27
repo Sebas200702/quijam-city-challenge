@@ -10,7 +10,7 @@ const NEW_SESSION_SECONDS = 60;
 
 export const GUIDE_SYSTEM_INSTRUCTION =
 	"You are the Guide for visitors in Barranquilla. Answer in the visitor's language, briefly. " +
-	"Data about routes, fares and businesses in this prototype is simulated.";
+	"Data about routes, fares and businesses is reference data, not live measurements.";
 
 /**
  * Builds a single-use ephemeral token config. Model, modality and system

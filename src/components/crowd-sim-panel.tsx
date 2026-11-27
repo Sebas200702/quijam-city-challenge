@@ -243,7 +243,7 @@ export function CrowdSimPanel({ zones, canWrite }: CrowdSimPanelProps) {
 			<section className="q-card" aria-labelledby="crowd-sim-title">
 				<div className="q-card__body">
 					<h2 id="crowd-sim-title" className="q-h2">
-						Simulador de multitudes
+						Ensayo de escenarios
 					</h2>
 					<p className="q-sm q-subtle">
 						Esperando los conteos por zona para empezar.
@@ -258,9 +258,9 @@ export function CrowdSimPanel({ zones, canWrite }: CrowdSimPanelProps) {
 			<div className="q-band q-band--gold" aria-hidden="true" />
 			<div className="q-card__head">
 				<div>
-					<p className="q-eyebrow">Datos simulados 2034</p>
+					<p className="q-eyebrow">Herramienta de planeación</p>
 					<h2 id="crowd-sim-title" className="q-h2 mt-1">
-						Simulador de multitudes
+						Ensayo de escenarios
 					</h2>
 				</div>
 				<button
@@ -275,7 +275,7 @@ export function CrowdSimPanel({ zones, canWrite }: CrowdSimPanelProps) {
 				<div className="grid gap-4 lg:grid-cols-[1fr_280px]">
 					<section
 						className="relative h-[480px] overflow-hidden rounded-[var(--radius-md)]"
-						aria-label="Mapa del corredor con visitantes simulados en movimiento"
+						aria-label="Mapa del corredor con el ensayo de visitantes en movimiento"
 					>
 						<div ref={mapRef} className="absolute inset-0" />
 						<canvas
@@ -283,7 +283,10 @@ export function CrowdSimPanel({ zones, canWrite }: CrowdSimPanelProps) {
 							className="pointer-events-none absolute inset-0 z-[400]"
 						/>
 					</section>
-					<ul className="space-y-3" aria-label="Visitantes simulados por zona">
+					<ul
+						className="space-y-3"
+						aria-label="Visitantes por zona en el ensayo"
+					>
 						{readings.map((zone) => (
 							<li key={zone.zone} className={`q-meter q-meter--${zone.tone}`}>
 								<div className="q-meter__head">

@@ -54,7 +54,7 @@ export function RouteCard({
 								: "Elige tu destino"}
 					</h2>
 				</div>
-				<span className="q-badge q-badge--neutral">Simulado 2034</span>
+				<span className="q-badge q-badge--neutral">Datos de referencia</span>
 			</div>
 
 			<div className="q-card__body route-card__body">
